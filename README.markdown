@@ -15,10 +15,10 @@ I will be creating tests, examples and generally tinkering, so please bear with 
 
     # start a communication session with the amqp server
     begin
-	b.start
+      b.start
     rescue Exception => e
-	puts 'ERROR - Could not start a session: ' + e
-	exit
+      puts 'ERROR - Could not start a session: ' + e
+      exit
     end
 
     # declare a queue
