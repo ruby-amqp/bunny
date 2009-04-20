@@ -39,19 +39,19 @@ class Bunny
   end
 
   def direct(name = 'amq.direct', opts = {})
-    exchanges[name] ||= Exchange.new(client, :direct, name, opts)
+    client.exchanges[name] ||= Exchange.new(client, :direct, name, opts)
   end
 
   def topic(name = 'amq.topic', opts = {})
-    exchanges[name] ||= Exchange.new(client, :topic, name, opts)
+    client.exchanges[name] ||= Exchange.new(client, :topic, name, opts)
   end
 
   def headers(name = 'amq.match', opts = {})
-    exchanges[name] ||= Exchange.new(client, :headers, name, opts)
+    client.exchanges[name] ||= Exchange.new(client, :headers, name, opts)
   end
 
   def exchanges
-    @exchanges ||= {}
+    client.exchanges ||= {}
   end
 
 end

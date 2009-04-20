@@ -7,7 +7,8 @@ class Exchange
   def initialize(client, type, name, opts = {})
     @client, @type, @name, @opts = client, type, name, opts
     @key = opts[:key]
-
+		@client.exchanges[@name] ||= self
+		
     unless name == "amq.#{type}" or name == ''
       client.send_frame(
         Protocol::Exchange::Declare.new(
@@ -38,6 +39,8 @@ class Exchange
   end
 
   def delete(opts = {})
+		client.exchanges.delete(@name)
+		
     client.send_frame(
       Protocol::Exchange::Delete.new({ :exchange => name, :nowait => true }.merge(opts))
     )

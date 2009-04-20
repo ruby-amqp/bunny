@@ -4,7 +4,7 @@ module AMQP
     RETRY_DELAY     = 10.0
 
     attr_reader   :status
-    attr_accessor :channel, :host, :logging, :port, :ticket
+    attr_accessor :channel, :host, :logging, :exchanges, :port, :ticket
 
     class ServerDown      < StandardError; end
     class ProtocolError   < StandardError; end
@@ -19,6 +19,10 @@ module AMQP
       @insist = opts[:insist]
       @status = 'NOT CONNECTED'
     end
+
+		def exchanges
+			@exchanges ||= {}
+		end
 
     def send_frame(*args)
       args.each do |data|
