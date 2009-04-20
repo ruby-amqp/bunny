@@ -1,3 +1,14 @@
-# README
+# bunny README
 
-This is a **test*
+This project was started to enable me to interact with RabbitMQ using Ruby. It has borrowed heavily from two projects:
+ 
+1. **amqp** by *tmm1* (http://github.com/tmm1/amqp/tree/master)
+2. **carrot** by *famoseagle* (http://github.com/famoseagle/carrot/tree/master)
+ 
+I will be creating tests, examples and generally tinkering, so please bear with me.
+ 
+If you have any questions, suggestions, harsh criticism or fulsome praise please feel free to contact me.
+ 
+Regards,
+ 
+Chris
