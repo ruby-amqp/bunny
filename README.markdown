@@ -9,34 +9,34 @@ I will be creating tests, examples and generally tinkering, so please bear with 
  
 ## Quick Start
 
-require 'bunny'
+    require 'bunny'
 
-b = Bunny.new(:logging => true)
+    b = Bunny.new(:logging => true)
 
-# start a communication session with the amqp server
-begin
+    # start a communication session with the amqp server
+    begin
 	b.start
-rescue Exception => e
+    rescue Exception => e
 	puts 'ERROR - Could not start a session: ' + e
 	exit
-end
+    end
 
-# declare a queue
-q = Queue.new(b.client, 'test1')
+    # declare a queue
+    q = Queue.new(b.client, 'test1')
 
-# create a direct exchange
-exchange = Exchange.new(b.client, :direct, 'test_ex')
+    # create a direct exchange
+    exchange = Exchange.new(b.client, :direct, 'test_ex')
 
-# bind the queue to the exchange
-q.bind(exchange)
+    # bind the queue to the exchange
+    q.bind(exchange)
 
-# publish a message to the exchange
-exchange.publish('Hello everybody!')
+    # publish a message to the exchange
+    exchange.publish('Hello everybody!')
 
-# get message from the queue
-msg = q.pop
+    # get message from the queue
+    msg = q.pop
 
-puts 'This is the message: ' + msg + "\n\n"
+    puts 'This is the message: ' + msg + "\n\n"
 
 ## LICENSE
 
