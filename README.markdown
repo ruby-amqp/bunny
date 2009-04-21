@@ -1,17 +1,18 @@
 # README
 
-## Acknowledgements
-
-This project has borrowed heavily from the following two projects and owes their respective creators and collaborators a whole lot of gratitude:
- 
-1. **amqp** by *tmm1* (http://github.com/tmm1/amqp/tree/master)
-2. **carrot** by *famoseagle* (http://github.com/famoseagle/carrot/tree/master)
-
 ## About
 
 *bunny* is an AMQP client, written in Ruby, that is intended to allow you to interact with AMQP-compliant message brokers/servers such as RabbitMQ in a synchronous fashion.
+
+You can use *bunny* to -
+
+* Create and delete exchanges
+* Create and delete queues
+* Publish and consume messages
  
 *bunny* is being tested with RabbitMQ version 1.5.4 and version 0-8 of the AMQP specification.
+
+There is a Google Group for discussing bunny - [http://groups.google.com/group/bunny-amqp](bunny-amqp)
  
 ## Quick Start
 
@@ -43,6 +44,13 @@ This project has borrowed heavily from the following two projects and owes their
     msg = q.pop
 
     puts 'This is the message: ' + msg + "\n\n"
+
+## Acknowledgements
+
+This project has borrowed heavily from the following two projects and owes their respective creators and collaborators a whole lot of gratitude:
+
+1. **amqp** by *tmm1* [http://github.com/tmm1/amqp/tree/master](http://github.com/tmm1/amqp/tree/master)
+2. **carrot** by *famoseagle* [http://github.com/famoseagle/carrot/tree/master](http://github.com/famoseagle/carrot/tree/master)
 
 ## LICENSE
 
