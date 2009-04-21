@@ -12,7 +12,7 @@ You can use *bunny* to -
  
 *bunny* is being tested with RabbitMQ version 1.5.4 and version 0-8 of the AMQP specification.
 
-There is a Google Group for discussing bunny - [http://groups.google.com/group/bunny-amqp](bunny-amqp)
+There is a Google Group for discussing bunny - [bunny-amqp](http://groups.google.com/group/bunny-amqp)
  
 ## Quick Start
 
