@@ -77,6 +77,8 @@
 	  end
 
 	  def delete(opts = {})
+			client.queues.delete(name)
+			
 	    client.send_frame(
 	      Protocol::Queue::Delete.new({ :queue => name, :nowait => true }.merge(opts))
 	    )

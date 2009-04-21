@@ -25,9 +25,13 @@ class Bunny
 	def status
 		client.status
 	end
+	
+	def exchange(type, name, opts = {})
+		client.exchanges[name] ||= Exchange.new(client, type, name, opts)
+	end
   
   def queue(name, opts = {})
-    queues[name] ||= Queue.new(client, name, opts)
+    client.queues[name] ||= Queue.new(client, name, opts)
   end
 
   def stop
@@ -35,19 +39,7 @@ class Bunny
   end
 
   def queues
-    @queues ||= {}
-  end
-
-  def direct(name = 'amq.direct', opts = {})
-    client.exchanges[name] ||= Exchange.new(client, :direct, name, opts)
-  end
-
-  def topic(name = 'amq.topic', opts = {})
-    client.exchanges[name] ||= Exchange.new(client, :topic, name, opts)
-  end
-
-  def headers(name = 'amq.match', opts = {})
-    client.exchanges[name] ||= Exchange.new(client, :headers, name, opts)
+    client.queues ||= {}
   end
 
   def exchanges

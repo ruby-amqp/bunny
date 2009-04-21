@@ -1,11 +1,17 @@
-# bunny README
+# README
 
-This project was started to enable me to interact with RabbitMQ using Ruby. It has borrowed heavily from two projects:
+## Acknowledgements
+
+This project has borrowed heavily from the following two projects and owes their respective creators and collaborators a whole lot of gratitude:
  
 1. **amqp** by *tmm1* (http://github.com/tmm1/amqp/tree/master)
 2. **carrot** by *famoseagle* (http://github.com/famoseagle/carrot/tree/master)
+
+## About
+
+*bunny* is an AMQP client, written in Ruby, that is intended to allow you to interact with AMQP-compliant message brokers/servers such as RabbitMQ in a synchronous fashion.
  
-I will be creating tests, examples and generally tinkering, so please bear with me.
+*bunny* is being tested with RabbitMQ version 1.5.4 and version 0-8 of the AMQP specification.
  
 ## Quick Start
 
@@ -22,16 +28,16 @@ I will be creating tests, examples and generally tinkering, so please bear with 
     end
 
     # declare a queue
-    q = Queue.new(b.client, 'test1')
+    q = b.queue('test1')
 
     # create a direct exchange
-    exchange = Exchange.new(b.client, :direct, 'test_ex')
+    exch = b.exchange(:direct, 'test_ex')
 
     # bind the queue to the exchange
-    q.bind(exchange)
+    q.bind(exch)
 
     # publish a message to the exchange
-    exchange.publish('Hello everybody!')
+    exch.publish('Hello everybody!')
 
     # get message from the queue
     msg = q.pop

@@ -13,16 +13,16 @@ rescue Exception => e
 end
 
 # declare a queue
-q = Queue.new(b.client, 'test1')
+q = b.queue('test1')
 
 # create a direct exchange
-exchange = Exchange.new(b.client, :direct, 'test_ex')
+exch = b.exchange(:direct, 'test_ex')
 
 # bind the queue to the exchange
-q.bind(exchange)
+q.bind(exch)
 
 # publish a message to the exchange
-exchange.publish('Hello everybody!')
+exch.publish('Hello everybody!')
 
 # get message from the queue
 msg = q.pop

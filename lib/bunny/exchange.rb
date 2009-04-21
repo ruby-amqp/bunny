@@ -39,7 +39,7 @@ class Exchange
   end
 
   def delete(opts = {})
-		client.exchanges.delete(@name)
+		client.exchanges.delete(name)
 		
     client.send_frame(
       Protocol::Exchange::Delete.new({ :exchange => name, :nowait => true }.merge(opts))

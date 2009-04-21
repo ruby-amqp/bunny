@@ -4,7 +4,7 @@ module AMQP
     RETRY_DELAY     = 10.0
 
     attr_reader   :status
-    attr_accessor :channel, :host, :logging, :exchanges, :port, :ticket
+    attr_accessor :channel, :host, :logging, :exchanges, :queues, :port, :ticket
 
     class ServerDown      < StandardError; end
     class ProtocolError   < StandardError; end
@@ -22,6 +22,10 @@ module AMQP
 
 		def exchanges
 			@exchanges ||= {}
+		end
+		
+		def queues
+			@queues ||= {}
 		end
 
     def send_frame(*args)
