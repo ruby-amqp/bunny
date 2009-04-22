@@ -36,7 +36,7 @@
 	    raise 'unexpected length' if msg.length < header.size
 
 			if hdr
-				[header, msg]
+				{:header => header, :payload => msg}
 			else
 	    	msg
 			end
