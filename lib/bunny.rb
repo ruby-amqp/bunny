@@ -18,6 +18,14 @@ class Bunny
 		@client = AMQP::Client.new(opts)
   end
 
+	def logging=(bool)
+		client.logging = bool
+	end
+	
+	def logging
+		client.logging
+	end
+
 	def start
 		client.start_session
 	end
