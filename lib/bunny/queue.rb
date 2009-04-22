@@ -16,8 +16,15 @@
 
 	  def pop(opts = {})
 	    self.delivery_tag = nil
+	
+			# do we want the header?
+			hdr = opts.delete(:header)
+			
 	    client.send_frame(
-	      Protocol::Basic::Get.new({ :queue => name, :consumer_tag => name, :no_ack => !opts.delete(:ack), :nowait => true }.merge(opts))
+	      Protocol::Basic::Get.new({ :queue => name,
+																	 :consumer_tag => name,
+																	 :no_ack => !opts.delete(:ack),
+																	 :nowait => true }.merge(opts))
 	    )
 	    method = client.next_method
 	    return unless method.is_a?(Protocol::Basic::GetOk)
@@ -28,7 +35,12 @@
 	    msg    = client.next_payload
 	    raise 'unexpected length' if msg.length < header.size
 
-	    msg
+			if hdr
+				[header, msg]
+			else
+	    	msg
+			end
+			
 	  end
 
 	  def ack
@@ -61,7 +73,10 @@
 	    exchange           = exchange.respond_to?(:name) ? exchange.name : exchange
 	    bindings[exchange] = opts
 	    client.send_frame(
-	      Protocol::Queue::Bind.new({ :queue => name, :exchange => exchange, :routing_key => opts.delete(:key), :nowait => true }.merge(opts))
+	      Protocol::Queue::Bind.new({ :queue => name,
+		 																:exchange => exchange,
+		 																:routing_key => opts.delete(:key),
+		 																:nowait => true }.merge(opts))
 	    )
 	  end
 
@@ -70,8 +85,10 @@
 	    bindings.delete(exchange)
 
 	    client.send_frame(
-	      Protocol::Queue::Unbind.new({
-	        :queue => name, :exchange => exchange, :routing_key => opts.delete(:key), :nowait => true }.merge(opts)
+	      Protocol::Queue::Unbind.new({ :queue => name,
+		 																	:exchange => exchange,
+		 																	:routing_key => opts.delete(:key),
+		 																	:nowait => true }.merge(opts)
 	      )
 	    )
 	  end
