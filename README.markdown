@@ -31,19 +31,16 @@ There is a Google Group for discussing bunny - [bunny-amqp](http://groups.google
     # declare a queue
     q = b.queue('test1')
 
-    # create a direct exchange
-    exch = b.exchange(:direct, 'test_ex')
-
-    # bind the queue to the exchange
-    q.bind(exch)
-
-    # publish a message to the exchange
-    exch.publish('Hello everybody!')
+    # publish a message to the queue
+    q.publish('Hello everybody!')
 
     # get message from the queue
     msg = q.pop
 
     puts 'This is the message: ' + msg + "\n\n"
+
+    # close the connection
+    b.close
 
 ## Acknowledgements
 
