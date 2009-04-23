@@ -59,13 +59,13 @@ module AMQP
       send_frame(
         Protocol::Channel::Close.new(:reply_code => 200, :reply_text => 'bye', :method_id => 0, :class_id => 0)
       )
-      puts "Error closing channel #{channel}" unless next_method.is_a?(Protocol::Channel::CloseOk)
+      raise ProtocolError, "Error closing channel #{channel}" unless next_method.is_a?(Protocol::Channel::CloseOk)
 
       self.channel = 0
       send_frame(
         Protocol::Connection::Close.new(:reply_code => 200, :reply_text => 'Goodbye', :class_id => 0, :method_id => 0)
       )
-      puts "Error closing connection" unless next_method.is_a?(Protocol::Connection::CloseOk)
+      raise ProtocolError, "Error closing connection" unless next_method.is_a?(Protocol::Connection::CloseOk)
 
       close_socket
     end
@@ -82,7 +82,7 @@ module AMQP
       @channel = 0
       write(HEADER)
       write([1, 1, VERSION_MAJOR, VERSION_MINOR].pack('C4'))
-      raise ProtocolError, 'bad start connection' unless next_method.is_a?(Protocol::Connection::Start)
+      raise ProtocolError, 'Connection initiation failed' unless next_method.is_a?(Protocol::Connection::Start)
 
       send_frame(
         Protocol::Connection::StartOk.new(
@@ -92,8 +92,11 @@ module AMQP
           'en_US'
         )
       )
+			
+			method = next_method
+			raise ProtocolError, "Connection failed - user: #{@user}, pass: #{@pass}" if method.nil?
 
-      if next_method.is_a?(Protocol::Connection::Tune)
+      if method.is_a?(Protocol::Connection::Tune)
         send_frame(
           Protocol::Connection::TuneOk.new( :channel_max => 0, :frame_max => 131072, :heartbeat => 0)
         )
@@ -114,6 +117,9 @@ module AMQP
       method = next_method
       raise ProtocolError, 'Access denied' unless method.is_a?(Protocol::Access::RequestOk)
       self.ticket = method.ticket
+
+			# return status
+			status
     end
 
   private

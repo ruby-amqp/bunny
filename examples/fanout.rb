@@ -1,3 +1,13 @@
+# fanout.rb
+
+# Assumes that target message broker/server has a user called 'guest' with a password 'guest'
+# and that it is running on 'localhost'.
+
+# If this is not the case, please change the 'Bunny.new' call below to include
+# the relevant arguments e.g. b = Bunny.new(:user => 'john', :pass => 'doe', :host => 'foobar')
+
+$:.unshift File.dirname(__FILE__) + '/../lib'
+
 require 'bunny'
 
 b = Bunny.new(:logging => true)
@@ -29,3 +39,6 @@ msg = q1.pop
 puts 'This is the message from q1: ' + msg + "\n\n"
 msg = q2.pop
 puts 'This is the message from q2: ' + msg + "\n\n"
+
+# close the client connection
+b.stop

@@ -35,11 +35,7 @@
 	    msg    = client.next_payload
 	    raise 'unexpected length' if msg.length < header.size
 
-			if hdr
-				{:header => header, :payload => msg}
-			else
-	    	msg
-			end
+			hdr ? {:header => header, :payload => msg} : msg
 			
 	  end
 
