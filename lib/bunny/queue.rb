@@ -6,6 +6,9 @@
 	  attr_accessor :delivery_tag
 
 	  def initialize(client, name, opts = {})
+			# check connection to server
+			raise 'Not connected to server' if client.status == NOT_CONNECTED
+			
 	    @client = client
 	    @opts   = opts
 	    @name   = name

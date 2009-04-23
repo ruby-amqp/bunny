@@ -5,6 +5,9 @@ class Exchange
   attr_reader :client, :type, :name, :opts, :key
 
   def initialize(client, type, name, opts = {})
+		# check connection to server
+		raise 'Not connected to server' if client.status == NOT_CONNECTED
+		
     @client, @type, @name, @opts = client, type, name, opts
     @key = opts[:key]
 		@client.exchanges[@name] ||= self

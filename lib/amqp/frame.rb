@@ -29,8 +29,6 @@ module AMQP
       end
     end
     
-    class Invalid < StandardError; end
-    
     class Method
       def initialize payload = nil, channel = 0
         super

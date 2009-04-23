@@ -12,8 +12,6 @@ class Bunny
 	
 	attr_reader :client
 
-  class Error < StandardError; end
-
 	def initialize(opts = {})
 		@client = AMQP::Client.new(opts)
   end

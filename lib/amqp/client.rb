@@ -6,9 +6,6 @@ module AMQP
     attr_reader   :status
     attr_accessor :channel, :host, :logging, :exchanges, :queues, :port, :ticket
 
-    class ServerDown      < StandardError; end
-    class ProtocolError   < StandardError; end
-
     def initialize(opts = {})
 			@host = opts[:host] || 'localhost'
 			@port = opts[:port] || AMQP::PORT
@@ -17,7 +14,7 @@ module AMQP
       @vhost  = opts[:vhost] || '/'
 			@logging = opts[:logging] || false
       @insist = opts[:insist]
-      @status = 'NOT CONNECTED'
+      @status = NOT_CONNECTED
     end
 
 		def exchanges
@@ -148,7 +145,7 @@ module AMQP
         if Socket.constants.include? 'TCP_NODELAY'
           @socket.setsockopt Socket::IPPROTO_TCP, Socket::TCP_NODELAY, 1
         end
-        @status   = 'CONNECTED'
+        @status   = CONNECTED
       rescue SocketError, SystemCallError, IOError, Timeout::Error => e
         raise ServerDown, e.message
       end
@@ -160,14 +157,14 @@ module AMQP
       # Close the socket. The server is not considered dead.
       @socket.close if @socket and not @socket.closed?
       @socket   = nil
-      @status   = "NOT CONNECTED"
+      @status   = NOT_CONNECTED
     end
 
     def log(*args)
       return unless logging
       require 'pp'
       pp args
-      puts
+	    puts
     end
 
   end

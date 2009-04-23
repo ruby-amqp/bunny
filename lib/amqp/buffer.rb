@@ -10,8 +10,6 @@ end
 
 module AMQP
   class Buffer #:nodoc: all
-    class Overflow < StandardError; end
-    class InvalidType < StandardError; end
     
     def initialize data = ''
       @data = data
