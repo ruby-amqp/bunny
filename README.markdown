@@ -76,7 +76,7 @@ Bunny#stop
 ### Create a Queue
 Bunny#queue(_**name**_, {_options_})
 
-### Creates an Exchange
+### Create an Exchange
 Bunny#exchange(_**name**_, {_options_})
 
 ### Return connection status ('CONNECTED' or 'NOT CONNECTED')
