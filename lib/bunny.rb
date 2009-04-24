@@ -32,8 +32,8 @@ class Bunny
 		client.status
 	end
 	
-	def exchange(type, name, opts = {})
-		client.exchanges[name] ||= Exchange.new(client, type, name, opts)
+	def exchange(name, opts = {})
+		client.exchanges[name] ||= Exchange.new(client, name, opts)
 	end
   
   def queue(name, opts = {})
@@ -51,5 +51,17 @@ class Bunny
   def exchanges
     client.exchanges ||= {}
   end
+	
+	def host
+		client.host
+	end
+	
+	def vhost
+		client.vhost
+	end
+	
+	def port
+		client.port
+	end
 
 end

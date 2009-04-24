@@ -3,8 +3,8 @@ module AMQP
     CONNECT_TIMEOUT = 1.0
     RETRY_DELAY     = 10.0
 
-    attr_reader   :status
-    attr_accessor :channel, :host, :logging, :exchanges, :queues, :port, :ticket
+    attr_reader   :status, :host, :vhost, :port
+    attr_accessor :channel, :logging, :exchanges, :queues, :ticket
 
     def initialize(opts = {})
 			@host = opts[:host] || 'localhost'

@@ -2,6 +2,19 @@
 
 Google Group: [bunny-amqp](http://groups.google.com/group/bunny-amqp)
 
+## Announcements
+
+**IMPORTANT**
+
+The Exchange#initialize method has changed as of version 0.0.7
+
+You now create an exchange like this -
+
+    b = Bunny.new
+    exch = b.exchange('*my_exchange*', :type => :fanout)
+
+If you do not specify a :type option then a default of :direct is used.
+
 ## About
 
 *Bunny* is an [AMQP](http://www.amqp.org) (Advanced Message Queuing Protocol) client, written in Ruby, that is intended to allow you to interact with AMQP-compliant message brokers/servers such as [RabbitMQ](http://www.rabbitmq.com) in a synchronous fashion.
@@ -41,6 +54,61 @@ You can use *Bunny* to -
 
     # close the connection
     b.close
+
+## Bunny methods
+
+These are the Bunny methods that you will probably want to use -
+
+### Create a Bunny instance
+Bunny#new({_options_})
+
+### Start a communication session with the target server
+Bunny#start
+
+### Stop a communication session with the target server
+Bunny#stop
+
+### Create a Queue
+Bunny#queue(_**name**_, {_options_})
+
+### Creates an Exchange
+Bunny#exchange(_**name**_, {_options_})
+
+### Return connection status ('CONNECTED' or 'NOT CONNECTED')
+Bunny#status               
+
+### Publish a message to an exchange
+Exchange#publish(_**data**_, {_options_})
+
+### Delete an exchange from the target server
+Exchange#delete({_options_})
+
+### Bind a queue to an exchange
+Queue#bind(_**exchange**_, {_options_})
+
+### Unbind a queue from an exchange
+Queue#unbind(_**exchange**_, {_options_})
+
+### Publish a message to a queue
+Queue#publish(_**data**_, {_options_})
+
+### Pop a message off of a queue
+Queue#pop({_options_})
+
+### Return queue message count
+Queue#message_count
+
+### Return queue consumer count
+Queue#consumer_count
+
+### Return queue status (array of message count and consumer_count)
+Queue#status
+
+### Send an acknowledge message to the server
+Queue#ack
+
+### Delete a queue from the target server
+Queue#delete({_options_})
 
 ## Acknowledgements
 

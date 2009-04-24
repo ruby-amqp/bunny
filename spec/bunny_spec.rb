@@ -24,7 +24,7 @@ describe Bunny do
   end
 
 	it "should be able to create an exchange" do
-		exch = @b.exchange(:direct, 'test_exchange')
+		exch = @b.exchange('test_exchange')
 		exch.should be_an_instance_of Exchange
 		exch.name.should == 'test_exchange'
 		@b.exchanges.has_key?('test_exchange').should be true

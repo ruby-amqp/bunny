@@ -25,7 +25,7 @@ q1 = b.queue('test_fan1')
 q2 = b.queue('test_fan2')
 
 # create a fanout exchange
-exch = b.exchange(:fanout, 'test_fan')
+exch = b.exchange('test_fan', :type => :fanout)
 
 # bind the queues to the exchange
 q1.bind(exch)

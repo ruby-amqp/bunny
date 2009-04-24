@@ -4,11 +4,13 @@ class Exchange
 	
   attr_reader :client, :type, :name, :opts, :key
 
-  def initialize(client, type, name, opts = {})
+  def initialize(client, name, opts = {})
 		# check connection to server
 		raise 'Not connected to server' if client.status == NOT_CONNECTED
 		
-    @client, @type, @name, @opts = client, type, name, opts
+    @client, @name, @opts = client, name, opts
+		@type = opts[:type] || :direct
+		opts.delete(:type) unless opts[:type].nil?
     @key = opts[:key]
 		@client.exchanges[@name] ||= self
 		
@@ -41,15 +43,12 @@ class Exchange
     client.send_frame(*out)
   end
 
-  def delete(opts = {})
-		client.exchanges.delete(name)
-		
+  def delete(opts = {})	
     client.send_frame(
       Protocol::Exchange::Delete.new({ :exchange => name, :nowait => true }.merge(opts))
     )
+
+		client.exchanges.delete(name)
   end
 
-  def reset
-    initialize(client, type, name, opts)
-  end
 end

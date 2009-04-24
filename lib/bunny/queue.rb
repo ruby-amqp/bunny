@@ -93,16 +93,16 @@
 	  end
 
 	  def delete(opts = {})
-			client.queues.delete(name)
-			
 	    client.send_frame(
 	      Protocol::Queue::Delete.new({ :queue => name, :nowait => true }.merge(opts))
 	    )
+	
+			client.queues.delete(name)
 	  end
 
 	private
 	  def exchange
-	    @exchange ||= Exchange.new(client, :direct, '', :key => name)
+	    @exchange ||= Exchange.new(client, '', {:type => :direct, :key => name})
 	  end
 
 	  def bindings
