@@ -51,14 +51,6 @@ describe Exchange do
 		@b.exchanges.has_key?('fanout_exchange').should be true
 	end
 	
-	it "should be able to be instantiated as a headers exchange" do
-		exch = @b.exchange('head_exchange', :type => :headers)
-		exch.should be_an_instance_of Exchange
-		exch.name.should == 'head_exchange'
-		exch.type.should == :headers
-		@b.exchanges.has_key?('head_exchange').should be true
-	end
-	
 	it "should be able to publish a message" do
 		exch = @b.exchange('direct_exchange')
 		exch.publish('This is a published message')
