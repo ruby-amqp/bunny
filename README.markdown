@@ -6,7 +6,7 @@ Google Group: [bunny-amqp](http://groups.google.com/group/bunny-amqp)
 
 **IMPORTANT**
 
-The Exchange#initialize method has changed as of version 0.0.7
+The Exchange#initialize method arguments have changed as of version 0.0.7
 
 You now create an exchange like this -
 
@@ -14,6 +14,11 @@ You now create an exchange like this -
     exch = b.exchange('my_exchange', :type => :fanout)
 
 If you do not specify a :type option then a default of :direct is used.
+
+The old way was -
+
+    b = Bunny.new
+    exch = b.exchange(:fanout, 'my_exchange')
 
 ## About
 
