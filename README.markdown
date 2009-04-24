@@ -11,7 +11,7 @@ The Exchange#initialize method has changed as of version 0.0.7
 You now create an exchange like this -
 
     b = Bunny.new
-    exch = b.exchange('*my_exchange*', :type => :fanout)
+    exch = b.exchange(<em>my_exchange</em>, :type => :fanout)
 
 If you do not specify a :type option then a default of :direct is used.
 
