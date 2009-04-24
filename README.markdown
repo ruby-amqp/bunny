@@ -1,6 +1,8 @@
 # Bunny: A synchronous Ruby AMQP client
 
 Google Group: [bunny-amqp](http://groups.google.com/group/bunny-amqp)
+Mailing List: [bunny-amqp-devel](http://rubyforge.org/mailman/listinfo/bunny-amqp-devel)
+Rubyforge: [bunny-amqp](http://rubyforge.org/projects/bunny-amqp/)
 
 ## Announcements
 
