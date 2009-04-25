@@ -113,9 +113,6 @@ Queue#consumer_count
 ### Return queue status (array of message count and consumer_count)
 Queue#status
 
-### Send an acknowledge message to the server
-Queue#ack
-
 ### Delete a queue from the target server
 Queue#delete({_options_})
 
