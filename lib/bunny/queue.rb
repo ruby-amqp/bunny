@@ -1,3 +1,4 @@
+class Bunny
 	class Queue
 		
 		include AMQP
@@ -13,8 +14,10 @@
 	    @opts   = opts
 	    @name   = name
 	    client.send_frame(
-	      Protocol::Queue::Declare.new({ :queue => name, :nowait => true }.merge(opts))
+	      Protocol::Queue::Declare.new({ :queue => name, :nowait => false }.merge(opts))
 	    )
+	
+			raise ProtocolError, "Error declaring queue #{name}" unless client.next_method.is_a?(Protocol::Queue::DeclareOk)
 	  end
 
 	  def pop(opts = {})
@@ -29,11 +32,19 @@
 																	 :no_ack => !opts.delete(:ack),
 																	 :nowait => true }.merge(opts))
 	    )
-	    method = client.next_method
-	    return unless method.is_a?(Protocol::Basic::GetOk)
+	
+			method = client.next_method
+			
+			if method.is_a?(Protocol::Basic::GetEmpty) then
+				return QUEUE_EMPTY
+			elsif	!method.is_a?(Protocol::Basic::GetOk)
+				raise ProtocolError, "Error getting message from queue #{name}"
+			end
 
 	    self.delivery_tag = method.delivery_tag
 
+			return QUEUE_EMPTY unless !self.delivery_tag.nil?
+			
 	    header = client.next_payload
 	    msg    = client.next_payload
 	    raise 'unexpected length' if msg.length < header.size
@@ -75,8 +86,12 @@
 	      Protocol::Queue::Bind.new({ :queue => name,
 		 																:exchange => exchange,
 		 																:routing_key => opts.delete(:key),
-		 																:nowait => true }.merge(opts))
+		 																:nowait => false }.merge(opts))
 	    )
+	
+			raise ProtocolError,
+				"Error binding queue #{name}" unless
+				client.next_method.is_a?(Protocol::Queue::BindOk)
 	  end
 
 	  def unbind(exchange, opts = {})
@@ -87,25 +102,35 @@
 	      Protocol::Queue::Unbind.new({ :queue => name,
 		 																	:exchange => exchange,
 		 																	:routing_key => opts.delete(:key),
-		 																	:nowait => true }.merge(opts)
+		 																	:nowait => false }.merge(opts)
 	      )
 	    )
+	
+			raise ProtocolError,
+				"Error unbinding queue #{name}" unless
+				client.next_method.is_a?(Protocol::Queue::UnbindOk)
 	  end
 
 	  def delete(opts = {})
 	    client.send_frame(
-	      Protocol::Queue::Delete.new({ :queue => name, :nowait => true }.merge(opts))
+	      Protocol::Queue::Delete.new({ :queue => name, :nowait => false }.merge(opts))
 	    )
+	
+			raise ProtocolError,
+				"Error deleting queue #{name}" unless
+				client.next_method.is_a?(Protocol::Queue::DeleteOk)
 	
 			client.queues.delete(name)
 	  end
 
 	private
 	  def exchange
-	    @exchange ||= Exchange.new(client, '', {:type => :direct, :key => name})
+	    @exchange ||= Bunny::Exchange.new(client, '', {:type => :direct, :key => name})
 	  end
 
 	  def bindings
 	    @bindings ||= {}
 	  end
 	end
+	
+end

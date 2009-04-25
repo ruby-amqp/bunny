@@ -7,6 +7,7 @@ Gem::Specification.new do |s|
   s.date = %q{2009-04-24}
   s.description = %q{Another synchronous Ruby AMQP client}
   s.email = %q{celldee@gmail.com}
+  s.rubyforge_project = %q{bunny-amqp}
   s.files = ["Rakefile", "README.markdown", "lib/amqp", "lib/amqp.rb", "lib/amqp/buffer.rb",
 	 					 "lib/bunny/exchange.rb", "lib/amqp/frame.rb", "lib/bunny/header.rb",
 	 					 "lib/amqp/protocol.rb", "lib/bunny/queue.rb", "lib/amqp/client.rb",

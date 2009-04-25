@@ -8,20 +8,20 @@
 
 require File.expand_path(File.join(File.dirname(__FILE__), %w[.. lib bunny]))
 
-describe Exchange do
+describe Bunny::Exchange do
 	
 	before(:each) do
     @b = Bunny.new
 		@b.start
 	end
-	
-	after(:each) do
-		@b.stop
+		
+	it "should raise an error if instantiated as non-existent type" do
+		lambda { @b.exchange('bogus_ex', :type => :bogus) }.should raise_error(AMQP::ProtocolError)
 	end
 	
 	it "should be able to create a default direct exchange" do
 		exch = @b.exchange('direct_defaultex')
-		exch.should be_an_instance_of Exchange
+		exch.should be_an_instance_of Bunny::Exchange
 		exch.name.should == 'direct_defaultex'
 		exch.type.should == :direct
 		@b.exchanges.has_key?('direct_defaultex').should be true
@@ -29,7 +29,7 @@ describe Exchange do
 	
 	it "should be able to be instantiated as a direct exchange" do
 		exch = @b.exchange('direct_exchange', :type => :direct)
-		exch.should be_an_instance_of Exchange
+		exch.should be_an_instance_of Bunny::Exchange
 		exch.name.should == 'direct_exchange'
 		exch.type.should == :direct
 		@b.exchanges.has_key?('direct_exchange').should be true
@@ -37,7 +37,7 @@ describe Exchange do
 	
 	it "should be able to be instantiated as a topic exchange" do
 		exch = @b.exchange('topic_exchange', :type => :topic)
-		exch.should be_an_instance_of Exchange
+		exch.should be_an_instance_of Bunny::Exchange
 		exch.name.should == 'topic_exchange'
 		exch.type.should == :topic
 		@b.exchanges.has_key?('topic_exchange').should be true
@@ -45,7 +45,7 @@ describe Exchange do
 	
 	it "should be able to be instantiated as a fanout exchange" do
 		exch = @b.exchange('fanout_exchange', :type => :fanout)
-		exch.should be_an_instance_of Exchange
+		exch.should be_an_instance_of Bunny::Exchange
 		exch.name.should == 'fanout_exchange'
 		exch.type.should == :fanout
 		@b.exchanges.has_key?('fanout_exchange').should be true

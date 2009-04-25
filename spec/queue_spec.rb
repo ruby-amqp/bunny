@@ -15,8 +15,16 @@ describe Bunny do
 		@b.start
 	end
 	
-	after(:each) do
-		@b.stop
+	it "should be able to bind to an exchange" do
+		exch = @b.exchange('direct_exch')
+		q = @b.queue('test1')
+		q.bind(exch)
+	end
+	
+	it "should be able to unbind from an exchange" do
+		exch = @b.exchange('direct_exch')
+		q = @b.queue('test1')
+		q.unbind(exch)
 	end
 
 	it "should be able to publish a message" do
@@ -40,6 +48,14 @@ describe Bunny do
 		msg = q.pop
 		msg.should == 'This is another test message'
 		q.message_count.should == 0
+	end
+	
+	it "should return an empty message when popping an empty queue" do
+		q = @b.queue('test1')
+		q.publish('This is another test message')
+		q.pop
+		msg = q.pop
+		msg.should == 'QUEUE EMPTY'
 	end
 
 	it "should be able to be deleted" do

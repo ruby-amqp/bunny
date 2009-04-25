@@ -6,6 +6,7 @@ module AMQP
 	# constants
 	CONNECTED = 'CONNECTED'
 	NOT_CONNECTED = 'NOT CONNECTED'
+	QUEUE_EMPTY = 'QUEUE EMPTY'
 
 	# specific error definitions
 	class ProtocolError   < StandardError; end
