@@ -4,25 +4,11 @@ Google Group: [bunny-amqp](http://groups.google.com/group/bunny-amqp)
 
 Mailing List: [bunny-amqp-devel](http://rubyforge.org/mailman/listinfo/bunny-amqp-devel)
 
-Rubyforge: [bunny-amqp](http://bunny-amqp.rubyforge.org)
+Rubyforge: [bunny-amqp](http://rubyforge.org/projects/bunny-amqp)
 
 ## Announcements
 
-**IMPORTANT**
-
-The Exchange#initialize method arguments have changed as of version 0.0.7
-
-You now create an exchange like this -
-
-    b = Bunny.new
-    exch = b.exchange('my_exchange', :type => :fanout)
-
-If you do not specify a :type option then a default of :direct is used.
-
-The old way was -
-
-    b = Bunny.new
-    exch = b.exchange(:fanout, 'my_exchange')
+Bunny v0.1.0 has been released. When and if it reaches a v1.0.0 release I might invent an amusing release naming convention in the tradition of Ubuntu. Then again, maybe not :)
 
 ## About
 
