@@ -1,10 +1,10 @@
 Gem::Specification.new do |s|
   s.name = %q{bunny}
-  s.version = "0.0.8"
+  s.version = "0.0.9"
 
   s.required_rubygems_version = Gem::Requirement.new(">= 0") if s.respond_to? :required_rubygems_version=
   s.authors = ["Chris Duncan"]
-  s.date = %q{2009-04-24}
+  s.date = %q{2009-04-25}
   s.description = %q{Another synchronous Ruby AMQP client}
   s.email = %q{celldee@gmail.com}
   s.rubyforge_project = %q{bunny-amqp}
