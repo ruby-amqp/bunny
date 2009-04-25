@@ -9,8 +9,10 @@ module AMQP
 	QUEUE_EMPTY = 'QUEUE EMPTY'
 
 	# specific error definitions
-	class ProtocolError   < StandardError; end
-	class ServerDown      < StandardError; end
-	class Overflow < StandardError; end
-  class InvalidType < StandardError; end
+	class ProtocolError < StandardError; end
+	class ServerDownError < StandardError; end
+	class BufferOverflowError < StandardError; end
+  class InvalidTypeError < StandardError; end
+	class ConnectionError < StandardError; end
+	class MessageError < StandardError; end
 end

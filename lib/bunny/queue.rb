@@ -8,11 +8,16 @@ class Bunny
 
 	  def initialize(client, name, opts = {})
 			# check connection to server
-			raise 'Not connected to server' if client.status == NOT_CONNECTED
+			raise ConnectionError, 'Not connected to server' if client.status == NOT_CONNECTED
 			
 	    @client = client
 	    @opts   = opts
 	    @name   = name
+	
+			# ignore the :nowait option if passed, otherwise program will hang waiting for a
+			# response that will not be sent by the server
+			opts.delete(:nowait)
+			
 	    client.send_frame(
 	      Protocol::Queue::Declare.new({ :queue => name, :nowait => false }.merge(opts))
 	    )
@@ -21,9 +26,7 @@ class Bunny
 	  end
 
 	  def pop(opts = {})
-	    self.delivery_tag = nil
-	
-			# do we want the header?
+			# do we want the message header?
 			hdr = opts.delete(:header)
 			
 	    client.send_frame(
@@ -40,23 +43,13 @@ class Bunny
 			elsif	!method.is_a?(Protocol::Basic::GetOk)
 				raise ProtocolError, "Error getting message from queue #{name}"
 			end
-
-	    self.delivery_tag = method.delivery_tag
-
-			return QUEUE_EMPTY unless !self.delivery_tag.nil?
 			
 	    header = client.next_payload
 	    msg    = client.next_payload
-	    raise 'unexpected length' if msg.length < header.size
+	    raise MessageError, 'unexpected length' if msg.length < header.size
 
 			hdr ? {:header => header, :payload => msg} : msg
 			
-	  end
-
-	  def ack
-	    client.send_frame(
-	      Protocol::Basic::Ack.new(:delivery_tag => delivery_tag)
-	    )
 	  end
 
 	  def publish(data, opts = {})
@@ -81,6 +74,11 @@ class Bunny
 
 	  def bind(exchange, opts = {})
 	    exchange           = exchange.respond_to?(:name) ? exchange.name : exchange
+	
+			# ignore the :nowait option if passed, otherwise program will hang waiting for a
+			# response that will not be sent by the server
+			opts.delete(:nowait)
+			
 	    bindings[exchange] = opts
 	    client.send_frame(
 	      Protocol::Queue::Bind.new({ :queue => name,
@@ -112,6 +110,10 @@ class Bunny
 	  end
 
 	  def delete(opts = {})
+			# ignore the :nowait option if passed, otherwise program will hang waiting for a
+			# response that will not be sent by the server
+			opts.delete(:nowait)
+			
 	    client.send_frame(
 	      Protocol::Queue::Delete.new({ :queue => name, :nowait => false }.merge(opts))
 	    )

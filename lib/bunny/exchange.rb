@@ -7,14 +7,17 @@ class Bunny
 
 	  def initialize(client, name, opts = {})
 			# check connection to server
-			raise 'Not connected to server' if client.status == NOT_CONNECTED
+			raise ConnectionError, 'Not connected to server' if client.status == NOT_CONNECTED
 		
 	    @client, @name, @opts = client, name, opts
 			@type = opts[:type] || :direct
-			opts.delete(:type) unless opts[:type].nil?
 	    @key = opts[:key]
 			@client.exchanges[@name] ||= self
-		
+			
+			# ignore the :nowait option if passed, otherwise program will hang waiting for a
+			# response that will not be sent by the server
+			opts.delete(:nowait)
+			
 	    unless name == "amq.#{type}" or name == ''
 	      client.send_frame(
 	        Protocol::Exchange::Declare.new(
@@ -48,7 +51,11 @@ class Bunny
 	    client.send_frame(*out)
 	  end
 
-	  def delete(opts = {})	
+	  def delete(opts = {})
+			# ignore the :nowait option if passed, otherwise program will hang waiting for a
+			# response that will not be sent by the server
+			opts.delete(:nowait)
+			
 	    client.send_frame(
 	      Protocol::Exchange::Delete.new({ :exchange => name, :nowait => false }.merge(opts))
 	    )

@@ -129,7 +129,7 @@ module AMQP
       begin
         socket.__send__(cmd, *args)
       rescue Errno::EPIPE, IOError => e
-        raise ServerDown, e.message
+        raise ServerDownError, e.message
       end
     end
 
@@ -147,7 +147,7 @@ module AMQP
         end
         @status   = CONNECTED
       rescue SocketError, SystemCallError, IOError, Timeout::Error => e
-        raise ServerDown, e.message
+        raise ServerDownError, e.message
       end
 
       @socket

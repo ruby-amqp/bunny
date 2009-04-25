@@ -51,6 +51,10 @@ describe Bunny::Exchange do
 		@b.exchanges.has_key?('fanout_exchange').should be true
 	end
 	
+	it "should ignore the :nowait option when instantiated" do
+		exch = @b.exchange('direct2_exchange', :nowait => true)
+	end
+	
 	it "should be able to publish a message" do
 		exch = @b.exchange('direct_exchange')
 		exch.publish('This is a published message')
@@ -60,6 +64,11 @@ describe Bunny::Exchange do
 		exch = @b.exchange('direct_exchange')
 		exch.delete
 		@b.exchanges.has_key?('direct_exchange').should be false
+	end
+	
+	it "should ignore the :nowait option when deleted" do
+		exch = @b.exchange('direct2_exchange')
+		exch.delete(:nowait => true)
 	end
 	
 end

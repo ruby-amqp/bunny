@@ -132,7 +132,7 @@ module AMQP
 
           @bits.shift
         else
-          raise InvalidType, "Cannot read data of type #{type}"
+          raise InvalidTypeError, "Cannot read data of type #{type}"
         end
       end
       
@@ -229,7 +229,7 @@ module AMQP
           write(type, value) unless type == :bit
         end
       else
-        raise InvalidType, "Cannot write data of type #{type}"
+        raise InvalidTypeError, "Cannot write data of type #{type}"
       end
       
       self
@@ -239,7 +239,7 @@ module AMQP
       begin
         cur_data, cur_pos = @data.clone, @pos
         yield self
-      rescue Overflow
+      rescue BufferOverflowError
         @data, @pos = cur_data, cur_pos
         nil
       end
@@ -253,7 +253,7 @@ module AMQP
       end
 
       if @pos + size > length
-        raise Overflow
+        raise BufferOverflowError
       else
         data = @data[@pos,size]
         @data[@pos,size] = ''

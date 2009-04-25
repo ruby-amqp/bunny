@@ -8,17 +8,33 @@
 
 require File.expand_path(File.join(File.dirname(__FILE__), %w[.. lib bunny]))
 
-describe Bunny do
+describe Bunny::Queue do
 	
 	before(:each) do
     @b = Bunny.new
 		@b.start
 	end
 	
+	it "should ignore the :nowait option when instantiated" do
+		q = @b.queue('test0', :nowait => true)
+	end
+	
+	it "should ignore the :nowait option when binding to an exchange" do
+		exch = @b.exchange('direct_exch')
+		q = @b.queue('test0')
+		q.bind(exch, :nowait => true)
+	end
+	
 	it "should be able to bind to an exchange" do
 		exch = @b.exchange('direct_exch')
 		q = @b.queue('test1')
 		q.bind(exch)
+	end
+	
+	it "should ignore the :nowait option when unbinding from an exchange" do
+		exch = @b.exchange('direct_exch')
+		q = @b.queue('test0')
+		q.unbind(exch, :nowait => true)
 	end
 	
 	it "should be able to unbind from an exchange" do
@@ -62,6 +78,11 @@ describe Bunny do
 		q = @b.queue('test1')
 		q.delete
 		@b.queues.has_key?('test1').should be false
+	end
+	
+	it "should ignore the :nowait option when deleted" do
+		q = @b.queue('test0')
+		q.delete(:nowait => true)
 	end
 	
 end
