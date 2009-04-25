@@ -29,12 +29,7 @@ You can use *Bunny* to -
     b = Bunny.new(:logging => true)
 
     # start a communication session with the amqp server
-    begin
-      b.start
-    rescue Exception => e
-      puts 'ERROR - Could not start a session: ' + e
-      exit
-    end
+    b.start
 
     # declare a queue
     q = b.queue('test1')
