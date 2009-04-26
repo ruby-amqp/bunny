@@ -11,7 +11,7 @@ Gem::Specification.new do |s|
   s.files = ["Rakefile", "README.markdown", "lib/amqp", "lib/amqp.rb", "lib/amqp/buffer.rb",
 	 					 "lib/bunny/exchange.rb", "lib/amqp/frame.rb", "lib/bunny/header.rb",
 	 					 "lib/amqp/protocol.rb", "lib/bunny/queue.rb", "lib/amqp/client.rb",
-	 					 "lib/amqp/spec.rb", "lib/bunny.rb", "examples/simple.rb",
+	 					 "lib/amqp/spec.rb", "lib/bunny.rb", "examples/simple.rb", "examples/fanout.rb",
 	           "spec/bunny_spec.rb", "spec/exchange_spec.rb", "spec/queue_spec.rb",
 						 "protocol/amqp-0.8.json", "protocol/amqp-0.8.xml", "protocol/codegen.rb"]
   s.has_rdoc = true
