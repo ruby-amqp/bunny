@@ -6,7 +6,7 @@ Mailing List: [http://rubyforge.org/mailman/listinfo/bunny-amqp-devel](http://ru
 
 Rubyforge: [http://rubyforge.org/projects/bunny-amqp](http://rubyforge.org/projects/bunny-amqp)
 
-Twitter: [https://twitter.com/bunny_amqp](https://twitter.com/bunny_amqp)
+Twitter: [http://twitter.com/bunny_amqp](https://twitter.com/bunny_amqp)
 
 ## Announcements
 
