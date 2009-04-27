@@ -62,7 +62,8 @@ describe Bunny::Exchange do
 	
 	it "should be able to be deleted" do
 		exch = @b.exchange('direct_exchange')
-		exch.delete
+		res = exch.delete
+		res.should == 'EXCHANGE DELETED'
 		@b.exchanges.has_key?('direct_exchange').should be false
 	end
 	

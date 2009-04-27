@@ -22,25 +22,25 @@ describe Bunny::Queue do
 	it "should ignore the :nowait option when binding to an exchange" do
 		exch = @b.exchange('direct_exch')
 		q = @b.queue('test0')
-		q.bind(exch, :nowait => true)
+		q.bind(exch, :nowait => true).should == 'BIND SUCCEEDED'
 	end
 	
 	it "should be able to bind to an exchange" do
 		exch = @b.exchange('direct_exch')
 		q = @b.queue('test1')
-		q.bind(exch)
+		q.bind(exch).should == 'BIND SUCCEEDED'
 	end
 	
 	it "should ignore the :nowait option when unbinding from an exchange" do
 		exch = @b.exchange('direct_exch')
 		q = @b.queue('test0')
-		q.unbind(exch, :nowait => true)
+		q.unbind(exch, :nowait => true).should == 'UNBIND SUCCEEDED'
 	end
 	
 	it "should be able to unbind from an exchange" do
 		exch = @b.exchange('direct_exch')
 		q = @b.queue('test1')
-		q.unbind(exch)
+		q.unbind(exch).should == 'UNBIND SUCCEEDED'
 	end
 
 	it "should be able to publish a message" do
@@ -76,7 +76,8 @@ describe Bunny::Queue do
 
 	it "should be able to be deleted" do
 		q = @b.queue('test1')
-		q.delete
+		res = q.delete
+		res.should == 'QUEUE DELETED'
 		@b.queues.has_key?('test1').should be false
 	end
 	

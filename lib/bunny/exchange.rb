@@ -65,6 +65,9 @@ class Bunny
 				client.next_method.is_a?(Protocol::Exchange::DeleteOk)
 
 			client.exchanges.delete(name)
+			
+			# return confirmation
+			EXCHANGE_DELETED
 	  end
 
 	end
