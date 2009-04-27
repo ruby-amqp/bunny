@@ -8,7 +8,12 @@ Rubyforge: [bunny-amqp](http://rubyforge.org/projects/bunny-amqp)
 
 ## Announcements
 
-Bunny v0.1.0 has been released. When and if it reaches a v1.0.0 release I might invent an amusing release naming convention in the tradition of Ubuntu. Then again, maybe not :)
+Bunny v0.1.1 has been released. It contains the following changes -
+
+*  Queue#delete method returns ‘QUEUE DELETED’, Exchange#delete method returns ‘EXCHANGE DELETED’, Queue#bind returns ‘BIND SUCCEEDED’, Queue#unbind returns ‘UNBIND SUCCEEDED’
+* Queue#subscribe method available (see example bunny/examples/simple_consumer.rb)
+* Queue#status now returns a hash {:message_count, :consumer_count}
+* Queue#ack works after a Queue#subscribe or Queue#pop if :ack => true was specified
 
 ## About
 
@@ -93,11 +98,14 @@ Queue#message_count
 ### Return queue consumer count
 Queue#consumer_count
 
-### Return queue status (array of message count and consumer_count)
+### Return queue status (hash {:message count, :consumer_count})
 Queue#status
 
 ### Delete a queue from the target server
 Queue#delete({_options_})
+
+### Acknowledge receipt of a message
+Queue#ack
 
 ## Acknowledgements
 
