@@ -94,6 +94,9 @@ Queue#publish(_**data**_, {_options_})
 ### Pop a message off of a queue
 Queue#pop({_options_})
 
+### Subscribe to a queue
+Queue#subscribe({_options_})
+
 ### Return queue message count
 Queue#message_count
 
