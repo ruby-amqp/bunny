@@ -10,7 +10,17 @@ class Bunny
 			raise ConnectionError, 'Not connected to server' if client.status == NOT_CONNECTED
 		
 	    @client, @name, @opts = client, name, opts
-			@type = opts[:type] || :direct
+	
+			# set up the exchange type catering for default names
+			if name.match(/^amq\./)
+				new_type = name.sub(/amq\./, '')
+				# handle 'amq.match' default
+				new_type = 'headers' if new_type == 'match'
+				@type = new_type.to_sym
+			else
+				@type = opts[:type] || :direct
+			end
+			
 	    @key = opts[:key]
 			@client.exchanges[@name] ||= self
 			

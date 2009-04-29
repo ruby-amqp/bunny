@@ -19,7 +19,49 @@ describe Bunny::Exchange do
 		lambda { @b.exchange('bogus_ex', :type => :bogus) }.should raise_error(AMQP::ProtocolError)
 	end
 	
-	it "should be able to create a default direct exchange" do
+	it "should allow a default direct exchange to be instantiated by specifying :type" do
+		exch = @b.exchange('amq.direct', :type => :direct)
+		exch.should be_an_instance_of Bunny::Exchange
+		exch.name.should == 'amq.direct'
+		exch.type.should == :direct
+		@b.exchanges.has_key?('amq.direct').should be true
+	end
+	
+	it "should allow a default direct exchange to be instantiated without specifying :type" do
+		exch = @b.exchange('amq.direct')
+		exch.should be_an_instance_of Bunny::Exchange
+		exch.name.should == 'amq.direct'
+		exch.type.should == :direct
+		@b.exchanges.has_key?('amq.direct').should be true
+	end
+	
+	it "should allow a default fanout exchange to be instantiated without specifying :type" do
+		exch = @b.exchange('amq.fanout')
+		exch.should be_an_instance_of Bunny::Exchange
+		exch.name.should == 'amq.fanout'
+		exch.type.should == :fanout
+		@b.exchanges.has_key?('amq.fanout').should be true
+	end
+	
+	it "should allow a default topic exchange to be instantiated without specifying :type" do
+		exch = @b.exchange('amq.topic')
+		exch.should be_an_instance_of Bunny::Exchange
+		exch.name.should == 'amq.topic'
+		exch.type.should == :topic
+		@b.exchanges.has_key?('amq.topic').should be true
+	end
+	
+	# headers exchange not implemented in RabbitMQ yet. Uncomment if target broker/server supports it
+	#
+	#it "should allow a default headers exchange to be instantiated without specifying :type" do
+	#	exch = @b.exchange('amq.match')
+	#	exch.should be_an_instance_of Bunny::Exchange
+	#	exch.name.should == 'amq.match'
+	#	exch.type.should == :headers
+	#	@b.exchanges.has_key?('amq.match').should be true
+	#end
+	
+	it "should create an exchange as direct by default" do
 		exch = @b.exchange('direct_defaultex')
 		exch.should be_an_instance_of Bunny::Exchange
 		exch.name.should == 'direct_defaultex'
