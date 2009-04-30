@@ -13,6 +13,7 @@ class Bunny
 	    @client = client
 	    @opts   = opts
 	    @name   = name
+			@delivery_tag = nil
 	
 			# ignore the :nowait option if passed, otherwise program will hang waiting for a
 			# response that will not be sent by the server
@@ -90,7 +91,7 @@ class Bunny
 	    {:message_count => method.message_count, :consumer_count => method.consumer_count}
 	  end
 	
-		def subscribe(opts = {})
+		def subscribe(opts = {}, &blk)
 			consumer_tag = opts[:consumer_tag] || name
 			
 			# ignore the :nowait option if passed, otherwise program will not wait for a
@@ -114,17 +115,27 @@ class Bunny
 				"Error subscribing to queue #{name}" unless
 				client.next_method.is_a?(Protocol::Basic::ConsumeOk)
 			
-			method = client.next_method
+			while true
+				method = client.next_method
+				break if method.is_a?(Protocol::Basic::CancelOk)
 			
-			# get delivery tag to use for acknowledge
-			self.delivery_tag = method.delivery_tag if ack
+				# get delivery tag to use for acknowledge
+				self.delivery_tag = method.delivery_tag if ack
 			
-			header = client.next_payload
-	    msg    = client.next_payload
-	    raise MessageError, 'unexpected length' if msg.length < header.size
-
-			hdr ? {:header => header, :payload => msg} : msg
+				header = client.next_payload
+		    msg    = client.next_payload
+		    raise MessageError, 'unexpected length' if msg.length < header.size
+				
+				# pass the message to the block for processing
+				blk.call(hdr ? {:header => header, :payload => msg} : msg)
+			end
+			
 		end
+		
+		def unsubscribe(opts = {})
+			consumer_tag = opts[:consumer_tag] || name
+      client.send_frame( Protocol::Basic::Cancel.new({ :consumer_tag => consumer_tag }.merge(opts)))
+    end
 
 	  def bind(exchange, opts = {})
 	    exchange           = exchange.respond_to?(:name) ? exchange.name : exchange
