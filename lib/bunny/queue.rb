@@ -1,14 +1,12 @@
-class Bunny
+module API
 	class Queue
-		
-		include AMQP
 		
 	  attr_reader :name, :client
 	  attr_accessor :delivery_tag
 
 	  def initialize(client, name, opts = {})
 			# check connection to server
-			raise ConnectionError, 'Not connected to server' if client.status == NOT_CONNECTED
+			raise API::ConnectionError, 'Not connected to server' if client.status == NOT_CONNECTED
 			
 	    @client = client
 	    @opts   = opts
@@ -23,7 +21,7 @@ class Bunny
 	      Protocol::Queue::Declare.new({ :queue => name, :nowait => false }.merge(opts))
 	    )
 	
-			raise ProtocolError, "Error declaring queue #{name}" unless client.next_method.is_a?(Protocol::Queue::DeclareOk)
+			raise API::ProtocolError, "Error declaring queue #{name}" unless client.next_method.is_a?(Protocol::Queue::DeclareOk)
 	  end
 	
 		def ack
@@ -55,7 +53,7 @@ class Bunny
 			if method.is_a?(Protocol::Basic::GetEmpty) then
 				return QUEUE_EMPTY
 			elsif	!method.is_a?(Protocol::Basic::GetOk)
-				raise ProtocolError, "Error getting message from queue #{name}"
+				raise API::ProtocolError, "Error getting message from queue #{name}"
 			end
 			
 			# get delivery tag to use for acknowledge
@@ -63,7 +61,7 @@ class Bunny
 			
 	    header = client.next_payload
 	    msg    = client.next_payload
-	    raise MessageError, 'unexpected length' if msg.length < header.size
+	    raise API::MessageError, 'unexpected length' if msg.length < header.size
 
 			hdr ? {:header => header, :payload => msg} : msg
 			
@@ -111,7 +109,7 @@ class Bunny
 																	 		 :nowait => false }.merge(opts))
 			)
 			
-			raise ProtocolError,
+			raise API::ProtocolError,
 				"Error subscribing to queue #{name}" unless
 				client.next_method.is_a?(Protocol::Basic::ConsumeOk)
 			
@@ -124,7 +122,7 @@ class Bunny
 			
 				header = client.next_payload
 		    msg    = client.next_payload
-		    raise MessageError, 'unexpected length' if msg.length < header.size
+		    raise API::MessageError, 'unexpected length' if msg.length < header.size
 				
 				# pass the message to the block for processing
 				blk.call(hdr ? {:header => header, :payload => msg} : msg)
@@ -152,7 +150,7 @@ class Bunny
 		 																:nowait => false }.merge(opts))
 	    )
 	
-			raise ProtocolError,
+			raise API::ProtocolError,
 				"Error binding queue #{name}" unless
 				client.next_method.is_a?(Protocol::Queue::BindOk)
 				
@@ -172,7 +170,7 @@ class Bunny
 	      )
 	    )
 	
-			raise ProtocolError,
+			raise API::ProtocolError,
 				"Error unbinding queue #{name}" unless
 				client.next_method.is_a?(Protocol::Queue::UnbindOk)
 				
@@ -189,7 +187,7 @@ class Bunny
 	      Protocol::Queue::Delete.new({ :queue => name, :nowait => false }.merge(opts))
 	    )
 	
-			raise ProtocolError,
+			raise API::ProtocolError,
 				"Error deleting queue #{name}" unless
 				client.next_method.is_a?(Protocol::Queue::DeleteOk)
 	

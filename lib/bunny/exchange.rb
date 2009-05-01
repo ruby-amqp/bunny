@@ -1,13 +1,11 @@
-class Bunny
+module API
 	class Exchange
-	
-		include AMQP
 	
 	  attr_reader :client, :type, :name, :opts, :key
 
 	  def initialize(client, name, opts = {})
 			# check connection to server
-			raise ConnectionError, 'Not connected to server' if client.status == NOT_CONNECTED
+			raise API::ConnectionError, 'Not connected to server' if client.status == NOT_CONNECTED
 		
 	    @client, @name, @opts = client, name, opts
 	
@@ -35,7 +33,7 @@ class Bunny
 	        )
 	      )
 
-				raise ProtocolError,
+				raise API::ProtocolError,
 					"Error declaring exchange #{name}: type = #{type}" unless
 					client.next_method.is_a?(Protocol::Exchange::DeclareOk)
 	    end
@@ -56,7 +54,7 @@ class Bunny
 	        :priority      => 0 
 	      }.merge(opts)
 	    )
-	    out << Frame::Body.new(data)
+	    out << Transport::Frame::Body.new(data)
 
 	    client.send_frame(*out)
 	  end
@@ -70,7 +68,7 @@ class Bunny
 	      Protocol::Exchange::Delete.new({ :exchange => name, :nowait => false }.merge(opts))
 	    )
 
-			raise ProtocolError,
+			raise API::ProtocolError,
 				"Error deleting exchange #{name}" unless
 				client.next_method.is_a?(Protocol::Exchange::DeleteOk)
 

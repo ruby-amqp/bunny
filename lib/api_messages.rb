@@ -1,8 +1,4 @@
-module AMQP
-	%w[ spec buffer protocol frame client ].each do |file|
-    require "amqp/#{file}"
-  end
-
+module API
 	# return messages
 	CONNECTED = 'CONNECTED'
 	NOT_CONNECTED = 'NOT CONNECTED'

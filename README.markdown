@@ -10,12 +10,6 @@ Twitter: [http://twitter.com/bunny_amqp](https://twitter.com/bunny_amqp)
 
 ## Announcements
 
-Bunny v0.1.1 has been released. It contains the following changes -
-
-*  Queue#delete method returns ‘QUEUE DELETED’, Exchange#delete method returns ‘EXCHANGE DELETED’, Queue#bind returns ‘BIND SUCCEEDED’, Queue#unbind returns ‘UNBIND SUCCEEDED’
-* Queue#subscribe method available (see example bunny/examples/simple_consumer.rb)
-* Queue#status now returns a hash {:message_count, :consumer_count}
-* Queue#ack works after a Queue#subscribe or Queue#pop if :ack => true was specified
 
 ## About
 

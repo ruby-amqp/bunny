@@ -1,4 +1,5 @@
-module AMQP
+module Transport
+
   class Frame #:nodoc: all
     def initialize payload = nil, channel = 0
       @channel, @payload = channel, payload
@@ -50,10 +51,10 @@ module AMQP
     class Body; end
 
     def self.parse buf
-      buf = Buffer.new(buf) unless buf.is_a? Buffer
+      buf = Transport::Buffer.new(buf) unless buf.is_a? Transport::Buffer
       buf.extract do
         id, channel, payload, footer = buf.read(:octet, :short, :longstr, :octet)
-        Frame.types[id].new(payload, channel) if footer == FOOTER
+        Transport::Frame.types[id].new(payload, channel) if footer == Transport::Frame::FOOTER
       end
     end
   end

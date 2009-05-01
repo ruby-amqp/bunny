@@ -50,9 +50,9 @@ msg = rugby.pop
 puts 'This is a message from the rugby q: ' + msg + "\n\n"
 
 # allsport queue got all of the messages
-until msg == AMQP::QUEUE_EMPTY do
+until msg == 'QUEUE EMPTY' do
 	msg = allsport.pop
-	puts 'This is a message from the allsport q: ' + msg + "\n\n" unless msg == AMQP::QUEUE_EMPTY
+	puts 'This is a message from the allsport q: ' + msg + "\n\n" unless msg == 'QUEUE EMPTY'
 end
 
 # close the client connection

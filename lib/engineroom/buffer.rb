@@ -8,7 +8,7 @@ else
   require 'enumerator'
 end
 
-module AMQP
+module Transport
   class Buffer #:nodoc: all
     
     def initialize data = ''
@@ -132,7 +132,7 @@ module AMQP
 
           @bits.shift
         else
-          raise InvalidTypeError, "Cannot read data of type #{type}"
+          raise API::InvalidTypeError, "Cannot read data of type #{type}"
         end
       end
       
@@ -229,7 +229,7 @@ module AMQP
           write(type, value) unless type == :bit
         end
       else
-        raise InvalidTypeError, "Cannot write data of type #{type}"
+        raise API::InvalidTypeError, "Cannot write data of type #{type}"
       end
       
       self
@@ -239,21 +239,21 @@ module AMQP
       begin
         cur_data, cur_pos = @data.clone, @pos
         yield self
-      rescue BufferOverflowError
+      rescue API::BufferOverflowError
         @data, @pos = cur_data, cur_pos
         nil
       end
     end
 
     def _read(size, pack = nil)
-      if @data.is_a?(Client)
+      if @data.is_a?(API::Client)
         raw = @data.read(size)
         return raw if raw.nil? or pack.nil? 
         return raw.unpack(pack).first
       end
 
       if @pos + size > length
-        raise BufferOverflowError
+        raise API::BufferOverflowError
       else
         data = @data[@pos,size]
         @data[@pos,size] = ''

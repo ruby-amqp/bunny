@@ -16,7 +16,7 @@ describe Bunny::Exchange do
 	end
 		
 	it "should raise an error if instantiated as non-existent type" do
-		lambda { @b.exchange('bogus_ex', :type => :bogus) }.should raise_error(AMQP::ProtocolError)
+		lambda { @b.exchange('bogus_ex', :type => :bogus) }.should raise_error(API::ProtocolError)
 	end
 	
 	it "should allow a default direct exchange to be instantiated by specifying :type" do

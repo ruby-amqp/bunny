@@ -1,4 +1,4 @@
-module AMQP
+module API
   class Client
     CONNECT_TIMEOUT = 1.0
     RETRY_DELAY     = 10.0
@@ -8,7 +8,7 @@ module AMQP
 
     def initialize(opts = {})
 			@host = opts[:host] || 'localhost'
-			@port = opts[:port] || AMQP::PORT
+			@port = opts[:port] || Protocol::PORT
       @user   = opts[:user]  || 'guest'
       @pass   = opts[:pass]  || 'guest'
       @vhost  = opts[:vhost] || '/'
@@ -28,7 +28,7 @@ module AMQP
     def send_frame(*args)
       args.each do |data|
         data.ticket  = ticket if ticket and data.respond_to?(:ticket=)
-        data         = data.to_frame(channel) unless data.is_a?(Frame)
+        data         = data.to_frame(channel) unless data.is_a?(Transport::Frame)
         data.channel = channel
 
         log :send, data
@@ -38,7 +38,7 @@ module AMQP
     end
 
     def next_frame
-      frame = Frame.parse(buffer)
+      frame = Transport::Frame.parse(buffer)
       log :received, frame
       frame
     end
@@ -56,13 +56,13 @@ module AMQP
       send_frame(
         Protocol::Channel::Close.new(:reply_code => 200, :reply_text => 'bye', :method_id => 0, :class_id => 0)
       )
-      raise ProtocolError, "Error closing channel #{channel}" unless next_method.is_a?(Protocol::Channel::CloseOk)
+      raise API::ProtocolError, "Error closing channel #{channel}" unless next_method.is_a?(Protocol::Channel::CloseOk)
 
       self.channel = 0
       send_frame(
         Protocol::Connection::Close.new(:reply_code => 200, :reply_text => 'Goodbye', :class_id => 0, :method_id => 0)
       )
-      raise ProtocolError, "Error closing connection" unless next_method.is_a?(Protocol::Connection::CloseOk)
+      raise API::ProtocolError, "Error closing connection" unless next_method.is_a?(Protocol::Connection::CloseOk)
 
       close_socket
     end
@@ -77,9 +77,9 @@ module AMQP
 
 		def start_session
       @channel = 0
-      write(HEADER)
-      write([1, 1, VERSION_MAJOR, VERSION_MINOR].pack('C4'))
-      raise ProtocolError, 'Connection initiation failed' unless next_method.is_a?(Protocol::Connection::Start)
+      write(Protocol::HEADER)
+      write([1, 1, Protocol::VERSION_MAJOR, Protocol::VERSION_MINOR].pack('C4'))
+      raise API::ProtocolError, 'Connection initiation failed' unless next_method.is_a?(Protocol::Connection::Start)
 
       send_frame(
         Protocol::Connection::StartOk.new(
@@ -91,7 +91,7 @@ module AMQP
       )
 			
 			method = next_method
-			raise ProtocolError, "Connection failed - user: #{@user}, pass: #{@pass}" if method.nil?
+			raise API::ProtocolError, "Connection failed - user: #{@user}, pass: #{@pass}" if method.nil?
 
       if method.is_a?(Protocol::Connection::Tune)
         send_frame(
@@ -102,17 +102,17 @@ module AMQP
       send_frame(
         Protocol::Connection::Open.new(:virtual_host => @vhost, :capabilities => '', :insist => @insist)
       )
-      raise ProtocolError, 'Cannot open connection' unless next_method.is_a?(Protocol::Connection::OpenOk)
+      raise API::ProtocolError, 'Cannot open connection' unless next_method.is_a?(Protocol::Connection::OpenOk)
 
       @channel = 1
       send_frame(Protocol::Channel::Open.new)
-      raise ProtocolError, "Cannot open channel #{channel}" unless next_method.is_a?(Protocol::Channel::OpenOk)
+      raise API::ProtocolError, "Cannot open channel #{channel}" unless next_method.is_a?(Protocol::Channel::OpenOk)
 
       send_frame(
         Protocol::Access::Request.new(:realm => '/data', :read => true, :write => true, :active => true, :passive => true)
       )
       method = next_method
-      raise ProtocolError, 'Access denied' unless method.is_a?(Protocol::Access::RequestOk)
+      raise API::ProtocolError, 'Access denied' unless method.is_a?(Protocol::Access::RequestOk)
       self.ticket = method.ticket
 
 			# return status
@@ -122,14 +122,14 @@ module AMQP
   private
 
     def buffer
-      @buffer ||= Buffer.new(self)
+      @buffer ||= Transport::Buffer.new(self)
     end
 
     def send_command(cmd, *args)
       begin
         socket.__send__(cmd, *args)
       rescue Errno::EPIPE, IOError => e
-        raise ServerDownError, e.message
+        raise API::ServerDownError, e.message
       end
     end
 
@@ -147,7 +147,7 @@ module AMQP
         end
         @status   = CONNECTED
       rescue SocketError, SystemCallError, IOError, Timeout::Error => e
-        raise ServerDownError, e.message
+        raise API::ServerDownError, e.message
       end
 
       @socket

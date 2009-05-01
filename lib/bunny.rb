@@ -1,19 +1,32 @@
 $:.unshift File.expand_path(File.dirname(__FILE__))
 
-%w[socket thread timeout amqp].each do |file|
+# Ruby standard libraries
+%w[socket thread timeout].each do |file|
 	require file
 end
 
-%w[ exchange queue header ].each do |file|
-  require "bunny/#{file}"
+# AMQP protocol and transport
+%w[spec protocol buffer frame].each do |file|
+	require 'engineroom/' + file
 end
 
+# Bunny API 
+%w[client exchange header queue].each do |file|
+	require 'bunny/' + file
+end
+
+# Error and return message definitions
+require 'api_messages'
+
 class Bunny
-	
+	include Protocol
+	include Transport
+	include API
+
 	attr_reader :client
 
 	def initialize(opts = {})
-		@client = AMQP::Client.new(opts)
+		@client = API::Client.new(opts)
   end
 
 	def logging=(bool)
@@ -33,11 +46,11 @@ class Bunny
 	end
 	
 	def exchange(name, opts = {})
-		client.exchanges[name] ||= Exchange.new(client, name, opts)
+		client.exchanges[name] ||= API::Exchange.new(client, name, opts)
 	end
   
   def queue(name, opts = {})
-    client.queues[name] ||= Queue.new(client, name, opts)
+    client.queues[name] ||= API::Queue.new(client, name, opts)
   end
 
   def stop
@@ -63,5 +76,5 @@ class Bunny
 	def port
 		client.port
 	end
-
+	
 end

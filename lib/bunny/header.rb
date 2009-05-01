@@ -1,7 +1,5 @@
-class Bunny
+module API
 	class Header
-	
-		include AMQP
 	
 		attr_reader :client
 	

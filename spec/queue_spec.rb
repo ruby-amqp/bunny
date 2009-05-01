@@ -53,7 +53,7 @@ describe Bunny::Queue do
 		q = @b.queue('test1')
 		msg = q.pop(:header => true)
 		msg.should be_an_instance_of Hash
-		msg[:header].should be_an_instance_of AMQP::Protocol::Header
+		msg[:header].should be_an_instance_of Protocol::Header
 		msg[:payload].should == 'This is a test message'
 		q.message_count.should == 0
 	end
