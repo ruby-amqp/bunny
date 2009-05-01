@@ -14,8 +14,7 @@ Gem::Specification.new do |s|
 	 					 "lib/bunny/queue.rb", "lib/bunny/client.rb", "examples/simple.rb", "examples/simple_fanout.rb",
 						 "examples/simple_consumer.rb", "examples/simple_publisher.rb", "examples/simple_ack.rb",
 						 "examples/simple_topic.rb", "spec/bunny_spec.rb", "spec/exchange_spec.rb",
-						 "spec/queue_spec.rb", "protocol/amqp-0.8.json", "protocol/amqp-0.8.xml",
-						 "protocol/codegen.rb"]
+						 "spec/queue_spec.rb", "protocol/amqp-0.8.json", "protocol/codegen.rb"]
   s.has_rdoc = true
   s.homepage = %q{http://github.com/celldee/bunny}
   s.rdoc_options = ["--inline-source", "--charset=UTF-8"]
