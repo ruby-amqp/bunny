@@ -11,11 +11,11 @@ module Transport
     end
     
     def to_binary
-      buf = Buffer.new
+      buf = Transport::Buffer.new
       buf.write :octet, id
       buf.write :short, channel
       buf.write :longstr, payload
-      buf.write :octet, FOOTER
+      buf.write :octet, Transport::Frame::FOOTER
       buf.rewind
       buf
     end

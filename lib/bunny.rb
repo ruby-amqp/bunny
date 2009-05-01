@@ -22,12 +22,18 @@ class Bunny
 	include Protocol
 	include Transport
 	include API
+	
+	VERSION = '0.2.0'
 
 	attr_reader :client
 
 	def initialize(opts = {})
 		@client = API::Client.new(opts)
   end
+
+	def self.version
+		VERSION
+	end
 
 	def logging=(bool)
 		client.logging = bool
