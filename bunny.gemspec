@@ -11,7 +11,7 @@ Gem::Specification.new do |s|
   s.files = ["Rakefile", "README.markdown", "lib/api_messages.rb", "lib/bunny.rb",
 	 					 "lib/engineroom/buffer.rb", "lib/engineroom/frame.rb", "lib/engineroom/protocol.rb",
 	 					 "lib/engineroom/spec.rb", "lib/bunny/exchange.rb", "lib/bunny/header.rb",
-	 					 "lib/bunny/queue.rb", "lib/bunny/client.rb", "examples/simple.rb", "examples/fanout.rb",
+	 					 "lib/bunny/queue.rb", "lib/bunny/client.rb", "examples/simple.rb", "examples/simple_fanout.rb",
 						 "examples/simple_consumer.rb", "examples/simple_publisher.rb", "examples/simple_ack.rb",
 						 "examples/simple_topic.rb", "spec/bunny_spec.rb", "spec/exchange_spec.rb",
 						 "spec/queue_spec.rb", "protocol/amqp-0.8.json", "protocol/amqp-0.8.xml",
