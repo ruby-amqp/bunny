@@ -41,7 +41,7 @@ puts ERB.new(%q[
 
       FOOTER = <%= frame_end = s['constants'].find{|c| c['name'] == 'FRAME-END' }['value'] %>
     end
-	end
+  end
 	
   module Protocol
     HEADER        = <%= s['name'].dump %>.freeze

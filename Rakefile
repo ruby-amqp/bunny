@@ -1,6 +1,6 @@
 task :codegen do
-  sh 'ruby protocol/codegen.rb > lib/amqp/spec.rb'
-	sh 'ruby lib/amqp/spec.rb'
+  sh 'ruby protocol/codegen.rb > lib/engineroom/spec.rb'
+	sh 'ruby lib/engineroom/spec.rb'
 end
 
 task :spec do
@@ -9,4 +9,3 @@ task :spec do
 		t.spec_opts = ['--color']
 	end
 end
-	
