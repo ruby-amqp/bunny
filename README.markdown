@@ -10,6 +10,11 @@ Twitter: [http://twitter.com/bunny_amqp](https://twitter.com/bunny_amqp)
 
 ## Announcements
 
+Bunny v0.2.0 is now available. The highlights are -
+
+* Code has been re-organised enabling Bunny to play nicely with [amqp](http://github.com/tmm1/amqp) (thanks [Dan](http://github.com/danielsdeleo))
+* When instantiating a default exchange (one beginning with ‘amq.’) the type will be inferred from the name.
+* Fixed Queue#subscribe and included Queue#unsubscribe method. See examples/simple_consumer.rb for details
 
 ## About
 
