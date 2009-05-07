@@ -49,7 +49,7 @@ module API
 
     def next_payload
       frame = next_frame
-      frame and frame.payload
+      frame.payload
     end
 
     def close

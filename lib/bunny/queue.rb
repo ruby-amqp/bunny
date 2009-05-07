@@ -63,7 +63,8 @@ module API
 	    msg    = client.next_payload
 	    raise API::MessageError, 'unexpected length' if msg.length < header.size
 
-			hdr ? {:header => header, :payload => msg} : msg
+			# Return message with additional info if requested
+			hdr ? {:header => header, :payload => msg, :delivery_details => method.arguments} : msg
 			
 	  end
 
@@ -115,6 +116,7 @@ module API
 			
 			while true
 				method = client.next_method
+
 				break if method.is_a?(Protocol::Basic::CancelOk)
 			
 				# get delivery tag to use for acknowledge
@@ -124,8 +126,8 @@ module API
 		    msg    = client.next_payload
 		    raise API::MessageError, 'unexpected length' if msg.length < header.size
 				
-				# pass the message to the block for processing
-				blk.call(hdr ? {:header => header, :payload => msg} : msg)
+				# pass the message and related info, if requested, to the block for processing
+				blk.call(hdr ? {:header => header, :payload => msg, :delivery_details => method.arguments} : msg)
 			end
 			
 		end

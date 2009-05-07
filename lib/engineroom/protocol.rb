@@ -96,7 +96,6 @@ module Protocol
         @size = args.shift || 0
         @weight = args.shift || 0
         @properties = opts
-
       elsif first.is_a? Transport::Buffer or first.is_a? String
         buf = first
         buf = Transport::Buffer.new(buf) unless buf.is_a? Transport::Buffer
@@ -107,7 +106,6 @@ module Protocol
 
         props = buf.read(:properties, *klass.properties.map{|type,_| type })
         @properties = Hash[*klass.properties.map{|_,name| name }.zip(props).reject{|k,v| v.nil? }.flatten]
-
       else
         raise ArgumentError, 'Invalid argument'
       end
@@ -142,8 +140,7 @@ module Protocol
     end
 
     def method_missing meth, *args, &blk
-      @properties.has_key?(meth) || @klass.properties.find{|_,name| name == meth } ? @properties[meth] :
-                                                                                     super
+      @properties.has_key?(meth) || @klass.properties.find{|_,name| name == meth } ? @properties[meth] : super
     end
   end
 
