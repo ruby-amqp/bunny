@@ -51,7 +51,7 @@ You can use *Bunny* to -
     puts 'This is the message: ' + msg + "\n\n"
 
     # close the connection
-    b.close
+    b.stop
 
 ## Bunny methods
 
