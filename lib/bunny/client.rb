@@ -1,4 +1,4 @@
-module API
+module Bunny
   class Client
     CONNECT_TIMEOUT = 1.0
     RETRY_DELAY     = 10.0
@@ -17,9 +17,17 @@ module API
       @status = NOT_CONNECTED
     end
 
+		def exchange(name, opts = {})
+			exchanges[name] ||= Bunny::Exchange.new(self, name, opts)
+		end
+
 		def exchanges
 			@exchanges ||= {}
 		end
+		
+		def queue(name, opts = {})
+	    queues[name] ||= Bunny::Queue.new(self, name, opts)
+	  end
 		
 		def queues
 			@queues ||= {}
@@ -56,16 +64,18 @@ module API
       send_frame(
         Protocol::Channel::Close.new(:reply_code => 200, :reply_text => 'bye', :method_id => 0, :class_id => 0)
       )
-      raise API::ProtocolError, "Error closing channel #{channel}" unless next_method.is_a?(Protocol::Channel::CloseOk)
+      raise Bunny::ProtocolError, "Error closing channel #{channel}" unless next_method.is_a?(Protocol::Channel::CloseOk)
 
       self.channel = 0
       send_frame(
         Protocol::Connection::Close.new(:reply_code => 200, :reply_text => 'Goodbye', :class_id => 0, :method_id => 0)
       )
-      raise API::ProtocolError, "Error closing connection" unless next_method.is_a?(Protocol::Connection::CloseOk)
+      raise Bunny::ProtocolError, "Error closing connection" unless next_method.is_a?(Protocol::Connection::CloseOk)
 
       close_socket
     end
+
+		alias stop close
 
     def read(*args)
       send_command(:read, *args)
@@ -79,7 +89,7 @@ module API
       @channel = 0
       write(Protocol::HEADER)
       write([1, 1, Protocol::VERSION_MAJOR, Protocol::VERSION_MINOR].pack('C4'))
-      raise API::ProtocolError, 'Connection initiation failed' unless next_method.is_a?(Protocol::Connection::Start)
+      raise Bunny::ProtocolError, 'Connection initiation failed' unless next_method.is_a?(Protocol::Connection::Start)
 
       send_frame(
         Protocol::Connection::StartOk.new(
@@ -91,7 +101,7 @@ module API
       )
 			
 			method = next_method
-			raise API::ProtocolError, "Connection failed - user: #{@user}, pass: #{@pass}" if method.nil?
+			raise Bunny::ProtocolError, "Connection failed - user: #{@user}, pass: #{@pass}" if method.nil?
 
       if method.is_a?(Protocol::Connection::Tune)
         send_frame(
@@ -102,22 +112,24 @@ module API
       send_frame(
         Protocol::Connection::Open.new(:virtual_host => @vhost, :capabilities => '', :insist => @insist)
       )
-      raise API::ProtocolError, 'Cannot open connection' unless next_method.is_a?(Protocol::Connection::OpenOk)
+      raise Bunny::ProtocolError, 'Cannot open connection' unless next_method.is_a?(Protocol::Connection::OpenOk)
 
       @channel = 1
       send_frame(Protocol::Channel::Open.new)
-      raise API::ProtocolError, "Cannot open channel #{channel}" unless next_method.is_a?(Protocol::Channel::OpenOk)
+      raise Bunny::ProtocolError, "Cannot open channel #{channel}" unless next_method.is_a?(Protocol::Channel::OpenOk)
 
       send_frame(
         Protocol::Access::Request.new(:realm => '/data', :read => true, :write => true, :active => true, :passive => true)
       )
       method = next_method
-      raise API::ProtocolError, 'Access denied' unless method.is_a?(Protocol::Access::RequestOk)
+      raise Bunny::ProtocolError, 'Access denied' unless method.is_a?(Protocol::Access::RequestOk)
       self.ticket = method.ticket
 
 			# return status
 			status
     end
+
+		alias start start_session
 
   private
 
@@ -129,7 +141,7 @@ module API
       begin
         socket.__send__(cmd, *args)
       rescue Errno::EPIPE, IOError => e
-        raise API::ServerDownError, e.message
+        raise Bunny::ServerDownError, e.message
       end
     end
 
@@ -147,7 +159,7 @@ module API
         end
         @status   = CONNECTED
       rescue SocketError, SystemCallError, IOError, Timeout::Error => e
-        raise API::ServerDownError, e.message
+        raise Bunny::ServerDownError, e.message
       end
 
       @socket

@@ -1,4 +1,4 @@
-module API
+module Bunny
 	class Queue
 		
 	  attr_reader :name, :client

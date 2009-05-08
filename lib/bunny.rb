@@ -5,82 +5,44 @@ $:.unshift File.expand_path(File.dirname(__FILE__))
 	require file
 end
 
-# AMQP protocol and transport
-%w[spec protocol buffer frame].each do |file|
-	require 'engineroom/' + file
-end
+require "bunny/client"
+require "bunny/exchange"
+require "bunny/queue"
 
-# Bunny API 
-%w[client exchange header queue].each do |file|
-	require 'bunny/' + file
-end
+require "bunny/protocol/spec"
+require "bunny/protocol/protocol"
 
-# Error and return message definitions
-require 'api_messages'
+require "bunny/transport/buffer"
+require "bunny/transport/frame"
 
-class Bunny
+# The Bunny main module serves as a namespace for all Bunny modules and classes.
+
+module Bunny
+	
 	include Protocol
 	include Transport
-	include API
+	
+	# return messages
+	CONNECTED = 'CONNECTED'
+	NOT_CONNECTED = 'NOT CONNECTED'
+	QUEUE_EMPTY = 'QUEUE EMPTY'
+	QUEUE_DELETED = 'QUEUE DELETED'
+	EXCHANGE_DELETED = 'EXCHANGE DELETED'
+	BIND_SUCCEEDED = 'BIND SUCCEEDED'
+	UNBIND_SUCCEEDED = 'UNBIND SUCCEEDED'
+
+	# specific error definitions
+	class ProtocolError < StandardError; end
+	class ServerDownError < StandardError; end
+	class BufferOverflowError < StandardError; end
+  class InvalidTypeError < StandardError; end
+	class ConnectionError < StandardError; end
+	class MessageError < StandardError; end
 	
 	VERSION = '0.2.0'
-
-	attr_reader :client
-
-	def initialize(opts = {})
-		@client = API::Client.new(opts)
-  end
 
 	def self.version
 		VERSION
 	end
 
-	def logging=(bool)
-		client.logging = bool
-	end
-	
-	def logging
-		client.logging
-	end
-
-	def start
-		client.start_session
-	end
-
-	def status
-		client.status
-	end
-	
-	def exchange(name, opts = {})
-		client.exchanges[name] ||= API::Exchange.new(client, name, opts)
-	end
-  
-  def queue(name, opts = {})
-    client.queues[name] ||= API::Queue.new(client, name, opts)
-  end
-
-  def stop
-    client.close
-  end
-
-  def queues
-    client.queues ||= {}
-  end
-
-  def exchanges
-    client.exchanges ||= {}
-  end
-	
-	def host
-		client.host
-	end
-	
-	def vhost
-		client.vhost
-	end
-	
-	def port
-		client.port
-	end
-	
 end

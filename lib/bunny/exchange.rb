@@ -1,11 +1,11 @@
-module API
+module Bunny
 	class Exchange
 	
 	  attr_reader :client, :type, :name, :opts, :key
 
 	  def initialize(client, name, opts = {})
 			# check connection to server
-			raise API::ConnectionError, 'Not connected to server' if client.status == NOT_CONNECTED
+			raise Bunny::ConnectionError, 'Not connected to server' if client.status == NOT_CONNECTED
 		
 	    @client, @name, @opts = client, name, opts
 	
@@ -33,7 +33,7 @@ module API
 	        )
 	      )
 
-				raise API::ProtocolError,
+				raise Bunny::ProtocolError,
 					"Error declaring exchange #{name}: type = #{type}" unless
 					client.next_method.is_a?(Protocol::Exchange::DeclareOk)
 	    end
@@ -68,7 +68,7 @@ module API
 	      Protocol::Exchange::Delete.new({ :exchange => name, :nowait => false }.merge(opts))
 	    )
 
-			raise API::ProtocolError,
+			raise Bunny::ProtocolError,
 				"Error deleting exchange #{name}" unless
 				client.next_method.is_a?(Protocol::Exchange::DeleteOk)
 

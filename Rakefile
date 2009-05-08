@@ -1,6 +1,6 @@
 task :codegen do
-  sh 'ruby protocol/codegen.rb > lib/engineroom/spec.rb'
-	sh 'ruby lib/engineroom/spec.rb'
+  sh 'ruby ext/codegen.rb > lib/bunny/protocol/spec.rb'
+	sh 'ruby lib/bunny/protocol/spec.rb'
 end
 
 task :spec do
