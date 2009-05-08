@@ -21,15 +21,6 @@ module Bunny
 	
 	include Protocol
 	include Transport
-	
-	# return messages
-	CONNECTED = 'CONNECTED'
-	NOT_CONNECTED = 'NOT CONNECTED'
-	QUEUE_EMPTY = 'QUEUE EMPTY'
-	QUEUE_DELETED = 'QUEUE DELETED'
-	EXCHANGE_DELETED = 'EXCHANGE DELETED'
-	BIND_SUCCEEDED = 'BIND SUCCEEDED'
-	UNBIND_SUCCEEDED = 'UNBIND SUCCEEDED'
 
 	# specific error definitions
 	class ProtocolError < StandardError; end

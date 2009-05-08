@@ -50,9 +50,9 @@ msg = rugby.pop
 puts 'This is a message from the rugby q: ' + msg + "\n\n"
 
 # allsport queue got all of the messages
-until msg == 'QUEUE EMPTY' do
+until msg == :queue_empty do
 	msg = allsport.pop
-	puts 'This is a message from the allsport q: ' + msg + "\n\n" unless msg == 'QUEUE EMPTY'
+	puts 'This is a message from the allsport q: ' + msg + "\n\n" unless msg == :queue_empty
 end
 
 # close the client connection

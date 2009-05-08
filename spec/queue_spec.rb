@@ -22,25 +22,25 @@ describe Bunny::Queue do
 	it "should ignore the :nowait option when binding to an exchange" do
 		exch = @b.exchange('direct_exch')
 		q = @b.queue('test0')
-		q.bind(exch, :nowait => true).should == 'BIND SUCCEEDED'
+		q.bind(exch, :nowait => true).should == :bind_succeeded
 	end
 	
 	it "should be able to bind to an exchange" do
 		exch = @b.exchange('direct_exch')
 		q = @b.queue('test1')
-		q.bind(exch).should == 'BIND SUCCEEDED'
+		q.bind(exch).should == :bind_succeeded
 	end
 	
 	it "should ignore the :nowait option when unbinding from an exchange" do
 		exch = @b.exchange('direct_exch')
 		q = @b.queue('test0')
-		q.unbind(exch, :nowait => true).should == 'UNBIND SUCCEEDED'
+		q.unbind(exch, :nowait => true).should == :unbind_succeeded
 	end
 	
 	it "should be able to unbind from an exchange" do
 		exch = @b.exchange('direct_exch')
 		q = @b.queue('test1')
-		q.unbind(exch).should == 'UNBIND SUCCEEDED'
+		q.unbind(exch).should == :unbind_succeeded
 	end
 
 	it "should be able to publish a message" do
@@ -49,12 +49,13 @@ describe Bunny::Queue do
 		q.message_count.should == 1
 	end
 	
-	it "should be able to pop a message complete with header" do
+	it "should be able to pop a message complete with header and delivery details" do
 		q = @b.queue('test1')
 		msg = q.pop(:header => true)
 		msg.should be_an_instance_of Hash
-		msg[:header].should be_an_instance_of Protocol::Header
+		msg[:header].should be_an_instance_of Bunny::Protocol::Header
 		msg[:payload].should == 'This is a test message'
+		msg[:delivery_details].should be_an_instance_of Hash
 		q.message_count.should == 0
 	end
 
@@ -71,13 +72,13 @@ describe Bunny::Queue do
 		q.publish('This is another test message')
 		q.pop
 		msg = q.pop
-		msg.should == 'QUEUE EMPTY'
+		msg.should == :queue_empty
 	end
 
 	it "should be able to be deleted" do
 		q = @b.queue('test1')
 		res = q.delete
-		res.should == 'QUEUE DELETED'
+		res.should == :queue_deleted
 		@b.queues.has_key?('test1').should be false
 	end
 	

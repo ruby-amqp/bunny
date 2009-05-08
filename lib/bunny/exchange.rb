@@ -5,7 +5,7 @@ module Bunny
 
 	  def initialize(client, name, opts = {})
 			# check connection to server
-			raise Bunny::ConnectionError, 'Not connected to server' if client.status == NOT_CONNECTED
+			raise Bunny::ConnectionError, 'Not connected to server' if client.status == :not_connected
 		
 	    @client, @name, @opts = client, name, opts
 	
@@ -75,7 +75,7 @@ module Bunny
 			client.exchanges.delete(name)
 			
 			# return confirmation
-			EXCHANGE_DELETED
+			:exchange_deleted
 	  end
 
 	end

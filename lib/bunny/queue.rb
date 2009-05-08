@@ -6,7 +6,7 @@ module Bunny
 
 	  def initialize(client, name, opts = {})
 			# check connection to server
-			raise API::ConnectionError, 'Not connected to server' if client.status == NOT_CONNECTED
+			raise Bunny::ConnectionError, 'Not connected to server' if client.status == :not_connected
 			
 	    @client = client
 	    @opts   = opts
@@ -21,7 +21,7 @@ module Bunny
 	      Protocol::Queue::Declare.new({ :queue => name, :nowait => false }.merge(opts))
 	    )
 	
-			raise API::ProtocolError, "Error declaring queue #{name}" unless client.next_method.is_a?(Protocol::Queue::DeclareOk)
+			raise Bunny::ProtocolError, "Error declaring queue #{name}" unless client.next_method.is_a?(Protocol::Queue::DeclareOk)
 	  end
 	
 		def ack
@@ -51,9 +51,9 @@ module Bunny
 			method = client.next_method
 			
 			if method.is_a?(Protocol::Basic::GetEmpty) then
-				return QUEUE_EMPTY
+				return :queue_empty
 			elsif	!method.is_a?(Protocol::Basic::GetOk)
-				raise API::ProtocolError, "Error getting message from queue #{name}"
+				raise Bunny::ProtocolError, "Error getting message from queue #{name}"
 			end
 			
 			# get delivery tag to use for acknowledge
@@ -61,7 +61,7 @@ module Bunny
 			
 	    header = client.next_payload
 	    msg    = client.next_payload
-	    raise API::MessageError, 'unexpected length' if msg.length < header.size
+	    raise Bunny::MessageError, 'unexpected length' if msg.length < header.size
 
 			# Return message with additional info if requested
 			hdr ? {:header => header, :payload => msg, :delivery_details => method.arguments} : msg
@@ -110,7 +110,7 @@ module Bunny
 																	 		 :nowait => false }.merge(opts))
 			)
 			
-			raise API::ProtocolError,
+			raise Bunny::ProtocolError,
 				"Error subscribing to queue #{name}" unless
 				client.next_method.is_a?(Protocol::Basic::ConsumeOk)
 			
@@ -124,7 +124,7 @@ module Bunny
 			
 				header = client.next_payload
 		    msg    = client.next_payload
-		    raise API::MessageError, 'unexpected length' if msg.length < header.size
+		    raise Bunny::MessageError, 'unexpected length' if msg.length < header.size
 				
 				# pass the message and related info, if requested, to the block for processing
 				blk.call(hdr ? {:header => header, :payload => msg, :delivery_details => method.arguments} : msg)
@@ -152,12 +152,12 @@ module Bunny
 		 																:nowait => false }.merge(opts))
 	    )
 	
-			raise API::ProtocolError,
+			raise Bunny::ProtocolError,
 				"Error binding queue #{name}" unless
 				client.next_method.is_a?(Protocol::Queue::BindOk)
 				
 			# return message
-			BIND_SUCCEEDED
+			:bind_succeeded
 	  end
 
 	  def unbind(exchange, opts = {})
@@ -172,12 +172,12 @@ module Bunny
 	      )
 	    )
 	
-			raise API::ProtocolError,
+			raise Bunny::ProtocolError,
 				"Error unbinding queue #{name}" unless
 				client.next_method.is_a?(Protocol::Queue::UnbindOk)
 				
 			# return message
-			UNBIND_SUCCEEDED
+			:unbind_succeeded
 	  end
 
 	  def delete(opts = {})
@@ -189,14 +189,14 @@ module Bunny
 	      Protocol::Queue::Delete.new({ :queue => name, :nowait => false }.merge(opts))
 	    )
 	
-			raise API::ProtocolError,
+			raise Bunny::ProtocolError,
 				"Error deleting queue #{name}" unless
 				client.next_method.is_a?(Protocol::Queue::DeleteOk)
 	
 			client.queues.delete(name)
 			
 			# return confirmation
-			QUEUE_DELETED
+			:queue_deleted
 	  end
 
 	private

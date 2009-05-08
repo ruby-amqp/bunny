@@ -14,7 +14,7 @@ module Bunny
       @vhost  = opts[:vhost] || '/'
 			@logging = opts[:logging] || false
       @insist = opts[:insist]
-      @status = NOT_CONNECTED
+      @status = :not_connected
     end
 
 		def exchange(name, opts = {})
@@ -157,7 +157,7 @@ module Bunny
         if Socket.constants.include? 'TCP_NODELAY'
           @socket.setsockopt Socket::IPPROTO_TCP, Socket::TCP_NODELAY, 1
         end
-        @status   = CONNECTED
+        @status   = :connected
       rescue SocketError, SystemCallError, IOError, Timeout::Error => e
         raise Bunny::ServerDownError, e.message
       end
@@ -169,7 +169,7 @@ module Bunny
       # Close the socket. The server is not considered dead.
       @socket.close if @socket and not @socket.closed?
       @socket   = nil
-      @status   = NOT_CONNECTED
+      @status   = :not_connected
     end
 
     def log(*args)

@@ -16,7 +16,7 @@ describe Bunny do
 	end
 	
   it "should connect to an AMQP server" do
-    @b.status.should == 'CONNECTED'
+    @b.status.should == :connected
   end
 
 	it "should be able to create an exchange" do
