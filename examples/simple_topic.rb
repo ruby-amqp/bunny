@@ -10,7 +10,7 @@ $:.unshift File.dirname(__FILE__) + '/../lib'
 
 require 'bunny'
 
-b = Bunny.new
+b = Bunny::Client.new
 
 # start a communication session with the amqp server
 b.start
