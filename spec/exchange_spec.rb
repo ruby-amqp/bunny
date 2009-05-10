@@ -11,7 +11,7 @@ require File.expand_path(File.join(File.dirname(__FILE__), %w[.. lib bunny]))
 describe Bunny::Exchange do
 	
 	before(:each) do
-    @b = Bunny::Client.new
+    @b = Bunny.new
 		@b.start
 	end
 		

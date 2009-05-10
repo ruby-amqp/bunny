@@ -26,7 +26,7 @@ Bunny is known to work with RabbitMQ version 1.5.4 and version 0-8 of the AMQP s
 
    require 'bunny'
 
-   b = Bunny::Client.new(:logging => true)
+   b = Bunny.new(:logging => true)
 
    # start a communication session with the amqp server
    b.start

@@ -27,12 +27,18 @@ module Bunny
 	class ConnectionError < StandardError; end
 	class MessageError < StandardError; end
 	
-	VERSION = '0.3.0'
+	VERSION = '0.3.1'
 	
 	# Returns the Bunny version number
 
 	def self.version
 		VERSION
+	end
+	
+	# Instantiates new Bunny::Client
+	
+	def self.new(opts = {})
+		Bunny::Client.new(opts)
 	end
 
 end
