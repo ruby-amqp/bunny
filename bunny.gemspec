@@ -1,6 +1,6 @@
 Gem::Specification.new do |s|
   s.name = %q{bunny}
-  s.version = "0.3.0"
+  s.version = "0.3.1"
   s.authors = ["Chris Duncan"]
   s.date = %q{2009-05-10}
   s.description = %q{Another synchronous Ruby AMQP client}
