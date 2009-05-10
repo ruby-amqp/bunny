@@ -1,6 +1,6 @@
 module Bunny
-	module Transport
-	  class Buffer #:nodoc: all
+	module Transport #:nodoc: all
+	  class Buffer
     
 	    def initialize data = ''
 	      @data = data

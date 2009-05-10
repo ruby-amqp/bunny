@@ -62,29 +62,6 @@ module Bunny
 	    end
 	  end
 
-	  #:startdoc:
-	  #
-	  # Contains a properties hash that holds some potentially interesting 
-	  # information.
-	  # * :delivery_mode
-	  # 1 equals transient.
-	  # 2 equals persistent. Unconsumed persistent messages will survive
-	  # a server restart when they are stored in a durable queue.
-	  # * :redelivered
-	  # True or False
-	  # * :routing_key
-	  # The routing string used for matching this message to this queue.
-	  # * :priority
-	  # An integer in the range of 0 to 9 inclusive.
-	  # * :content_type
-	  # Always "application/octet-stream" (byte stream)
-	  # * :exchange
-	  # The source exchange which published this message.
-	  # * :message_count
-	  # The number of unconsumed messages contained in the queue.
-	  # * :delivery_tag
-	  # A monotonically increasing integer. This number should not be trusted
-	  # as a sequence number. There is no guarantee it won't get reset.
 	  class Header
 	    def initialize *args
 	      opts = args.pop if args.last.is_a? Hash
@@ -153,6 +130,6 @@ module Bunny
 	    class_id, method_id = buf.read(:short, :short)
 	    classes[class_id].methods[method_id].new(buf)
 	  end
-	  #:stopdoc:
+
 	end
 end

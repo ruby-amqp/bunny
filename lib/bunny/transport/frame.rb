@@ -1,6 +1,6 @@
 module Bunny
-	module Transport
-	  class Frame #:nodoc: all
+	module Transport #:nodoc: all
+	  class Frame
 	    def initialize payload = nil, channel = 0
 	      @channel, @payload = channel, payload
 	    end
