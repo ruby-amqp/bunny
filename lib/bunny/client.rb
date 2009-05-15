@@ -274,16 +274,21 @@ _Bunny_::_ProtocolError_ is raised. If successful, _Client_._status_ is set to <
 
     def send_command(cmd, *args)
       begin
-        socket.__send__(cmd, *args)
-      rescue Errno::EPIPE, IOError => e
+        timeout(1.5) do
+          socket.__send__(cmd, *args)
+        end
+      rescue => e
+        @status = :not_connected
         raise Bunny::ServerDownError, e.message
       end
     end
 
     def socket
-      return @socket if @socket and not @socket.closed?
+      return @socket if @socket and (@status == :connected) and not @socket.closed?
 
       begin
+        @status = :not_connected
+   
         # Attempt to connect.
         @socket = timeout(CONNECT_TIMEOUT) do
           TCPSocket.new(host, port)
@@ -293,7 +298,8 @@ _Bunny_::_ProtocolError_ is raised. If successful, _Client_._status_ is set to <
           @socket.setsockopt Socket::IPPROTO_TCP, Socket::TCP_NODELAY, 1
         end
         @status   = :connected
-      rescue SocketError, SystemCallError, IOError, Timeout::Error => e
+      rescue => e
+        @status = :not_connected
         raise Bunny::ServerDownError, e.message
       end
 
