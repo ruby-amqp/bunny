@@ -1,4 +1,4 @@
-module Bunny
+module Qrack
 	module Protocol
 	  #:stopdoc:
 	  class Class::Method

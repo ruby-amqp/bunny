@@ -5,29 +5,22 @@ $:.unshift File.expand_path(File.dirname(__FILE__))
 	require file
 end
 
+require 'qrack/qrack'
+
 require 'bunny/client'
 require 'bunny/exchange'
 require 'bunny/queue'
 
-require 'bunny/protocol/spec'
-require 'bunny/protocol/protocol'
-
-require 'bunny/transport/buffer'
-require 'bunny/transport/frame'
-
 module Bunny
 	
-	include Protocol
-	include Transport
+	include Qrack
 
 	class ProtocolError < StandardError; end
 	class ServerDownError < StandardError; end
-	class BufferOverflowError < StandardError; end
-  class InvalidTypeError < StandardError; end
 	class ConnectionError < StandardError; end
 	class MessageError < StandardError; end
 	
-	VERSION = '0.3.1'
+	VERSION = '0.4.0'
 	
 	# Returns the Bunny version number
 

@@ -8,7 +8,7 @@ The Client class provides the major Bunny API methods.
 
 =end
 
-  class Client
+  class Client < Qrack::Client
     CONNECT_TIMEOUT = 1.0
     RETRY_DELAY     = 10.0
 
@@ -40,7 +40,7 @@ Sets up a Bunny::Client object ready for connection to a broker/server. _Client_
 
     def initialize(opts = {})
 			@host = opts[:host] || 'localhost'
-			@port = opts[:port] || Protocol::PORT
+			@port = opts[:port] || Qrack::Protocol::PORT
       @user   = opts[:user]  || 'guest'
       @pass   = opts[:pass]  || 'guest'
       @vhost  = opts[:vhost] || '/'
@@ -145,7 +145,7 @@ Returns hash of queues declared by Bunny.
     def send_frame(*args)
       args.each do |data|
         data.ticket  = ticket if ticket and data.respond_to?(:ticket=)
-        data         = data.to_frame(channel) unless data.is_a?(Transport::Frame)
+        data         = data.to_frame(channel) unless data.is_a?(Qrack::Transport::Frame)
         data.channel = channel
 
         log :send, data
@@ -155,7 +155,7 @@ Returns hash of queues declared by Bunny.
     end
 
     def next_frame
-      frame = Transport::Frame.parse(buffer)
+      frame = Qrack::Transport::Frame.parse(buffer)
       log :received, frame
       frame
     end
@@ -166,7 +166,7 @@ Returns hash of queues declared by Bunny.
 
     def next_payload
       frame = next_frame
-      frame.payload
+      frame and frame.payload
     end
 
 =begin rdoc
@@ -184,15 +184,15 @@ _Bunny_::_ProtocolError_ is raised. If successful, _Client_._status_ is set to <
 
     def close
       send_frame(
-        Protocol::Channel::Close.new(:reply_code => 200, :reply_text => 'bye', :method_id => 0, :class_id => 0)
+        Qrack::Protocol::Channel::Close.new(:reply_code => 200, :reply_text => 'bye', :method_id => 0, :class_id => 0)
       )
-      raise Bunny::ProtocolError, "Error closing channel #{channel}" unless next_method.is_a?(Protocol::Channel::CloseOk)
+      raise Bunny::ProtocolError, "Error closing channel #{channel}" unless next_method.is_a?(Qrack::Protocol::Channel::CloseOk)
 
       self.channel = 0
       send_frame(
-        Protocol::Connection::Close.new(:reply_code => 200, :reply_text => 'Goodbye', :class_id => 0, :method_id => 0)
+        Qrack::Protocol::Connection::Close.new(:reply_code => 200, :reply_text => 'Goodbye', :class_id => 0, :method_id => 0)
       )
-      raise Bunny::ProtocolError, "Error closing connection" unless next_method.is_a?(Protocol::Connection::CloseOk)
+      raise Bunny::ProtocolError, "Error closing connection" unless next_method.is_a?(Qrack::Protocol::Connection::CloseOk)
 
       close_socket
     end
@@ -222,12 +222,12 @@ _Bunny_::_ProtocolError_ is raised. If successful, _Client_._status_ is set to <
 		
 		def start_session
       @channel = 0
-      write(Protocol::HEADER)
-      write([1, 1, Protocol::VERSION_MAJOR, Protocol::VERSION_MINOR].pack('C4'))
-      raise Bunny::ProtocolError, 'Connection initiation failed' unless next_method.is_a?(Protocol::Connection::Start)
+      write(Qrack::Protocol::HEADER)
+      write([1, 1, Qrack::Protocol::VERSION_MAJOR, Qrack::Protocol::VERSION_MINOR].pack('C4'))
+      raise Bunny::ProtocolError, 'Connection initiation failed' unless next_method.is_a?(Qrack::Protocol::Connection::Start)
 
       send_frame(
-        Protocol::Connection::StartOk.new(
+        Qrack::Protocol::Connection::StartOk.new(
           {:platform => 'Ruby', :product => 'Bunny', :information => 'http://github.com/celldee/bunny', :version => VERSION},
           'AMQPLAIN',
           {:LOGIN => @user, :PASSWORD => @pass},
@@ -238,26 +238,26 @@ _Bunny_::_ProtocolError_ is raised. If successful, _Client_._status_ is set to <
 			method = next_method
 			raise Bunny::ProtocolError, "Connection failed - user: #{@user}, pass: #{@pass}" if method.nil?
 
-      if method.is_a?(Protocol::Connection::Tune)
+      if method.is_a?(Qrack::Protocol::Connection::Tune)
         send_frame(
-          Protocol::Connection::TuneOk.new( :channel_max => 0, :frame_max => 131072, :heartbeat => 0)
+          Qrack::Protocol::Connection::TuneOk.new( :channel_max => 0, :frame_max => 131072, :heartbeat => 0)
         )
       end
 
       send_frame(
-        Protocol::Connection::Open.new(:virtual_host => @vhost, :capabilities => '', :insist => @insist)
+        Qrack::Protocol::Connection::Open.new(:virtual_host => @vhost, :capabilities => '', :insist => @insist)
       )
-      raise Bunny::ProtocolError, 'Cannot open connection' unless next_method.is_a?(Protocol::Connection::OpenOk)
+      raise Bunny::ProtocolError, 'Cannot open connection' unless next_method.is_a?(Qrack::Protocol::Connection::OpenOk)
 
       @channel = 1
-      send_frame(Protocol::Channel::Open.new)
-      raise Bunny::ProtocolError, "Cannot open channel #{channel}" unless next_method.is_a?(Protocol::Channel::OpenOk)
+      send_frame(Qrack::Protocol::Channel::Open.new)
+      raise Bunny::ProtocolError, "Cannot open channel #{channel}" unless next_method.is_a?(Qrack::Protocol::Channel::OpenOk)
 
       send_frame(
-        Protocol::Access::Request.new(:realm => '/data', :read => true, :write => true, :active => true, :passive => true)
+        Qrack::Protocol::Access::Request.new(:realm => '/data', :read => true, :write => true, :active => true, :passive => true)
       )
       method = next_method
-      raise Bunny::ProtocolError, 'Access denied' unless method.is_a?(Protocol::Access::RequestOk)
+      raise Bunny::ProtocolError, 'Access denied' unless method.is_a?(Qrack::Protocol::Access::RequestOk)
       self.ticket = method.ticket
 
 			# return status
@@ -269,7 +269,7 @@ _Bunny_::_ProtocolError_ is raised. If successful, _Client_._status_ is set to <
   private
 
     def buffer
-      @buffer ||= Transport::Buffer.new(self)
+      @buffer ||= Qrack::Transport::Buffer.new(self)
     end
 
     def send_command(cmd, *args)

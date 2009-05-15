@@ -27,10 +27,10 @@ Queues must be attached to at least one exchange in order to receive messages fr
 			opts.delete(:nowait)
 			
 	    client.send_frame(
-	      Protocol::Queue::Declare.new({ :queue => name, :nowait => false }.merge(opts))
+	      Qrack::Protocol::Queue::Declare.new({ :queue => name, :nowait => false }.merge(opts))
 	    )
 	
-			raise Bunny::ProtocolError, "Error declaring queue #{name}" unless client.next_method.is_a?(Protocol::Queue::DeclareOk)
+			raise Bunny::ProtocolError, "Error declaring queue #{name}" unless client.next_method.is_a?(Qrack::Protocol::Queue::DeclareOk)
 	  end
 
 =begin rdoc
@@ -52,7 +52,7 @@ ask to confirm a single message or a set of messages up to and including a speci
 	
 		def ack
       client.send_frame(
-        Protocol::Basic::Ack.new(:delivery_tag => delivery_tag)
+        Qrack::Protocol::Basic::Ack.new(:delivery_tag => delivery_tag)
       )
 
 			# reset delivery tag
@@ -91,7 +91,7 @@ a hash <tt>{:delivery_tag, :redelivered, :exchange, :routing_key, :message_count
 			ack = opts.delete(:ack)
 			
 	    client.send_frame(
-	      Protocol::Basic::Get.new({ :queue => name,
+	      Qrack::Protocol::Basic::Get.new({ :queue => name,
 																	 :consumer_tag => name,
 																	 :no_ack => !ack,
 																	 :nowait => true }.merge(opts))
@@ -99,9 +99,9 @@ a hash <tt>{:delivery_tag, :redelivered, :exchange, :routing_key, :message_count
 	
 			method = client.next_method
 			
-			if method.is_a?(Protocol::Basic::GetEmpty) then
+			if method.is_a?(Qrack::Protocol::Basic::GetEmpty) then
 				return :queue_empty
-			elsif	!method.is_a?(Protocol::Basic::GetOk)
+			elsif	!method.is_a?(Qrack::Protocol::Basic::GetOk)
 				raise Bunny::ProtocolError, "Error getting message from queue #{name}"
 			end
 			
@@ -169,7 +169,7 @@ Returns hash {:message_count, :consumer_count}.
  
 	  def status
 	    client.send_frame(
-	      Protocol::Queue::Declare.new({ :queue => name, :passive => true })
+	      Qrack::Protocol::Queue::Declare.new({ :queue => name, :passive => true })
 	    )
 	    method = client.next_method
 	    {:message_count => method.message_count, :consumer_count => method.consumer_count}
@@ -220,7 +220,7 @@ If <tt>:header => false</tt> only message payload is returned.
 			ack = opts.delete(:ack)
 			
 			client.send_frame(
-				Protocol::Basic::Consume.new({ :queue => name,
+				Qrack::Protocol::Basic::Consume.new({ :queue => name,
 																	 		 :consumer_tag => consumer_tag,
 																	 		 :no_ack => !ack,
 																	 		 :nowait => false }.merge(opts))
@@ -228,12 +228,12 @@ If <tt>:header => false</tt> only message payload is returned.
 			
 			raise Bunny::ProtocolError,
 				"Error subscribing to queue #{name}" unless
-				client.next_method.is_a?(Protocol::Basic::ConsumeOk)
+				client.next_method.is_a?(Qrack::Protocol::Basic::ConsumeOk)
 			
 			while true
 				method = client.next_method
 
-				break if method.is_a?(Protocol::Basic::CancelOk)
+				break if method.is_a?(Qrack::Protocol::Basic::CancelOk)
 			
 				# get delivery tag to use for acknowledge
 				self.delivery_tag = method.delivery_tag if ack
@@ -269,7 +269,7 @@ the server will not send any more messages for that consumer.
 			# response from the server causing an error
 			opts.delete(:nowait)
 			
-      client.send_frame( Protocol::Basic::Cancel.new({ :consumer_tag => consumer_tag }.merge(opts)))
+      client.send_frame( Qrack::Protocol::Basic::Cancel.new({ :consumer_tag => consumer_tag }.merge(opts)))
 			
     end
 
@@ -299,7 +299,7 @@ bound to the direct exchange '' by default. If error occurs, a _Bunny_::_Protoco
 			
 	    bindings[exchange] = opts
 	    client.send_frame(
-	      Protocol::Queue::Bind.new({ :queue => name,
+	      Qrack::Protocol::Queue::Bind.new({ :queue => name,
 		 																:exchange => exchange,
 		 																:routing_key => opts.delete(:key),
 		 																:nowait => false }.merge(opts))
@@ -307,7 +307,7 @@ bound to the direct exchange '' by default. If error occurs, a _Bunny_::_Protoco
 	
 			raise Bunny::ProtocolError,
 				"Error binding queue #{name}" unless
-				client.next_method.is_a?(Protocol::Queue::BindOk)
+				client.next_method.is_a?(Qrack::Protocol::Queue::BindOk)
 				
 			# return message
 			:bind_ok
@@ -340,7 +340,7 @@ Removes a queue binding from an exchange. If error occurs, a _Bunny_::_ProtocolE
 	    bindings.delete(exchange)
 
 	    client.send_frame(
-	      Protocol::Queue::Unbind.new({ :queue => name,
+	      Qrack::Protocol::Queue::Unbind.new({ :queue => name,
 		 																	:exchange => exchange,
 		 																	:routing_key => opts.delete(:key),
 		 																	:nowait => false }.merge(opts)
@@ -349,7 +349,7 @@ Removes a queue binding from an exchange. If error occurs, a _Bunny_::_ProtocolE
 	
 			raise Bunny::ProtocolError,
 				"Error unbinding queue #{name}" unless
-				client.next_method.is_a?(Protocol::Queue::UnbindOk)
+				client.next_method.is_a?(Qrack::Protocol::Queue::UnbindOk)
 				
 			# return message
 			:unbind_ok
@@ -384,12 +384,12 @@ from queues if successful. If an error occurs raises _Bunny_::_ProtocolError_.
 			opts.delete(:nowait)
 			
 	    client.send_frame(
-	      Protocol::Queue::Delete.new({ :queue => name, :nowait => false }.merge(opts))
+	      Qrack::Protocol::Queue::Delete.new({ :queue => name, :nowait => false }.merge(opts))
 	    )
 	
 			raise Bunny::ProtocolError,
 				"Error deleting queue #{name}" unless
-				client.next_method.is_a?(Protocol::Queue::DeleteOk)
+				client.next_method.is_a?(Qrack::Protocol::Queue::DeleteOk)
 	
 			client.queues.delete(name)
 			
