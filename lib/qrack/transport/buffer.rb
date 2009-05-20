@@ -1,8 +1,8 @@
 module Qrack
 	module Transport #:nodoc: all
 	  class Buffer
-    	require 'enumerator' if RUBY_VERSION < '1.8.7'
-
+			require 'enumerator' if RUBY_VERSION < '1.8.7'
+			
 	    def initialize data = ''
 	      @data = data
 	      @pos = 0
@@ -186,14 +186,14 @@ module Qrack
 	                        end)
 	      when :bit
 	        [*data].to_enum(:each_slice, 8).each{|bits|
-	          write(:octet, bits.enum_with_index.inject(0){ |byte, (bit, i)|
+	          write(:octet, bits.each.with_index.inject(0){ |byte, (bit, i)|
 	            byte |= 1<<i if bit
 	            byte
 	           })
 	         }
 	      when :properties
 	        values = []
-	        data.enum_with_index.inject(0) do |short, ((type, value), i)|
+	        data.each.with_index.inject(0) do |short, ((type, value), i)|
 	          n = i % 15
 	          last = i+1 == data.size
 
