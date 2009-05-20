@@ -396,6 +396,18 @@ from queues if successful. If an error occurs raises _Bunny_::_ProtocolError_.
 			# return confirmation
 			:delete_ok
 	  end
+	
+	def purge(opts = {})
+		# ignore the :nowait option if passed, otherwise program will hang waiting for a
+		# response that will not be sent by the server
+		opts.delete(:nowait)
+		
+    client.send_frame(
+      Qrack::Protocol::Queue::Purge.new({ :queue => name, :nowait => false }.merge(opts))
+    )
+
+		raise Bunny::ProtocolError, "Error purging queue #{name}" unless client.next_method.is_a?(Qrack::Protocol::Queue::PurgeOk)
+  end
 
 	private
 	  def exchange

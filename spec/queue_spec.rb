@@ -67,6 +67,14 @@ describe Bunny::Queue do
 		q.message_count.should == 0
 	end
 	
+	it "should be able to be purged to remove all of its messages" do
+		q = @b.queue('test1')
+		5.times {q.publish('This is another test message')}
+		q.message_count.should == 5
+		q.purge
+		q.message_count.should == 0
+	end
+	
 	it "should return an empty message when popping an empty queue" do
 		q = @b.queue('test1')
 		q.publish('This is another test message')
