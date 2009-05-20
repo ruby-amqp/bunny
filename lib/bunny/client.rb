@@ -274,11 +274,8 @@ _Bunny_::_ProtocolError_ is raised. If successful, _Client_._status_ is set to <
 
     def send_command(cmd, *args)
       begin
-        timeout(1.5) do
-          socket.__send__(cmd, *args)
-        end
-      rescue => e
-        @status = :not_connected
+        socket.__send__(cmd, *args)
+      rescue Errno::EPIPE, IOError => e
         raise Bunny::ServerDownError, e.message
       end
     end
