@@ -396,6 +396,22 @@ from queues if successful. If an error occurs raises _Bunny_::_ProtocolError_.
 			# return confirmation
 			:delete_ok
 	  end
+
+=begin rdoc
+
+=== DESCRIPTION:
+
+Removes all messages from a queue.  It does not cancel consumers.  Purged messages are deleted
+without any formal "undo" mechanism. If an error occurs raises _Bunny_::_ProtocolError_.
+
+==== Options:
+
+* <tt>:nowait => true or false (_default_)</tt> - Ignored by Bunny, always _false_.
+
+==== Returns:
+
+<tt>:purge_ok</tt> if successful
+=end
 	
 	def purge(opts = {})
 		# ignore the :nowait option if passed, otherwise program will hang waiting for a
@@ -407,6 +423,10 @@ from queues if successful. If an error occurs raises _Bunny_::_ProtocolError_.
     )
 
 		raise Bunny::ProtocolError, "Error purging queue #{name}" unless client.next_method.is_a?(Qrack::Protocol::Queue::PurgeOk)
+		
+		# return confirmation
+		:purge_ok
+		
   end
 
 	private
