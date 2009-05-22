@@ -50,9 +50,12 @@ ask to confirm a single message or a set of messages up to and including a speci
 
 =end
 	
-		def ack
+		def ack(opts={})
+			# If delivery tag is nil then set it to 1 to prevent errors
+			self.delivery_tag = 1 if self.delivery_tag.nil?
+			
       client.send_frame(
-        Qrack::Protocol::Basic::Ack.new(:delivery_tag => delivery_tag)
+        Qrack::Protocol::Basic::Ack.new({:delivery_tag => delivery_tag, :multiple => false}.merge(opts))
       )
 
 			# reset delivery tag
