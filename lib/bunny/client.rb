@@ -265,6 +265,29 @@ _Bunny_::_ProtocolError_ is raised. If successful, _Client_._status_ is set to <
     end
 
 		alias start start_session
+		
+=begin rdoc
+
+=== DESCRIPTION:
+
+Asks the broker to redeliver all unacknowledged messages on a specifieid channel. Zero or
+more messages may be redelivered.
+
+==== Options:
+
+* <tt>:requeue => true or false (_default_)</tt> - If set to _false_, the message will be
+redelivered to the original recipient. If set to _true_, the server will attempt to requeue
+the message, potentially then delivering it to an alternative subscriber.
+
+=end
+
+		def recover(opts = {})
+
+	    send_frame(
+	      Qrack::Protocol::Basic::Recover.new({ :requeue => false }.merge(opts))
+	    )
+
+	  end
 
   private
 
