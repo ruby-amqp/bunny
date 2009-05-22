@@ -20,7 +20,7 @@ module Bunny
 	class ConnectionError < StandardError; end
 	class MessageError < StandardError; end
 	
-	VERSION = '0.4.1'
+	VERSION = '0.4.2'
 	
 	# Returns the Bunny version number
 
