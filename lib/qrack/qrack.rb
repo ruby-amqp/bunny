@@ -6,7 +6,7 @@ require 'protocol/protocol'
 require 'transport/buffer'
 require 'transport/frame'
 
-require 'client'
+require 'qrack/client'
 
 module Qrack
 	
