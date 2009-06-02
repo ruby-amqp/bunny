@@ -34,4 +34,15 @@ module Bunny
 		Bunny::Client.new(opts)
 	end
 
+  def self.open(opts = {}, &block)
+    raise ArgumentError, 'open requires a block' unless block
+
+    client = Bunny::Client.new(opts)
+    client.start
+
+    block.call(client)
+
+    client.stop
+  end
+
 end
