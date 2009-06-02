@@ -126,8 +126,16 @@ Queue
 
 =end
 		
-		def queue(name, opts = {})
-	    queues[name] ||= Bunny::Queue.new(self, name, opts)
+		def queue(name = nil, opts = {})
+      if name.is_a?(Hash)
+        opts = name
+        name = nil
+      end
+
+      return queues[name] if queues.has_key?(name)
+
+      queue = Bunny::Queue.new(self, name, opts)
+      queues[queue.name] = queue
 	  end
 	
 =begin rdoc

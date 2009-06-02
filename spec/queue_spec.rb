@@ -94,5 +94,13 @@ describe Bunny::Queue do
 		q = @b.queue('test0')
 		q.delete(:nowait => true)
 	end
+
+  it "should support server named queues" do
+    q = @b.queue
+    q.name.should_not == nil
+
+    @b.queue(q.name).should == q
+    q.delete
+  end
 	
 end

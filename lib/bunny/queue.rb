@@ -19,18 +19,31 @@ Queues must be attached to at least one exchange in order to receive messages fr
 			
 	    @client = client
 	    @opts   = opts
-	    @name   = name
-			@delivery_tag = nil
+      @delivery_tag = nil
+
+      # Queues without a given name are named by the server and are generally
+      # bound to the process that created them.
+      if !name
+        opts = {
+          :passive => false,
+          :durable => false,
+          :exclusive => true,
+          :auto_delete => true
+        }.merge(opts)
+      end
 	
 			# ignore the :nowait option if passed, otherwise program will hang waiting for a
 			# response that will not be sent by the server
 			opts.delete(:nowait)
 			
 	    client.send_frame(
-	      Qrack::Protocol::Queue::Declare.new({ :queue => name, :nowait => false }.merge(opts))
+	      Qrack::Protocol::Queue::Declare.new({ :queue => name || '', :nowait => false }.merge(opts))
 	    )
 	
-			raise Bunny::ProtocolError, "Error declaring queue #{name}" unless client.next_method.is_a?(Qrack::Protocol::Queue::DeclareOk)
+      method = client.next_method
+			raise Bunny::ProtocolError, "Error declaring queue #{name}" unless method.is_a?(Qrack::Protocol::Queue::DeclareOk)
+
+      @name = method.queue
 	  end
 
 =begin rdoc
