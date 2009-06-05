@@ -110,7 +110,7 @@ nil
           :priority      => 0 
         }.merge(opts)
       )
-      out << Qrack::Transport::Frame::Body.new(data)
+      out << Qrack::Transport::Body.new(data)
 
       client.send_frame(*out)
     end

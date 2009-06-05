@@ -58,7 +58,7 @@ module Qrack
 	    end
     
 	    def to_frame channel = 0
-	      Transport::Frame::Method.new(self, channel)
+	      Transport::Method.new(self, channel)
 	    end
 	  end
 
@@ -110,7 +110,7 @@ module Qrack
 	    end
 
 	    def to_frame channel = 0
-	      Transport::Frame::Header.new(self, channel)
+	      Transport::Header.new(self, channel)
 	    end
 
 	    def == header
