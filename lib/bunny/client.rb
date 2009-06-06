@@ -261,6 +261,8 @@ _Bunny_::_ProtocolError_ is raised. If successful, _Client_._status_ is set to <
         when Qrack::Protocol::Connection::OpenOk
           break
         when Qrack::Protocol::Connection::Redirect
+					raise Bunny::ConnectionError, "Cannot connect to the specified server - host: #{@host}, port: #{@port}" if @insist
+					
           @host, @port = method.host.split(':')
           close_socket
         else
