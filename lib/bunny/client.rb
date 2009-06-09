@@ -230,6 +230,9 @@ _Bunny_::_ProtocolError_ is raised. If successful, _Client_._status_ is set to <
 		
 		def start_session
       loop do
+				# Create/get socket
+				socket
+				
         @channel = 0
         write(Qrack::Protocol::HEADER)
         write([1, 1, Qrack::Protocol::VERSION_MAJOR, Qrack::Protocol::VERSION_MINOR].pack('C4'))
@@ -318,7 +321,8 @@ the message, potentially then delivering it to an alternative subscriber.
 
     def send_command(cmd, *args)
       begin
-        socket.__send__(cmd, *args)
+				raise Bunny::ConnectionError, 'No connection - socket has not been created' if !@socket
+        @socket.__send__(cmd, *args)
       rescue Errno::EPIPE, IOError => e
         raise Bunny::ServerDownError, e.message
       end
