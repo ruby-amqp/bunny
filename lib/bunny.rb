@@ -1,7 +1,7 @@
 $:.unshift File.expand_path(File.dirname(__FILE__))
 
 # Ruby standard libraries
-%w[socket thread timeout].each do |file|
+%w[socket thread timeout logger].each do |file|
 	require file
 end
 

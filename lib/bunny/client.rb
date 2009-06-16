@@ -12,8 +12,8 @@ The Client class provides the major Bunny API methods.
     CONNECT_TIMEOUT = 1.0
     RETRY_DELAY     = 10.0
 
-    attr_reader   :status, :host, :vhost, :port
-    attr_accessor :channel, :logging, :exchanges, :queues, :ticket
+    attr_reader   :status, :host, :vhost, :port, :logging
+    attr_accessor :channel, :logfile, :exchanges, :queues, :ticket
 
 =begin rdoc
 
@@ -29,10 +29,12 @@ Sets up a Bunny::Client object ready for connection to a broker/server. _Client_
 * <tt>:vhost => '_vhostname_' (default = '/')</tt>
 * <tt>:user => '_username_' (default = 'guest')</tt>
 * <tt>:pass => '_password_' (default = 'guest')</tt>
+* <tt>:logfile => '_logfilepath_' (default = nil)</tt>
 * <tt>:logging => true or false (_default_)</tt> - If set to _true_, session information is sent
-  to STDOUT.
+  to STDOUT if <tt>:logfile</tt> has not been specified. Otherwise, session information is written to
+  <tt>:logfile</tt>.
 * <tt>:insist => true or false (_default_)</tt> - In a configuration with multiple load-sharing
-  servers, the server may respond to a Connection.Open method with a Connection.Redirect. The insist
+  servers, the server may respond to a Connection::Open method with a Connection::Redirect. The insist
   option, if set to _true_, tells the server that the client is insisting on a connection to the
   specified server.
 
@@ -44,7 +46,10 @@ Sets up a Bunny::Client object ready for connection to a broker/server. _Client_
       @user   = opts[:user]  || 'guest'
       @pass   = opts[:pass]  || 'guest'
       @vhost  = opts[:vhost] || '/'
+			@logfile = opts[:logfile] || nil
 			@logging = opts[:logging] || false
+			@logger = nil
+			create_logger if @logging
       @insist = opts[:insist]
       @status = :not_connected
     end
@@ -156,7 +161,7 @@ Returns hash of queues declared by Bunny.
         data         = data.to_frame(channel) unless data.is_a?(Qrack::Transport::Frame)
         data.channel = channel
 
-        log :send, data
+        @logger.info("send") { data } if @logging
         write(data.to_s)
       end
       nil
@@ -164,7 +169,7 @@ Returns hash of queues declared by Bunny.
 
     def next_frame
       frame = Qrack::Transport::Frame.parse(buffer)
-      log :received, frame
+			@logger.info("received") { frame } if @logging
       frame
     end
 
@@ -312,6 +317,11 @@ the message, potentially then delivering it to an alternative subscriber.
 	    )
 
 	  end
+	
+		def logging=(bool)
+			@logging = bool
+			create_logger if @logging
+		end
 
   private
 
@@ -358,11 +368,12 @@ the message, potentially then delivering it to an alternative subscriber.
       @status   = :not_connected
     end
 
-    def log(*args)
-      return unless logging
-      require 'pp'
-      pp args
-	    puts
+    def create_logger
+			# Close existing Logger, if there is one. This will release any file used.
+			@logger.close if @logger
+			@logfile ? @logger = Logger.new("#{logfile}") : @logger = Logger.new(STDOUT)
+			@logger.level = Logger::INFO
+			@logger.datetime_format = "%Y-%m-%d %H:%M:%S"
     end
 
   end
