@@ -369,8 +369,6 @@ the message, potentially then delivering it to an alternative subscriber.
     end
 
     def create_logger
-			# Close existing Logger, if there is one. This will release any file used.
-			@logger.close if @logger
 			@logfile ? @logger = Logger.new("#{logfile}") : @logger = Logger.new(STDOUT)
 			@logger.level = Logger::INFO
 			@logger.datetime_format = "%Y-%m-%d %H:%M:%S"
