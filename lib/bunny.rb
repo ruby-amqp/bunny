@@ -29,6 +29,8 @@ module Bunny
 		
 		Bunny::Client.new(opts)
 	end
+	
+	# Runs a code block using a short-lived connection
 
   def self.run(opts = {}, &block)
     raise ArgumentError, 'Bunny#run requires a block' unless block
