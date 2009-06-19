@@ -12,7 +12,7 @@ The Client class provides the major Bunny API methods.
     CONNECT_TIMEOUT = 1.0
     RETRY_DELAY     = 10.0
 
-    attr_reader   :status, :host, :vhost, :port, :logging
+    attr_reader   :status, :host, :vhost, :port, :logging, :spec
     attr_accessor :channel, :logfile, :exchanges, :queues, :ticket
 
 =begin rdoc
@@ -41,6 +41,7 @@ Sets up a Bunny::Client object ready for connection to a broker/server. _Client_
 =end
 
     def initialize(opts = {})
+			@spec = opts[:spec] || '0-8'
 			@host = opts[:host] || 'localhost'
 			@port = opts[:port] || Qrack::Protocol::PORT
       @user   = opts[:user]  || 'guest'
@@ -48,10 +49,10 @@ Sets up a Bunny::Client object ready for connection to a broker/server. _Client_
       @vhost  = opts[:vhost] || '/'
 			@logfile = opts[:logfile] || nil
 			@logging = opts[:logging] || false
-			@logger = nil
-			create_logger if @logging
       @insist = opts[:insist]
       @status = :not_connected
+			@logger = nil
+			create_logger if @logging
     end
 
 =begin rdoc
@@ -240,7 +241,7 @@ _Bunny_::_ProtocolError_ is raised. If successful, _Client_._status_ is set to <
 				
         @channel = 0
         write(Qrack::Protocol::HEADER)
-        write([1, 1, Qrack::Protocol::VERSION_MAJOR, Qrack::Protocol::VERSION_MINOR].pack('C4'))
+        write([1, 1, Qrack::Protocol::VERSION_MINOR, Qrack::Protocol::VERSION_MAJOR].pack('C4'))
         raise Bunny::ProtocolError, 'Connection initiation failed' unless next_method.is_a?(Qrack::Protocol::Connection::Start)
 
         send_frame(

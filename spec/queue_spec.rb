@@ -8,7 +8,7 @@
 
 require File.expand_path(File.join(File.dirname(__FILE__), %w[.. lib bunny]))
 
-describe Bunny::Queue do
+describe Bunny do
 	
 	before(:each) do
     @b = Bunny.new
