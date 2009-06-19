@@ -33,4 +33,8 @@ describe Bunny do
 		@b.queues.has_key?('test1').should be true
   end
 
+	it "should be able to set QoS" do
+		@b.qos.should == :qos_ok
+	end
+
 end

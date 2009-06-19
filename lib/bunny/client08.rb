@@ -318,6 +318,48 @@ the message, potentially then delivering it to an alternative subscriber.
 	    )
 
 	  end
+
+=begin rdoc
+
+=== DESCRIPTION:
+
+Requests a specific quality of service. The QoS can be specified for the current channel
+or for all channels on the connection. The particular properties and semantics of a QoS
+method always depend on the content class semantics. Though the QoS method could in principle
+apply to both peers, it is currently meaningful only for the server.
+
+==== Options:
+
+* <tt>:prefetch_size => size in no. of octets (default = 0)</tt> - The client can request that
+messages be sent in advance so that when the client finishes processing a message, the following
+message is already held locally, rather than needing to be sent down the channel. Prefetching gives
+a performance improvement. This field specifies the prefetch window size in octets. The server
+will send a message in advance if it is equal to or smaller in size than the available prefetch
+size (and also falls into other prefetch limits). May be set to zero, meaning "no specific limit",
+although other prefetch limits may still apply. The prefetch-size is ignored if the no-ack option
+is set.
+* <tt>:prefetch_count => no. messages (default = 1)</tt> - Specifies a prefetch window in terms
+of whole messages. This field may be used in combination with the prefetch-size field; a message
+will only be sent in advance if both prefetch windows (and those at the channel and connection level)
+allow it. The prefetch-count is ignored if the no-ack option is set.
+* <tt>:global => true or false (_default_)</tt> - By default the QoS settings apply to the current channel only. If set to
+true, they are applied to the entire connection.
+
+=end
+			
+		def qos(opts = {})
+      
+      send_frame(
+        Qrack::Protocol::Basic::Qos.new({ :prefetch_size => 0, :prefetch_count => 1, :global => false }.merge(opts))
+      )
+
+      raise Bunny::ProtocolError,
+        "Error specifying Quality of Service" unless
+ 				next_method.is_a?(Qrack::Protocol::Basic::QosOk)
+      
+      # return confirmation
+      :qos_ok
+    end
 	
 		def logging=(bool)
 			@logging = bool
