@@ -9,7 +9,7 @@ Gem::Specification.new do |s|
   s.has_rdoc = true
  	s.extra_rdoc_files = [ "README" ]
   s.rdoc_options = [ "--main", "README" ]
-  s.homepage = %q{http://github.com/celldee/bunny}
+  s.homepage = %q{http://github.com/celldee/bunny/tree/master}
   s.summary = %q{A synchronous Ruby AMQP client that enables interaction with AMQP-compliant brokers/servers.}
   s.files = ["LICENSE",
 	 	"README",
