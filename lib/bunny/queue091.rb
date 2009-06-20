@@ -28,7 +28,8 @@ Queues must be attached to at least one exchange in order to receive messages fr
           :passive => false,
           :durable => false,
           :exclusive => true,
-          :auto_delete => true
+          :auto_delete => true,
+					:reserved_1 => 0
         }.merge(opts)
       end
 	
@@ -37,7 +38,7 @@ Queues must be attached to at least one exchange in order to receive messages fr
 			opts.delete(:nowait)
 			
 	    client.send_frame(
-	      Qrack::Protocol::Queue::Declare.new({ :queue => name || '', :nowait => false }.merge(opts))
+	      Qrack::Protocol::Queue::Declare.new({ :queue => name || '', :nowait => false, :reserved_1 => 0 }.merge(opts))
 	    )
 	
       method = client.next_method
