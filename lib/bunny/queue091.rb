@@ -111,7 +111,8 @@ a hash <tt>{:delivery_tag, :redelivered, :exchange, :routing_key, :message_count
 	      Qrack::Protocol::Basic::Get.new({ :queue => name,
 																	 :consumer_tag => name,
 																	 :no_ack => !ack,
-																	 :nowait => true }.merge(opts))
+																	 :nowait => true,
+																	 :reserved_1 => 0 }.merge(opts))
 	    )
 	
 			method = client.next_method
@@ -186,7 +187,7 @@ Returns hash {:message_count, :consumer_count}.
  
 	  def status
 	    client.send_frame(
-	      Qrack::Protocol::Queue::Declare.new({ :queue => name, :passive => true })
+	      Qrack::Protocol::Queue::Declare.new({ :queue => name, :passive => true, :reserved_1 => 0 })
 	    )
 	    method = client.next_method
 	    {:message_count => method.message_count, :consumer_count => method.consumer_count}
@@ -319,7 +320,8 @@ bound to the direct exchange '' by default. If error occurs, a _Bunny_::_Protoco
 	      Qrack::Protocol::Queue::Bind.new({ :queue => name,
 		 																:exchange => exchange,
 		 																:routing_key => opts.delete(:key),
-		 																:nowait => false }.merge(opts))
+		 																:nowait => false,
+		 																:reserved_1 => 0 }.merge(opts))
 	    )
 	
 			raise Bunny::ProtocolError,
@@ -360,7 +362,8 @@ Removes a queue binding from an exchange. If error occurs, a _Bunny_::_ProtocolE
 	      Qrack::Protocol::Queue::Unbind.new({ :queue => name,
 		 																	:exchange => exchange,
 		 																	:routing_key => opts.delete(:key),
-		 																	:nowait => false }.merge(opts)
+		 																	:nowait => false,
+		 																	:reserved_1 => 0 }.merge(opts)
 	      )
 	    )
 	
@@ -401,7 +404,7 @@ from queues if successful. If an error occurs raises _Bunny_::_ProtocolError_.
 			opts.delete(:nowait)
 			
 	    client.send_frame(
-	      Qrack::Protocol::Queue::Delete.new({ :queue => name, :nowait => false }.merge(opts))
+	      Qrack::Protocol::Queue::Delete.new({ :queue => name, :nowait => false, :reserved_1 => 0 }.merge(opts))
 	    )
 	
 			raise Bunny::ProtocolError,
@@ -436,7 +439,7 @@ without any formal "undo" mechanism. If an error occurs raises _Bunny_::_Protoco
 		opts.delete(:nowait)
 		
     client.send_frame(
-      Qrack::Protocol::Queue::Purge.new({ :queue => name, :nowait => false }.merge(opts))
+      Qrack::Protocol::Queue::Purge.new({ :queue => name, :nowait => false, :reserved_1 => 0 }.merge(opts))
     )
 
 		raise Bunny::ProtocolError, "Error purging queue #{name}" unless client.next_method.is_a?(Qrack::Protocol::Queue::PurgeOk)
@@ -448,7 +451,11 @@ without any formal "undo" mechanism. If an error occurs raises _Bunny_::_Protoco
 
 	private
 	  def exchange
-	    @exchange ||= Bunny::Exchange.new(client, '', {:type => :direct, :key => name})
+	    @exchange ||= Bunny::Exchange.new(client, '', { :type => :direct,
+		 																									:key => name,
+		 																									:reserved_1 => 0,
+																											:reserved_2 => 0,
+																											:reserved_3 => 0})
 	  end
 
 	  def bindings

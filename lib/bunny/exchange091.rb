@@ -59,7 +59,8 @@ specification that applies to your target broker/server.
       unless name == "amq.#{type}" or name == ''
         client.send_frame(
           Qrack::Protocol::Exchange::Declare.new(
-            { :exchange => name, :type => type, :nowait => false }.merge(opts)
+            { :exchange => name, :type => type, :nowait => false,
+	 						:reserved_1 => 0, :reserved_2 => 0, :reserved_3 => 0 }.merge(opts)
           )
         )
 
@@ -99,7 +100,7 @@ nil
       out = []
 
       out << Qrack::Protocol::Basic::Publish.new(
-        { :exchange => name, :routing_key => opts.delete(:key) || key }.merge(opts)
+        { :exchange => name, :routing_key => opts.delete(:key) || key, :reserved_1 => 0 }.merge(opts)
       )
       data = data.to_s
       out << Qrack::Protocol::Header.new(
@@ -140,7 +141,7 @@ if successful. If an error occurs raises _Bunny_::_ProtocolError_.
       opts.delete(:nowait)
       
       client.send_frame(
-        Qrack::Protocol::Exchange::Delete.new({ :exchange => name, :nowait => false }.merge(opts))
+        Qrack::Protocol::Exchange::Delete.new({ :exchange => name, :nowait => false, :reserved_1 => 0 }.merge(opts))
       )
 
       raise Bunny::ProtocolError,
