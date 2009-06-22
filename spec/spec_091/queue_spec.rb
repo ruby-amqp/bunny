@@ -6,12 +6,12 @@
 # If this is not the case, please change the 'Bunny.new' call below to include
 # the relevant arguments e.g. @b = Bunny.new(:user => 'john', :pass => 'doe', :host => 'foobar')
 
-require File.expand_path(File.join(File.dirname(__FILE__), %w[.. lib bunny]))
+require File.expand_path(File.join(File.dirname(__FILE__), %w[.. .. lib bunny]))
 
 describe Bunny do
 	
 	before(:each) do
-    @b = Bunny.new
+    @b = Bunny.new(:spec => '091')
 		@b.start
 	end
 	
@@ -30,7 +30,8 @@ describe Bunny do
 		q = @b.queue('test1')
 		q.bind(exch).should == :bind_ok
 	end
-	
+
+=begin	
 	it "should ignore the :nowait option when unbinding from an exchange" do
 		exch = @b.exchange('direct_exch')
 		q = @b.queue('test0')
@@ -42,6 +43,7 @@ describe Bunny do
 		q = @b.queue('test1')
 		q.unbind(exch).should == :unbind_ok
 	end
+=end
 
 	it "should be able to publish a message" do
 		q = @b.queue('test1')
