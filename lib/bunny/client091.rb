@@ -13,7 +13,7 @@ The Client class provides the major Bunny API methods.
     RETRY_DELAY     = 10.0
 
     attr_reader   :status, :host, :vhost, :port, :logging, :spec
-    attr_accessor :channel, :logfile, :exchanges, :queues, :ticket
+    attr_accessor :channel, :logfile, :exchanges, :queues
 
 =begin rdoc
 
@@ -158,7 +158,6 @@ Returns hash of queues declared by Bunny.
 
     def send_frame(*args)
       args.each do |data|
-        data.ticket  = ticket if ticket and data.respond_to?(:ticket=)
         data         = data.to_frame(channel) unless data.is_a?(Qrack::Transport::Frame)
         data.channel = channel
 
