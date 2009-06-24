@@ -51,6 +51,7 @@ describe Bunny do
 		@b.exchanges.has_key?('amq.topic').should be true
 	end
 
+=begin
 	it "should allow a default headers (amq.match) exchange to be instantiated without specifying :type" do
 		exch = @b.exchange('amq.match')
 		exch.should be_an_instance_of Bunny::Exchange
@@ -58,6 +59,7 @@ describe Bunny do
 		exch.type.should == :headers
 		@b.exchanges.has_key?('amq.match').should be true
 	end
+=end
 	
 	it "should allow a default headers (amq.headers) exchange to be instantiated without specifying :type" do
 		exch = @b.exchange('amq.headers')

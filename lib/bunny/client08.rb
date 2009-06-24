@@ -41,7 +41,7 @@ Sets up a Bunny::Client object ready for connection to a broker/server. _Client_
 =end
 
     def initialize(opts = {})
-			@spec = opts[:spec] || '08'
+			@spec = '0-8'
 			@host = opts[:host] || 'localhost'
 			@port = opts[:port] || Qrack::Protocol::PORT
       @user   = opts[:user]  || 'guest'
