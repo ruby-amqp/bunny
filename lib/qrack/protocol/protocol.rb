@@ -6,8 +6,6 @@ module Qrack
 	      opts = args.pop if args.last.is_a? Hash
 	      opts ||= {}
       
-	      @debug = 1 # XXX hack, p(obj) == '' if no instance vars are set
-      
 	      if args.size == 1 and args.first.is_a? Transport::Buffer
 	        buf = args.shift
 	      else
