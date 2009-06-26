@@ -6,7 +6,7 @@
 # DO NOT EDIT! (edit ext/qparser.rb and config.yml instead, and run 'ruby qparser.rb')
 
 module Qrack
-  module Protocol
+  module Protocol09
     HEADER        = "AMQP".freeze
     VERSION_MAJOR = 0
     VERSION_MINOR = 9
@@ -75,7 +75,7 @@ module Qrack
 
           def arguments() @arguments ||= [] end
 
-          def parent() Protocol.const_get(self.to_s[/Protocol::(.+?)::/,1]) end
+          def parent() Protocol09.const_get(self.to_s[/Protocol09::(.+?)::/,1]) end
           def id()     self::ID end
           def name()   self::NAME end
         end
@@ -113,8 +113,8 @@ module Qrack
           def self.inherited klass
             klass.const_set(:ID, #{id})
             klass.const_set(:NAME, :#{name.to_s})
-            Protocol.classes[#{id}] = klass
-            Protocol.classes[klass::NAME] = klass
+            Protocol09.classes[#{id}] = klass
+            Protocol09.classes[klass::NAME] = klass
           end
         ]
       end
@@ -123,7 +123,7 @@ module Qrack
 end
 
 module Qrack
-  module Protocol
+  module Protocol09
     class Connection   < Class(  10, :connection   ); end
     class Channel      < Class(  20, :channel      ); end
     class Exchange     < Class(  40, :exchange     ); end

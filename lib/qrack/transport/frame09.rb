@@ -5,7 +5,7 @@
 # DO NOT EDIT! (edit ext/qparser.rb and config.yml instead, and run 'ruby qparser.rb')
 
 module Qrack
-  module Transport
+  module Transport09
     class Frame
 
       FOOTER = 206
@@ -29,7 +29,7 @@ module Qrack
       end
 
       def to_binary
-        buf = Transport::Buffer.new
+        buf = Transport09::Buffer.new
         buf.write :octet, id
         buf.write :short, channel
         buf.write :longstr, payload
@@ -49,10 +49,10 @@ module Qrack
       end
 
       def self.parse buf
-        buf = Transport::Buffer.new(buf) unless buf.is_a? Transport::Buffer
+        buf = Transport09::Buffer.new(buf) unless buf.is_a? Transport09::Buffer
         buf.extract do
           id, channel, payload, footer = buf.read(:octet, :short, :longstr, :octet)
-          Qrack::Transport.const_get(@types[id]).new(payload, channel) if footer == FOOTER
+          Qrack::Transport09.const_get(@types[id]).new(payload, channel) if footer == FOOTER
         end
       end
 
@@ -64,8 +64,8 @@ module Qrack
 	
       def initialize payload = nil, channel = 0
         super
-        unless @payload.is_a? Protocol::Class::Method or @payload.nil?
-          @payload = Protocol.parse(@payload)
+        unless @payload.is_a? Protocol09::Class::Method or @payload.nil?
+          @payload = Protocol09.parse(@payload)
         end
       end
     end
@@ -76,8 +76,8 @@ module Qrack
 
       def initialize payload = nil, channel = 0
         super
-        unless @payload.is_a? Protocol::Header or @payload.nil?
-          @payload = Protocol::Header.new(@payload)
+        unless @payload.is_a? Protocol09::Header or @payload.nil?
+          @payload = Protocol09::Header.new(@payload)
         end
       end
     end

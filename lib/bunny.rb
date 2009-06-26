@@ -25,9 +25,10 @@ module Bunny
 	def self.new(opts = {})
 		# Set up Bunny according to AMQP spec version required
 		spec_version = opts[:spec] || '08'
-		setup(spec_version)
+		setup(spec_version, opts)
 		
-		Bunny::Client.new(opts)
+		# Return client
+		@client
 	end
 	
 	# Runs a code block using a short-lived connection
@@ -37,14 +38,13 @@ module Bunny
 
 		# Set up Bunny according to AMQP spec version required
 		spec_version = opts[:spec] || '08'
-		setup(spec_version)
+		setup(spec_version, opts)
 		
-    client = Bunny::Client.new(opts)
-    client.start
+    @client.start
 
-    block.call(client)
+    block.call(@client)
 
-    client.stop
+    @client.stop
 
 		# Return success
 		:run_ok
@@ -52,7 +52,7 @@ module Bunny
 
 	private
 	
-	def self.setup(version)
+	def self.setup(version, opts)
 
 		if version == '08'
 			# AMQP 0-8 specification
@@ -60,12 +60,16 @@ module Bunny
 			require 'bunny/client08'
 			require 'bunny/exchange08'
 			require 'bunny/queue08'
+			
+			@client = Bunny::Client.new(opts)
 		else
 			# AMQP 0-9-1 specification
-			require 'qrack/qrack091'
-			require 'bunny/client091'
-			require 'bunny/exchange091'
-			require 'bunny/queue091'
+			require 'qrack/qrack09'
+			require 'bunny/client09'
+			require 'bunny/exchange09'
+			require 'bunny/queue09'
+			
+			@client = Bunny::Client09.new(opts)
 		end			
 		
 		include Qrack

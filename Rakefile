@@ -8,12 +8,12 @@ task :spec08 do
 	end
 end
 
-desc "Run AMQP 0-9-1 rspec tests"
-task :spec091 do
+desc "Run AMQP 0-9 rspec tests"
+task :spec09 do
 	require 'spec/rake/spectask'
-	puts "===== Running 0-9-1 tests ====="
-	Spec::Rake::SpecTask.new("spec091") do |t|
-		t.spec_files = FileList["spec/spec_091/*_spec.rb"]
+	puts "===== Running 0-9 tests ====="
+	Spec::Rake::SpecTask.new("spec09") do |t|
+		t.spec_files = FileList["spec/spec_09/*_spec.rb"]
 		t.spec_opts = ['--color']
 	end
 end
@@ -21,4 +21,4 @@ end
 task :default => [ :spec08 ]
 
 desc "Run all rspec tests"
-task :all => [:spec08, :spec091]
+task :all => [:spec08, :spec09]

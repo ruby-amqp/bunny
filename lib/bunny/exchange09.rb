@@ -29,7 +29,7 @@ specification that applies to your target broker/server.
 
 =end
   
-  class Exchange
+  class Exchange09
 
     attr_reader :client, :type, :name, :opts, :key
 
@@ -58,7 +58,7 @@ specification that applies to your target broker/server.
       
       unless name == "amq.#{type}" or name == ''
         client.send_frame(
-          Qrack::Protocol::Exchange::Declare.new(
+          Qrack::Protocol09::Exchange::Declare.new(
             { :exchange => name, :type => type, :nowait => false,
 	 						:reserved_1 => 0, :reserved_2 => 0, :reserved_3 => 0 }.merge(opts)
           )
@@ -66,7 +66,7 @@ specification that applies to your target broker/server.
 
         raise Bunny::ProtocolError,
           "Error declaring exchange #{name}: type = #{type}" unless
-          client.next_method.is_a?(Qrack::Protocol::Exchange::DeclareOk)
+          client.next_method.is_a?(Qrack::Protocol09::Exchange::DeclareOk)
       end
     end
 
@@ -99,19 +99,19 @@ nil
     def publish(data, opts = {})
       out = []
 
-      out << Qrack::Protocol::Basic::Publish.new(
+      out << Qrack::Protocol09::Basic::Publish.new(
         { :exchange => name, :routing_key => opts.delete(:key) || key, :reserved_1 => 0 }.merge(opts)
       )
       data = data.to_s
-      out << Qrack::Protocol::Header.new(
-        Qrack::Protocol::Basic,
+      out << Qrack::Protocol09::Header.new(
+        Qrack::Protocol09::Basic,
         data.length, {
           :content_type  => 'application/octet-stream',
           :delivery_mode => (opts.delete(:persistent) ? 2 : 1),
           :priority      => 0 
         }.merge(opts)
       )
-      out << Qrack::Transport::Body.new(data)
+      out << Qrack::Transport09::Body.new(data)
 
       client.send_frame(*out)
     end
@@ -141,12 +141,12 @@ if successful. If an error occurs raises _Bunny_::_ProtocolError_.
       opts.delete(:nowait)
       
       client.send_frame(
-        Qrack::Protocol::Exchange::Delete.new({ :exchange => name, :nowait => false, :reserved_1 => 0 }.merge(opts))
+        Qrack::Protocol09::Exchange::Delete.new({ :exchange => name, :nowait => false, :reserved_1 => 0 }.merge(opts))
       )
 
       raise Bunny::ProtocolError,
         "Error deleting exchange #{name}" unless
-        client.next_method.is_a?(Qrack::Protocol::Exchange::DeleteOk)
+        client.next_method.is_a?(Qrack::Protocol09::Exchange::DeleteOk)
 
       client.exchanges.delete(name)
       

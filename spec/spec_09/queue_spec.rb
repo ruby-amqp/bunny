@@ -11,7 +11,7 @@ require File.expand_path(File.join(File.dirname(__FILE__), %w[.. .. lib bunny]))
 describe Bunny do
 	
 	before(:each) do
-    @b = Bunny.new(:spec => '091')
+    @b = Bunny.new(:spec => '09')
 		@b.start
 	end
 	
@@ -55,7 +55,7 @@ describe Bunny do
 		q = @b.queue('test1')
 		msg = q.pop(:header => true)
 		msg.should be_an_instance_of Hash
-		msg[:header].should be_an_instance_of Bunny::Protocol::Header
+		msg[:header].should be_an_instance_of Bunny::Protocol09::Header
 		msg[:payload].should == 'This is a test message'
 		msg[:delivery_details].should be_an_instance_of Hash
 		q.message_count.should == 0
