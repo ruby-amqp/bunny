@@ -60,7 +60,7 @@ specification that applies to your target broker/server.
         client.send_frame(
           Qrack::Protocol09::Exchange::Declare.new(
             { :exchange => name, :type => type, :nowait => false,
-	 						:reserved_1 => 1, :reserved_2 => false, :reserved_3 => false }.merge(opts)
+	 						:reserved_1 => 0, :reserved_2 => false, :reserved_3 => false }.merge(opts)
           )
         )
 

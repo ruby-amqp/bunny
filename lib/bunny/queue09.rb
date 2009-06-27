@@ -453,7 +453,7 @@ without any formal "undo" mechanism. If an error occurs raises _Bunny_::_Protoco
 	  def exchange
 	    @exchange ||= Bunny::Exchange09.new(client, '', { :type => :direct,
 		 																									:key => name,
-		 																									:reserved_1 => 1,
+		 																									:reserved_1 => 0,
 																											:reserved_2 => false,
 																											:reserved_3 => false})
 	  end
