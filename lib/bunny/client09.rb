@@ -130,7 +130,7 @@ Queue
 
       return queues[name] if queues.has_key?(name)
 
-      queue = Bunny::Queue.new(self, name, opts)
+      queue = Bunny::Queue09.new(self, name, opts)
       queues[queue.name] = queue
 	  end
 	

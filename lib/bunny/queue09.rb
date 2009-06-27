@@ -9,7 +9,7 @@ Queues must be attached to at least one exchange in order to receive messages fr
 
 =end
 
-	class Queue
+	class Queue09
 	  attr_reader :name, :client
 	  attr_accessor :delivery_tag
 
@@ -453,9 +453,9 @@ without any formal "undo" mechanism. If an error occurs raises _Bunny_::_Protoco
 	  def exchange
 	    @exchange ||= Bunny::Exchange09.new(client, '', { :type => :direct,
 		 																									:key => name,
-		 																									:reserved_1 => 0,
-																											:reserved_2 => 0,
-																											:reserved_3 => 0})
+		 																									:reserved_1 => 1,
+																											:reserved_2 => false,
+																											:reserved_3 => false})
 	  end
 
 	  def bindings

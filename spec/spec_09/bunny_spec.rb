@@ -21,14 +21,14 @@ describe Bunny do
 
 	it "should be able to create an exchange" do
 		exch = @b.exchange('test_exchange')
-		exch.should be_an_instance_of Bunny::Exchange
+		exch.should be_an_instance_of Bunny::Exchange09
 		exch.name.should == 'test_exchange'
 		@b.exchanges.has_key?('test_exchange').should be true
 	end
 
 	it "should be able to create a queue" do
 		q = @b.queue('test1')
-		q.should be_an_instance_of Bunny::Queue
+		q.should be_an_instance_of Bunny::Queue09
 		q.name.should == 'test1'
 		@b.queues.has_key?('test1').should be true
   end
