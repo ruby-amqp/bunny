@@ -118,8 +118,7 @@ module Qrack
 	    end
 
 	    def method_missing meth, *args, &blk
-	      @properties.has_key?(meth) || @klass.properties.find{|_,name| name == meth } ? @properties[meth] :
-	                                                                                     super
+	      @properties.has_key?(meth) || @klass.properties.find{|_,name| name == meth } ? @properties[meth] : super
 	    end
 	  end
 

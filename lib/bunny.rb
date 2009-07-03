@@ -52,14 +52,14 @@ module Bunny
 
 	private
 	
-	def self.setup(version, opts)
-
+	def self.setup(version, opts)	
 		if version == '08'
 			# AMQP 0-8 specification
 			require 'qrack/qrack08'
 			require 'bunny/client08'
 			require 'bunny/exchange08'
 			require 'bunny/queue08'
+			require 'bunny/channel08'
 			
 			@client = Bunny::Client.new(opts)
 		else
@@ -68,6 +68,7 @@ module Bunny
 			require 'bunny/client09'
 			require 'bunny/exchange09'
 			require 'bunny/queue09'
+			require 'bunny/channel09'
 			
 			@client = Bunny::Client09.new(opts)
 		end			

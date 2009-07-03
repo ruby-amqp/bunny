@@ -38,11 +38,15 @@ Sets up a Bunny::Client object ready for connection to a broker/server. _Client_
       @user   = opts[:user]  || 'guest'
       @pass   = opts[:pass]  || 'guest'
       @vhost  = opts[:vhost] || '/'
+			@frame_max = opts[:frame_max] || 131072
+			@channel_max = opts[:channel_max] || 5
 			@logfile = opts[:logfile] || nil
 			@logging = opts[:logging] || false
       @status = :not_connected
 			@logger = nil
 			create_logger if @logging
+			# Create channel 0
+      @channel = Bunny::Channel.new(self, true)
     end
 
 =begin rdoc
@@ -73,6 +77,7 @@ Exchange
 =end
 
 		def exchange(name, opts = {})
+			return exchanges[name] if exchanges.has_key?(name)
 			exchanges[name] ||= Bunny::Exchange09.new(self, name, opts)
 		end
 
@@ -131,7 +136,6 @@ Queue
       return queues[name] if queues.has_key?(name)
 
       queue = Bunny::Queue09.new(self, name, opts)
-      queues[queue.name] = queue
 	  end
 	
 =begin rdoc
@@ -148,8 +152,8 @@ Returns hash of queues declared by Bunny.
 
     def send_frame(*args)
       args.each do |data|
-        data         = data.to_frame(channel) unless data.is_a?(Qrack::Transport09::Frame)
-        data.channel = channel
+        data         = data.to_frame(channel.number) unless data.is_a?(Qrack::Transport09::Frame)
+        data.channel = channel.number
 
         @logger.info("send") { data } if @logging
         write(data.to_s)
@@ -186,12 +190,14 @@ _Bunny_::_ProtocolError_ is raised. If successful, _Client_._status_ is set to <
 =end
 
     def close
-      send_frame(
-        Qrack::Protocol09::Channel::Close.new(:reply_code => 200, :reply_text => 'bye', :method_id => 0, :class_id => 0)
-      )
-      raise Bunny::ProtocolError, "Error closing channel #{channel}" unless next_method.is_a?(Qrack::Protocol09::Channel::CloseOk)
+			# Close all active channels
+			channels.each do |idx, c|
+				c.close if c.open?
+			end
+			
+			# Set client channel to zero
+      self.channel = channels[0]
 
-      self.channel = 0
       send_frame(
         Qrack::Protocol09::Connection::Close.new(:reply_code => 200, :reply_text => 'Goodbye', :class_id => 0, :method_id => 0)
       )
@@ -226,8 +232,7 @@ _Bunny_::_ProtocolError_ is raised. If successful, _Client_._status_ is set to <
 		def start_session
 			# Create/get socket
 			socket
-		
-      @channel = 0
+
       write(Qrack::Protocol09::HEADER)
       write([0, Qrack::Protocol09::VERSION_MAJOR, Qrack::Protocol09::VERSION_MINOR, Qrack::Protocol09::REVISION].pack('C4'))
       raise Bunny::ProtocolError, 'Connection initiation failed' unless next_method.is_a?(Qrack::Protocol09::Connection::Start)
@@ -246,19 +251,19 @@ _Bunny_::_ProtocolError_ is raised. If successful, _Client_._status_ is set to <
 
       if method.is_a?(Qrack::Protocol09::Connection::Tune)
         send_frame(
-          Qrack::Protocol09::Connection::TuneOk.new( :channel_max => 5, :frame_max => 131072, :heartbeat => 0)
+          Qrack::Protocol09::Connection::TuneOk.new( :channel_max => @channel_max, :frame_max => @frame_max, :heartbeat => 0)
         )
       end
 
       send_frame(
-        Qrack::Protocol09::Connection::Open.new(:virtual_host => @vhost, :capabilities => '')
+        Qrack::Protocol09::Connection::Open.new(:virtual_host => @vhost, :reserved_1 => 0, :reserved_2 => false)
       )
 
       raise Bunny::ProtocolError, 'Cannot open connection' unless next_method.is_a?(Qrack::Protocol09::Connection::OpenOk)
 
-      @channel = 1
-      send_frame(Qrack::Protocol09::Channel::Open.new)
-      raise Bunny::ProtocolError, "Cannot open channel #{channel}" unless next_method.is_a?(Qrack::Protocol09::Channel::OpenOk)
+			# Open a new channel
+			self.channel = Bunny::Channel.new(self)
+			channel.open
 
 			# return status
 			status
@@ -334,6 +339,10 @@ true, they are applied to the entire connection.
 		def logging=(bool)
 			@logging = bool
 			create_logger if @logging
+		end
+		
+		def channels
+			@channels ||= {}
 		end
 
   private

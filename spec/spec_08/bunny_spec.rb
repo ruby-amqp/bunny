@@ -9,12 +9,12 @@
 require File.expand_path(File.join(File.dirname(__FILE__), %w[.. .. lib bunny]))
 
 describe Bunny do
-	
+
 	before(:each) do
     @b = Bunny.new
 		@b.start
 	end
-	
+
   it "should connect to an AMQP server" do
     @b.status.should == :connected
   end
@@ -36,5 +36,5 @@ describe Bunny do
 	it "should be able to set QoS" do
 		@b.qos.should == :qos_ok
 	end
-
+	
 end

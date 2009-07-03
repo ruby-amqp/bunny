@@ -45,6 +45,7 @@ Queues must be attached to at least one exchange in order to receive messages fr
 			raise Bunny::ProtocolError, "Error declaring queue #{name}" unless method.is_a?(Qrack::Protocol09::Queue::DeclareOk)
 
       @name = method.queue
+			client.queues[@name] = self
 	  end
 
 =begin rdoc

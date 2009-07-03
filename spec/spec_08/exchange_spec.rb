@@ -9,12 +9,12 @@
 require File.expand_path(File.join(File.dirname(__FILE__), %w[.. .. lib bunny]))
 
 describe Bunny do
-	
+
 	before(:each) do
     @b = Bunny.new
 		@b.start
 	end
-		
+
 	it "should raise an error if instantiated as non-existent type" do
 		lambda { @b.exchange('bogus_ex', :type => :bogus) }.should raise_error(Bunny::ProtocolError)
 	end
