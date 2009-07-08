@@ -173,7 +173,7 @@ Returns hash of queues declared by Bunny.
 
     def next_payload
       frame = next_frame
-      frame and frame.payload
+			frame.payload
     end
 
 =begin rdoc

@@ -239,10 +239,11 @@ If <tt>:header => false</tt> only message payload is returned.
 			ack = opts.delete(:ack)
 			
 			client.send_frame(
-				Qrack::Protocol09::Basic::Consume.new({ :queue => name,
-																	 		 :consumer_tag => consumer_tag,
-																	 		 :no_ack => !ack,
-																	 		 :nowait => false }.merge(opts))
+				Qrack::Protocol09::Basic::Consume.new({ :reserved_1 => 0,
+																			 					:queue => name,
+																	 		 					:consumer_tag => consumer_tag,
+																	 		 					:no_ack => !ack,
+																	 		 					:nowait => false }.merge(opts))
 			)
 			
 			raise Bunny::ProtocolError,
