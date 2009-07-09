@@ -11,17 +11,21 @@ module Bunny
 		end
 		
 		def open
-			client.send_frame(Qrack::Protocol::Channel::Open.new)
-      raise Bunny::ProtocolError, "Cannot open channel #{client.channel.number}" unless client.next_method.is_a?(Qrack::Protocol::Channel::OpenOk)
+			client.channel = self
+			client.send_frame(Qrack::Protocol08::Channel::Open.new)
+      raise Bunny::ProtocolError, "Cannot open channel #{number}" unless client.next_method.is_a?(Qrack::Protocol08::Channel::OpenOk)
 
-			@active = true
+			active = true
 		end
 		
 		def close
+			client.channel = self
 			client.send_frame(
-	      Qrack::Protocol::Channel::Close.new(:reply_code => 200, :reply_text => 'bye', :method_id => 0, :class_id => 0)
+	      Qrack::Protocol08::Channel::Close.new(:reply_code => 200, :reply_text => 'bye', :method_id => 0, :class_id => 0)
 	    )
-	    raise Bunny::ProtocolError, "Error closing channel #{client.channel.number}" unless client.next_method.is_a?(Qrack::Protocol::Channel::CloseOk)
+	    raise Bunny::ProtocolError, "Error closing channel #{number}" unless client.next_method.is_a?(Qrack::Protocol08::Channel::CloseOk)
+	
+			active = false
 		end
 		
 		def open?

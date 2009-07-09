@@ -191,7 +191,7 @@ _Bunny_::_ProtocolError_ is raised. If successful, _Client_._status_ is set to <
 
     def close
 			# Close all active channels
-			channels.each do |idx, c|
+			channels.each do |k, c|
 				c.close if c.open?
 			end
 			
