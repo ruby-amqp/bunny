@@ -1,5 +1,5 @@
 module Bunny
-	class Channel
+	class Channel09
 		attr_accessor :number, :active
 		attr_reader :client
 		
@@ -15,7 +15,8 @@ module Bunny
 			client.send_frame(Qrack::Protocol09::Channel::Open.new)
       raise Bunny::ProtocolError, "Cannot open channel #{number}" unless client.next_method.is_a?(Qrack::Protocol09::Channel::OpenOk)
 
-			active = true
+			@active = true
+			:open_ok
 		end
 		
 		def close
@@ -25,7 +26,8 @@ module Bunny
 	    )
 	    raise Bunny::ProtocolError, "Error closing channel #{number}" unless client.next_method.is_a?(Qrack::Protocol09::Channel::CloseOk)
 	
-			active = false
+			@active = false
+			:close_ok
 		end
 		
 		def open?

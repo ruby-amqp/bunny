@@ -175,14 +175,12 @@ Returns hash of queues declared by Bunny.
       frame
     end
 
-    def next_method
-      next_payload
-    end
-
     def next_payload
       frame = next_frame
 			frame.payload
     end
+
+		alias next_method next_payload
 
 =begin rdoc
 
@@ -199,7 +197,7 @@ _Bunny_::_ProtocolError_ is raised. If successful, _Client_._status_ is set to <
 
     def close
 			# Close all active channels
-			channels.each do |k, c|
+			channels.each_value do |c|
 				c.close if c.open?
 			end
 			
@@ -281,8 +279,8 @@ _Bunny_::_ProtocolError_ is raised. If successful, _Client_._status_ is set to <
         end
       end
 
-			# Open a new channel
-			self.channel = Bunny::Channel.new(self)
+			# Open a channel
+			self.channel = get_channel
 			channel.open
 			
       send_frame(
@@ -370,6 +368,14 @@ true, they are applied to the entire connection.
 			
 		def channels
 			@channels ||= {}
+		end
+		
+		def get_channel
+			channels.each_value do |c|
+				return c if (!c.open? and c.number != 0)
+			end
+			# If no channel to re-use instantiate new one
+			Bunny::Channel.new(self)
 		end
 
   private
