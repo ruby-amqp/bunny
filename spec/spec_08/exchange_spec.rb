@@ -51,9 +51,6 @@ describe Bunny do
 		@b.exchanges.has_key?('amq.topic').should be true
 	end
 
-	
-=begin
-	#*** Uncomment these tests if your broker/server supports headers exchanges ***
 	it "should allow a default headers (amq.match) exchange to be instantiated without specifying :type" do
 		exch = @b.exchange('amq.match')
 		exch.should be_an_instance_of Bunny::Exchange
@@ -69,7 +66,6 @@ describe Bunny do
 		exch.type.should == :headers
 		@b.exchanges.has_key?('amq.headers').should be true
 	end
-=end
 	
 	it "should create an exchange as direct by default" do
 		exch = @b.exchange('direct_defaultex')
@@ -103,8 +99,6 @@ describe Bunny do
 		@b.exchanges.has_key?('fanout_exchange').should be true
 	end
 
-=begin
-	#*** Uncomment this test if your broker/server supports headers exchanges ***	
 	it "should be able to be instantiated as a headers exchange" do
 		exch = @b.exchange('headers_exchange', :type => :headers)
 		exch.should be_an_instance_of Bunny::Exchange
@@ -112,7 +106,6 @@ describe Bunny do
 		exch.type.should == :headers
 		@b.exchanges.has_key?('headers_exchange').should be true
 	end
-=end
 	
 	it "should ignore the :nowait option when instantiated" do
 		exch = @b.exchange('direct2_exchange', :nowait => true)
