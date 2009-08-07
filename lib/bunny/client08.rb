@@ -323,6 +323,66 @@ true, they are applied to the entire connection.
       # return confirmation
       :qos_ok
     end
+
+=begin rdoc
+
+=== DESCRIPTION:
+This method sets the channel to use standard transactions. The
+client must use this method at least once on a channel before
+using the Commit or Rollback methods.
+
+=end
+
+		def tx_select
+			send_frame(Qrack::Protocol::Tx::Select.new())
+			
+			raise Bunny::ProtocolError,
+        "Error initiating transactions for current channel" unless
+ 				next_method.is_a?(Qrack::Protocol::Tx::SelectOk)
+
+			# return confirmation
+			:select_ok
+		end
+		
+=begin rdoc
+
+=== DESCRIPTION:
+This method commits all messages published and acknowledged in
+the current transaction. A new transaction starts immediately
+after a commit.
+
+=end
+		
+		def tx_commit
+			send_frame(Qrack::Protocol::Tx::Commit.new())
+			
+			raise Bunny::ProtocolError,
+        "Error commiting transaction" unless
+ 				next_method.is_a?(Qrack::Protocol::Tx::CommitOk)
+
+			# return confirmation
+			:commit_ok
+		end
+		
+=begin rdoc
+
+=== DESCRIPTION:
+This method abandons all messages published and acknowledged in
+the current transaction. A new transaction starts immediately
+after a rollback.
+
+=end
+		
+		def tx_rollback
+			send_frame(Qrack::Protocol::Tx::Rollback.new())
+			
+			raise Bunny::ProtocolError,
+        "Error rolling back transaction" unless
+ 				next_method.is_a?(Qrack::Protocol::Tx::RollbackOk)
+
+			# return confirmation
+			:rollback_ok
+		end
 	
 		def logging=(bool)
 			@logging = bool
