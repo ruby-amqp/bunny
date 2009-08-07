@@ -204,11 +204,10 @@ _Bunny_::_ProtocolError_ is raised. If successful, _Client_._status_ is set to <
 			# Set client channel to zero
       self.channel = channels[0]
 
-      send_frame(
-        Qrack::Protocol::Connection::Close.new(:reply_code => 200, :reply_text => 'Goodbye', :class_id => 0, :method_id => 0)
-      )
-      raise Bunny::ProtocolError, "Error closing connection" unless next_method.is_a?(Qrack::Protocol::Connection::CloseOk)
+			# Close connection to AMQP server
+			close_connection
 
+			# Close TCP Socket
       close_socket
     end
 
@@ -239,56 +238,20 @@ _Bunny_::_ProtocolError_ is raised. If successful, _Client_._status_ is set to <
       loop do
 				# Create/get socket
 				socket
+				
+				# Initiate connection
+				init_connection
 
-        write(Qrack::Protocol::HEADER)
-        write([1, 1, Qrack::Protocol::VERSION_MAJOR, Qrack::Protocol::VERSION_MINOR].pack('C4'))
-        raise Bunny::ProtocolError, 'Connection initiation failed' unless next_method.is_a?(Qrack::Protocol::Connection::Start)
-
-        send_frame(
-          Qrack::Protocol::Connection::StartOk.new(
-            {:platform => 'Ruby', :product => 'Bunny', :information => 'http://github.com/celldee/bunny', :version => VERSION},
-            'AMQPLAIN',
-            {:LOGIN => @user, :PASSWORD => @pass},
-            'en_US'
-          )
-        )
-
-        method = next_method
-        raise Bunny::ProtocolError, "Connection failed - user: #{@user}, pass: #{@pass}" if method.nil?
-
-        if method.is_a?(Qrack::Protocol::Connection::Tune)
-          send_frame(
-            Qrack::Protocol::Connection::TuneOk.new( :channel_max => @channel_max, :frame_max => @frame_max, :heartbeat => 0)
-          )
-        end
-
-        send_frame(
-          Qrack::Protocol::Connection::Open.new(:virtual_host => @vhost, :capabilities => '', :insist => @insist)
-        )
-
-        case method = next_method
-        when Qrack::Protocol::Connection::OpenOk
-          break
-        when Qrack::Protocol::Connection::Redirect
-					raise Bunny::ConnectionError, "Cannot connect to the specified server - host: #{@host}, port: #{@port}" if @insist
-					
-          @host, @port = method.host.split(':')
-          close_socket
-        else
-          raise Bunny::ProtocolError, 'Cannot open connection'
-        end
+				# Open connection
+				break if open_connection == :ok
       end
 
 			# Open a channel
 			self.channel = get_channel
 			channel.open
 			
-      send_frame(
-        Qrack::Protocol::Access::Request.new(:realm => '/data', :read => true, :write => true, :active => true, :passive => true)
-      )
-      method = next_method
-      raise Bunny::ProtocolError, 'Access denied' unless method.is_a?(Qrack::Protocol::Access::RequestOk)
-      self.ticket = method.ticket
+			# Get access ticket
+			request_access
 
 			# return status
 			status
@@ -376,6 +339,64 @@ true, they are applied to the entire connection.
 			end
 			# If no channel to re-use instantiate new one
 			Bunny::Channel.new(self)
+		end
+		
+		def init_connection
+			write(Qrack::Protocol::HEADER)
+      write([1, 1, Qrack::Protocol::VERSION_MAJOR, Qrack::Protocol::VERSION_MINOR].pack('C4'))
+      raise Bunny::ProtocolError, 'Connection initiation failed' unless next_method.is_a?(Qrack::Protocol::Connection::Start)
+		end
+		
+		def open_connection
+			send_frame(
+        Qrack::Protocol::Connection::StartOk.new(
+          {:platform => 'Ruby', :product => 'Bunny', :information => 'http://github.com/celldee/bunny', :version => VERSION},
+          'AMQPLAIN',
+          {:LOGIN => @user, :PASSWORD => @pass},
+          'en_US'
+        )
+      )
+
+      method = next_method
+      raise Bunny::ProtocolError, "Connection failed - user: #{@user}, pass: #{@pass}" if method.nil?
+
+      if method.is_a?(Qrack::Protocol::Connection::Tune)
+        send_frame(
+          Qrack::Protocol::Connection::TuneOk.new( :channel_max => @channel_max, :frame_max => @frame_max, :heartbeat => 0)
+        )
+      end
+
+      send_frame(
+        Qrack::Protocol::Connection::Open.new(:virtual_host => @vhost, :capabilities => '', :insist => @insist)
+      )
+
+      case method = next_method
+      when Qrack::Protocol::Connection::OpenOk
+        return :ok
+      when Qrack::Protocol::Connection::Redirect
+				raise Bunny::ConnectionError, "Cannot connect to the specified server - host: #{@host}, port: #{@port}" if @insist
+				
+        @host, @port = method.host.split(':')
+        close_socket
+      else
+        raise Bunny::ProtocolError, 'Cannot open connection'
+      end
+		end
+
+		def close_connection
+			send_frame(
+	      Qrack::Protocol::Connection::Close.new(:reply_code => 200, :reply_text => 'Goodbye', :class_id => 0, :method_id => 0)
+	    )
+	    raise Bunny::ProtocolError, "Error closing connection" unless next_method.is_a?(Qrack::Protocol::Connection::CloseOk)
+    end
+
+		def request_access
+			send_frame(
+        Qrack::Protocol::Access::Request.new(:realm => '/data', :read => true, :write => true, :active => true, :passive => true)
+      )
+      method = next_method
+      raise Bunny::ProtocolError, 'Access denied' unless method.is_a?(Qrack::Protocol::Access::RequestOk)
+      self.ticket = method.ticket
 		end
 
   private

@@ -196,11 +196,10 @@ _Bunny_::_ProtocolError_ is raised. If successful, _Client_._status_ is set to <
 			# Set client channel to zero
       self.channel = channels[0]
 
-      send_frame(
-        Qrack::Protocol09::Connection::Close.new(:reply_code => 200, :reply_text => 'Goodbye', :class_id => 0, :method_id => 0)
-      )
-      raise Bunny::ProtocolError, "Error closing connection" unless next_method.is_a?(Qrack::Protocol09::Connection::CloseOk)
+			# Close connection to AMQP server
+			close_connection
 
+			# Close TCP socket
       close_socket
     end
 
@@ -230,34 +229,12 @@ _Bunny_::_ProtocolError_ is raised. If successful, _Client_._status_ is set to <
 		def start_session
 			# Create/get socket
 			socket
-
-      write(Qrack::Protocol09::HEADER)
-      write([0, Qrack::Protocol09::VERSION_MAJOR, Qrack::Protocol09::VERSION_MINOR, Qrack::Protocol09::REVISION].pack('C4'))
-      raise Bunny::ProtocolError, 'Connection initiation failed' unless next_method.is_a?(Qrack::Protocol09::Connection::Start)
-
-      send_frame(
-        Qrack::Protocol09::Connection::StartOk.new(
-          :client_properties => {:platform => 'Ruby', :product => 'Bunny', :information => 'http://github.com/celldee/bunny', :version => VERSION},
-          :mechanism => 'PLAIN',
-					:response => "\0" + @user + "\0" + @pass,
-          :locale => 'en_US'
-        )
-      )
-
-      method = next_method
-      raise Bunny::ProtocolError, "Connection failed - user: #{@user}, pass: #{@pass}" if method.nil?
-
-      if method.is_a?(Qrack::Protocol09::Connection::Tune)
-        send_frame(
-          Qrack::Protocol09::Connection::TuneOk.new( :channel_max => @channel_max, :frame_max => @frame_max, :heartbeat => 0)
-        )
-      end
-
-      send_frame(
-        Qrack::Protocol09::Connection::Open.new(:virtual_host => @vhost, :reserved_1 => 0, :reserved_2 => false)
-      )
-
-      raise Bunny::ProtocolError, 'Cannot open connection' unless next_method.is_a?(Qrack::Protocol09::Connection::OpenOk)
+			
+			# Initiate connection
+			init_connection
+			
+			# Open connection
+			open_connection
 
 			# Open a channel
 			self.channel = get_channel
@@ -349,6 +326,45 @@ true, they are applied to the entire connection.
 			end
 			# If no channel to re-use instantiate new one
 			Bunny::Channel09.new(self)
+		end
+		
+		def init_connection
+			write(Qrack::Protocol09::HEADER)
+      write([0, Qrack::Protocol09::VERSION_MAJOR, Qrack::Protocol09::VERSION_MINOR, Qrack::Protocol09::REVISION].pack('C4'))
+      raise Bunny::ProtocolError, 'Connection initiation failed' unless next_method.is_a?(Qrack::Protocol09::Connection::Start)
+		end
+		
+		def open_connection
+			send_frame(
+        Qrack::Protocol09::Connection::StartOk.new(
+          :client_properties => {:platform => 'Ruby', :product => 'Bunny', :information => 'http://github.com/celldee/bunny', :version => VERSION},
+          :mechanism => 'PLAIN',
+					:response => "\0" + @user + "\0" + @pass,
+          :locale => 'en_US'
+        )
+      )
+
+      method = next_method
+      raise Bunny::ProtocolError, "Connection failed - user: #{@user}, pass: #{@pass}" if method.nil?
+
+      if method.is_a?(Qrack::Protocol09::Connection::Tune)
+        send_frame(
+          Qrack::Protocol09::Connection::TuneOk.new( :channel_max => @channel_max, :frame_max => @frame_max, :heartbeat => 0)
+        )
+      end
+
+      send_frame(
+        Qrack::Protocol09::Connection::Open.new(:virtual_host => @vhost, :reserved_1 => 0, :reserved_2 => false)
+      )
+
+      raise Bunny::ProtocolError, 'Cannot open connection' unless next_method.is_a?(Qrack::Protocol09::Connection::OpenOk)
+		end
+		
+		def close_connection
+			send_frame(
+        Qrack::Protocol09::Connection::Close.new(:reply_code => 200, :reply_text => 'Goodbye', :class_id => 0, :method_id => 0)
+      )
+      raise Bunny::ProtocolError, "Error closing connection" unless next_method.is_a?(Qrack::Protocol09::Connection::CloseOk)
 		end
 
   private
