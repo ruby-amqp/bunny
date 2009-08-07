@@ -1,8 +1,8 @@
 Gem::Specification.new do |s|
   s.name = %q{bunny}
-  s.version = "0.4.4"
+  s.version = "0.5.0"
   s.authors = ["Chris Duncan"]
-  s.date = %q{2009-06-19}
+  s.date = %q{2009-08-08}
   s.description = %q{Another synchronous Ruby AMQP client}
   s.email = %q{celldee@gmail.com}
   s.rubyforge_project = %q{bunny-amqp}
@@ -49,10 +49,10 @@ Gem::Specification.new do |s|
 		"lib/qrack/transport/buffer09.rb",
 		"lib/qrack/transport/frame08.rb",
 		"lib/qrack/transport/frame09.rb",
-		"spec/spec08/bunny_spec.rb",
-		"spec/spec08/exchange_spec.rb",
-		"spec/spec08/queue_spec.rb",
-		"spec/spec09/bunny_spec.rb",
-		"spec/spec09/exchange_spec.rb",
-		"spec/spec09/queue_spec.rb"]
+		"spec/spec_08/bunny_spec.rb",
+		"spec/spec_08/exchange_spec.rb",
+		"spec/spec_08/queue_spec.rb",
+		"spec/spec_09/bunny_spec.rb",
+		"spec/spec_09/exchange_spec.rb",
+		"spec/spec_09/queue_spec.rb"]
 end
