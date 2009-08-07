@@ -31,7 +31,6 @@ describe Bunny do
 		q.bind(exch).should == :bind_ok
 	end
 
-=begin	
 	it "should ignore the :nowait option when unbinding from an exchange" do
 		exch = @b.exchange('direct_exch')
 		q = @b.queue('test0')
@@ -43,7 +42,6 @@ describe Bunny do
 		q = @b.queue('test1')
 		q.unbind(exch).should == :unbind_ok
 	end
-=end
 
 	it "should be able to publish a message" do
 		q = @b.queue('test1')
