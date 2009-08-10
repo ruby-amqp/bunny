@@ -246,6 +246,10 @@ If <tt>:header => false</tt> only message payload is returned.
 			raise Bunny::ProtocolError,
 				"Error subscribing to queue #{name}" unless
 				client.next_method.is_a?(Qrack::Protocol::Basic::ConsumeOk)
+				
+			# Close cleanly if process terminated or interrupted
+			trap("TERM") {client.close; exit}
+			trap("INT") {client.close; exit}
 			
 			while true
 				method = client.next_method
