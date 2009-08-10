@@ -263,7 +263,7 @@ _Bunny_::_ProtocolError_ is raised. If successful, _Client_._status_ is set to <
 
 === DESCRIPTION:
 
-Asks the broker to redeliver all unacknowledged messages on a specifieid channel. Zero or
+Asks the broker to redeliver all unacknowledged messages on a specified channel. Zero or
 more messages may be redelivered.
 
 ==== Options:
