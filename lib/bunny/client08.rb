@@ -50,6 +50,7 @@ Sets up a Bunny::Client object ready for connection to a broker/server. _Client_
       @status = :not_connected
 			@frame_max = opts[:frame_max] || 131072
 			@channel_max = opts[:channel_max] || 0
+			@heartbeat = opts[:heartbeat] || 0
 			@logger = nil
 			create_logger if @logging
 			# Create channel 0
@@ -422,7 +423,7 @@ after a rollback.
 
       if method.is_a?(Qrack::Protocol::Connection::Tune)
         send_frame(
-          Qrack::Protocol::Connection::TuneOk.new( :channel_max => @channel_max, :frame_max => @frame_max, :heartbeat => 0)
+          Qrack::Protocol::Connection::TuneOk.new( :channel_max => @channel_max, :frame_max => @frame_max, :heartbeat => @heartbeat)
         )
       end
 
