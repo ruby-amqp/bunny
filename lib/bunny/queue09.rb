@@ -261,7 +261,6 @@ If <tt>:header => false</tt> only message payload is returned.
 						method = client.next_method
 					end
 				rescue Timeout::Error
-					client.close
 					return :timed_out
 				end
 
