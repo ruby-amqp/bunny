@@ -225,6 +225,7 @@ If <tt>:header => false</tt> only message payload is returned.
 	
 		def subscribe(opts = {}, &blk)
 			consumer_tag = opts[:consumer_tag] || name
+			secs = opts[:timeout] || 0
 			
 			# ignore the :nowait option if passed, otherwise program will hang waiting for a
 			# response from the server causing an error.
@@ -252,7 +253,14 @@ If <tt>:header => false</tt> only message payload is returned.
 			trap("INT") {client.close; exit}
 			
 			while true
-				method = client.next_method
+				begin
+					Timeout::timeout(secs) do
+						method = client.next_method
+					end
+				rescue Timeout::Error
+					client.close
+					return :timed_out
+				end
 
 				break if method.is_a?(Qrack::Protocol::Basic::CancelOk)
 			
