@@ -156,6 +156,17 @@ Returns hash of queues declared by Bunny.
 		def queues
 			@queues ||= {}
 		end
+		
+		def send_heartbeat
+			# Create a new heartbeat frame
+			hb = Qrack::Transport::Heartbeat.new('')
+			
+			# Channel 0 must be used
+			@channel = channels[0] if @channel.number > 0
+			
+			# Send the heartbeat to server
+			send_frame(hb)
+		end
 
     def send_frame(*args)
       args.each do |data|
