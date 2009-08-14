@@ -255,16 +255,16 @@ If <tt>:header => false</tt> only message payload is returned.
 			while true
 				begin
 					Timeout::timeout(secs) do
-						method = client.next_method
+						@method = client.next_method
 					end
 				rescue Timeout::Error
 					return :timed_out
 				end
 
-				break if method.is_a?(Qrack::Protocol::Basic::CancelOk)
+				break if @method.is_a?(Qrack::Protocol::Basic::CancelOk)
 			
 				# get delivery tag to use for acknowledge
-				self.delivery_tag = method.delivery_tag if ack
+				self.delivery_tag = @method.delivery_tag if ack
 			
 				header = client.next_payload
 		    msg    = client.next_payload
