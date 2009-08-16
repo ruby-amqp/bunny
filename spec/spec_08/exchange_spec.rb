@@ -21,90 +21,90 @@ describe Bunny do
 	
 	it "should allow a default direct exchange to be instantiated by specifying :type" do
 		exch = @b.exchange('amq.direct', :type => :direct)
-		exch.should be_an_instance_of Bunny::Exchange
+		exch.should be_an_instance_of(Bunny::Exchange)
 		exch.name.should == 'amq.direct'
 		exch.type.should == :direct
-		@b.exchanges.has_key?('amq.direct').should be true
+		@b.exchanges.has_key?('amq.direct').should be(true)
 	end
 	
 	it "should allow a default direct exchange to be instantiated without specifying :type" do
 		exch = @b.exchange('amq.direct')
-		exch.should be_an_instance_of Bunny::Exchange
+		exch.should be_an_instance_of(Bunny::Exchange)
 		exch.name.should == 'amq.direct'
 		exch.type.should == :direct
-		@b.exchanges.has_key?('amq.direct').should be true
+		@b.exchanges.has_key?('amq.direct').should be(true)
 	end
 	
 	it "should allow a default fanout exchange to be instantiated without specifying :type" do
 		exch = @b.exchange('amq.fanout')
-		exch.should be_an_instance_of Bunny::Exchange
+		exch.should be_an_instance_of(Bunny::Exchange)
 		exch.name.should == 'amq.fanout'
 		exch.type.should == :fanout
-		@b.exchanges.has_key?('amq.fanout').should be true
+		@b.exchanges.has_key?('amq.fanout').should be(true)
 	end
 	
 	it "should allow a default topic exchange to be instantiated without specifying :type" do
 		exch = @b.exchange('amq.topic')
-		exch.should be_an_instance_of Bunny::Exchange
+		exch.should be_an_instance_of(Bunny::Exchange)
 		exch.name.should == 'amq.topic'
 		exch.type.should == :topic
-		@b.exchanges.has_key?('amq.topic').should be true
+		@b.exchanges.has_key?('amq.topic').should be(true)
 	end
 
 	it "should allow a default headers (amq.match) exchange to be instantiated without specifying :type" do
 		exch = @b.exchange('amq.match')
-		exch.should be_an_instance_of Bunny::Exchange
+		exch.should be_an_instance_of(Bunny::Exchange)
 		exch.name.should == 'amq.match'
 		exch.type.should == :headers
-		@b.exchanges.has_key?('amq.match').should be true
+		@b.exchanges.has_key?('amq.match').should be(true)
 	end
 	
 	it "should allow a default headers (amq.headers) exchange to be instantiated without specifying :type" do
 		exch = @b.exchange('amq.headers')
-		exch.should be_an_instance_of Bunny::Exchange
+		exch.should be_an_instance_of(Bunny::Exchange)
 		exch.name.should == 'amq.headers'
 		exch.type.should == :headers
-		@b.exchanges.has_key?('amq.headers').should be true
+		@b.exchanges.has_key?('amq.headers').should be(true)
 	end
 	
 	it "should create an exchange as direct by default" do
 		exch = @b.exchange('direct_defaultex')
-		exch.should be_an_instance_of Bunny::Exchange
+		exch.should be_an_instance_of(Bunny::Exchange)
 		exch.name.should == 'direct_defaultex'
 		exch.type.should == :direct
-		@b.exchanges.has_key?('direct_defaultex').should be true
+		@b.exchanges.has_key?('direct_defaultex').should be(true)
 	end
 	
 	it "should be able to be instantiated as a direct exchange" do
 		exch = @b.exchange('direct_exchange', :type => :direct)
-		exch.should be_an_instance_of Bunny::Exchange
+		exch.should be_an_instance_of(Bunny::Exchange)
 		exch.name.should == 'direct_exchange'
 		exch.type.should == :direct
-		@b.exchanges.has_key?('direct_exchange').should be true
+		@b.exchanges.has_key?('direct_exchange').should be(true)
 	end
 	
 	it "should be able to be instantiated as a topic exchange" do
 		exch = @b.exchange('topic_exchange', :type => :topic)
-		exch.should be_an_instance_of Bunny::Exchange
+		exch.should be_an_instance_of(Bunny::Exchange)
 		exch.name.should == 'topic_exchange'
 		exch.type.should == :topic
-		@b.exchanges.has_key?('topic_exchange').should be true
+		@b.exchanges.has_key?('topic_exchange').should be(true)
 	end
 	
 	it "should be able to be instantiated as a fanout exchange" do
 		exch = @b.exchange('fanout_exchange', :type => :fanout)
-		exch.should be_an_instance_of Bunny::Exchange
+		exch.should be_an_instance_of(Bunny::Exchange)
 		exch.name.should == 'fanout_exchange'
 		exch.type.should == :fanout
-		@b.exchanges.has_key?('fanout_exchange').should be true
+		@b.exchanges.has_key?('fanout_exchange').should be(true)
 	end
 
 	it "should be able to be instantiated as a headers exchange" do
 		exch = @b.exchange('headers_exchange', :type => :headers)
-		exch.should be_an_instance_of Bunny::Exchange
+		exch.should be_an_instance_of(Bunny::Exchange)
 		exch.name.should == 'headers_exchange'
 		exch.type.should == :headers
-		@b.exchanges.has_key?('headers_exchange').should be true
+		@b.exchanges.has_key?('headers_exchange').should be(true)
 	end
 	
 	it "should ignore the :nowait option when instantiated" do
@@ -120,7 +120,7 @@ describe Bunny do
 		exch = @b.exchange('direct_exchange')
 		res = exch.delete
 		res.should == :delete_ok
-		@b.exchanges.has_key?('direct_exchange').should be false
+		@b.exchanges.has_key?('direct_exchange').should be(false)
 	end
 	
 	it "should ignore the :nowait option when deleted" do

@@ -52,10 +52,10 @@ describe Bunny do
 	it "should be able to pop a message complete with header and delivery details" do
 		q = @b.queue('test1')
 		msg = q.pop(:header => true)
-		msg.should be_an_instance_of Hash
-		msg[:header].should be_an_instance_of Bunny::Protocol09::Header
+		msg.should be_an_instance_of(Hash)
+		msg[:header].should be_an_instance_of(Bunny::Protocol09::Header)
 		msg[:payload].should == 'This is a test message'
-		msg[:delivery_details].should be_an_instance_of Hash
+		msg[:delivery_details].should be_an_instance_of(Hash)
 		q.message_count.should == 0
 	end
 
@@ -87,7 +87,7 @@ describe Bunny do
 		q = @b.queue('test1')
 		res = q.delete
 		res.should == :delete_ok
-		@b.queues.has_key?('test1').should be false
+		@b.queues.has_key?('test1').should be(false)
 	end
 	
 	it "should ignore the :nowait option when deleted" do
