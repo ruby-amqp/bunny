@@ -1,6 +1,6 @@
-# simple_publisher.rb
+# simple_publisher_08.rb
 
-# N.B. To be used in conjunction with simple_consumer.rb. See simple_consumer.rb for explanation.
+# N.B. To be used in conjunction with simple_consumer_08.rb. See simple_consumer.rb for explanation.
 
 # Assumes that target message broker/server has a user called 'guest' with a password 'guest'
 # and that it is running on 'localhost'.

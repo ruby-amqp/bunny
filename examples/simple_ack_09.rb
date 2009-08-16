@@ -1,4 +1,4 @@
-# simple_ack.rb
+# simple_ack_09.rb
 
 # Assumes that target message broker/server has a user called 'guest' with a password 'guest'
 # and that it is running on 'localhost'.

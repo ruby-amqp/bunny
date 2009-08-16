@@ -1,4 +1,4 @@
-# simple_topic.rb
+# simple_topic_08.rb
 
 # Assumes that target message broker/server has a user called 'guest' with a password 'guest'
 # and that it is running on 'localhost'.

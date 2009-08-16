@@ -1,4 +1,4 @@
-# consumer.rb
+# simple_consumer_08.rb
 
 # N.B. To be used in conjunction with simple_publisher.rb
 
@@ -13,15 +13,18 @@
 #
 # Open up two console windows start this program in one of them by typing -
 #
-# ruby simple_consumer.rb
+# ruby simple_consumer_08.rb
 #
 # Then switch to the other console window and type -
 #
-# ruby simple_publisher.rb
+# ruby simple_publisher_08.rb
 #
 # A message will be printed out by the simple_consumer and it will wait for the next message
+# until the timeout interval is reached.
 #
-# Run simple_publisher 3 more times. After the last run simple_consumer will stop.
+# Run simple_publisher as many times as you like. When you want the program to stop just stop
+# sending messages and the subscribe loop will timeout after 30 seconds, the program will
+# unsubscribe from the queue and close the connection to the server.
 
 $:.unshift File.dirname(__FILE__) + '/../lib'
 
@@ -45,11 +48,14 @@ q.bind(exch, :key => 'fred')
 i = 1
 
 # subscribe to queue
-q.subscribe(:consumer_tag => 'testtag1') do |msg|
-	puts i.to_s + ': ' + msg
+ret = q.subscribe(:consumer_tag => 'testtag1', :timeout => 30) do |msg|
+	puts "#{i.to_s}: #{msg}"
 	i+=1
-	q.unsubscribe(:consumer_tag => 'testtag1') if i == 5
 end
 
-# close the connection
-b.stop
+if ret == :timed_out
+	puts '==== simple_consumer_08.rb timed out - closing down ===='
+	q.unsubscribe(:consumer_tag => 'testtag1')
+	# close the connection
+	b.stop
+end
