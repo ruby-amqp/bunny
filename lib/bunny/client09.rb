@@ -52,6 +52,7 @@ Sets up a Bunny::Client object ready for connection to a broker/server. _Client_
 			@exchanges = {}
 			@queues = {}
 			@heartbeat_in = false
+			@connecting = false
     end
 
 =begin rdoc
@@ -156,7 +157,7 @@ Queue
 			
 			@logger.info("received") { frame } if @logging
 						
-			raise Bunny::ConnectionError, 'No connection to server' if frame.nil?
+			raise Bunny::ConnectionError, 'No connection to server' if (frame.nil? and !connecting?)
 
 			if frame.is_a?(Qrack::Transport09::Heartbeat)
 				@heartbeat_in = true
@@ -223,6 +224,8 @@ _Bunny_::_ProtocolError_ is raised. If successful, _Client_._status_ is set to <
 =end
 		
 		def start_session
+			@connecting = true
+			
 			# Create/get socket
 			socket
 			
@@ -236,8 +239,10 @@ _Bunny_::_ProtocolError_ is raised. If successful, _Client_._status_ is set to <
 			c = create_channel()
 			c.open
 
+			@connecting = false
+			
 			# return status
-			status
+			@status = :connected
     end
 
 		alias start start_session
@@ -389,10 +394,18 @@ after a rollback.
 			end
 		end
 		
+		def connecting?
+			connecting
+		end
+		
 		def init_connection
 			write(Qrack::Protocol09::HEADER)
       write([0, Qrack::Protocol09::VERSION_MAJOR, Qrack::Protocol09::VERSION_MINOR, Qrack::Protocol09::REVISION].pack('C4'))
-      raise Bunny::ProtocolError, 'Connection initiation failed' unless next_method.is_a?(Qrack::Protocol09::Connection::Start)
+
+      frame = next_frame
+			if frame.nil? or !frame.payload.is_a?(Qrack::Protocol09::Connection::Start)
+				raise Bunny::ProtocolError, 'Connection initiation failed'
+			end
 		end
 		
 		def open_connection
@@ -405,9 +418,11 @@ after a rollback.
         )
       )
 
-      method = next_method
-      raise Bunny::ProtocolError, "Connection failed - user: #{@user}, pass: #{@pass}" if method.nil?
-
+      frame = next_frame
+			raise Bunny::ProtocolError, "Connection failed - user: #{@user}, pass: #{@pass}" if frame.nil?
+			
+			method = frame.payload
+			
       if method.is_a?(Qrack::Protocol09::Connection::Tune)
         send_frame(
           Qrack::Protocol09::Connection::TuneOk.new( :channel_max => @channel_max, :frame_max => @frame_max, :heartbeat => @heartbeat)
@@ -450,8 +465,6 @@ after a rollback.
       return @socket if @socket and (@status == :connected) and not @socket.closed?
 
       begin
-        @status = :not_connected
-   
         # Attempt to connect.
         @socket = timeout(CONNECT_TIMEOUT) do
           TCPSocket.new(host, port)
@@ -460,7 +473,6 @@ after a rollback.
         if Socket.constants.include? 'TCP_NODELAY'
           @socket.setsockopt Socket::IPPROTO_TCP, Socket::TCP_NODELAY, 1
         end
-        @status   = :connected
       rescue => e
         @status = :not_connected
         raise Bunny::ServerDownError, e.message

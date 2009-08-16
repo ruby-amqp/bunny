@@ -6,7 +6,7 @@ module Qrack
     RETRY_DELAY     = 10.0
 
     attr_reader   :status, :host, :vhost, :port, :logging, :spec, :heartbeat
-    attr_accessor :channel, :logfile, :exchanges, :queues, :channels, :heartbeat_in
+    attr_accessor :channel, :logfile, :exchanges, :queues, :channels, :heartbeat_in, :connecting
 
 	end
 end

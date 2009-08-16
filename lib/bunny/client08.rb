@@ -59,6 +59,7 @@ Sets up a Bunny::Client object ready for connection to a broker/server. _Client_
 			@exchanges = {}
 			@queues = {}
 			@heartbeat_in = false
+			@connecting = false
     end
 
 =begin rdoc
@@ -164,7 +165,7 @@ Queue
 			
 			@logger.info("received") { frame } if @logging
 						
-			raise Bunny::ConnectionError, 'No connection to server' if frame.nil?
+			raise Bunny::ConnectionError, 'No connection to server' if (frame.nil? and !connecting?)
 
 			if frame.is_a?(Qrack::Transport::Heartbeat)
 				@heartbeat_in = true
@@ -231,6 +232,8 @@ _Bunny_::_ProtocolError_ is raised. If successful, _Client_._status_ is set to <
 =end
 		
 		def start_session
+			@connecting = true
+			
       loop do
 				# Create/get socket
 				socket
@@ -249,8 +252,10 @@ _Bunny_::_ProtocolError_ is raised. If successful, _Client_._status_ is set to <
 			# Get access ticket
 			request_access
 
+			@connecting = false
+			
 			# return status
-			status
+			@status = :connected
     end
 
 		alias start start_session
@@ -402,10 +407,18 @@ after a rollback.
 			end
 		end
 		
+		def connecting?
+			connecting
+		end
+		
 		def init_connection
 			write(Qrack::Protocol::HEADER)
       write([1, 1, Qrack::Protocol::VERSION_MAJOR, Qrack::Protocol::VERSION_MINOR].pack('C4'))
-      raise Bunny::ProtocolError, 'Connection initiation failed' unless next_method.is_a?(Qrack::Protocol::Connection::Start)
+
+			frame = next_frame
+			if frame.nil? or !frame.payload.is_a?(Qrack::Protocol::Connection::Start)
+				raise Bunny::ProtocolError, 'Connection initiation failed'
+			end
 		end
 		
 		def open_connection
@@ -418,7 +431,10 @@ after a rollback.
         )
       )
 
-      method = next_method
+      frame = next_frame
+			raise Bunny::ProtocolError, "Connection failed - user: #{@user}, pass: #{@pass}" if frame.nil?
+			
+			method = frame.payload
 
       if method.is_a?(Qrack::Protocol::Connection::Tune)
         send_frame(
@@ -480,9 +496,7 @@ after a rollback.
     def socket
       return @socket if @socket and (@status == :connected) and not @socket.closed?
 
-      begin
-        @status = :not_connected
-   
+      begin  
         # Attempt to connect.
         @socket = timeout(CONNECT_TIMEOUT) do
           TCPSocket.new(host, port)
@@ -491,7 +505,6 @@ after a rollback.
         if Socket.constants.include? 'TCP_NODELAY'
           @socket.setsockopt Socket::IPPROTO_TCP, Socket::TCP_NODELAY, 1
         end
-        @status   = :connected
       rescue => e
         @status = :not_connected
         raise Bunny::ServerDownError, e.message
