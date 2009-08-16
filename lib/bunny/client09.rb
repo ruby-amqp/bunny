@@ -38,16 +38,20 @@ Sets up a Bunny::Client object ready for connection to a broker/server. _Client_
       @user   = opts[:user]  || 'guest'
       @pass   = opts[:pass]  || 'guest'
       @vhost  = opts[:vhost] || '/'
+			@logfile = opts[:logfile] || nil
+			@logging = opts[:logging] || false
+			@status = :not_connected
 			@frame_max = opts[:frame_max] || 131072
 			@channel_max = opts[:channel_max] || 5
 			@heartbeat = opts[:heartbeat] || 0
-			@logfile = opts[:logfile] || nil
-			@logging = opts[:logging] || false
-      @status = :not_connected
 			@logger = nil
 			create_logger if @logging
+			@channels = []
 			# Create channel 0
       @channel = Bunny::Channel09.new(self, true)
+			@exchanges = {}
+			@queues = {}
+			@heartbeat_in = false
     end
 
 =begin rdoc
@@ -80,18 +84,6 @@ Exchange
 		def exchange(name, opts = {})
 			return exchanges[name] if exchanges.has_key?(name)
 			exchanges[name] ||= Bunny::Exchange09.new(self, name, opts)
-		end
-
-=begin rdoc
-
-=== DESCRIPTION:
-
-Returns hash of exchanges declared by Bunny.
-
-=end
-
-		def exchanges
-			@exchanges ||= {}
 		end
 
 =begin rdoc
@@ -136,28 +128,14 @@ Queue
 
       return queues[name] if queues.has_key?(name)
 
-      queue = Bunny::Queue09.new(self, name, opts)
+      Bunny::Queue09.new(self, name, opts)
 	  end
-	
-=begin rdoc
-
-=== DESCRIPTION:
-
-Returns hash of queues declared by Bunny.
-
-=end
-		
-		def queues
-			@queues ||= {}
-		end
 		
 		def send_heartbeat
 			# Create a new heartbeat frame
-			hb = Qrack::Transport09::Heartbeat.new('')
-			
+			hb = Qrack::Transport09::Heartbeat.new('')			
 			# Channel 0 must be used
-			@channel = channels[0] if @channel.number > 0
-			
+			switch_channel(0) if @channel.number > 0			
 			# Send the heartbeat to server
 			send_frame(hb)
 		end
@@ -175,8 +153,17 @@ Returns hash of queues declared by Bunny.
 
     def next_frame
       frame = Qrack::Transport09::Frame.parse(buffer)
+			
 			@logger.info("received") { frame } if @logging
-      frame
+						
+			raise Bunny::ConnectionError, 'No connection to server' if frame.nil?
+
+			if frame.is_a?(Qrack::Transport09::Heartbeat)
+				@heartbeat_in = true
+				next_frame
+			end
+			
+			frame
     end
 
     def next_payload
@@ -201,12 +188,9 @@ _Bunny_::_ProtocolError_ is raised. If successful, _Client_._status_ is set to <
 
     def close
 			# Close all active channels
-			channels.each_value do |c|
+			channels.each do |c|
 				c.close if c.open?
 			end
-			
-			# Set client channel to zero
-      self.channel = channels[0]
 
 			# Close connection to AMQP server
 			close_connection
@@ -248,9 +232,9 @@ _Bunny_::_ProtocolError_ is raised. If successful, _Client_._status_ is set to <
 			# Open connection
 			open_connection
 
-			# Open a channel
-			self.channel = get_channel
-			channel.open
+			# Open another channel because channel zero is used for specific purposes
+			c = create_channel()
+			c.open
 
 			# return status
 			status
@@ -388,16 +372,21 @@ after a rollback.
 			create_logger if @logging
 		end
 		
-		def channels
-			@channels ||= {}
-		end
-		
-		def get_channel
-			channels.each_value do |c|
+		def create_channel
+			channels.each do |c|
 				return c if (!c.open? and c.number != 0)
 			end
 			# If no channel to re-use instantiate new one
 			Bunny::Channel09.new(self)
+		end
+		
+		def switch_channel(chann)
+			if (0...channels.size).include? chann
+				@channel = channels[chann]
+				chann
+			else
+				raise RuntimeError, "Invalid channel number - #{chann}"
+			end
 		end
 		
 		def init_connection
@@ -433,6 +422,9 @@ after a rollback.
 		end
 		
 		def close_connection
+			# Set client channel to zero
+      switch_channel(0)
+
 			send_frame(
         Qrack::Protocol09::Connection::Close.new(:reply_code => 200, :reply_text => 'Goodbye', :class_id => 0, :method_id => 0)
       )
