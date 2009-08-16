@@ -297,6 +297,10 @@ the server will not send any more messages for that consumer.
 			opts.delete(:nowait)
 			
       client.send_frame( Qrack::Protocol::Basic::Cancel.new({ :consumer_tag => consumer_tag }.merge(opts)))
+
+			raise Bunny::ProtocolError,
+				"Error unsubscribing from queue #{name}" unless
+				client.next_method.is_a?(Qrack::Protocol::Basic::CancelOk)
 			
     end
 
