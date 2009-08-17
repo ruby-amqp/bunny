@@ -160,19 +160,27 @@ Queue
       nil
     end
 
-    def next_frame	
-			frame = Qrack::Transport::Frame.parse(buffer)
+    def next_frame(opts = {})
+			secs = opts[:timeout] || 0
 			
-			@logger.info("received") { frame } if @logging
+			begin
+				Timeout::timeout(secs) do
+					@frame = Qrack::Transport::Frame.parse(buffer)
+				end
+			rescue Timeout::Error
+				return :timed_out
+			end
+			
+			@logger.info("received") { @frame } if @logging
 						
-			raise Bunny::ConnectionError, 'No connection to server' if (frame.nil? and !connecting?)
+			raise Bunny::ConnectionError, 'No connection to server' if (@frame.nil? and !connecting?)
 
-			if frame.is_a?(Qrack::Transport::Heartbeat)
+			if @frame.is_a?(Qrack::Transport::Heartbeat)
 				@heartbeat_in = true
 				next_frame
 			end
 			
-			frame
+			@frame
     end
 
     def next_payload
@@ -181,6 +189,43 @@ Queue
     end
 
 		alias next_method next_payload
+		
+=begin rdoc
+
+=== DESCRIPTION:
+
+Checks to see whether or not an undeliverable message has been returned as a result of a publish
+with the <tt>:immediate</tt> or <tt>:mandatory</tt> options.
+
+==== OPTIONS:
+
+* <tt>:timeout => number of seconds (_default_ 0.1) - The method will wait for a return
+  message until this timeout interval is reached.
+
+==== RETURNS:
+
+<tt>:no_return</tt> if message was not returned before timeout .
+<tt>{:header, :return_details, :payload}</tt> if message is returned. <tt>:return_details</tt> is
+a hash <tt>{:reply_code, :reply_text, :exchange, :routing_key}</tt>.
+
+=end
+		
+		def returned_message(opts = {})
+			secs = opts[:timeout] || 0.1		
+			frame = next_frame(:timeout => secs)
+			
+			if frame.is_a?(Symbol)
+				return :no_return if frame == :timed_out
+			end
+
+			method = frame.payload
+			header = next_payload
+	    msg = next_payload
+	    raise Bunny::MessageError, 'unexpected length' if msg.length < header.size
+			
+			# Return the message and related info
+			{:header => header, :payload => msg, :return_details => method.arguments}
+		end
 
 =begin rdoc
 

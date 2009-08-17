@@ -116,6 +116,14 @@ describe Bunny do
 		exch.publish('This is a published message')
 	end
 	
+	it "should be able to return an undeliverable message" do
+		exch = @b.exchange('')
+		exch.publish('This message should be undeliverable', :immediate => true)
+		ret_msg = @b.returned_message
+		ret_msg.should be_an_instance_of(Hash)
+		ret_msg[:payload].should == 'This message should be undeliverable'
+	end
+	
 	it "should be able to be deleted" do
 		exch = @b.exchange('direct_exchange')
 		res = exch.delete
