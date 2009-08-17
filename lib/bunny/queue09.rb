@@ -216,7 +216,7 @@ processing. If error occurs, _Bunny_::_ProtocolError_ is raised.
 * <tt>:exclusive => true or false (_default_)</tt> - Request exclusive consumer access, meaning
   only this consumer can access the queue.
 * <tt>:nowait => true or false (_default_)</tt> - Ignored by Bunny, always _false_.
-* <tt>:timeout => number of seconds (_default_ 0 = no timeout) - The subscribe loop will continue to wait for
+* <tt>:timeout => number of seconds (default = 0 no timeout) - The subscribe loop will continue to wait for
   messages until terminated (Ctrl-C or kill command) or this timeout interval is reached.
 
 ==== RETURNS:

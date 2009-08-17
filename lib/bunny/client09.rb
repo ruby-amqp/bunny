@@ -28,6 +28,9 @@ Sets up a Bunny::Client object ready for connection to a broker/server. _Client_
 * <tt>:logging => true or false (_default_)</tt> - If set to _true_, session information is sent
   to STDOUT if <tt>:logfile</tt> has not been specified. Otherwise, session information is written to
   <tt>:logfile</tt>.
+* <tt>:frame_max => maximum frame size in bytes (default = 131072)</tt>
+* <tt>:channel_max => maximum number of channels (default = 0 no maximum)</tt>
+* <tt>:heartbeat => number of seconds (default = 0 no heartbeat)</tt>
 
 =end
 
@@ -191,7 +194,7 @@ with the <tt>:immediate</tt> or <tt>:mandatory</tt> options.
 
 ==== OPTIONS:
 
-* <tt>:timeout => number of seconds (_default_ 0.1) - The method will wait for a return
+* <tt>:timeout => number of seconds (default = 0.1) - The method will wait for a return
   message until this timeout interval is reached.
 
 ==== RETURNS:
