@@ -54,7 +54,8 @@ Sets up a Bunny::Client object ready for connection to a broker/server. _Client_
       @channel = Bunny::Channel09.new(self, true)
 			@exchanges = {}
 			@queues = {}
-			@heartbeat_in = false
+			@message_in = false
+			@message_out = false
 			@connecting = false
     end
 
@@ -151,7 +152,11 @@ Queue
 
         @logger.info("send") { data } if @logging
         write(data.to_s)
+
+				# Monitor client activity for heartbeat purposes
+				@message_out = true
       end
+
       nil
     end
 
@@ -170,10 +175,9 @@ Queue
 						
 			raise Bunny::ConnectionError, 'No connection to server' if (@frame.nil? and !connecting?)
 
-			if @frame.is_a?(Qrack::Transport09::Heartbeat)
-				@heartbeat_in = true
-				next_frame
-			end
+			# Monitor server activity and discard heartbeats
+			@message_in = true
+			next_frame if @frame.is_a?(Qrack::Transport09::Heartbeat)
 			
 			@frame
     end
