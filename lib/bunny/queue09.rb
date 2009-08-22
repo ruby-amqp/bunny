@@ -299,7 +299,9 @@ If <tt>:timeout => > 0</tt> is reached returns :timed_out
 =end
 	
 		def subscribe(opts = {}, &blk)
-			consumer_tag = opts[:consumer_tag] || name
+			
+			# If a consumer tag is not passed in the server will generate one
+			consumer_tag = opts[:consumer_tag] || nil
 			secs = opts[:timeout] || 0
 			
 			# ignore the :nowait option if passed, otherwise program will hang waiting for a
@@ -343,7 +345,7 @@ If <tt>:timeout => > 0</tt> is reached returns :timed_out
 		    raise Bunny::MessageError, 'unexpected length' if msg.length < header.size
 				
 				# pass the message and related info, if requested, to the block for processing
-				blk.call(hdr ? {:header => header, :payload => msg, :delivery_details => method.arguments} : msg)
+				blk.call(hdr ? {:header => header, :payload => msg, :delivery_details => @method.arguments} : msg)
 			end
 			
 		end
