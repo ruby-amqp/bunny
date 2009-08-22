@@ -39,6 +39,8 @@ Gem::Specification.new do |s|
 		"lib/bunny/queue08.rb",
 		"lib/bunny/queue09.rb",
 		"lib/qrack/client.rb",
+		"lib/qrack/channel.rb",
+		"lib/qrack/queue.rb",
 		"lib/qrack/protocol/protocol08.rb",
 		"lib/qrack/protocol/protocol09.rb",
 		"lib/qrack/protocol/spec08.rb",
