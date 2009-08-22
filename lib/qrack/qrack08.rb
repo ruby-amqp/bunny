@@ -7,6 +7,8 @@ require 'transport/buffer08'
 require 'transport/frame08'
 
 require 'qrack/client'
+require 'qrack/channel'
+require 'qrack/queue'
 
 module Qrack
 	

@@ -1,13 +1,8 @@
 module Bunny
-	class Channel
-		attr_accessor :number, :active
-		attr_reader :client
+	class Channel < Qrack::Channel
 		
-		def initialize(client, zero = false)
-			@client = client
-			zero ? @number = 0 : @number = client.channels.size
-			@active = false
-			client.channels[@number] ||= self
+		def initialize(client)
+			super
 		end
 		
 		def open
