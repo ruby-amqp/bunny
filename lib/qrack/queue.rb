@@ -1,5 +1,8 @@
 module Qrack
-	# Channel ancestor class
+	
+	class QueueTimeout < Timeout::Error; end
+	
+	# Queue ancestor class
 	class Queue
 		
 		attr_reader :name, :client

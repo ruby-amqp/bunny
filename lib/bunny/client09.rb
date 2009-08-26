@@ -1,6 +1,4 @@
 module Bunny
-
-	class ClientTimeout < Timeout::Error; end
 	
 =begin rdoc
 

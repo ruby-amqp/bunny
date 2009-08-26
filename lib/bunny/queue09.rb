@@ -1,6 +1,4 @@
 module Bunny
-
-	class QueueTimeout < Timeout::Error; end
 	
 =begin rdoc
 
@@ -330,10 +328,10 @@ If <tt>:timeout => > 0</tt> is reached returns :timed_out
 			
 			loop do
 				begin
-					Timeout::timeout(secs, Bunny::QueueTimeout) do
+					Timeout::timeout(secs, Qrack::QueueTimeout) do
 						@method = client.next_method
 					end
-				rescue Bunny::QueueTimeout
+				rescue Qrack::QueueTimeout
 					return :timed_out
 				end
 

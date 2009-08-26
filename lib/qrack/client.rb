@@ -1,4 +1,7 @@
 module Qrack
+	
+	class ClientTimeout < Timeout::Error; end
+	
 	# Client ancestor class
 	class Client
 		
