@@ -1,7 +1,5 @@
 module Qrack
 	
-	class QueueTimeout < Timeout::Error; end
-	
 	# Queue ancestor class
 	class Queue
 		

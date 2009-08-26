@@ -302,7 +302,6 @@ If <tt>:timeout => > 0</tt> is reached returns :timed_out
 			
 			# If a consumer tag is not passed in the server will generate one
 			consumer_tag = opts[:consumer_tag] || nil
-			secs = opts[:timeout] || 0
 			
 			# ignore the :nowait option if passed, otherwise program will hang waiting for a
 			# response from the server causing an error.
@@ -327,13 +326,7 @@ If <tt>:timeout => > 0</tt> is reached returns :timed_out
 				client.next_method.is_a?(Qrack::Protocol09::Basic::ConsumeOk)
 			
 			loop do
-				begin
-					Timeout::timeout(secs, Qrack::QueueTimeout) do
-						@method = client.next_method
-					end
-				rescue Qrack::QueueTimeout
-					return :timed_out
-				end
+        @method = client.next_method(:timeout => opts[:timeout])
 
 				break if @method.is_a?(Qrack::Protocol09::Basic::CancelOk)
 			

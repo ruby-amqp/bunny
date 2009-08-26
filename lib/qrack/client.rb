@@ -72,9 +72,8 @@ _Bunny_::_ProtocolError_ is raised. If successful, _Client_._status_ is set to <
 			create_logger if @logging
 		end
 		
-		def next_payload
-      frame = next_frame			
-			frame.payload
+    def next_payload(options = {})
+      next_frame(options).payload
     end
 
 		alias next_method next_payload

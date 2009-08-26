@@ -101,25 +101,26 @@ Exchange
 		end
 		
 		def next_frame(opts = {})
-      secs = opts[:timeout] || 0
+      frame = nil
+			timeout = opts.delete(:timeout)
 			
-			begin
-				Timeout::timeout(secs, Bunny::ClientTimeout) do
-					@frame = Qrack::Transport09::Frame.parse(buffer)
-				end
-			rescue Bunny::ClientTimeout
-				return :timed_out
-			end
+      if(timeout)
+        Timeout::timeout(timeout, Qrack::ClientTimeout) do
+          frame = Qrack::Transport09::Frame.parse(buffer)
+        end
+      else
+        frame = Qrack::Transport09::Frame.parse(buffer)
+      end
 			
-			@logger.info("received") { @frame } if @logging
+			@logger.info("received") { frame } if @logging
 						
-			raise Bunny::ConnectionError, 'No connection to server' if (@frame.nil? and !connecting?)
+			raise Bunny::ConnectionError, 'No connection to server' if (frame.nil? and !connecting?)
 
 			# Monitor server activity and discard heartbeats
 			@message_in = true
-			next_frame if @frame.is_a?(Qrack::Transport09::Heartbeat)
+			next_frame if frame.is_a?(Qrack::Transport09::Heartbeat)
 			
-			@frame
+			frame
     end
 
 =begin rdoc
