@@ -1,4 +1,6 @@
 module Bunny
+
+	class ClientTimeout < Timeout::Error; end
 	
 =begin rdoc
 
@@ -104,10 +106,10 @@ Exchange
       secs = opts[:timeout] || 0
 			
 			begin
-				Timeout::timeout(secs) do
+				Timeout::timeout(secs, Bunny::ClientTimeout) do
 					@frame = Qrack::Transport09::Frame.parse(buffer)
 				end
-			rescue Timeout::Error
+			rescue Bunny::ClientTimeout
 				return :timed_out
 			end
 			
