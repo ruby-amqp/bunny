@@ -97,6 +97,7 @@ nil
 =end
 
     def publish(data, opts = {})
+      opts = opts.dup
       out = []
 
       out << Qrack::Protocol09::Basic::Publish.new(
