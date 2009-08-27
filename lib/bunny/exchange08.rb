@@ -88,6 +88,10 @@ if any, is committed.
   cannot be routed to a queue consumer immediately. If set to _true_, the server will return an
   undeliverable message with a Return method. If set to _false_, the server will queue the message,
   but with no guarantee that it will ever be consumed.
+* <tt>:persistent => true or false (_default_)</tt> - Tells the server whether to persist the message
+  If set to _true_, the message will be persisted to disk and not lost if the server restarts. 
+  If set to _false_, the message will not be persisted across server restart. Setting to _true_ 
+  incurs a performance penalty as there is an extra cost associated with disk access.
 
 ==== RETURNS:
 
