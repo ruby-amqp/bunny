@@ -115,6 +115,13 @@ describe Bunny do
 		exch = @b.exchange('direct_exchange')
 		exch.publish('This is a published message')
 	end
+
+  it "should not modify the passed options hash when publishing a message" do
+		exch = @b.exchange('direct_exchange')
+    opts = {:key => 'a', :persistent => true}
+		exch.publish('', opts)
+    opts.should == {:key => 'a', :persistent => true}
+  end
 	
 	it "should be able to return an undeliverable message" do
 		exch = @b.exchange('')
