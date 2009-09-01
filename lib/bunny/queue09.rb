@@ -208,8 +208,13 @@ a hash <tt>{:delivery_tag, :redelivered, :exchange, :routing_key, :message_count
 			self.delivery_tag = method.delivery_tag if ack
 			
 	    header = client.next_payload
-	    msg    = client.next_payload
-	    raise Bunny::MessageError, 'unexpected length' if msg.length < header.size
+	
+	    # If maximum frame size is smaller than message payload body then message
+			# will have a message header and several message bodies
+			msg = ''
+			while msg.length < header.size
+				msg += client.next_payload
+			end
 
 			# Return message with additional info if requested
 			hdr ? {:header => header, :payload => msg, :delivery_details => method.arguments} : msg

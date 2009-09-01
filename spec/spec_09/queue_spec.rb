@@ -67,6 +67,14 @@ describe Bunny do
 		q.message_count.should == 0
 	end
 	
+	it "should be able to pop a message where body length exceeds max frame size" do
+		q = @b.queue('test1')
+		lg_msg = 'z' * 142000
+		q.publish(lg_msg)
+		msg = q.pop
+		msg.should == lg_msg
+	end
+	
 	it "should be able to be purged to remove all of its messages" do
 		q = @b.queue('test1')
 		5.times {q.publish('This is another test message')}
