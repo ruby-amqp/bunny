@@ -288,7 +288,7 @@ processing. If error occurs, _Bunny_::_ProtocolError_ is raised.
 * <tt>:exclusive => true or false (_default_)</tt> - Request exclusive consumer access, meaning
   only this consumer can access the queue.
 * <tt>:nowait => true or false (_default_)</tt> - Ignored by Bunny, always _false_.
-* <tt>:timeout => number of seconds (default = 0 no timeout) - The subscribe loop will continue to wait for
+* <tt>:timeout => number of seconds - The subscribe loop will continue to wait for
   messages until terminated (Ctrl-C or kill command) or this timeout interval is reached.
 
 ==== RETURNS:
@@ -296,7 +296,7 @@ processing. If error occurs, _Bunny_::_ProtocolError_ is raised.
 If <tt>:header => true</tt> returns hash <tt>{:header, :delivery_details, :payload}</tt> for each message.
 <tt>:delivery_details</tt> is a hash <tt>{:consumer_tag, :delivery_tag, :redelivered, :exchange, :routing_key}</tt>.
 If <tt>:header => false</tt> only message payload is returned.
-If <tt>:timeout => > 0</tt> is reached returns :timed_out
+If <tt>:timeout => > 0</tt> is reached Qrack::ClientTimeout is raised
 
 =end
 	
