@@ -48,12 +48,12 @@ q.bind(exch, :key => 'fred')
 i = 1
 
 # subscribe to queue
-ret = q.subscribe(:consumer_tag => 'testtag1', :timeout => 30) do |msg|
-	puts "#{i.to_s}: #{msg}"
-	i+=1
-end
-
-if ret == :timed_out
+begin
+	ret = q.subscribe(:consumer_tag => 'testtag1', :timeout => 30) do |msg|
+		puts "#{i.to_s}: #{msg}"
+		i+=1
+	end
+rescue Qrack::ClientTimeout
 	puts '==== simple_consumer_09.rb timed out - closing down ===='
 	q.unsubscribe(:consumer_tag => 'testtag1')
 	# close the connection
