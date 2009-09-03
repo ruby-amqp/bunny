@@ -332,8 +332,6 @@ If <tt>:timeout => > 0</tt> is reached Qrack::ClientTimeout is raised
 			
 			loop do
         @method = client.next_method(:timeout => opts[:timeout])
-
-				break if @method.is_a?(Qrack::Protocol09::Basic::CancelOk)
 			
 				# get delivery tag to use for acknowledge
 				self.delivery_tag = @method.delivery_tag if ack
