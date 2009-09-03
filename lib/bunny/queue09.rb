@@ -331,17 +331,17 @@ If <tt>:timeout => > 0</tt> is reached Qrack::ClientTimeout is raised
 				client.next_method.is_a?(Qrack::Protocol09::Basic::ConsumeOk)
 			
 			loop do
-        @method = client.next_method(:timeout => opts[:timeout])
+        method = client.next_method(:timeout => opts[:timeout])
 			
 				# get delivery tag to use for acknowledge
-				self.delivery_tag = @method.delivery_tag if ack
+				self.delivery_tag = method.delivery_tag if ack
 			
 				header = client.next_payload
 		    msg    = client.next_payload
 		    raise Bunny::MessageError, 'unexpected length' if msg.length < header.size
 				
 				# pass the message and related info, if requested, to the block for processing
-				blk.call(hdr ? {:header => header, :payload => msg, :delivery_details => @method.arguments} : msg)
+				blk.call(hdr ? {:header => header, :payload => msg, :delivery_details => method.arguments} : msg)
 			end
 			
 		end
