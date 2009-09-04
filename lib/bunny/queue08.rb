@@ -333,8 +333,13 @@ If <tt>:timeout => > 0</tt> is reached Qrack::ClientTimeout is raised
 				self.delivery_tag = method.delivery_tag if ack
 			
 				header = client.next_payload
-		    msg    = client.next_payload
-		    raise Bunny::MessageError, 'unexpected length' if msg.length < header.size
+
+		    # If maximum frame size is smaller than message payload body then message
+				# will have a message header and several message bodies				
+		    msg = ''
+				while msg.length < header.size
+					msg += client.next_payload
+				end
 				
 				# pass the message and related info, if requested, to the block for processing
 				blk.call(hdr ? {:header => header, :payload => msg, :delivery_details => method.arguments} : msg)
