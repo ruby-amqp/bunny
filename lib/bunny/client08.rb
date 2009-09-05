@@ -110,12 +110,15 @@ Exchange
       frame = nil
 			timeout = opts.delete(:timeout)
 			
-      if(timeout)
-        Timeout::timeout(timeout, Qrack::ClientTimeout) do
-          frame = Qrack::Transport::Frame.parse(buffer)
-        end
-      else
-        frame = Qrack::Transport::Frame.parse(buffer)
+			case
+				when channel.frame_buffer.size > 0
+					frame = channel.frame_buffer.shift
+				when timeout
+	        Timeout::timeout(timeout, Qrack::ClientTimeout) do
+	          frame = Qrack::Transport::Frame.parse(buffer)
+	        end
+	      else
+	        frame = Qrack::Transport::Frame.parse(buffer)
       end
 			
 			@logger.info("received") { frame } if @logging
@@ -124,9 +127,19 @@ Exchange
 			
 			# Monitor server activity and discard heartbeats
 			@message_in = true
-			next_frame if frame.is_a?(Qrack::Transport::Heartbeat)
 			
-			frame
+			case
+				when frame.is_a?(Qrack::Transport::Heartbeat)
+					next_frame
+				when frame.nil?
+					frame
+				when ((frame.channel != channel.number) and (frame.channel != 0))
+					channel.frame_buffer << frame
+					next_frame
+				else
+					frame
+			end
+			
     end
 
 		def open_connection
