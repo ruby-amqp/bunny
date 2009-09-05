@@ -373,6 +373,10 @@ the server will not send any more messages for that consumer.
 * <tt>:consumer_tag => '_tag_'</tt> - Specifies the identifier for the consumer.
 * <tt>:nowait => true or false (_default_)</tt> - Ignored by Bunny, always _false_.
 
+==== Returns:
+
+<tt>:unsubscribe_ok</tt> if successful
+
 =end
 		
 		def unsubscribe(opts = {})
