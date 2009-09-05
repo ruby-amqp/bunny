@@ -293,6 +293,8 @@ processing. If error occurs, _Bunny_::_ProtocolError_ is raised.
 * <tt>:nowait => true or false (_default_)</tt> - Ignored by Bunny, always _false_.
 * <tt>:timeout => number of seconds - The subscribe loop will continue to wait for
   messages until terminated (Ctrl-C or kill command) or this timeout interval is reached.
+* <tt>:message_max => max number messages to process</tt> - When the required number of messages
+  is processed subscribe loop is exited.
 
 ==== RETURNS:
 
@@ -304,6 +306,9 @@ If <tt>:timeout => > 0</tt> is reached Qrack::ClientTimeout is raised
 =end
 	
 		def subscribe(opts = {}, &blk)
+			# Get maximum amount of messages to process
+			message_max = opts[:message_max] || nil
+			return if message_max == 0
 			
 			# If a consumer tag is not passed in the server will generate one
 			consumer_tag = opts[:consumer_tag] || nil
@@ -329,6 +334,9 @@ If <tt>:timeout => > 0</tt> is reached Qrack::ClientTimeout is raised
 			raise Bunny::ProtocolError,
 				"Error subscribing to queue #{name}" unless
 				client.next_method.is_a?(Qrack::Protocol09::Basic::ConsumeOk)
+				
+			# Initialize message counter
+			counter = 0
 			
 			loop do
         method = client.next_method(:timeout => opts[:timeout])
@@ -347,6 +355,12 @@ If <tt>:timeout => > 0</tt> is reached Qrack::ClientTimeout is raised
 				
 				# pass the message and related info, if requested, to the block for processing
 				blk.call(hdr ? {:header => header, :payload => msg, :delivery_details => method.arguments} : msg)
+
+				# Increment message counter
+				counter += 1
+				
+				# Exit loop if message_max condition met
+				break if !message_max.nil? and counter == message_max
 			end
 			
 		end
@@ -418,6 +432,9 @@ the server will not send any more messages for that consumer.
 			raise Bunny::ProtocolError,
 				"Error unsubscribing from queue #{name}" unless
 				client.next_method.is_a?(Qrack::Protocol09::Basic::CancelOk)
+				
+			# return confirmation
+			:unsubscribe_ok
 			
     end
 

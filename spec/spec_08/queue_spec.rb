@@ -90,6 +90,24 @@ describe Bunny do
 		msg = q.pop
 		msg.should == :queue_empty
 	end
+	
+	it "should stop subscription without processing messages if max specified is 0" do
+		q = @b.queue('test1')
+		5.times {q.publish('Yet another test message')}
+		q.message_count.should == 5
+		q.subscribe(:message_max => 0){|msg| x = 1}
+		q.message_count.should == 5
+		q.unsubscribe.should == :unsubscribe_ok
+		q.purge.should == :purge_ok
+	end
+	
+	it "should stop subscription after processing number of messages specified > 0" do
+		q = @b.queue('test1')
+		5.times {q.publish('Yet another test message')}
+		q.message_count.should == 5
+		q.subscribe(:message_max => 5){|msg| x = 1}
+		q.unsubscribe.should == :unsubscribe_ok
+	end
 
 	it "should be able to be deleted" do
 		q = @b.queue('test1')
