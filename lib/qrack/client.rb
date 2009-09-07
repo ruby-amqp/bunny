@@ -63,6 +63,10 @@ _Bunny_::_ProtocolError_ is raised. If successful, _Client_._status_ is set to <
 
 		alias stop close
 		
+		def connected?
+			status == :connected
+		end
+		
 		def connecting?
 			connecting
 		end
