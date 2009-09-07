@@ -1,8 +1,8 @@
 Gem::Specification.new do |s|
   s.name = %q{bunny}
-  s.version = "0.5.2"
+  s.version = "0.5.3"
   s.authors = ["Chris Duncan"]
-  s.date = %q{2009-08-17}
+  s.date = %q{2009-09-07}
   s.description = %q{Another synchronous Ruby AMQP client}
   s.email = %q{celldee@gmail.com}
   s.rubyforge_project = %q{bunny-amqp}
