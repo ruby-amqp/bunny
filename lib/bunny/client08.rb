@@ -108,13 +108,12 @@ Exchange
 		
 		def next_frame(opts = {})
       frame = nil
-			timeout = opts.delete(:timeout)
 			
 			case
 				when channel.frame_buffer.size > 0
 					frame = channel.frame_buffer.shift
-				when timeout
-	        Timeout::timeout(timeout, Qrack::ClientTimeout) do
+				when opts.has_key?(:timeout)
+	        Timeout::timeout(opts[:timeout], Qrack::ClientTimeout) do
 	          frame = Qrack::Transport::Frame.parse(buffer)
 	        end
 	      else
@@ -130,12 +129,12 @@ Exchange
 			
 			case
 				when frame.is_a?(Qrack::Transport::Heartbeat)
-					next_frame
+					next_frame(opts)
 				when frame.nil?
 					frame
 				when ((frame.channel != channel.number) and (frame.channel != 0))
 					channel.frame_buffer << frame
-					next_frame
+					next_frame(opts)
 				else
 					frame
 			end
