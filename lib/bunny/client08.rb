@@ -47,6 +47,38 @@ Sets up a Bunny::Client object ready for connection to a broker/server. _Client_
       @insist = opts[:insist]
     end
 
+=begin rdoc
+
+=== DESCRIPTION:
+
+Checks response from AMQP methods and takes appropriate action
+
+=end
+
+		def check_response(received_method, expected_method, err_msg, err_class = Bunny::ProtocolError)
+			case
+				when received_method.is_a?(Qrack::Protocol::Connection::Close)
+					# Clean up the socket
+					close_socket
+					
+					raise Bunny::ForcedConnectionCloseError,
+						"Error Reply Code: #{received_method.reply_code}\nError Reply Text: #{received_method.reply_text}"
+						
+				when received_method.is_a?(Qrack::Protocol::Channel::Close)
+					# Clean up the channel
+					channel.active = false
+
+					raise Bunny::ForcedChannelCloseError,
+						"Error Reply Code: #{received_method.reply_code}\nError Reply Text: #{received_method.reply_text}"
+						
+				when !received_method.is_a?(expected_method)
+					raise err_class, err_msg
+					
+				else
+					:response_ok
+			end
+		end
+
 		def close_connection
 			# Set client channel to zero
       switch_channel(0)
@@ -54,7 +86,11 @@ Sets up a Bunny::Client object ready for connection to a broker/server. _Client_
 			send_frame(
 	      Qrack::Protocol::Connection::Close.new(:reply_code => 200, :reply_text => 'Goodbye', :class_id => 0, :method_id => 0)
 	    )
-	    raise Bunny::ProtocolError, "Error closing connection" unless next_method.is_a?(Qrack::Protocol::Connection::CloseOk)
+	
+			method = next_method
+			
+			check_response(method, Qrack::Protocol::Connection::CloseOk, "Error closing connection")
+	    
     end
 
 		def create_channel
@@ -217,9 +253,9 @@ true, they are applied to the entire connection.
         Qrack::Protocol::Basic::Qos.new({ :prefetch_size => 0, :prefetch_count => 1, :global => false }.merge(opts))
       )
 
-      raise Bunny::ProtocolError,
-        "Error specifying Quality of Service" unless
- 				next_method.is_a?(Qrack::Protocol::Basic::QosOk)
+			method = next_method
+			
+			check_response(method, Qrack::Protocol::Basic::QosOk, "Error specifying Quality of Service")
 
       # return confirmation
       :qos_ok
@@ -297,8 +333,11 @@ the message, potentially then delivering it to an alternative subscriber.
 			send_frame(
         Qrack::Protocol::Access::Request.new(:realm => '/data', :read => true, :write => true, :active => true, :passive => true)
       )
+
       method = next_method
-      raise Bunny::ProtocolError, 'Access denied' unless method.is_a?(Qrack::Protocol::Access::RequestOk)
+			
+			check_response(method, Qrack::Protocol::Access::RequestOk, "Access denied")
+      
       self.ticket = method.ticket
 		end
 	
@@ -384,10 +423,10 @@ after a commit.
 
 		def tx_commit
 			send_frame(Qrack::Protocol::Tx::Commit.new())
-
-			raise Bunny::ProtocolError,
-        "Error commiting transaction" unless
- 				next_method.is_a?(Qrack::Protocol::Tx::CommitOk)
+			
+			method = next_method
+			
+			check_response(method, Qrack::Protocol::Tx::CommitOk, "Error commiting transaction")
 
 			# return confirmation
 			:commit_ok
@@ -409,9 +448,9 @@ after a rollback.
 		def tx_rollback
 			send_frame(Qrack::Protocol::Tx::Rollback.new())
 
-			raise Bunny::ProtocolError,
-        "Error rolling back transaction" unless
- 				next_method.is_a?(Qrack::Protocol::Tx::RollbackOk)
+			method = next_method
+			
+			check_response(method, Qrack::Protocol::Tx::RollbackOk, "Error rolling back transaction")
 
 			# return confirmation
 			:rollback_ok
@@ -432,10 +471,10 @@ using the Commit or Rollback methods.
 
 		def tx_select
 			send_frame(Qrack::Protocol::Tx::Select.new())
+
+			method = next_method
 			
-			raise Bunny::ProtocolError,
-        "Error initiating transactions for current channel" unless
- 				next_method.is_a?(Qrack::Protocol::Tx::SelectOk)
+			check_response(method, Qrack::Protocol::Tx::SelectOk, "Error initiating transactions for current channel")
 
 			# return confirmation
 			:select_ok

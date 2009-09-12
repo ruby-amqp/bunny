@@ -40,6 +40,38 @@ Sets up a Bunny::Client object ready for connection to a broker/server. _Client_
 			@port = opts[:port] || Qrack::Protocol09::PORT
     end
 
+=begin rdoc
+
+=== DESCRIPTION:
+
+Checks response from AMQP methods and takes appropriate action
+
+=end
+
+		def check_response(received_method, expected_method, err_msg, err_class = Bunny::ProtocolError)
+			case
+				when received_method.is_a?(Qrack::Protocol09::Connection::Close)
+					# Clean up the socket
+					close_socket
+
+					raise Bunny::ForcedConnectionCloseError,
+						"Error Reply Code: #{received_method.reply_code}\nError Reply Text: #{received_method.reply_text}"
+
+				when received_method.is_a?(Qrack::Protocol09::Channel::Close)
+					# Clean up the channel
+					channel.active = false
+
+					raise Bunny::ForcedChannelCloseError,
+						"Error Reply Code: #{received_method.reply_code}\nError Reply Text: #{received_method.reply_text}"
+
+				when !received_method.is_a?(expected_method)
+					raise err_class, err_msg
+
+				else
+					:response_ok
+			end
+		end
+
 		def close_connection
 			# Set client channel to zero
       switch_channel(0)
@@ -47,7 +79,11 @@ Sets up a Bunny::Client object ready for connection to a broker/server. _Client_
 			send_frame(
         Qrack::Protocol09::Connection::Close.new(:reply_code => 200, :reply_text => 'Goodbye', :class_id => 0, :method_id => 0)
       )
-      raise Bunny::ProtocolError, "Error closing connection" unless next_method.is_a?(Qrack::Protocol09::Connection::CloseOk)
+
+      method = next_method
+			
+			check_response(method, Qrack::Protocol09::Connection::CloseOk, "Error closing connection")
+			
 		end
 
 		def create_channel
@@ -135,6 +171,34 @@ Exchange
 			
     end
 
+		def open_connection
+			send_frame(
+        Qrack::Protocol09::Connection::StartOk.new(
+          :client_properties => {:platform => 'Ruby', :product => 'Bunny', :information => 'http://github.com/celldee/bunny', :version => VERSION},
+          :mechanism => 'PLAIN',
+					:response => "\0" + @user + "\0" + @pass,
+          :locale => 'en_US'
+        )
+      )
+
+      frame = next_frame
+			raise Bunny::ProtocolError, "Connection failed - user: #{@user}, pass: #{@pass}" if frame.nil?
+			
+			method = frame.payload
+			
+      if method.is_a?(Qrack::Protocol09::Connection::Tune)
+        send_frame(
+          Qrack::Protocol09::Connection::TuneOk.new( :channel_max => @channel_max, :frame_max => @frame_max, :heartbeat => @heartbeat)
+        )
+      end
+
+      send_frame(
+        Qrack::Protocol09::Connection::Open.new(:virtual_host => @vhost, :reserved_1 => 0, :reserved_2 => false)
+      )
+
+      raise Bunny::ProtocolError, 'Cannot open connection' unless next_method.is_a?(Qrack::Protocol09::Connection::OpenOk)
+		end
+
 =begin rdoc
 
 === DESCRIPTION:
@@ -173,9 +237,9 @@ true, they are applied to the entire connection.
         Qrack::Protocol09::Basic::Qos.new({ :prefetch_size => 0, :prefetch_count => 1, :global => false }.merge(opts))
       )
 
-      raise Bunny::ProtocolError,
-        "Error specifying Quality of Service" unless
- 				next_method.is_a?(Qrack::Protocol09::Basic::QosOk)
+      method = next_method
+			
+			check_response(method, Qrack::Protocol09::Basic::QosOk, "Error specifying Quality of Service")
 
       # return confirmation
       :qos_ok
@@ -326,9 +390,9 @@ after a commit.
 		def tx_commit
 			send_frame(Qrack::Protocol09::Tx::Commit.new())
 
-			raise Bunny::ProtocolError,
-        "Error commiting transaction" unless
- 				next_method.is_a?(Qrack::Protocol09::Tx::CommitOk)
+			method = next_method
+			
+			check_response(method, Qrack::Protocol09::Tx::CommitOk, "Error commiting transaction")
 
 			# return confirmation
 			:commit_ok
@@ -350,9 +414,9 @@ after a rollback.
 		def tx_rollback
 			send_frame(Qrack::Protocol09::Tx::Rollback.new())
 
-			raise Bunny::ProtocolError,
-        "Error rolling back transaction" unless
- 				next_method.is_a?(Qrack::Protocol09::Tx::RollbackOk)
+			method = next_method
+			
+			check_response(method, Qrack::Protocol09::Tx::RollbackOk, "Error rolling back transaction")
 
 			# return confirmation
 			:rollback_ok
@@ -374,40 +438,12 @@ using the Commit or Rollback methods.
 		def tx_select
 			send_frame(Qrack::Protocol09::Tx::Select.new())
 			
-			raise Bunny::ProtocolError,
-        "Error initiating transactions for current channel" unless
- 				next_method.is_a?(Qrack::Protocol09::Tx::SelectOk)
+			method = next_method
+			
+			check_response(method, Qrack::Protocol::Tx::SelectOk, "Error initiating transactions for current channel")
 
 			# return confirmation
 			:select_ok
-		end
-		
-		def open_connection
-			send_frame(
-        Qrack::Protocol09::Connection::StartOk.new(
-          :client_properties => {:platform => 'Ruby', :product => 'Bunny', :information => 'http://github.com/celldee/bunny', :version => VERSION},
-          :mechanism => 'PLAIN',
-					:response => "\0" + @user + "\0" + @pass,
-          :locale => 'en_US'
-        )
-      )
-
-      frame = next_frame
-			raise Bunny::ProtocolError, "Connection failed - user: #{@user}, pass: #{@pass}" if frame.nil?
-			
-			method = frame.payload
-			
-      if method.is_a?(Qrack::Protocol09::Connection::Tune)
-        send_frame(
-          Qrack::Protocol09::Connection::TuneOk.new( :channel_max => @channel_max, :frame_max => @frame_max, :heartbeat => @heartbeat)
-        )
-      end
-
-      send_frame(
-        Qrack::Protocol09::Connection::Open.new(:virtual_host => @vhost, :reserved_1 => 0, :reserved_2 => false)
-      )
-
-      raise Bunny::ProtocolError, 'Cannot open connection' unless next_method.is_a?(Qrack::Protocol09::Connection::OpenOk)
 		end
 
   private

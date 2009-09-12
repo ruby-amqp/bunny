@@ -25,16 +25,28 @@ describe Bunny do
 		q.bind(exch, :nowait => true).should == :bind_ok
 	end
 	
+	it "should raise an error when trying to bind to a non-existent exchange" do
+		q = @b.queue('test1')
+		lambda {q.bind('bogus')}.should raise_error(Bunny::ForcedChannelCloseError)
+		@b.channel.active.should == false
+	end
+	
 	it "should be able to bind to an exchange" do
 		exch = @b.exchange('direct_exch')
 		q = @b.queue('test1')
 		q.bind(exch).should == :bind_ok
 	end
 
-	it "should ignore the :nowait option when unbinding from an exchange" do
+	it "should ignore the :nowait option when unbinding from an existing exchange" do
 		exch = @b.exchange('direct_exch')
 		q = @b.queue('test0')
 		q.unbind(exch, :nowait => true).should == :unbind_ok
+	end
+	
+	it "should raise an error if unbinding from a non-existent exchange" do
+		q = @b.queue('test1')
+		lambda {q.unbind('bogus')}.should raise_error(Bunny::ForcedChannelCloseError)
+		@b.channel.active.should == false
 	end
 	
 	it "should be able to unbind from an exchange" do
@@ -75,11 +87,17 @@ describe Bunny do
 		msg.should == lg_msg
 	end
 	
-	it "should be able to be purged to remove all of its messages" do
+	it "should raise an error if purge fails" do
 		q = @b.queue('test1')
 		5.times {q.publish('This is another test message')}
 		q.message_count.should == 5
-		q.purge
+		lambda {q.purge(:queue => 'bogus')}.should raise_error(Bunny::ForcedChannelCloseError)
+	end
+	
+	it "should be able to be purged to remove all of its messages" do
+		q = @b.queue('test1')
+		q.message_count.should == 5
+		q.purge.should == :purge_ok
 		q.message_count.should == 0
 	end
 	
@@ -107,6 +125,12 @@ describe Bunny do
 		q.message_count.should == 5
 		q.subscribe(:message_max => 5){|msg| x = 1}
 		q.unsubscribe.should == :unsubscribe_ok
+	end
+	
+	it "should raise an error when delete fails" do
+		q = @b.queue('test1')
+		lambda {q.delete(:queue => 'bogus')}.should raise_error(Bunny::ForcedChannelCloseError)
+		@b.channel.active.should == false
 	end
 
 	it "should be able to be deleted" do

@@ -52,6 +52,12 @@ describe Bunny do
 		@b.queues.has_key?('test1').should be(true)
   end
 
+	# Current RabbitMQ has not implemented some functionality
+	it "should raise an error if setting of QoS fails" do
+		lambda { @b.qos(:global => true) }.should raise_error(Bunny::ForcedConnectionCloseError)
+		@b.status.should == :not_connected
+	end
+
 	it "should be able to set QoS" do
 		@b.qos.should == :qos_ok
 	end

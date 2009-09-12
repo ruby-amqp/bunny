@@ -11,6 +11,8 @@ module Bunny
 	class ServerDownError < StandardError; end
 	class ConnectionError < StandardError; end
 	class MessageError < StandardError; end
+	class ForcedConnectionCloseError < StandardError; end
+	class ForcedChannelCloseError < StandardError; end
 	
 	VERSION = '0.5.3'
 	

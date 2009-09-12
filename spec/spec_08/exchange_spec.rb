@@ -16,7 +16,8 @@ describe Bunny do
 	end
 
 	it "should raise an error if instantiated as non-existent type" do
-		lambda { @b.exchange('bogus_ex', :type => :bogus) }.should raise_error(Bunny::ProtocolError)
+		lambda { @b.exchange('bogus_ex', :type => :bogus) }.should raise_error(Bunny::ForcedConnectionCloseError)
+		@b.status.should == :not_connected
 	end
 	
 	it "should allow a default direct exchange to be instantiated by specifying :type" do
@@ -129,6 +130,12 @@ describe Bunny do
 		ret_msg = @b.returned_message
 		ret_msg.should be_an_instance_of(Hash)
 		ret_msg[:payload].should == 'This message should be undeliverable'
+	end
+	
+	it "should report an error if delete fails" do
+		exch = @b.exchange('direct_exchange')
+		lambda { exch.delete(:exchange => 'bogus_ex') }.should raise_error(Bunny::ForcedChannelCloseError)
+		@b.channel.active.should == false
 	end
 	
 	it "should be able to be deleted" do

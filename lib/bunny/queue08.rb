@@ -39,7 +39,8 @@ Queues must be attached to at least one exchange in order to receive messages fr
 	    )
 	
       method = client.next_method
-			raise Bunny::ProtocolError, "Error declaring queue #{name}" unless method.is_a?(Qrack::Protocol::Queue::DeclareOk)
+
+			client.check_response(method,	Qrack::Protocol::Queue::DeclareOk, "Error declaring queue #{name}")
 
       @name = method.queue
 			client.queues[@name] = self
@@ -104,10 +105,11 @@ bound to the direct exchange '' by default. If error occurs, a _Bunny_::_Protoco
 		 																:routing_key => opts.delete(:key),
 		 																:nowait => false }.merge(opts))
 	    )
+	
+			method = client.next_method
 
-			raise Bunny::ProtocolError,
-				"Error binding queue #{name}" unless
-				client.next_method.is_a?(Qrack::Protocol::Queue::BindOk)
+			client.check_response(method,	Qrack::Protocol::Queue::BindOk,
+				"Error binding queue: #{name} to exchange: #{exchange}")
 
 			# return message
 			:bind_ok
@@ -144,10 +146,10 @@ from queues if successful. If an error occurs raises _Bunny_::_ProtocolError_.
 	    client.send_frame(
 	      Qrack::Protocol::Queue::Delete.new({ :queue => name, :nowait => false }.merge(opts))
 	    )
+	
+			method = client.next_method
 
-			raise Bunny::ProtocolError,
-				"Error deleting queue #{name}" unless
-				client.next_method.is_a?(Qrack::Protocol::Queue::DeleteOk)
+			client.check_response(method,	Qrack::Protocol::Queue::DeleteOk, "Error deleting queue #{name}")
 
 			client.queues.delete(name)
 
@@ -242,8 +244,10 @@ without any formal "undo" mechanism. If an error occurs raises _Bunny_::_Protoco
 	    client.send_frame(
 	      Qrack::Protocol::Queue::Purge.new({ :queue => name, :nowait => false }.merge(opts))
 	    )
+	
+			method = client.next_method
 
-			raise Bunny::ProtocolError, "Error purging queue #{name}" unless client.next_method.is_a?(Qrack::Protocol::Queue::PurgeOk)
+			client.check_response(method,	Qrack::Protocol::Queue::PurgeOk, "Error purging queue #{name}")
 
 			# return confirmation
 			:purge_ok
@@ -428,9 +432,9 @@ Removes a queue binding from an exchange. If error occurs, a _Bunny_::_ProtocolE
 	      )
 	    )
 	
-			raise Bunny::ProtocolError,
-				"Error unbinding queue #{name}" unless
-				client.next_method.is_a?(Qrack::Protocol::Queue::UnbindOk)
+			method = client.next_method
+
+			client.check_response(method,	Qrack::Protocol::Queue::UnbindOk, "Error unbinding queue #{name}")
 				
 			# return message
 			:unbind_ok

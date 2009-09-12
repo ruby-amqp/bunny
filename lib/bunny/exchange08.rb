@@ -63,10 +63,51 @@ specification that applies to your target broker/server.
           )
         )
 
-        raise Bunny::ProtocolError,
-          "Error declaring exchange #{name}: type = #{type}" unless
-          client.next_method.is_a?(Qrack::Protocol::Exchange::DeclareOk)
+				method = client.next_method
+
+				client.check_response(method, Qrack::Protocol::Exchange::DeclareOk,
+				 	"Error declaring exchange #{name}: type = #{type}")
+
       end
+    end
+
+=begin rdoc
+
+=== DESCRIPTION:
+
+Requests that an exchange is deleted from broker/server. Removes reference from exchanges
+if successful. If an error occurs raises _Bunny_::_ProtocolError_.
+
+==== Options:
+
+* <tt>:if_unused => true or false (_default_)</tt> - If set to _true_, the server will only
+  delete the exchange if it has no queue bindings. If the exchange has queue bindings the
+  server does not delete it but raises a channel exception instead.
+* <tt>:nowait => true or false (_default_)</tt> - Ignored by Bunny, always _false_.
+
+==== Returns:
+
+<tt>:delete_ok</tt> if successful
+=end
+
+    def delete(opts = {})
+      # ignore the :nowait option if passed, otherwise program will hang waiting for a
+      # response that will not be sent by the server
+      opts.delete(:nowait)
+
+      client.send_frame(
+        Qrack::Protocol::Exchange::Delete.new({ :exchange => name, :nowait => false }.merge(opts))
+      )
+
+			method = client.next_method
+
+			client.check_response(method, Qrack::Protocol::Exchange::DeleteOk,
+			 	"Error deleting exchange #{name}")
+
+      client.exchanges.delete(name)
+
+      # return confirmation
+      :delete_ok
     end
 
 =begin rdoc
@@ -118,44 +159,6 @@ nil
       out << Qrack::Transport::Body.new(data)
 
       client.send_frame(*out)
-    end
-
-=begin rdoc
-
-=== DESCRIPTION:
-
-Requests that an exchange is deleted from broker/server. Removes reference from exchanges
-if successful. If an error occurs raises _Bunny_::_ProtocolError_.
-	
-==== Options:
-
-* <tt>:if_unused => true or false (_default_)</tt> - If set to _true_, the server will only
-  delete the exchange if it has no queue bindings. If the exchange has queue bindings the
-  server does not delete it but raises a channel exception instead.
-* <tt>:nowait => true or false (_default_)</tt> - Ignored by Bunny, always _false_.
-
-==== Returns:
-
-<tt>:delete_ok</tt> if successful
-=end
-
-    def delete(opts = {})
-      # ignore the :nowait option if passed, otherwise program will hang waiting for a
-      # response that will not be sent by the server
-      opts.delete(:nowait)
-      
-      client.send_frame(
-        Qrack::Protocol::Exchange::Delete.new({ :exchange => name, :nowait => false }.merge(opts))
-      )
-
-      raise Bunny::ProtocolError,
-        "Error deleting exchange #{name}" unless
-        client.next_method.is_a?(Qrack::Protocol::Exchange::DeleteOk)
-
-      client.exchanges.delete(name)
-      
-      # return confirmation
-      :delete_ok
     end
 
   end
