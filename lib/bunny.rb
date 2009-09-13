@@ -14,7 +14,7 @@ module Bunny
 	class ForcedConnectionCloseError < StandardError; end
 	class ForcedChannelCloseError < StandardError; end
 	
-	VERSION = '0.5.3'
+	VERSION = '0.5.4'
 	
 	# Returns the Bunny version number
 
