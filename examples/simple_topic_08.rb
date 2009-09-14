@@ -38,20 +38,20 @@ sports_results.publish('British Lions 15 : South Africa 12', :key => 'rugby.resu
 # get message from the queues
 
 # soccer queue got the soccer message
-msg = soccer.pop
+msg = soccer.pop[:payload]
 puts 'This is a message from the soccer q: ' + msg + "\n\n"
 
 # cricket queue got the cricket message
-msg = cricket.pop
+msg = cricket.pop[:payload]
 puts 'This is a message from the cricket q: ' + msg + "\n\n"
 
 # rugby queue got the rugby message
-msg = rugby.pop
+msg = rugby.pop[:payload]
 puts 'This is a message from the rugby q: ' + msg + "\n\n"
 
 # allsport queue got all of the messages
 until msg == :queue_empty do
-	msg = allsport.pop
+	msg = allsport.pop[:payload]
 	puts 'This is a message from the allsport q: ' + msg + "\n\n" unless msg == :queue_empty
 end
 

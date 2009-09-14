@@ -44,18 +44,10 @@ exch = b.exchange('sorting_room')
 # bind queue to exchange
 q.bind(exch, :key => 'fred')
 
-# initialize counter
-i = 1
-
 # subscribe to queue
-begin
-	ret = q.subscribe(:consumer_tag => 'testtag1', :timeout => 30) do |msg|
-		puts "#{i.to_s}: #{msg}"
-		i+=1
-	end
-rescue Qrack::ClientTimeout
-	puts '==== simple_consumer_08.rb timed out - closing down ===='
-	q.unsubscribe(:consumer_tag => 'testtag1')
-	# close the connection
-	b.stop
+q.subscribe(:consumer_tag => 'testtag1', :timeout => 30) do |msg|
+	puts "#{q.subscription.message_count}: #{msg[:payload]}"
 end
+
+# Close client
+b.stop

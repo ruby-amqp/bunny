@@ -7,12 +7,13 @@ end
 
 module Bunny
 
+	class ConnectionError < StandardError; end
+	class ForcedChannelCloseError < StandardError; end
+	class ForcedConnectionCloseError < StandardError; end
+	class MessageError < StandardError; end
 	class ProtocolError < StandardError; end
 	class ServerDownError < StandardError; end
-	class ConnectionError < StandardError; end
-	class MessageError < StandardError; end
-	class ForcedConnectionCloseError < StandardError; end
-	class ForcedChannelCloseError < StandardError; end
+	class UnsubscribeError < StandardError; end
 	
 	VERSION = '0.5.4'
 	
@@ -62,6 +63,7 @@ module Bunny
 			require 'bunny/exchange08'
 			require 'bunny/queue08'
 			require 'bunny/channel08'
+			require 'bunny/subscription08'
 			
 			@client = Bunny::Client.new(opts)
 		else
@@ -71,6 +73,7 @@ module Bunny
 			require 'bunny/exchange09'
 			require 'bunny/queue09'
 			require 'bunny/channel09'
+			require 'bunny/subscription09'
 			
 			@client = Bunny::Client09.new(opts)
 		end			

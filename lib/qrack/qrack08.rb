@@ -9,6 +9,7 @@ require 'transport/frame08'
 require 'qrack/client'
 require 'qrack/channel'
 require 'qrack/queue'
+require 'qrack/subscription'
 
 module Qrack
 	

@@ -32,7 +32,7 @@ header_exch.publish('Headers test msg 2', :headers => {'h1'=>'z'})
 # get messages from the queue - should only be msg 1 that got through
 msg = ""
 until msg == :queue_empty do
-	msg = q.pop
+	msg = q.pop[:payload]
 	puts 'This is a message from the header_q1 queue: ' + msg + "\n" unless msg == :queue_empty
 end
 

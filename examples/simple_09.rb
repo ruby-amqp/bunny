@@ -22,7 +22,7 @@ q = b.queue('test1')
 q.publish('Hello everybody!')
 
 # get message from the queue
-msg = q.pop
+msg = q.pop[:payload]
 
 puts 'This is the message: ' + msg + "\n\n"
 

@@ -30,9 +30,9 @@ q2.bind(exch)
 exch.publish('This message will be fanned out')
 
 # get message from the queues
-msg = q1.pop
+msg = q1.pop[:payload]
 puts 'This is the message from q1: ' + msg + "\n\n"
-msg = q2.pop
+msg = q2.pop[:payload]
 puts 'This is the message from q2: ' + msg + "\n\n"
 
 # close the client connection

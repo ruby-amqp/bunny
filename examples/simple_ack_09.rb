@@ -22,7 +22,7 @@ q = b.queue('test1')
 q.publish('Testing acknowledgements')
 
 # get message from the queue
-msg = q.pop(:ack => true)
+msg = q.pop(:ack => true)[:payload]
 
 # acknowledge receipt of message
 q.ack

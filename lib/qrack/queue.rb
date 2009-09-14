@@ -4,7 +4,7 @@ module Qrack
 	class Queue
 		
 		attr_reader :name, :client
-	  attr_accessor :delivery_tag
+	  attr_accessor :delivery_tag, :subscription
 	
 =begin rdoc
 

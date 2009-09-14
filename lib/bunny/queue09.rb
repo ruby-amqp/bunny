@@ -166,9 +166,7 @@ from queues if successful. If an error occurs raises _Bunny_::_ProtocolError_.
 Gets a message from a queue in a synchronous way. If error occurs, raises _Bunny_::_ProtocolError_.
 
 ==== OPTIONS:
-
-* <tt>:header => true or false (_default_)</tt> - If set to _true_,
-  hash <tt>{:header, :delivery_details, :payload}</tt> is returned. 
+ 
 * <tt>:no_ack => true (_default_) or false</tt> - If set to _true_, the server does not expect an
   acknowledgement message from the client. If set to _false_, the server expects an acknowledgement
   message from the client and will re-queue the message if it does not receive one within a time specified
@@ -176,16 +174,12 @@ Gets a message from a queue in a synchronous way. If error occurs, raises _Bunny
 
 ==== RETURNS:
 
-If <tt>:header => true</tt> returns hash <tt>{:header, :delivery_details, :payload}</tt>. <tt>:delivery_details</tt> is
-a hash <tt>{:delivery_tag, :redelivered, :exchange, :routing_key, :message_count}</tt>. If 
-<tt>:header => false</tt> only the message payload is returned.
+Hash <tt>{:header, :delivery_details, :payload}</tt>. <tt>:delivery_details</tt> is
+a hash <tt>{:delivery_tag, :redelivered, :exchange, :routing_key, :message_count}</tt>.
 
 =end
 
 	  def pop(opts = {})
-			
-			# do we want the message header?
-			hdr = opts.delete(:header)
 			
 			# do we want to have to provide an acknowledgement?
 			ack = opts.delete(:ack)
@@ -201,7 +195,7 @@ a hash <tt>{:delivery_tag, :redelivered, :exchange, :routing_key, :message_count
 			method = client.next_method
 			
 			if method.is_a?(Qrack::Protocol09::Basic::GetEmpty) then
-				return :queue_empty
+				return {:header => nil, :payload => :queue_empty, :delivery_details => nil}
 			elsif	!method.is_a?(Qrack::Protocol09::Basic::GetOk)
 				raise Bunny::ProtocolError, "Error getting message from queue #{name}"
 			end
@@ -219,7 +213,7 @@ a hash <tt>{:delivery_tag, :redelivered, :exchange, :routing_key, :message_count
 			end
 
 			# Return message with additional info if requested
-			hdr ? {:header => header, :payload => msg, :delivery_details => method.arguments} : msg
+			{:header => header, :payload => msg, :delivery_details => method.arguments}
 			
 	  end
 	
@@ -273,100 +267,13 @@ Returns hash {:message_count, :consumer_count}.
 	    {:message_count => method.message_count, :consumer_count => method.consumer_count}
 	  end
 
-=begin rdoc
-
-=== DESCRIPTION:
-
-Asks the server to start a "consumer", which is a transient request for messages from a specific
-queue. Consumers last as long as the channel they were created on, or until the client cancels them
-with an _unsubscribe_. Every time a message reaches the queue it is passed to the _blk_ for
-processing. If error occurs, _Bunny_::_ProtocolError_ is raised.
-
-==== OPTIONS:
-* <tt>:header => true or false (_default_)</tt> - If set to _true_, hash is delivered for each message
-  <tt>{:header, :delivery_details, :payload}</tt>.
-* <tt>:consumer_tag => '_tag_'</tt> - Specifies the identifier for the consumer. The consumer tag is
-  local to a connection, so two clients can use the same consumer tags. If this field is empty the
-  queue name is used.
-* <tt>:no_ack=> true (_default_) or false</tt> - If set to _true_, the server does not expect an
-  acknowledgement message from the client. If set to _false_, the server expects an acknowledgement
-  message from the client and will re-queue the message if it does not receive one within a time specified
-  by the server.
-* <tt>:exclusive => true or false (_default_)</tt> - Request exclusive consumer access, meaning
-  only this consumer can access the queue.
-* <tt>:nowait => true or false (_default_)</tt> - Ignored by Bunny, always _false_.
-* <tt>:timeout => number of seconds - The subscribe loop will continue to wait for
-  messages until terminated (Ctrl-C or kill command) or this timeout interval is reached.
-* <tt>:message_max => max number messages to process</tt> - When the required number of messages
-  is processed subscribe loop is exited.
-
-==== RETURNS:
-
-If <tt>:header => true</tt> returns hash <tt>{:header, :delivery_details, :payload}</tt> for each message.
-<tt>:delivery_details</tt> is a hash <tt>{:consumer_tag, :delivery_tag, :redelivered, :exchange, :routing_key}</tt>.
-If <tt>:header => false</tt> only message payload is returned.
-If <tt>:timeout => > 0</tt> is reached Qrack::ClientTimeout is raised
-
-=end
-	
 		def subscribe(opts = {}, &blk)
-			# Get maximum amount of messages to process
-			message_max = opts[:message_max] || nil
-			return if message_max == 0
+			# Create subscription
+			s = Bunny::Subscription09.new(client, self, opts)
+			s.start(&blk)
 			
-			# If a consumer tag is not passed in the server will generate one
-			consumer_tag = opts[:consumer_tag] || nil
-			
-			# ignore the :nowait option if passed, otherwise program will hang waiting for a
-			# response from the server causing an error.
-			opts.delete(:nowait)
-			
-			# do we want the message header?
-			hdr = opts.delete(:header)
-			
-			# do we want to have to provide an acknowledgement?
-			ack = opts.delete(:ack)
-			
-			client.send_frame(
-				Qrack::Protocol09::Basic::Consume.new({ :reserved_1 => 0,
-																			 					:queue => name,
-																	 		 					:consumer_tag => consumer_tag,
-																	 		 					:no_ack => !ack,
-																	 		 					:nowait => false }.merge(opts))
-			)
-			
-			raise Bunny::ProtocolError,
-				"Error subscribing to queue #{name}" unless
-				client.next_method.is_a?(Qrack::Protocol09::Basic::ConsumeOk)
-				
-			# Initialize message counter
-			counter = 0
-			
-			loop do
-        method = client.next_method(:timeout => opts[:timeout])
-			
-				# get delivery tag to use for acknowledge
-				self.delivery_tag = method.delivery_tag if ack
-			
-				header = client.next_payload
-				
-		    # If maximum frame size is smaller than message payload body then message
-				# will have a message header and several message bodies				
-		    msg = ''
-				while msg.length < header.size
-					msg += client.next_payload
-				end
-				
-				# pass the message and related info, if requested, to the block for processing
-				blk.call(hdr ? {:header => header, :payload => msg, :delivery_details => method.arguments} : msg)
-
-				# Increment message counter
-				counter += 1
-				
-				# Exit loop if message_max condition met
-				break if !message_max.nil? and counter == message_max
-			end
-			
+			# Reset when subscription finished
+			@subscription = nil
 		end
 		
 =begin rdoc
@@ -429,19 +336,25 @@ the server will not send any more messages for that consumer.
 =end
 		
 		def unsubscribe(opts = {})
-			consumer_tag = opts[:consumer_tag] || name
+			# Default consumer_tag from subscription if not passed in
+			consumer_tag = subscription ? subscription.consumer_tag : opts[:consumer_tag]
 			
-			# ignore the :nowait option if passed, otherwise program will hang waiting for a
-			# response from the server causing an error
-			opts.delete(:nowait)
+			# Must have consumer tag to tell server what to unsubscribe
+			raise Bunny::UnsubscribeError,
+				"No consumer tag received" if !consumer_tag
 			
-      client.send_frame( Qrack::Protocol09::Basic::Cancel.new({ :consumer_tag => consumer_tag }.merge(opts)))
+      # Cancel consumer
+      client.send_frame( Qrack::Protocol09::Basic::Cancel.new(:consumer_tag => consumer_tag,
+																														:nowait => false))
 
-			raise Bunny::ProtocolError,
-				"Error unsubscribing from queue #{name}" unless
-				client.next_method.is_a?(Qrack::Protocol09::Basic::CancelOk)
+      raise Bunny::UnsubscribeError,
+        "Error unsubscribing from queue #{name}" unless
+        client.next_method.is_a?(Qrack::Protocol09::Basic::CancelOk)
+
+			# Reset subscription
+			@subscription = nil
 				
-			# return confirmation
+			# Return confirmation
 			:unsubscribe_ok
 			
     end
