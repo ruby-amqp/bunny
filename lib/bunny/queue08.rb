@@ -182,9 +182,12 @@ If the queue is empty the returned hash will contain the values -
   :payload => :queue_empty
   :delivery_details => nil
 
+N.B. If a block is provided then the hash will be passed into the block and the return value
+will be nil.
+
 =end
 
-	  def pop(opts = {})
+	  def pop(opts = {}, &blk)
 			
 			# do we want to have to provide an acknowledgement?
 			ack = opts.delete(:ack)
@@ -199,25 +202,32 @@ If the queue is empty the returned hash will contain the values -
 			method = client.next_method
 			
 			if method.is_a?(Qrack::Protocol::Basic::GetEmpty) then
-				return {:header => nil, :payload => :queue_empty, :delivery_details => nil}
+				queue_empty = true
 			elsif	!method.is_a?(Qrack::Protocol::Basic::GetOk)
 				raise Bunny::ProtocolError, "Error getting message from queue #{name}"
 			end
 			
-			# get delivery tag to use for acknowledge
-			self.delivery_tag = method.delivery_tag if ack
+			if !queue_empty
+				# get delivery tag to use for acknowledge
+				self.delivery_tag = method.delivery_tag if ack
 			
-	    header = client.next_payload
+		    header = client.next_payload
 	
-	    # If maximum frame size is smaller than message payload body then message
-			# will have a message header and several message bodies
-			msg = ''
-			while msg.length < header.size
-				msg += client.next_payload
+		    # If maximum frame size is smaller than message payload body then message
+				# will have a message header and several message bodies
+				msg = ''
+				while msg.length < header.size
+					msg += client.next_payload
+				end
+				
+				msg_hash = {:header => header, :payload => msg, :delivery_details => method.arguments}
+				
+			else
+				msg_hash = {:header => nil, :payload => :queue_empty, :delivery_details => nil}
 			end
-
-			# Return message with additional info if requested
-			{:header => header, :payload => msg, :delivery_details => method.arguments}
+			
+			# Pass message hash to block or return message hash
+			blk ? blk.call(msg_hash) : msg_hash		
 			
 	  end
 	

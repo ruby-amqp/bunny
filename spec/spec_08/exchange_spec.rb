@@ -8,7 +8,7 @@
 
 require File.expand_path(File.join(File.dirname(__FILE__), %w[.. .. lib bunny]))
 
-describe Bunny do
+describe 'Exchange' do
 
 	before(:each) do
     @b = Bunny.new

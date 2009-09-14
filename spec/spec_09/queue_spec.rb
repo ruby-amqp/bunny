@@ -8,7 +8,7 @@
 
 require File.expand_path(File.join(File.dirname(__FILE__), %w[.. .. lib bunny]))
 
-describe Bunny do
+describe 'Queue' do
 	
 	before(:each) do
     @b = Bunny.new(:spec => '09')
@@ -85,6 +85,13 @@ describe Bunny do
 		q.publish(lg_msg)
 		msg = q.pop[:payload]
 		msg.should == lg_msg
+	end
+	
+	it "should be able call a block when popping a message" do
+		q = @b.queue('test1')
+		q.publish('This is another test message')
+		q.pop { |msg| msg[:payload].should == 'This is another test message' }
+		q.pop { |msg| msg[:payload].should == :queue_empty }
 	end
 	
 	it "should raise an error if purge fails" do
