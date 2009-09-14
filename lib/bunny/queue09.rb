@@ -167,15 +167,15 @@ Gets a message from a queue in a synchronous way. If error occurs, raises _Bunny
 
 ==== OPTIONS:
  
-* <tt>:no_ack => true (_default_) or false</tt> - If set to _true_, the server does not expect an
-  acknowledgement message from the client. If set to _false_, the server expects an acknowledgement
+* <tt>:ack => false (_default_) or true</tt> - If set to _false_, the server does not expect an
+  acknowledgement message from the client. If set to _true_, the server expects an acknowledgement
   message from the client and will re-queue the message if it does not receive one within a time specified
   by the server.
 
 ==== RETURNS:
 
-Hash <tt>{:header, :delivery_details, :payload}</tt>. <tt>:delivery_details</tt> is
-a hash <tt>{:delivery_tag, :redelivered, :exchange, :routing_key, :message_count}</tt>.
+Hash <tt>{:header, :payload, :delivery_details}</tt>. <tt>:delivery_details</tt> is
+a hash <tt>{:consumer_tag, :delivery_tag, :redelivered, :exchange, :routing_key}</tt>.
 
 =end
 
