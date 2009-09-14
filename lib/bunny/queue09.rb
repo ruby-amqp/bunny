@@ -177,6 +177,12 @@ Gets a message from a queue in a synchronous way. If error occurs, raises _Bunny
 Hash <tt>{:header, :payload, :delivery_details}</tt>. <tt>:delivery_details</tt> is
 a hash <tt>{:consumer_tag, :delivery_tag, :redelivered, :exchange, :routing_key}</tt>.
 
+If the queue is empty the returned hash will contain the values -
+
+  :header => nil
+  :payload => :queue_empty
+  :delivery_details => nil
+
 =end
 
 	  def pop(opts = {})
