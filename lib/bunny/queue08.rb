@@ -320,10 +320,11 @@ the server will not send any more messages for that consumer.
       # Cancel consumer
       client.send_frame( Qrack::Protocol::Basic::Cancel.new(:consumer_tag => consumer_tag,
 																														:nowait => false))
+																														
+			method = client.next_method
 
-      raise Bunny::UnsubscribeError,
-        "Error unsubscribing from queue #{name}" unless
-        client.next_method.is_a?(Qrack::Protocol::Basic::CancelOk)
+			client.check_response(method,	Qrack::Protocol::Basic::CancelOk,
+				"Error unsubscribing from queue #{name}")
 
 			# Reset subscription
 			@subscription = nil
