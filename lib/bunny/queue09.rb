@@ -65,8 +65,12 @@ ask to confirm a single message or a set of messages up to and including a speci
 =end
 	
 		def ack(opts={})
-			# If delivery tag is nil then set it to 1 to prevent errors
-			self.delivery_tag = 1 if self.delivery_tag.nil?
+			# Set delivery tag
+			if delivery_tag.nil? and opts[:delivery_tag].nil?
+				raise Bunny::AcknowledgementError, "No delivery tag received"
+			else
+				self.delivery_tag = opts[:delivery_tag] if delivery_tag.nil?
+			end
 			
       client.send_frame(
         Qrack::Protocol09::Basic::Ack.new({:delivery_tag => delivery_tag, :multiple => false}.merge(opts))

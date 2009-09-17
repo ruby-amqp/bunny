@@ -14,6 +14,7 @@ module Bunny
 	class ProtocolError < StandardError; end
 	class ServerDownError < StandardError; end
 	class UnsubscribeError < StandardError; end
+	class AcknowledgementError < StandardError; end
 	
 	VERSION = '0.5.4'
 	

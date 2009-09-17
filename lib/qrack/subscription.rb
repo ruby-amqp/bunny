@@ -39,10 +39,6 @@ module Qrack
 		
 		end
 		
-		def acknowledge()
-			queue.ack(:delivery_tag => @delivery_tag)
-		end
-		
 		def start(&blk)
 			
 			# Do not process any messages if zero message_max
@@ -67,7 +63,7 @@ module Qrack
 				@message_count += 1
 		
 				# get delivery tag to use for acknowledge
-				@delivery_tag = method.delivery_tag if @ack
+				queue.delivery_tag = method.delivery_tag if @ack
 		
 				header = client.next_payload
 
@@ -86,7 +82,7 @@ module Qrack
 					# Stop consuming messages
 					queue.unsubscribe()				
 					# Acknowledge receipt of the final message
-					acknowledge() if @ack
+					queue.ack() if @ack
 					# Quit the loop
 					break
 				end
@@ -95,7 +91,7 @@ module Qrack
 				# if you are using Client#qos prefetch and you will get extra messages sent through before
 				# the unsubscribe takes effect to stop messages being sent to this consumer unless the ack is
 				# deferred.
-				acknowledge() if @ack
+				queue.ack() if @ack
 		
 			end
 		
