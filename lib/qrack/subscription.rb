@@ -2,7 +2,7 @@ module Qrack
 	# Subscription ancestor class
 	class Subscription
 		
-		attr_accessor :consumer_tag, :message_max, :timeout, :ack, :exclusive
+		attr_accessor :consumer_tag, :delivery_tag, :message_max, :timeout, :ack, :exclusive
 		attr_reader :client, :queue, :message_count
 	
 		def initialize(client, queue, opts = {})
@@ -39,7 +39,12 @@ module Qrack
 		
 		end
 		
+		def acknowledge()
+			queue.ack(:delivery_tag => @delivery_tag)
+		end
+		
 		def start(&blk)
+			
 			# Do not process any messages if zero message_max
 			if message_max == 0
 				return
@@ -62,7 +67,7 @@ module Qrack
 				@message_count += 1
 		
 				# get delivery tag to use for acknowledge
-				delivery_tag = method.delivery_tag if @ack
+				@delivery_tag = method.delivery_tag if @ack
 		
 				header = client.next_payload
 
@@ -78,7 +83,11 @@ module Qrack
 
 				# Exit loop if message_max condition met
 				if (!message_max.nil? and message_count == message_max)
-					queue.unsubscribe()
+					# Stop consuming messages
+					queue.unsubscribe()				
+					# Acknowledge receipt of the final message
+					acknowledge() if @ack
+					# Quit the loop
 					break
 				end
 			
@@ -86,7 +95,7 @@ module Qrack
 				# if you are using Client#qos prefetch and you will get extra messages sent through before
 				# the unsubscribe takes effect to stop messages being sent to this consumer unless the ack is
 				# deferred.
-				queue.ack(:delivery_tag => delivery_tag) if @ack
+				acknowledge() if @ack
 		
 			end
 		
