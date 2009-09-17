@@ -54,7 +54,7 @@ module Qrack
 				begin
 					method = client.next_method(:timeout => timeout)
 				rescue Qrack::ClientTimeout
-					queue.unsubscribe(:consumer_tag => consumer_tag)
+					queue.unsubscribe()
 					break
 				end
 				
@@ -78,7 +78,7 @@ module Qrack
 
 				# Exit loop if message_max condition met
 				if (!message_max.nil? and message_count == message_max)
-					queue.unsubscribe(:consumer_tag => consumer_tag)
+					queue.unsubscribe()
 					break
 				end
 			
