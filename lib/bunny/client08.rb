@@ -26,6 +26,12 @@ Sets up a Bunny::Client object ready for connection to a broker/server. _Client_
 * <tt>:vhost => '_vhostname_' (default = '/')</tt>
 * <tt>:user => '_username_' (default = 'guest')</tt>
 * <tt>:pass => '_password_' (default = 'guest')</tt>
+* <tt>:ssl => true or false (default = false)</tt> - If set to _true_, ssl
+  encryption will be used. Note that you will have to manually update the port
+  (usually set to 5673 for ssl connections).
+* <tt>:verify_ssl => true or false (default = true)</tt> - If ssl is enabled,
+  this will cause OpenSSL to validate the server certificate unless this
+  parameter is set to _false_.
 * <tt>:logfile => '_logfilepath_' (default = nil)</tt>
 * <tt>:logging => true or false (_default_)</tt> - If set to _true_, session information is sent
   to STDOUT if <tt>:logfile</tt> has not been specified. Otherwise, session information is written to
