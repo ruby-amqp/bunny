@@ -144,15 +144,24 @@ nil
       opts = opts.dup
       out = []
 
+			# Set up options
+			routing_key = opts.delete(:key) || key
+			mandatory = opts.delete(:mandatory)
+			immediate = opts.delete(:immediate)
+			delivery_mode = opts.delete(:persistent) ? 2 : 1
+
       out << Qrack::Protocol::Basic::Publish.new(
-        { :exchange => name, :routing_key => opts.delete(:key) || key }.merge(opts)
+        { :exchange => name,
+					:routing_key => routing_key,
+					:mandatory => mandatory,
+					:immediate => immediate }
       )
       data = data.to_s
       out << Qrack::Protocol::Header.new(
         Qrack::Protocol::Basic,
         data.length, {
           :content_type  => 'application/octet-stream',
-          :delivery_mode => (opts.delete(:persistent) ? 2 : 1),
+          :delivery_mode => delivery_mode,
           :priority      => 0 
         }.merge(opts)
       )
