@@ -19,6 +19,8 @@ module Qrack
       @vhost  = opts[:vhost] || '/'
 			@logfile = opts[:logfile] || nil
 			@logging = opts[:logging] || false
+			@ssl = opts[:ssl] || false
+      @verify_ssl = opts[:verify_ssl].nil? || opts[:verify_ssl]
       @status = :not_connected
 			@frame_max = opts[:frame_max] || 131072
 			@channel_max = opts[:channel_max] || 0
@@ -171,6 +173,15 @@ a hash <tt>{:reply_code, :reply_text, :exchange, :routing_key}</tt>.
 
         if Socket.constants.include? 'TCP_NODELAY'
           @socket.setsockopt Socket::IPPROTO_TCP, Socket::TCP_NODELAY, 1
+        end
+
+        if @ssl
+          require 'openssl' unless defined? OpenSSL::SSL
+          @socket = OpenSSL::SSL::SSLSocket.new(@socket)
+          @socket.sync_close = true
+          @socket.connect
+          @socket.post_connection_check(host) if @verify_ssl
+          @socket
         end
       rescue => e
         @status = :not_connected
