@@ -119,8 +119,13 @@ a hash <tt>{:reply_code, :reply_text, :exchange, :routing_key}</tt>.
 
 			method = frame.payload
 			header = next_payload
-	    msg = next_payload
-	    raise Bunny::MessageError, 'unexpected length' if msg.length < header.size
+	
+			# If maximum frame size is smaller than message payload body then message
+			# will have a message header and several message bodies				
+		  msg = ''
+			while msg.length < header.size
+				msg += next_payload
+			end
 
 			# Return the message and related info
 			{:header => header, :payload => msg, :return_details => method.arguments}

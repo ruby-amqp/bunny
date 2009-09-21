@@ -125,11 +125,20 @@ describe 'Exchange' do
   end
 	
 	it "should be able to return an undeliverable message" do
-		exch = @b.exchange('')
+		exch = @b.exchange('return_exch')
 		exch.publish('This message should be undeliverable', :immediate => true)
 		ret_msg = @b.returned_message
 		ret_msg.should be_an_instance_of(Hash)
 		ret_msg[:payload].should == 'This message should be undeliverable'
+	end
+	
+	it "should be able to return a message that exceeds maximum frame size" do
+		exch = @b.exchange('return_exch')
+		lg_msg = 'z' * 142000
+		exch.publish(lg_msg, :immediate => true)
+		ret_msg = @b.returned_message
+		ret_msg.should be_an_instance_of(Hash)
+		ret_msg[:payload].should == lg_msg
 	end
 	
 	it "should report an error if delete fails" do
