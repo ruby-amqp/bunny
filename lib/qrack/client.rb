@@ -102,18 +102,19 @@ with the <tt>:immediate</tt> or <tt>:mandatory</tt> options.
 
 ==== RETURNS:
 
-<tt>:no_return</tt> if message was not returned before timeout .
+<tt>{:header => nil, :payload => :no_return, :return_details => nil}</tt> if message is
+not returned before timeout.
 <tt>{:header, :return_details, :payload}</tt> if message is returned. <tt>:return_details</tt> is
 a hash <tt>{:reply_code, :reply_text, :exchange, :routing_key}</tt>.
 
 =end
 
 		def returned_message(opts = {})
-			secs = opts[:timeout] || 0.1		
-			frame = next_frame(:timeout => secs)
-
-			if frame.is_a?(Symbol)
-				return :no_return if frame == :timed_out
+			
+			begin		
+				frame = next_frame(:timeout => opts[:timeout] || 0.1)
+			rescue Qrack::ClientTimeout
+				return {:header => nil, :payload => :no_return, :return_details => nil}
 			end
 
 			method = frame.payload
