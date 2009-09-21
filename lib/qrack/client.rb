@@ -1,11 +1,12 @@
 module Qrack
 	
 	class ClientTimeout < Timeout::Error; end
+  class ConnectionTimeout < Timeout::Error; end
 	
 	# Client ancestor class
 	class Client
 		
-		CONNECT_TIMEOUT = 1.0
+		CONNECT_TIMEOUT = 5.0
     RETRY_DELAY     = 10.0
 
     attr_reader   :status, :host, :vhost, :port, :logging, :spec, :heartbeat
@@ -25,6 +26,7 @@ module Qrack
 			@frame_max = opts[:frame_max] || 131072
 			@channel_max = opts[:channel_max] || 0
 			@heartbeat = opts[:heartbeat] || 0
+      @connect_timeout = opts[:timeout] || CONNECT_TIMEOUT
 			@logger = nil
 			create_logger if @logging
 			@message_in = false
@@ -173,7 +175,7 @@ a hash <tt>{:reply_code, :reply_text, :exchange, :routing_key}</tt>.
 
       begin
         # Attempt to connect.
-        @socket = timeout(CONNECT_TIMEOUT) do
+        @socket = timeout(@connect_timeout, ConnectionTimeout) do
           TCPSocket.new(host, port)
         end
 
