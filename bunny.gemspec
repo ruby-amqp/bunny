@@ -57,7 +57,9 @@ Gem::Specification.new do |s|
 		"spec/spec_08/bunny_spec.rb",
 		"spec/spec_08/exchange_spec.rb",
 		"spec/spec_08/queue_spec.rb",
+		"spec/spec_08/connection_spec.rb",
 		"spec/spec_09/bunny_spec.rb",
 		"spec/spec_09/exchange_spec.rb",
-		"spec/spec_09/queue_spec.rb"]
+		"spec/spec_09/queue_spec.rb",
+		"spec/spec_09/connection_spec.rb"]
 end
