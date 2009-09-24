@@ -195,7 +195,7 @@ Exchange
       )
 
       frame = next_frame
-			raise Bunny::ProtocolError, "Connection failed - user: #{@user}, pass: #{@pass}" if frame.nil?
+			raise Bunny::ProtocolError, "Connection failed - user: #{@user}" if frame.nil?
 			
 			method = frame.payload
 
