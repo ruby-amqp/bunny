@@ -7,12 +7,12 @@ Gem::Specification.new do |s|
   s.email = %q{celldee@gmail.com}
   s.rubyforge_project = %q{bunny-amqp}
   s.has_rdoc = true
- 	s.extra_rdoc_files = [ "README" ]
-  s.rdoc_options = [ "--main", "README" ]
+ 	s.extra_rdoc_files = [ "README.rdoc" ]
+  s.rdoc_options = [ "--main", "README.rdoc" ]
   s.homepage = %q{http://github.com/celldee/bunny/tree/master}
   s.summary = %q{A synchronous Ruby AMQP client that enables interaction with AMQP-compliant brokers/servers.}
   s.files = ["LICENSE",
-	 	"README",
+	 	"README.rdoc",
 		"Rakefile",
 		"bunny.gemspec",
 		"examples/simple_08.rb",
