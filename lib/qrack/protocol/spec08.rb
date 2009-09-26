@@ -12,6 +12,7 @@ module Qrack
     VERSION_MINOR = 0
     REVISION      = 0
     PORT          = 5672
+		SSL_PORT			= 5671
 
     RESPONSES = {
       200 => :REPLY_SUCCESS,

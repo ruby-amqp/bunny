@@ -20,13 +20,12 @@ Sets up a Bunny::Client object ready for connection to a broker/server. _Client_
 ==== OPTIONS:
 
 * <tt>:host => '_hostname_' (default = 'localhost')</tt>
-* <tt>:port => _portno_ (default = 5672)</tt>
+* <tt>:port => _portno_ (default = 5672 or 5671 if :ssl set to true)</tt>
 * <tt>:vhost => '_vhostname_' (default = '/')</tt>
 * <tt>:user => '_username_' (default = 'guest')</tt>
 * <tt>:pass => '_password_' (default = 'guest')</tt>
 * <tt>:ssl => true or false (default = false)</tt> - If set to _true_, ssl
-  encryption will be used. Note that you will have to manually update the port
-  (usually set to 5671 for ssl connections).
+  encryption will be used and port will default to 5671.
 * <tt>:verify_ssl => true or false (default = true)</tt> - If ssl is enabled,
   this will cause OpenSSL to validate the server certificate unless this
   parameter is set to _false_.
@@ -44,7 +43,7 @@ Sets up a Bunny::Client object ready for connection to a broker/server. _Client_
     def initialize(opts = {})
 			super
 			@spec = '0-9-1'
-			@port = opts[:port] || Qrack::Protocol09::PORT
+			@port = opts[:port] || (opts[:ssl] ? Qrack::Protocol09::SSL_PORT : Qrack::Protocol09::PORT)
     end
 
 =begin rdoc
