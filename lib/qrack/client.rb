@@ -26,7 +26,7 @@ module Qrack
 			@frame_max = opts[:frame_max] || 131072
 			@channel_max = opts[:channel_max] || 0
 			@heartbeat = opts[:heartbeat] || 0
-      @connect_timeout = opts[:timeout] || CONNECT_TIMEOUT
+      @connect_timeout = opts[:connect_timeout] || CONNECT_TIMEOUT
 			@logger = nil
 			create_logger if @logging
 			@message_in = false

@@ -36,7 +36,7 @@ Sets up a Bunny::Client object ready for connection to a broker/server. _Client_
 * <tt>:frame_max => maximum frame size in bytes (default = 131072)</tt>
 * <tt>:channel_max => maximum number of channels (default = 0 no maximum)</tt>
 * <tt>:heartbeat => number of seconds (default = 0 no heartbeat)</tt>
-* <tt>:timeout => number of seconds before Qrack::ConnectionTimeout is raised (default = 5)</tt>
+* <tt>:connect_timeout => number of seconds before Qrack::ConnectionTimeout is raised (default = 5)</tt>
 
 =end
 
