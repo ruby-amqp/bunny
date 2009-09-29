@@ -44,11 +44,12 @@ module Bunny
 		spec_version = opts[:spec] || '08'
 		setup(spec_version, opts)
 		
-    @client.start
-
-    block.call(@client)
-
-    @client.stop
+    begin
+      @client.start
+      block.call(@client)
+    ensure
+      @client.stop
+    end
 
 		# Return success
 		:run_ok
