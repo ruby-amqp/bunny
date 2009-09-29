@@ -1,9 +1,14 @@
 = Bunny: A synchronous Ruby AMQP client
 
 *GitHub* *repo*: http://github.com/celldee/bunny
+
 *Rubyforge*: http://rubyforge.org/projects/bunny-amqp
+
 *Twitter*: http://twitter.com/bunny_amqp
+
 *Google* *Group*: http://groups.google.com/group/bunny-amqp
+
+*Blog*: http://bunnyamqp.wordpress.com
      
 === DESCRIPTION:
 
@@ -41,7 +46,7 @@ Bunny is known to work with RabbitMQ versions 1.5.4, 1.5.5, 1.6.0 and version 0-
    q.publish('Hello everybody!')
 
    # get message from the queue
-   msg = q.pop
+   msg = q.pop[:payload]
 
    puts 'This is the message: ' + msg + "\n\n"
 
