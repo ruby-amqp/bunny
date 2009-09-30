@@ -128,8 +128,7 @@ Exchange
 =end
 
 		def exchange(name, opts = {})
-			return exchanges[name] if exchanges.has_key?(name)
-			exchanges[name] ||= Bunny::Exchange09.new(self, name, opts)
+      exchanges[name] || Bunny::Exchange09.new(self, name, opts)
 		end
 		
 		def init_connection
@@ -291,9 +290,8 @@ Queue
         name = nil
       end
 
-      return queues[name] if queues.has_key?(name)
-
-      Bunny::Queue09.new(self, name, opts)
+      # Queue is responsible for placing itself in the list of queues
+      queues[name] || Bunny::Queue09.new(self, name, opts)
 	  end
 	
 =begin rdoc

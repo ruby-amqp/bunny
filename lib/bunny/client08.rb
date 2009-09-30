@@ -134,8 +134,7 @@ Exchange
 =end
 
 		def exchange(name, opts = {})
-			return exchanges[name] if exchanges.has_key?(name)
-			Bunny::Exchange.new(self, name, opts)
+      exchanges[name] || Bunny::Exchange.new(self, name, opts)
 		end
 		
 		def init_connection
@@ -210,7 +209,7 @@ Exchange
 
       case method = next_method
       when Qrack::Protocol::Connection::OpenOk
-        return :ok
+        :ok
       when Qrack::Protocol::Connection::Redirect
 				raise Bunny::ConnectionError, "Cannot connect to the specified server - host: #{@host}, port: #{@port}" if @insist
 				
@@ -307,9 +306,8 @@ Queue
         name = nil
       end
 
-      return queues[name] if queues.has_key?(name)
-
-      Bunny::Queue.new(self, name, opts)
+      # Queue is responsible for placing itself in the list of queues
+      queues[name] || Bunny::Queue.new(self, name, opts)
 	  end
 
 =begin rdoc
