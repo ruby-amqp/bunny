@@ -30,6 +30,8 @@ Bunny is known to work with RabbitMQ versions 1.5.4, 1.5.5, 1.6.0 and version 0-
 
 *GitHub*: <tt>gem install celldee-bunny</tt>
 
+*Gemcutter*: <tt>gem install bunny</tt>
+
 === QUICK START:
 
    require 'bunny'
