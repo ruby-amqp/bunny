@@ -28,9 +28,9 @@ Bunny is known to work with RabbitMQ versions 1.5.4, 1.5.5, 1.6.0 and version 0-
 
 *Rubyforge*: <tt>gem install bunny</tt>
 
-*GitHub*: <tt>gem install celldee-bunny</tt>
-
 *Gemcutter*: <tt>gem install bunny</tt>
+
+*GitHub*: Current gem is not available.
 
 === QUICK START:
 
