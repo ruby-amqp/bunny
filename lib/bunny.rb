@@ -16,7 +16,7 @@ module Bunny
 	class UnsubscribeError < StandardError; end
 	class AcknowledgementError < StandardError; end
 	
-	VERSION = '0.5.4.rc2'
+	VERSION = '0.6.0'
 	
 	# Returns the Bunny version number
 
