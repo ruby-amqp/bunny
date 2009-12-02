@@ -87,7 +87,13 @@ _Bunny_::_ProtocolError_ is raised. If successful, _Client_._status_ is set to <
 		alias next_method next_payload
 
     def read(*args)
-      send_command(:read, *args)
+      begin
+        send_command(:read, *args)
+      # Got a SIGINT while waiting; give any traps a chance to run
+      rescue Errno::EINTR
+        retry
+      end
+        
     end
 
 =begin rdoc
