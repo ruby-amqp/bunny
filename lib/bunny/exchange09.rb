@@ -60,7 +60,7 @@ specification that applies to your target broker/server.
         client.send_frame(
           Qrack::Protocol09::Exchange::Declare.new(
             { :exchange => name, :type => type, :nowait => false,
-	 						:reserved_1 => 0, :reserved_2 => false, :reserved_3 => false }.merge(opts)
+	 						:deprecated_ticket => 0, :deprecated_auto_delete => false, :deprecated_internal => false }.merge(opts)
           )
         )
 
@@ -97,7 +97,7 @@ if successful. If an error occurs raises _Bunny_::_ProtocolError_.
       opts.delete(:nowait)
 
       client.send_frame(
-        Qrack::Protocol09::Exchange::Delete.new({ :exchange => name, :nowait => false, :reserved_1 => 0 }.merge(opts))
+        Qrack::Protocol09::Exchange::Delete.new({ :exchange => name, :nowait => false, :deprecated_ticket => 0 }.merge(opts))
       )
 
       method = client.next_method
@@ -156,7 +156,7 @@ nil
 					:routing_key => routing_key,
 					:mandatory => mandatory,
 					:immediate => immediate,
-					:reserved_1 => 0 }
+					:deprecated_ticket => 0 }
 			)
 			data = data.to_s
 			out << Qrack::Protocol09::Header.new(

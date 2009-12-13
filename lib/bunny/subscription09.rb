@@ -63,7 +63,7 @@ my_queue.subscribe(:message_max => 10, :ack => true) {|msg| puts msg[:payload]}
 	
 		def setup_consumer
 			client.send_frame(
-				Qrack::Protocol09::Basic::Consume.new({ :reserved_1 => 0,
+				Qrack::Protocol09::Basic::Consume.new({ :deprecated_ticket => 0,
 																			 					:queue => queue.name,
 																	 		 					:consumer_tag => consumer_tag,
 																	 		 					:no_ack => !ack,

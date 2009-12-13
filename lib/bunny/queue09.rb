@@ -27,7 +27,7 @@ Queues must be attached to at least one exchange in order to receive messages fr
           :durable => false,
           :exclusive => true,
           :auto_delete => true,
-					:reserved_1 => 0
+					:deprecated_ticket => 0
         }.merge(opts)
       end
 	
@@ -36,7 +36,7 @@ Queues must be attached to at least one exchange in order to receive messages fr
 			opts.delete(:nowait)
 			
 	    client.send_frame(
-	      Qrack::Protocol09::Queue::Declare.new({ :queue => name || '', :nowait => false, :reserved_1 => 0 }.merge(opts))
+	      Qrack::Protocol09::Queue::Declare.new({ :queue => name || '', :nowait => false, :deprecated_ticket => 0 }.merge(opts))
 	    )
 	
       method = client.next_method
@@ -109,7 +109,7 @@ bound to the direct exchange '' by default. If error occurs, a _Bunny_::_Protoco
 		 																:exchange => exchange,
 		 																:routing_key => opts.delete(:key),
 		 																:nowait => false,
-		 																:reserved_1 => 0 }.merge(opts))
+		 																:deprecated_ticket => 0 }.merge(opts))
 	    )
 
 			method = client.next_method
@@ -150,7 +150,7 @@ from queues if successful. If an error occurs raises _Bunny_::_ProtocolError_.
 			opts.delete(:nowait)
 
 	    client.send_frame(
-	      Qrack::Protocol09::Queue::Delete.new({ :queue => name, :nowait => false, :reserved_1 => 0 }.merge(opts))
+	      Qrack::Protocol09::Queue::Delete.new({ :queue => name, :nowait => false, :deprecated_ticket => 0 }.merge(opts))
 	    )
 
 			method = client.next_method
@@ -202,7 +202,7 @@ will be nil.
 																	 :consumer_tag => name,
 																	 :no_ack => !ack,
 																	 :nowait => true,
-																	 :reserved_1 => 0 }.merge(opts))
+																	 :deprecated_ticket => 0 }.merge(opts))
 	    )
 	
 			method = client.next_method
@@ -259,7 +259,7 @@ without any formal "undo" mechanism. If an error occurs raises _Bunny_::_Protoco
 			opts.delete(:nowait)
 
 	    client.send_frame(
-	      Qrack::Protocol09::Queue::Purge.new({ :queue => name, :nowait => false, :reserved_1 => 0 }.merge(opts))
+	      Qrack::Protocol09::Queue::Purge.new({ :queue => name, :nowait => false, :deprecated_ticket => 0 }.merge(opts))
 	    )
 
 			method = client.next_method
@@ -281,7 +281,7 @@ Returns hash {:message_count, :consumer_count}.
  
 	  def status
 	    client.send_frame(
-	      Qrack::Protocol09::Queue::Declare.new({ :queue => name, :passive => true, :reserved_1 => 0 })
+	      Qrack::Protocol09::Queue::Declare.new({ :queue => name, :passive => true, :deprecated_ticket => 0 })
 	    )
 	    method = client.next_method
 	    {:message_count => method.message_count, :consumer_count => method.consumer_count}
@@ -325,7 +325,7 @@ Removes a queue binding from an exchange. If error occurs, a _Bunny_::_ProtocolE
 		 																	:exchange => exchange,
 		 																	:routing_key => opts.delete(:key),
 		 																	:nowait => false,
-		 																	:reserved_1 => 0 }.merge(opts)
+		 																	:deprecated_ticket => 0 }.merge(opts)
 	      )
 	    )
 
