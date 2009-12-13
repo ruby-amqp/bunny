@@ -22,7 +22,7 @@ You can use Bunny to -
 * Create and delete queues
 * Publish and consume messages
 
-Bunny is known to work with RabbitMQ versions 1.5.4, 1.5.5, 1.6.0 and version 0-8 of the AMQP specification.
+Bunny is known to work with RabbitMQ versions 1.5.4 and above with version 0-8 of the AMQP specification.
 
 === INSTALL:
 
