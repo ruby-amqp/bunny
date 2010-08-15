@@ -51,10 +51,10 @@ module Qrack
         end
       end
 
-      def self.parse buf
+      def self.parse(buf, cancellator = nil)
         buf = Transport::Buffer.new(buf) unless buf.is_a? Transport::Buffer
         buf.extract do
-          id, channel, payload, footer = buf.read(:octet, :short, :longstr, :octet)
+          id, channel, payload, footer = buf.read(cancellator, :octet, :short, :longstr, :octet)
           Qrack::Transport.const_get(@types[id]).new(payload, channel) if footer == FOOTER
         end
       end
