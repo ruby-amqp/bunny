@@ -1,8 +1,8 @@
 Gem::Specification.new do |s|
   s.name = %q{bunny}
-  s.version = "0.6.0"
+  s.version = "0.6.2.1"
   s.authors = ["Chris Duncan"]
-  s.date = %q{2009-10-05}
+  s.date = %q{2010-09-03}
   s.description = %q{Another synchronous Ruby AMQP client}
   s.email = %q{celldee@gmail.com}
   s.rubyforge_project = %q{bunny-amqp}
@@ -42,6 +42,7 @@ Gem::Specification.new do |s|
 		"lib/bunny/subscription09.rb",
 		"lib/qrack/client.rb",
 		"lib/qrack/channel.rb",
+		"lib/qrack/errors.rb",
 		"lib/qrack/queue.rb",
 		"lib/qrack/subscription.rb",
 		"lib/qrack/protocol/protocol08.rb",
