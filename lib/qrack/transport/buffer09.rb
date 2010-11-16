@@ -31,7 +31,7 @@ module Qrack
 	    end
     
 	    def length
-	      @data.length
+	      @data.bytesize
 	    end
     
 	    def empty?
@@ -154,13 +154,13 @@ module Qrack
 	        _write([upper, lower], 'NN')
 	      when :shortstr
 	        data = (data || '').to_s
-	        _write([data.length, data], 'Ca*')
+	        _write([data.bytesize, data], 'Ca*')
 	      when :longstr
 	        if data.is_a? Hash
 	          write(:table, data)
 	        else
 	          data = (data || '').to_s
-	          _write([data.length, data], 'Na*')
+	          _write([data.bytesize, data], 'Na*')
 	        end
 	      when :timestamp
 	        write(:longlong, data.to_i)
@@ -179,7 +179,7 @@ module Qrack
 	                          when Float
 	                            table.write(:octet, 68) # 'D'
 	                            # XXX there's gotta be a better way to do this..
-	                            exp = value.to_s.split('.').last.length
+	                            exp = value.to_s.split('.').last.bytesize
 	                            num = value * 10**exp
 	                            table.write(:octet, exp)
 	                            table.write(:long, num)
@@ -269,7 +269,7 @@ module Qrack
 	    def _write data, pack = nil
 	      data = [*data].pack(pack) if pack
 	      @data[@pos,0] = data
-	      @pos += data.length
+	      @pos += data.bytesize
 	    end
 	  end
 	end
