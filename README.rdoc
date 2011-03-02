@@ -1,6 +1,6 @@
 = Bunny: A synchronous Ruby AMQP client
 
-*GitHub* *repo*: http://github.com/celldee/bunny
+*GitHub* *repo*: http://github.com/ruby-amqp/bunny
 
 *Rubyforge*: http://rubyforge.org/projects/bunny-amqp
 
