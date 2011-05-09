@@ -172,6 +172,9 @@ a hash <tt>{:reply_code, :reply_text, :exchange, :routing_key}</tt>.
 				raise Bunny::ConnectionError, 'No connection - socket has not been created' if !@socket
         @socket.__send__(cmd, *args)
       rescue Errno::EPIPE, IOError => e
+        # Ensure we close the socket when we are down to prevent further
+        # attempts to write to a closed socket
+        close_socket
         raise Bunny::ServerDownError, e.message
       end
     end
