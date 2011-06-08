@@ -188,7 +188,7 @@ a hash <tt>{:reply_code, :reply_text, :exchange, :routing_key}</tt>.
           TCPSocket.new(host, port)
         end
 
-        if Socket.constants.include? 'TCP_NODELAY'
+        if Socket.constants.include?('TCP_NODELAY') || Socket.constants.include?(:TCP_NODELAY)
           @socket.setsockopt Socket::IPPROTO_TCP, Socket::TCP_NODELAY, 1
         end
 
