@@ -61,9 +61,15 @@ _Bunny_::_ProtocolError_ is raised. If successful, _Client_._status_ is set to <
 			# Close connection to AMQP server
 			close_connection
 
+			# Clear the channels
+			@channels = []
+
+			# Create channel 0
+			@channel = create_channel()
+
 			# Close TCP Socket
-      close_socket
-    end
+			close_socket
+		end
 
 		alias stop close
 		
