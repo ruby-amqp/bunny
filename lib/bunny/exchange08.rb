@@ -159,7 +159,7 @@ nil
       data = data.to_s
       out << Qrack::Protocol::Header.new(
         Qrack::Protocol::Basic,
-        data.length, {
+        data.bytesize, {
           :content_type  => 'application/octet-stream',
           :delivery_mode => delivery_mode,
           :priority      => 0 
