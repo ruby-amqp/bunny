@@ -1,6 +1,8 @@
+require File.expand_path("../lib/bunny/version", __FILE__)
+
 Gem::Specification.new do |s|
   s.name = %q{bunny}
-  s.version = "0.6.0"
+  s.version = Bunny::VERSION.dup
   s.authors = ["Chris Duncan"]
   s.date = %q{2009-10-05}
   s.description = %q{Another synchronous Ruby AMQP client}
