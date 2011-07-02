@@ -5,7 +5,7 @@ $:.unshift File.expand_path(File.dirname(__FILE__))
   require file
 end
 
-require "bunny/version"
+require File.expand_path("../bunny/version", __FILE__)
 
 module Bunny
 
