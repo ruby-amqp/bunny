@@ -1,5 +1,7 @@
 source :rubygems
 
+gem "SystemTimer", "1.2" if RUBY_VERSION < "1.9"
+
 group :development do
   gem "rake"
 end

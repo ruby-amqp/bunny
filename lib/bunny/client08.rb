@@ -148,8 +148,8 @@ Exchange
       case
       when channel.frame_buffer.size > 0
         frame = channel.frame_buffer.shift
-      when opts.has_key?(:timeout)
-        Timeout::timeout(opts[:timeout], Qrack::ClientTimeout) do
+      when (timeout = opts[:timeout]) && timeout > 0
+        Bunny::Timer::timeout(timeout, Qrack::ClientTimeout) do
           frame = Qrack::Transport::Frame.parse(buffer)
         end
       else

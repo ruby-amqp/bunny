@@ -54,6 +54,17 @@ module Bunny
     :run_ok
   end
 
+  Timer = if RUBY_VERSION < "1.9"
+            begin
+              require 'system_timer'
+              SystemTimer
+            rescue LoadError
+              Timeout
+            end
+          else
+            Timeout
+          end
+
   private
 
   def self.setup(version, opts)

@@ -26,6 +26,9 @@ module Qrack
       @channel_max = opts[:channel_max] || 0
       @heartbeat = opts[:heartbeat] || 0
       @connect_timeout = opts[:connect_timeout] || CONNECT_TIMEOUT
+      @read_write_timeout = opts[:socket_timeout]
+      @read_write_timeout = nil if @read_write_timeout == 0
+      @disconnect_timeout = @read_write_timeout || @connect_timeout
       @logger = nil
       create_logger if @logging
       @message_in = false
@@ -37,6 +40,7 @@ module Qrack
       @exchanges ||= {}
       @queues ||= {}
     end
+
 
 =begin rdoc
 
@@ -52,14 +56,19 @@ _Bunny_::_ProtocolError_ is raised. If successful, _Client_._status_ is set to <
 =end
 
     def close
+      return if @socket.nil? || @socket.closed?
+
       # Close all active channels
       channels.each do |c|
-        c.close if c.open?
+        Bunny::Timer::timeout(@disconnect_timeout) { c.close } if c.open?
       end
 
       # Close connection to AMQP server
-      close_connection
+      Bunny::Timer::timeout(@disconnect_timeout) { close_connection }
 
+    rescue Exception
+      # http://cheezburger.com/Asset/View/4033311488
+    ensure
       # Clear the channels
       @channels = []
 
@@ -175,8 +184,14 @@ a hash <tt>{:reply_code, :reply_text, :exchange, :routing_key}</tt>.
     def send_command(cmd, *args)
       begin
         raise Bunny::ConnectionError, 'No connection - socket has not been created' if !@socket
-        @socket.__send__(cmd, *args)
-      rescue Errno::EPIPE, IOError => e
+        if @read_write_timeout
+          Bunny::Timer::timeout(@read_write_timeout, Qrack::ClientTimeout) do
+            @socket.__send__(cmd, *args)
+          end
+        else
+          @socket.__send__(cmd, *args)
+        end
+      rescue Errno::EPIPE, Errno::EAGAIN, Qrack::ClientTimeout, IOError => e
         # Ensure we close the socket when we are down to prevent further
         # attempts to write to a closed socket
         close_socket
@@ -189,7 +204,7 @@ a hash <tt>{:reply_code, :reply_text, :exchange, :routing_key}</tt>.
 
       begin
         # Attempt to connect.
-        @socket = timeout(@connect_timeout, ConnectionTimeout) do
+        @socket = Bunny::Timer::timeout(@connect_timeout, ConnectionTimeout) do
           TCPSocket.new(host, port)
         end
 
