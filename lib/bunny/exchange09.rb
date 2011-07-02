@@ -40,8 +40,9 @@ specification that applies to your target broker/server.
       @client, @name, @opts = client, name, opts
 
       # set up the exchange type catering for default names
-      if name.match(/^amq\./)
-        new_type = name.sub(/amq\./, '')
+      if name =~ /^amq\.(.+)$/
+        predeclared = true
+        new_type = $1
         # handle 'amq.match' default
         new_type = 'headers' if new_type == 'match'
         @type = new_type.to_sym
@@ -56,7 +57,7 @@ specification that applies to your target broker/server.
       # response that will not be sent by the server
       opts.delete(:nowait)
 
-      unless name == "amq.#{type}" or name == ''
+      unless predeclared or name == ''
         opts = {
           :exchange => name, :type => type, :nowait => false,
           :deprecated_ticket => 0, :deprecated_auto_delete => false, :deprecated_internal => false
