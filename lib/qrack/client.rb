@@ -137,7 +137,7 @@ a hash <tt>{:reply_code, :reply_text, :exchange, :routing_key}</tt>.
       # will have a message header and several message bodies
       msg = ''
       while msg.length < header.size
-        msg += next_payload
+        msg << next_payload
       end
 
       # Return the message and related info

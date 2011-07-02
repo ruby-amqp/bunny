@@ -69,7 +69,7 @@ module Qrack
         # will have a message header and several message bodies
         msg = ''
         while msg.length < header.size
-          msg += client.next_payload
+          msg << client.next_payload
         end
 
         # If block present, pass the message info to the block for processing
