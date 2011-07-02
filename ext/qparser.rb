@@ -9,44 +9,44 @@ end
 
 def spec_details(spec)
   meta = {}
-  
+
   meta['major']     = spec['major-version']
   meta['minor']     = spec['minor-version']
   meta['revision']  = spec['revision'] || '0'
   meta['port']      = spec['port']
   meta['comment']   = "AMQ Protocol version #{meta['major']}.#{meta['minor']}.#{meta['revision']}"
-  
+
   meta
 end
 
 def process_constants(spec)
   # AMQP constants
-  
+
   frame_constants = {}
   other_constants = {}
 
   spec['constants'].each do |constant|
     if constant['name'].match(/^frame/i)
-      frame_constants[constant['value'].to_i] = 
+      frame_constants[constant['value'].to_i] =
       constant['name'].sub(/^frame./i,'').split(/\s|-/).map{|w| w.downcase.capitalize}.join
     else
       other_constants[constant['value']] = constant['name']
     end
   end
-  
+
   [frame_constants.sort, other_constants.sort]
 end
 
 def domain_types(spec, major, minor, revision)
   # AMQP domain types
-  
+
   # add types that may be missing in the spec version
   dt_arr = add_types(spec)
   spec["domains"].each do |domain|
     # JSON spec gives domain types as two element arrays like ["channel-id", "longstr"]
     dt_arr << domain.last
   end
-  
+
   # Return sorted array
   dt_arr.uniq.sort
 end
@@ -95,7 +95,7 @@ def fields(element)
     # Convert domain type if necessary
     conv_arr = convert_type(field_hash[:domain])
     field_hash[:domain] = conv_arr.last unless conv_arr.empty?
-    
+
     field_hash
   end
 end
@@ -106,33 +106,33 @@ end
 
 def add_methods(spec)
   meth_arr = []
-  
+
   if spec_v8_0_0?(spec)
     # Add Queue Unbind method
     meth_hash = {:name => 'unbind',
                  :index => '50',
                  :fields => [{:name => 'ticket', :domain => 'short'},
-                             {:name => 'queue', :domain => 'shortstr'},   
-                             {:name => 'exchange', :domain => 'shortstr'},   
-                             {:name => 'routing_key', :domain => 'shortstr'},   
+                             {:name => 'queue', :domain => 'shortstr'},
+                             {:name => 'exchange', :domain => 'shortstr'},
+                             {:name => 'routing_key', :domain => 'shortstr'},
                              {:name => 'arguments', :domain => 'table'}
                             ]
                 }
-                
+
     meth_arr << meth_hash
-    
+
     # Add Queue Unbind-ok method
     meth_hash = {:name => 'unbind-ok',
                  :index => '51',
                  :fields => []
                 }
-                
+
     meth_arr << meth_hash
   end
-  
+
   # Return methods
   meth_arr
-  
+
 end
 
 def convert_type(name)
@@ -191,7 +191,7 @@ spec = JSON.parse(IO.read(specpath))
                     'no-wait' => 'bit',
                     'message-count' => 'long'
                    }
-        
+
 # Spec details
 spec_info = spec_details(spec)
 
@@ -370,12 +370,12 @@ ERB.new(%q[
   module Qrack
     module Transport
       class Frame
-  
+
         FOOTER = <%= frame_footer %>
         ID = 0
 
         @types = {
-	               <%- frame_constants.each do |value, name| -%>
+                       <%- frame_constants.each do |value, name| -%>
                    <%= value %> => '<%= name %>',
                  <%- end -%>
                  }
@@ -421,9 +421,9 @@ ERB.new(%q[
       end
 
       class Method < Frame
-	
+
         ID = 1
-	
+
         def initialize payload = nil, channel = 0
           super
           unless @payload.is_a? Protocol::Class::Method or @payload.nil?

@@ -1,5 +1,5 @@
 module Bunny
-	
+
 =begin rdoc
 
 === DESCRIPTION:
@@ -27,10 +27,10 @@ processing. If error occurs, _Bunny_::_ProtocolError_ is raised.
 
 ==== OPERATION:
 
-Passes a hash of message information to the block, if one has been supplied. The hash contains 
+Passes a hash of message information to the block, if one has been supplied. The hash contains
 :header, :payload and :delivery_details. The structure of the data is as follows -
 
-:header has instance variables - 
+:header has instance variables -
   @klass
   @size
   @weight
@@ -45,7 +45,7 @@ Passes a hash of message information to the block, if one has been supplied. The
   :consumer_tag
   :delivery_tag
   :redelivered
-  :exchange 
+  :exchange
   :routing_key
 
 If the :timeout option is specified then Qrack::ClientTimeout is raised if method times out
@@ -58,28 +58,28 @@ my_queue.subscribe(:timeout => 5) {|msg| puts msg[:payload]}
 my_queue.subscribe(:message_max => 10, :ack => true) {|msg| puts msg[:payload]}
 
 =end
-	
-	class Subscription09 < Qrack::Subscription
-	
-		def setup_consumer
-			client.send_frame(
-				Qrack::Protocol09::Basic::Consume.new({ :deprecated_ticket => 0,
-																			 					:queue => queue.name,
-																	 		 					:consumer_tag => consumer_tag,
-																	 		 					:no_ack => !ack,
-																								:exclusive => exclusive,
-																	 		 					:nowait => false}.merge(@opts))
-												)
 
-			method = client.next_method
+  class Subscription09 < Qrack::Subscription
 
-			client.check_response(method,	Qrack::Protocol09::Basic::ConsumeOk,
-				"Error subscribing to queue #{queue.name}")
+    def setup_consumer
+      subscription_options = {
+        :deprecated_ticket => 0,
+        :queue => queue.name,
+        :consumer_tag => consumer_tag,
+        :no_ack => !ack,
+        :exclusive => exclusive,
+        :nowait => false
+      }.merge(@opts)
 
-			@consumer_tag = method.consumer_tag
-		
-		end
-	
-	end
-	
+      client.send_frame(Qrack::Protocol09::Basic::Consume.new(subscription_options))
+
+      method = client.next_method
+
+      client.check_response(method, Qrack::Protocol09::Basic::ConsumeOk, "Error subscribing to queue #{queue.name}")
+
+      @consumer_tag = method.consumer_tag
+    end
+
+  end
+
 end

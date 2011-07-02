@@ -12,11 +12,11 @@ module Qrack
       ID = 0
 
       @types = {
-                 1 => 'Method',
-                 2 => 'Header',
-                 3 => 'Body',
-                 8 => 'Heartbeat',
-               }
+        1 => 'Method',
+        2 => 'Header',
+        3 => 'Body',
+        8 => 'Heartbeat',
+      }
 
       attr_accessor :channel, :payload
 
@@ -59,9 +59,9 @@ module Qrack
     end
 
     class Method < Frame
-	
+
       ID = 1
-	
+
       def initialize payload = nil, channel = 0
         super
         unless @payload.is_a? Protocol09::Class::Method or @payload.nil?

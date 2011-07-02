@@ -1,5 +1,5 @@
 module Bunny
-	
+
 =begin rdoc
 
 === DESCRIPTION:
@@ -41,9 +41,9 @@ Sets up a Bunny::Client object ready for connection to a broker/server. _Client_
 =end
 
     def initialize(opts = {})
-			super
-			@spec = '0-9-1'
-			@port = opts[:port] || (opts[:ssl] ? Qrack::Protocol09::SSL_PORT : Qrack::Protocol09::PORT)
+      super
+      @spec = '0-9-1'
+      @port = opts[:port] || (opts[:ssl] ? Qrack::Protocol09::SSL_PORT : Qrack::Protocol09::PORT)
     end
 
 =begin rdoc
@@ -54,51 +54,47 @@ Checks response from AMQP methods and takes appropriate action
 
 =end
 
-		def check_response(received_method, expected_method, err_msg, err_class = Bunny::ProtocolError)
-			case
-				when received_method.is_a?(Qrack::Protocol09::Connection::Close)
-					# Clean up the socket
-					close_socket
+    def check_response(received_method, expected_method, err_msg, err_class = Bunny::ProtocolError)
+      case
+      when received_method.is_a?(Qrack::Protocol09::Connection::Close)
+        # Clean up the socket
+        close_socket
 
-					raise Bunny::ForcedConnectionCloseError,
-						"Error Reply Code: #{received_method.reply_code}\nError Reply Text: #{received_method.reply_text}"
+        raise Bunny::ForcedConnectionCloseError, "Error Reply Code: #{received_method.reply_code}\nError Reply Text: #{received_method.reply_text}"
 
-				when received_method.is_a?(Qrack::Protocol09::Channel::Close)
-					# Clean up the channel
-					channel.active = false
+      when received_method.is_a?(Qrack::Protocol09::Channel::Close)
+        # Clean up the channel
+        channel.active = false
 
-					raise Bunny::ForcedChannelCloseError,
-						"Error Reply Code: #{received_method.reply_code}\nError Reply Text: #{received_method.reply_text}"
+        raise Bunny::ForcedChannelCloseError, "Error Reply Code: #{received_method.reply_code}\nError Reply Text: #{received_method.reply_text}"
 
-				when !received_method.is_a?(expected_method)
-					raise err_class, err_msg
+      when !received_method.is_a?(expected_method)
+        raise err_class, err_msg
 
-				else
-					:response_ok
-			end
-		end
+      else
+        :response_ok
+      end
+    end
 
-		def close_connection
-			# Set client channel to zero
+    def close_connection
+      # Set client channel to zero
       switch_channel(0)
 
-			send_frame(
-        Qrack::Protocol09::Connection::Close.new(:reply_code => 200, :reply_text => 'Goodbye', :class_id => 0, :method_id => 0)
-      )
+      send_frame(Qrack::Protocol09::Connection::Close.new(:reply_code => 200, :reply_text => 'Goodbye', :class_id => 0, :method_id => 0))
 
       method = next_method
-			
-			check_response(method, Qrack::Protocol09::Connection::CloseOk, "Error closing connection")
-			
-		end
 
-		def create_channel
-			channels.each do |c|
-				return c if (!c.open? and c.number != 0)
-			end
-			# If no channel to re-use instantiate new one
-			Bunny::Channel09.new(self)
-		end
+      check_response(method, Qrack::Protocol09::Connection::CloseOk, "Error closing connection")
+
+    end
+
+    def create_channel
+      channels.each do |c|
+        return c if (!c.open? and c.number != 0)
+      end
+      # If no channel to re-use instantiate new one
+      Bunny::Channel09.new(self)
+    end
 
 =begin rdoc
 
@@ -127,82 +123,78 @@ Exchange
 
 =end
 
-		def exchange(name, opts = {})
+    def exchange(name, opts = {})
       exchanges[name] || Bunny::Exchange09.new(self, name, opts)
-		end
-		
-		def init_connection
-			write(Qrack::Protocol09::HEADER)
+    end
+
+    def init_connection
+      write(Qrack::Protocol09::HEADER)
       write([0, Qrack::Protocol09::VERSION_MAJOR, Qrack::Protocol09::VERSION_MINOR, Qrack::Protocol09::REVISION].pack('C4'))
 
       frame = next_frame
-			if frame.nil? or !frame.payload.is_a?(Qrack::Protocol09::Connection::Start)
-				raise Bunny::ProtocolError, 'Connection initiation failed'
-			end
-		end
-		
-		def next_frame(opts = {})
-      frame = nil
-			
-			case
-				when channel.frame_buffer.size > 0
-					frame = channel.frame_buffer.shift
-				when opts.has_key?(:timeout)
-	        Timeout::timeout(opts[:timeout], Qrack::ClientTimeout) do
-	          frame = Qrack::Transport09::Frame.parse(buffer)
-	        end
-	      else
-	        frame = Qrack::Transport09::Frame.parse(buffer)
+      if frame.nil? or !frame.payload.is_a?(Qrack::Protocol09::Connection::Start)
+        raise Bunny::ProtocolError, 'Connection initiation failed'
       end
-			
-			@logger.info("received") { frame } if @logging
-						
-			raise Bunny::ConnectionError, 'No connection to server' if (frame.nil? and !connecting?)
-			
-			# Monitor server activity and discard heartbeats
-			@message_in = true
-			
-			case
-				when frame.is_a?(Qrack::Transport09::Heartbeat)
-					next_frame(opts)
-				when frame.nil?
-					frame
-				when ((frame.channel != channel.number) and (frame.channel != 0))
-					channel.frame_buffer << frame
-					next_frame(opts)
-				else
-					frame
-			end
-			
     end
 
-		def open_connection
-			send_frame(
-        Qrack::Protocol09::Connection::StartOk.new(
-          :client_properties => {:platform => 'Ruby', :product => 'Bunny', :information => 'http://github.com/celldee/bunny', :version => VERSION},
-          :mechanism => 'PLAIN',
-					:response => "\0" + @user + "\0" + @pass,
-          :locale => 'en_US'
-        )
-      )
+    def next_frame(opts = {})
+      frame = nil
 
-      frame = next_frame
-			raise Bunny::ProtocolError, "Connection failed - user: #{@user}" if frame.nil?
-			
-			method = frame.payload
-			
-      if method.is_a?(Qrack::Protocol09::Connection::Tune)
-        send_frame(
-          Qrack::Protocol09::Connection::TuneOk.new( :channel_max => @channel_max, :frame_max => @frame_max, :heartbeat => @heartbeat)
-        )
+      case
+      when channel.frame_buffer.size > 0
+        frame = channel.frame_buffer.shift
+      when opts.has_key?(:timeout)
+        Timeout::timeout(opts[:timeout], Qrack::ClientTimeout) do
+          frame = Qrack::Transport09::Frame.parse(buffer)
+        end
+      else
+        frame = Qrack::Transport09::Frame.parse(buffer)
       end
 
-      send_frame(
-        Qrack::Protocol09::Connection::Open.new(:virtual_host => @vhost, :reserved_1 => 0, :reserved_2 => false)
-      )
+      @logger.info("received") { frame } if @logging
+
+      raise Bunny::ConnectionError, 'No connection to server' if (frame.nil? and !connecting?)
+
+      # Monitor server activity and discard heartbeats
+      @message_in = true
+
+      case
+      when frame.is_a?(Qrack::Transport09::Heartbeat)
+        next_frame(opts)
+      when frame.nil?
+        frame
+      when ((frame.channel != channel.number) and (frame.channel != 0))
+        channel.frame_buffer << frame
+        next_frame(opts)
+      else
+        frame
+      end
+
+    end
+
+    def open_connection
+      client_props = { :platform => 'Ruby', :product => 'Bunny', :information => 'http://github.com/celldee/bunny', :version => VERSION }
+      start_opts = {
+        :client_properties => client_props,
+        :mechanism => 'PLAIN',
+        :response => "\0" + @user + "\0" + @pass,
+        :locale => 'en_US'
+      }
+      send_frame(Qrack::Protocol09::Connection::StartOk.new(start_opts))
+
+      frame = next_frame
+      raise Bunny::ProtocolError, "Connection failed - user: #{@user}" if frame.nil?
+
+      method = frame.payload
+
+      if method.is_a?(Qrack::Protocol09::Connection::Tune)
+        send_frame(Qrack::Protocol09::Connection::TuneOk.new(:channel_max => @channel_max, :frame_max => @frame_max, :heartbeat => @heartbeat))
+      end
+
+      send_frame(Qrack::Protocol09::Connection::Open.new(:virtual_host => @vhost, :reserved_1 => 0, :reserved_2 => false))
 
       raise Bunny::ProtocolError, 'Cannot open connection' unless next_method.is_a?(Qrack::Protocol09::Connection::OpenOk)
-		end
+    end
 
 =begin rdoc
 
@@ -236,15 +228,12 @@ true, they are applied to the entire connection.
 
 =end
 
-		def qos(opts = {})
-
-      send_frame(
-        Qrack::Protocol09::Basic::Qos.new({ :prefetch_size => 0, :prefetch_count => 1, :global => false }.merge(opts))
-      )
+    def qos(opts = {})
+      send_frame(Qrack::Protocol09::Basic::Qos.new({ :prefetch_size => 0, :prefetch_count => 1, :global => false }.merge(opts)))
 
       method = next_method
-			
-			check_response(method, Qrack::Protocol09::Basic::QosOk, "Error specifying Quality of Service")
+
+      check_response(method, Qrack::Protocol09::Basic::QosOk, "Error specifying Quality of Service")
 
       # return confirmation
       :qos_ok
@@ -264,7 +253,7 @@ occurs a _Bunny_::_ProtocolError_ is raised.
 * <tt>:passive => true or false (_default_)</tt> - If set to _true_, the server will not create
   the queue. The client can use this to check whether a queue exists without modifying the server
   state.
-* <tt>:durable => true or false (_default_)</tt> - 	If set to _true_ when creating a new queue, the
+* <tt>:durable => true or false (_default_)</tt> -      If set to _true_ when creating a new queue, the
   queue will be marked as durable. Durable queues remain active when a server restarts. Non-durable
   queues (transient queues) are purged if/when a server restarts. Note that durable queues do not
   necessarily hold persistent messages, although it does not make sense to send persistent messages
@@ -272,8 +261,8 @@ occurs a _Bunny_::_ProtocolError_ is raised.
 * <tt>:exclusive => true or false (_default_)</tt> - If set to _true_, requests an exclusive queue.
   Exclusive queues may only be consumed from by the current connection. Setting the 'exclusive'
   flag always implies 'auto-delete'.
-* <tt>:auto_delete => true or false (_default_)</tt> - 	If set to _true_, the queue is deleted
-  when all consumers have finished	using it. Last consumer can be cancelled either explicitly
+* <tt>:auto_delete => true or false (_default_)</tt> -  If set to _true_, the queue is deleted
+  when all consumers have finished      using it. Last consumer can be cancelled either explicitly
   or because its channel is closed. If there has never been a consumer on the queue, it is not
   deleted.
 * <tt>:nowait => true or false (_default_)</tt> - Ignored by Bunny, always _false_.
@@ -283,8 +272,8 @@ occurs a _Bunny_::_ProtocolError_ is raised.
 Queue
 
 =end
-		
-		def queue(name = nil, opts = {})
+
+    def queue(name = nil, opts = {})
       if name.is_a?(Hash)
         opts = name
         name = nil
@@ -292,8 +281,8 @@ Queue
 
       # Queue is responsible for placing itself in the list of queues
       queues[name] || Bunny::Queue09.new(self, name, opts)
-	  end
-	
+    end
+
 =begin rdoc
 
 === DESCRIPTION:
@@ -309,15 +298,11 @@ the message, potentially then delivering it to an alternative subscriber.
 
 =end
 
-		def recover(opts = {})
+    def recover(opts = {})
+      send_frame(Qrack::Protocol09::Basic::Recover.new({ :requeue => false }.merge(opts)))
+    end
 
-	    send_frame(
-	      Qrack::Protocol09::Basic::Recover.new({ :requeue => false }.merge(opts))
-	    )
-
-	  end
-	
-		def send_frame(*args)
+    def send_frame(*args)
       args.each do |data|
         data         = data.to_frame(channel.number) unless data.is_a?(Qrack::Transport09::Frame)
         data.channel = channel.number
@@ -325,22 +310,22 @@ the message, potentially then delivering it to an alternative subscriber.
         @logger.info("send") { data } if @logging
         write(data.to_s)
 
-				# Monitor client activity for heartbeat purposes
-				@message_out = true
+        # Monitor client activity for heartbeat purposes
+        @message_out = true
       end
 
       nil
     end
-		
-		def send_heartbeat
-			# Create a new heartbeat frame
-			hb = Qrack::Transport09::Heartbeat.new('')			
-			# Channel 0 must be used
-			switch_channel(0) if @channel.number > 0			
-			# Send the heartbeat to server
-			send_frame(hb)
-		end
-		
+
+    def send_heartbeat
+      # Create a new heartbeat frame
+      hb = Qrack::Transport09::Heartbeat.new('')
+      # Channel 0 must be used
+      switch_channel(0) if @channel.number > 0
+      # Send the heartbeat to server
+      send_frame(hb)
+    end
+
 =begin rdoc
 
 === DESCRIPTION:
@@ -353,31 +338,31 @@ _Bunny_::_ProtocolError_ is raised. If successful, _Client_._status_ is set to <
 <tt>:connected</tt> if successful.
 
 =end
-		
-		def start_session
-			@connecting = true
-			
-			# Create/get socket
-			socket
-			
-			# Initiate connection
-			init_connection
-			
-			# Open connection
-			open_connection
 
-			# Open another channel because channel zero is used for specific purposes
-			c = create_channel()
-			c.open
+    def start_session
+      @connecting = true
 
-			@connecting = false
-			
-			# return status
-			@status = :connected
+      # Create/get socket
+      socket
+
+      # Initiate connection
+      init_connection
+
+      # Open connection
+      open_connection
+
+      # Open another channel because channel zero is used for specific purposes
+      c = create_channel()
+      c.open
+
+      @connecting = false
+
+      # return status
+      @status = :connected
     end
 
-		alias start start_session
-		
+    alias start start_session
+
 =begin rdoc
 
 === DESCRIPTION:
@@ -391,17 +376,17 @@ after a commit.
 
 =end
 
-		def tx_commit
-			send_frame(Qrack::Protocol09::Tx::Commit.new())
+    def tx_commit
+      send_frame(Qrack::Protocol09::Tx::Commit.new())
 
-			method = next_method
-			
-			check_response(method, Qrack::Protocol09::Tx::CommitOk, "Error commiting transaction")
+      method = next_method
 
-			# return confirmation
-			:commit_ok
-		end
-		
+      check_response(method, Qrack::Protocol09::Tx::CommitOk, "Error commiting transaction")
+
+      # return confirmation
+      :commit_ok
+    end
+
 =begin rdoc
 
 === DESCRIPTION:
@@ -415,17 +400,17 @@ after a rollback.
 
 =end
 
-		def tx_rollback
-			send_frame(Qrack::Protocol09::Tx::Rollback.new())
+    def tx_rollback
+      send_frame(Qrack::Protocol09::Tx::Rollback.new())
 
-			method = next_method
-			
-			check_response(method, Qrack::Protocol09::Tx::RollbackOk, "Error rolling back transaction")
+      method = next_method
 
-			# return confirmation
-			:rollback_ok
-		end
-	
+      check_response(method, Qrack::Protocol09::Tx::RollbackOk, "Error rolling back transaction")
+
+      # return confirmation
+      :rollback_ok
+    end
+
 =begin rdoc
 
 === DESCRIPTION:
@@ -439,18 +424,18 @@ using the Commit or Rollback methods.
 
 =end
 
-		def tx_select
-			send_frame(Qrack::Protocol09::Tx::Select.new())
-			
-			method = next_method
-			
-			check_response(method, Qrack::Protocol::Tx::SelectOk, "Error initiating transactions for current channel")
+    def tx_select
+      send_frame(Qrack::Protocol09::Tx::Select.new())
 
-			# return confirmation
-			:select_ok
-		end
+      method = next_method
 
-  private
+      check_response(method, Qrack::Protocol::Tx::SelectOk, "Error initiating transactions for current channel")
+
+      # return confirmation
+      :select_ok
+    end
+
+    private
 
     def buffer
       @buffer ||= Qrack::Transport09::Buffer.new(self)
