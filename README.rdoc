@@ -6,10 +6,10 @@
 
 *Twitter*: http://twitter.com/bunny_amqp
 
-*Google* *Group*: http://groups.google.com/group/bunny-amqp
+*Google* *Group*: http://groups.google.com/group/ruby-amqp
 
 *Blog*: http://bunnyamqp.wordpress.com
-     
+
 === DESCRIPTION:
 
 Bunny is an AMQP[http://www.amqp.org] (Advanced Message Queuing Protocol) client, written in Ruby, that is intended to allow you to interact with AMQP-compliant message brokers/servers such as RabbitMQ[http://www.rabbitmq.com] in a synchronous fashion.
