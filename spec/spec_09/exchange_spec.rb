@@ -1,3 +1,5 @@
+# encoding: utf-8
+
 # exchange_spec.rb
 
 # Assumes that target message broker/server has a user called 'guest' with a password 'guest'

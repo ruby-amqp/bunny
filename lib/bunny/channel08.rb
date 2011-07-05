@@ -1,3 +1,5 @@
+# encoding: utf-8
+
 module Bunny
   class Channel < Qrack::Channel
 

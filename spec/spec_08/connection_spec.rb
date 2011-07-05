@@ -1,3 +1,5 @@
+# encoding: utf-8
+
 # connection_spec.rb
 
 require File.expand_path(File.join(File.dirname(__FILE__), %w[.. .. lib bunny]))

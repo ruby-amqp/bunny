@@ -1,3 +1,5 @@
+# encoding: utf-8
+
 # simple_topic_09.rb
 
 # Assumes that target message broker/server has a user called 'guest' with a password 'guest'

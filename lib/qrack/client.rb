@@ -1,3 +1,5 @@
+# encoding: utf-8
+
 module Qrack
 
   class ClientTimeout < Timeout::Error; end

@@ -1,3 +1,5 @@
+# encoding: utf-8
+
 # simple_publisher.rb
 
 # N.B. To be used in conjunction with simple_consumer.rb. See simple_consumer.rb for explanation.

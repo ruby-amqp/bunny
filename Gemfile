@@ -1,3 +1,5 @@
+# encoding: utf-8
+
 source :rubygems
 
 gem "SystemTimer", "1.2" if RUBY_VERSION < "1.9"

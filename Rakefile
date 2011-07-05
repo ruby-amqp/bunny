@@ -1,3 +1,5 @@
+# encoding: utf-8
+
 desc "Run AMQP 0-8 rspec tests"
 task :spec08 do
   require 'rspec/core/rake_task'
