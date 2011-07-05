@@ -44,7 +44,10 @@ nil
 
 =end
 
+    # @deprecated
+    # @note This method will be removed before 0.7 release.
     def publish(data, opts = {})
+      Bunny.deprecation_warning("Qrack::Queue#publish", "0.7")
       exchange.publish(data, opts)
     end
 
