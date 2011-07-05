@@ -3,3 +3,5 @@
 *.class
 *.rbc
 *.gem
+/doc/
+.yardoc
