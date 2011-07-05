@@ -18,4 +18,11 @@ Gem::Specification.new do |s|
   s.test_files    = `git ls-files -- {test,spec,features}/*`.split("\n")
   s.executables   = `git ls-files -- bin/*`.split("\n").map{ |f| File.basename(f) }
   s.require_paths = ["lib"]
+
+  begin
+    require "changelog"
+    s.post_install_message = CHANGELOG.new.version_changes
+  rescue LoadError
+    warn "You have to install the changelog gem for post install message."
+  end
 end

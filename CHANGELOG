@@ -1,0 +1,2 @@
+= Version 0.6.3
+  * Encoding of source files is set to UTF-8 on Ruby 1.9.
