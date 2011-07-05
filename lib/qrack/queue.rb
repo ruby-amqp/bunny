@@ -8,44 +8,22 @@ module Qrack
     attr_reader :name, :client
     attr_accessor :delivery_tag, :subscription
 
-=begin rdoc
 
-=== DESCRIPTION:
-
-Returns consumer count from Queue#status.
-
-=end
-
+    # Returns consumer count from Queue#status.
     def consumer_count
       s = status
       s[:consumer_count]
     end
 
-=begin rdoc
-
-=== DESCRIPTION:
-
-Returns message count from Queue#status.
-
-=end
-
+    # Returns message count from Queue#status.
     def message_count
       s = status
       s[:message_count]
     end
 
-=begin rdoc
+    # Publishes a message to the queue via the default nameless '' direct exchange.
 
-=== DESCRIPTION:
-
-Publishes a message to the queue via the default nameless '' direct exchange.
-
-==== RETURNS:
-
-nil
-
-=end
-
+    # @return [NilClass] nil
     # @deprecated
     # @note This method will be removed before 0.7 release.
     def publish(data, opts = {})

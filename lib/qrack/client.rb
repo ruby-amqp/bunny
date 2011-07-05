@@ -44,19 +44,9 @@ module Qrack
     end
 
 
-=begin rdoc
+    # Closes all active communication channels and connection. If an error occurs a @Bunny::ProtocolError@ is raised. If successful, @Client.status@ is set to @:not_connected@.
 
-=== DESCRIPTION:
-
-Closes all active communication channels and connection. If an error occurs a
-_Bunny_::_ProtocolError_ is raised. If successful, _Client_._status_ is set to <tt>:not_connected</tt>.
-
-==== RETURNS:
-
-<tt>:not_connected</tt> if successful.
-
-=end
-
+    # @return :not_connected if successful.
     def close
       return if @socket.nil? || @socket.closed?
 
@@ -112,27 +102,12 @@ _Bunny_::_ProtocolError_ is raised. If successful, _Client_._status_ is set to <
 
     end
 
-=begin rdoc
+  # Checks to see whether or not an undeliverable message has been returned as a result of a publish
+  # with the <tt>:immediate</tt> or <tt>:mandatory</tt> options.
 
-=== DESCRIPTION:
-
-Checks to see whether or not an undeliverable message has been returned as a result of a publish
-with the <tt>:immediate</tt> or <tt>:mandatory</tt> options.
-
-==== OPTIONS:
-
-* <tt>:timeout => number of seconds (default = 0.1) - The method will wait for a return
-  message until this timeout interval is reached.
-
-==== RETURNS:
-
-<tt>{:header => nil, :payload => :no_return, :return_details => nil}</tt> if message is
-not returned before timeout.
-<tt>{:header, :return_details, :payload}</tt> if message is returned. <tt>:return_details</tt> is
-a hash <tt>{:reply_code, :reply_text, :exchange, :routing_key}</tt>.
-
-=end
-
+  # @param [Hash] opts Options.
+  # @option opts [Numeric] :timeout (0.1) The method will wait for a return message until this timeout interval is reached.
+  # @return [Hash] @{:header => nil, :payload => :no_return, :return_details => nil}@ if message is not returned before timeout. @{:header, :return_details, :payload}@ if message is returned. @:return_details@ is a hash @{:reply_code, :reply_text, :exchange, :routing_key}@.
     def returned_message(opts = {})
 
       begin
