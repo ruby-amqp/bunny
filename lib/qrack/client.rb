@@ -46,7 +46,7 @@ module Qrack
 
     # Closes all active communication channels and connection. If an error occurs a @Bunny::ProtocolError@ is raised. If successful, @Client.status@ is set to @:not_connected@.
 
-    # @return :not_connected if successful.
+    # @return [Symbol] @:not_connected@ if successful.
     def close
       return if @socket.nil? || @socket.closed?
 
