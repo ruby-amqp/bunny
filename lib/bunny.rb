@@ -2,10 +2,10 @@
 
 $:.unshift File.expand_path(File.dirname(__FILE__))
 
-# Ruby standard libraries
-%w[socket thread timeout logger].each do |file|
-  require file
-end
+require "socket"
+require "thread"
+require "timeout"
+require "logger"
 
 require File.expand_path("../bunny/version", __FILE__)
 
