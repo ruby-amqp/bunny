@@ -6,6 +6,12 @@ gem "SystemTimer", "1.2", :platform => :ruby_19
 
 group :development do
   gem "rake"
+
+  gem "yard", ">= 0.7.2"
+
+  # Yard tags this buddy along.
+  gem "RedCloth",  :platform => :mri
+  gem "rdiscount", :platform => :ruby
 end
 
 group :test do
@@ -13,4 +19,3 @@ group :test do
 end
 
 gemspec
-
