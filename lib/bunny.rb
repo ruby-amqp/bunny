@@ -1,13 +1,11 @@
 # encoding: utf-8
 
-$:.unshift File.expand_path(File.dirname(__FILE__))
-
 require "socket"
 require "thread"
 require "timeout"
 require "logger"
 
-require File.expand_path("../bunny/version", __FILE__)
+require "bunny/version"
 
 module Bunny
 
