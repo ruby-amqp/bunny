@@ -1,0 +1,36 @@
+PATH
+  remote: .
+  specs:
+    bunny (0.6.3.rc3.pre)
+
+GEM
+  remote: http://rubygems.org/
+  specs:
+    RedCloth (4.2.7)
+    SystemTimer (1.2.3)
+    changelog (0.8)
+    diff-lcs (1.1.2)
+    rake (0.9.2)
+    rdiscount (1.6.8)
+    rspec (2.6.0)
+      rspec-core (~> 2.6.0)
+      rspec-expectations (~> 2.6.0)
+      rspec-mocks (~> 2.6.0)
+    rspec-core (2.6.4)
+    rspec-expectations (2.6.0)
+      diff-lcs (~> 1.1.2)
+    rspec-mocks (2.6.0)
+    yard (0.7.2)
+
+PLATFORMS
+  ruby
+
+DEPENDENCIES
+  RedCloth
+  SystemTimer
+  bunny!
+  changelog
+  rake
+  rdiscount
+  rspec
+  yard
