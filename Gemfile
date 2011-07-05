@@ -29,7 +29,6 @@ group :development do
 
   # Yard tags this buddy along.
   gem "RedCloth",  :platform => :mri
-  gem "rdiscount", :platform => :ruby
 
   gem "changelog"
 end
