@@ -151,14 +151,10 @@ module Bunny
     #
     # @return [Hash] Hash with @:header@, @:payload@ and @:delivery_details@ keys. @:delivery_details@ is a hash @:consumer_tag@, @:delivery_tag@, @:redelivered@, @:exchange@ and @:routing_key@. If the queue is empty the returned hash will contain: @{:header => nil, :payload => :queue_empty, :delivery_details => nil}@. N.B. If a block is provided then the hash will be passed into the block and the return value will be nil.
     def pop(opts = {}, &blk)
-
-      # do we want to have to provide an acknowledgement?
-      ack = opts.delete(:ack)
-
       opts = {
         :queue => name,
         :consumer_tag => name,
-        :no_ack => !ack,
+        :no_ack => !opts[:ack],
         :nowait => true,
         :deprecated_ticket => 0
       }.merge(opts)
@@ -175,7 +171,7 @@ module Bunny
 
       if !queue_empty
         # get delivery tag to use for acknowledge
-        self.delivery_tag = method.delivery_tag if ack
+        self.delivery_tag = method.delivery_tag if opts[:ack]
 
         header = client.next_payload
 
