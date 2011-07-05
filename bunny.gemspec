@@ -1,3 +1,4 @@
+#!/usr/bin/env gem build
 # encoding: utf-8
 
 require File.expand_path("../lib/bunny/version", __FILE__)
