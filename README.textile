@@ -1,0 +1,59 @@
+h1. About
+
+Bunny is a synchronous Ruby AMQP client.
+
+Bunny is an "AMQP":http://www.amqp.org (Advanced Message Queuing Protocol) client, written in Ruby, that is intended to allow you to interact with AMQP-compliant message brokers/servers such as "RabbitMQ":http://www.rabbitmq.com in a synchronous fashion.
+
+It is based on a great deal of useful code from "amqp":http://github.com/tmm1/amqp and "Carrot":http://github.com/famoseagle/carrot.
+
+You can use Bunny to:
+
+* Create and delete exchanges
+* Create and delete queues
+* Publish and consume messages
+
+Bunny is known to work with RabbitMQ versions 1.5.4 and above with version 0.8 and 0.9.1 of the AMQP specification.
+
+h1. Quick Start
+
+<pre>
+require "bunny"
+
+b = Bunny.new(:logging => true)
+
+# start a communication session with the amqp server
+b.start
+
+# declare a queue
+q = b.queue("test1")
+
+# publish a message to the queue
+q.publish("Hello everybody!")
+
+# get message from the queue
+msg = q.pop[:payload]
+
+puts "This is the message: " + msg + "\n\n"
+
+# close the connection
+b.stop
+</pre>
+
+... or just:
+
+<pre>
+require "bunny"
+
+# Create a direct queue named "my_testq"
+Bunny.run { |c| c.queue("my_testq") }
+</pre>
+
+Please see the @examples@ directory for additional usage information.
+
+h1. Links
+
+* "Source code":http://github.com/ruby-amqp/bunny
+* "RubyForge":http://rubyforge.org/projects/bunny-amqp
+* "@rubyamqp":http://twitter.com/rubyamqp at Twitter
+* "Ruby AMQP Google Group":http://groups.google.com/group/ruby-amqp
+* "Blog":http://bunnyamqp.wordpress.com
