@@ -2,7 +2,7 @@
 
 source :rubygems
 
-gem "SystemTimer", "1.2" if RUBY_VERSION < "1.9"
+gem "SystemTimer", "1.2", :platform => :ruby_19
 
 group :development do
   gem "rake"
