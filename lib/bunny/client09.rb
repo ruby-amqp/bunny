@@ -2,60 +2,41 @@
 
 module Bunny
 
-=begin rdoc
-
-=== DESCRIPTION:
-
-The Client class provides the major Bunny API methods.
-
-=end
-
+  # The Client class provides the major Bunny API methods.
   class Client09 < Qrack::Client
 
-=begin rdoc
-
-=== DESCRIPTION:
-
-Sets up a Bunny::Client object ready for connection to a broker/server. _Client_._status_ is set to
-<tt>:not_connected</tt>.
-
-==== OPTIONS:
-
-* <tt>:host => '_hostname_' (default = 'localhost')</tt>
-* <tt>:port => _portno_ (default = 5672 or 5671 if :ssl set to true)</tt>
-* <tt>:vhost => '_vhostname_' (default = '/')</tt>
-* <tt>:user => '_username_' (default = 'guest')</tt>
-* <tt>:pass => '_password_' (default = 'guest')</tt>
-* <tt>:ssl => true or false (default = false)</tt> - If set to _true_, ssl
-  encryption will be used and port will default to 5671.
-* <tt>:verify_ssl => true or false (default = true)</tt> - If ssl is enabled,
-  this will cause OpenSSL to validate the server certificate unless this
-  parameter is set to _false_.
-* <tt>:logfile => '_logfilepath_' (default = nil)</tt>
-* <tt>:logging => true or false (_default_)</tt> - If set to _true_, session information is sent
-  to STDOUT if <tt>:logfile</tt> has not been specified. Otherwise, session information is written to
-  <tt>:logfile</tt>.
-* <tt>:frame_max => maximum frame size in bytes (default = 131072)</tt>
-* <tt>:channel_max => maximum number of channels (default = 0 no maximum)</tt>
-* <tt>:heartbeat => number of seconds (default = 0 no heartbeat)</tt>
-* <tt>:connect_timeout => number of seconds before Qrack::ConnectionTimeout is raised (default = 5)</tt>
-
-=end
-
+    # Sets up a Bunny::Client object ready for connection to a broker.
+    # {Client.status} is set to @:not_connected@.
+    #
+    # @option opts [String] :host ("localhost")
+    # @option opts [Integer] :port (5672 or 5671 if :ssl set to true)
+    # @option opts [String] :vhost ("/")
+    # @option opts [String] :user ("guest")
+    # @option opts [String] :pass ("guest")
+    # @option opts [Boolean] :ssl (false)
+    #   If set to @true@, ssl encryption will be used and port will default to 5671.
+    # @option opts [Boolean] :verify_ssl (true)
+    #   If ssl is enabled, this will cause OpenSSL to validate
+    #   the server certificate unless this parameter is set to @false@.
+    # @option opts [String] :logfile (nil)
+    # @option opts [Boolean] :logging (false)
+    #   If set to @true@, session information is sent to STDOUT if @:logfile@
+    #   has not been specified. Otherwise, session information is written to @:logfile@.
+    # @option opts [Integer] :frame_max (131072)
+    #   Maximum frame size in bytes.
+    # @option opts [Integer] :channel_max (0)
+    #   Maximum number of channels. Defaults to 0 which means no maximum.
+    # @option opts [Integer] :heartbeat (0)
+    #   Number of seconds. Defaults to 0 which means no heartbeat.
+    # @option opts [Integer] :connect_timeout (5)
+    #   Number of seconds before {Qrack::ConnectionTimeout} is raised.@
     def initialize(opts = {})
       super
       @spec = '0-9-1'
       @port = opts[:port] || (opts[:ssl] ? Qrack::Protocol09::SSL_PORT : Qrack::Protocol09::PORT)
     end
 
-=begin rdoc
-
-=== DESCRIPTION:
-
-Checks response from AMQP methods and takes appropriate action
-
-=end
-
+    # Checks response from AMQP methods and takes appropriate action
     def check_response(received_method, expected_method, err_msg, err_class = Bunny::ProtocolError)
       case
       when received_method.is_a?(Qrack::Protocol09::Connection::Close)
@@ -98,33 +79,31 @@ Checks response from AMQP methods and takes appropriate action
       Bunny::Channel09.new(self)
     end
 
-=begin rdoc
-
-=== DESCRIPTION:
-
-Declares an exchange to the broker/server. If the exchange does not exist, a new one is created
-using the arguments passed in. If the exchange already exists, a reference to it is created, provided
-that the arguments passed in do not conflict with the existing attributes of the exchange. If an error
-occurs a _Bunny_::_ProtocolError_ is raised.
-
-==== OPTIONS:
-
-* <tt>:type => one of :direct (_default_), :fanout, :topic, :headers</tt>
-* <tt>:passive => true or false</tt> - If set to _true_, the server will not create the exchange.
-  The client can use this to check whether an exchange exists without modifying the server state.
-* <tt>:durable => true or false (_default_)</tt> - If set to _true_ when creating a new exchange, the exchange
-  will be marked as durable. Durable exchanges remain active when a server restarts. Non-durable
-  exchanges (transient exchanges) are purged if/when a server restarts.
-* <tt>:auto_delete => true or false (_default_)</tt> - If set to _true_, the exchange is deleted
-  when all queues have finished using it.
-* <tt>:nowait => true or false (_default_)</tt> - Ignored by Bunny, always _false_.
-
-==== RETURNS:
-
-Exchange
-
-=end
-
+    # Declares an exchange to the broker/server. If the exchange does not exist, a new one is created
+    # using the arguments passed in. If the exchange already exists, a reference to it is created, provided
+    # that the arguments passed in do not conflict with the existing attributes of the exchange. If an error
+    # occurs a _Bunny_::_ProtocolError_ is raised.
+    #
+    # @option opts [Symbol] :type (:direct)
+    #   One of :direct@, @:fanout@, @:topic@, or @:headers@.
+    #
+    # @option opts [Boolean] :passive
+    #   If set to @true@, the server will not create the exchange.
+    #   The client can use this to check whether an exchange exists without modifying the server state.
+    #
+    # @option opts [Boolean] :durable (false)
+    #   If set to @true@ when creating a new exchange, the exchange
+    #   will be marked as durable. Durable exchanges remain active
+    #   when a server restarts. Non-durable exchanges (transient exchanges)
+    #   are purged if/when a server restarts.
+    #
+    # @option opts [Boolean] :auto_delete (false)
+    #   If set to @true@, the exchange is deleted when all queues have finished using it.
+    #
+    # @option opts [Boolean] :nowait (false)
+    #   Ignored by Bunny, always @false@.
+    #
+    # @return [Bunny::Exchange09]
     def exchange(name, opts = {})
       exchanges[name] || Bunny::Exchange09.new(self, name, opts)
     end
@@ -198,38 +177,32 @@ Exchange
       raise Bunny::ProtocolError, 'Cannot open connection' unless next_method.is_a?(Qrack::Protocol09::Connection::OpenOk)
     end
 
-=begin rdoc
-
-=== DESCRIPTION:
-
-Requests a specific quality of service. The QoS can be specified for the current channel
-or for all channels on the connection. The particular properties and semantics of a QoS
-method always depend on the content class semantics. Though the QoS method could in principle
-apply to both peers, it is currently meaningful only for the server.
-
-==== Options:
-
-* <tt>:prefetch_size => size in no. of octets (default = 0)</tt> - The client can request that
-messages be sent in advance so that when the client finishes processing a message, the following
-message is already held locally, rather than needing to be sent down the channel. Prefetching gives
-a performance improvement. This field specifies the prefetch window size in octets. The server
-will send a message in advance if it is equal to or smaller in size than the available prefetch
-size (and also falls into other prefetch limits). May be set to zero, meaning "no specific limit",
-although other prefetch limits may still apply. The prefetch-size is ignored if the no-ack option
-is set.
-* <tt>:prefetch_count => no. messages (default = 1)</tt> - Specifies a prefetch window in terms
-of whole messages. This field may be used in combination with the prefetch-size field; a message
-will only be sent in advance if both prefetch windows (and those at the channel and connection level)
-allow it. The prefetch-count is ignored if the no-ack option is set.
-* <tt>:global => true or false (_default_)</tt> - By default the QoS settings apply to the current channel only. If set to
-true, they are applied to the entire connection.
-
-==== RETURNS:
-
-<tt>:qos_ok</tt> if successful.
-
-=end
-
+    # Requests a specific quality of service. The QoS can be specified for the current channel
+    # or for all channels on the connection. The particular properties and semantics of a QoS
+    # method always depend on the content class semantics. Though the QoS method could in principle
+    # apply to both peers, it is currently meaningful only for the server.
+    #
+    # @option opts [Integer] :prefetch_size (0)
+    #   Size in number of octets. The client can request that messages be sent in advance
+    #   so that when the client finishes processing a message, the following message is
+    #   already held locally, rather than needing to be sent down the channel. refetching
+    #   gives a performance improvement. This field specifies the prefetch window size
+    #   in octets. The server will send a message in advance if it is equal to or smaller
+    #   in size than the available prefetch size (and also falls into other prefetch limits).
+    #   May be set to zero, meaning "no specific limit", although other prefetch limits may
+    #   still apply. The prefetch-size is ignored if the no-ack option is set.
+    #
+    # @option opts [Integer] :prefetch_count (1)
+    #   Number of messages to prefetch. Specifies a prefetch window in terms of whole messages.
+    #   This field may be used in combination with the prefetch-size field; a message will only
+    #   be sent in advance if both prefetch windows (and those at the channel and connection level)
+    #   allow it. The prefetch-count is ignored if the no-ack option is set.
+    #
+    # @option opts [Boolean] :global (false)
+    #   By default the QoS settings apply to the current channel only. If set to true,
+    #   they are applied to the entire connection.
+    #
+    # @return [Symbol] @:qos_ok@ if successful.
     def qos(opts = {})
       send_frame(Qrack::Protocol09::Basic::Qos.new({ :prefetch_size => 0, :prefetch_count => 1, :global => false }.merge(opts)))
 
@@ -241,40 +214,35 @@ true, they are applied to the entire connection.
       :qos_ok
     end
 
-=begin rdoc
-
-=== DESCRIPTION:
-
-Declares a queue to the broker/server. If the queue does not exist, a new one is created
-using the arguments passed in. If the queue already exists, a reference to it is created, provided
-that the arguments passed in do not conflict with the existing attributes of the queue. If an error
-occurs a _Bunny_::_ProtocolError_ is raised.
-
-==== OPTIONS:
-
-* <tt>:passive => true or false (_default_)</tt> - If set to _true_, the server will not create
-  the queue. The client can use this to check whether a queue exists without modifying the server
-  state.
-* <tt>:durable => true or false (_default_)</tt> -      If set to _true_ when creating a new queue, the
-  queue will be marked as durable. Durable queues remain active when a server restarts. Non-durable
-  queues (transient queues) are purged if/when a server restarts. Note that durable queues do not
-  necessarily hold persistent messages, although it does not make sense to send persistent messages
-  to a transient queue.
-* <tt>:exclusive => true or false (_default_)</tt> - If set to _true_, requests an exclusive queue.
-  Exclusive queues may only be consumed from by the current connection. Setting the 'exclusive'
-  flag always implies 'auto-delete'.
-* <tt>:auto_delete => true or false (_default_)</tt> -  If set to _true_, the queue is deleted
-  when all consumers have finished      using it. Last consumer can be cancelled either explicitly
-  or because its channel is closed. If there has never been a consumer on the queue, it is not
-  deleted.
-* <tt>:nowait => true or false (_default_)</tt> - Ignored by Bunny, always _false_.
-
-==== RETURNS:
-
-Queue
-
-=end
-
+    # Declares a queue to the broker/server. If the queue does not exist, a new one is created
+    # using the arguments passed in. If the queue already exists, a reference to it is created, provided
+    # that the arguments passed in do not conflict with the existing attributes of the queue. If an error
+    # occurs a {Bunny::ProtocolError} is raised.
+    #
+    # @option opts [Boolean] :passive (false)
+    #   If set to @true@, the server will not create the queue. The client can use this to check
+    #   whether a queue exists without modifying the server state.
+    #
+    # @option opts [Boolean] :durable (false)
+    #   If set to @true@ when creating a new queue, the queue will be marked as durable.
+    #   Durable queues remain active when a server restarts. Non-durable queues (transient ones)
+    #   are purged if/when a server restarts. Note that durable queues do not necessarily hold
+    #   persistent messages, although it does not make sense to send persistent messages
+    #   to a transient queue.
+    #
+    # @option opts [Boolean] :exclusive (false)
+    #   If set to @true@, requests an exclusive queue. Exclusive queues may only be consumed
+    #   from by the current connection. Setting the 'exclusive' flag always implies 'auto-delete'.
+    #
+    # @option opts [Boolean] :auto_delete (false)
+    #   If set to @true@, the queue is deleted when all consumers have finished using it.
+    #   Last consumer can be cancelled either explicitly or because its channel is closed.
+    #   If there has never been a consumer on the queue, it is not deleted.
+    #
+    # @option opts [Boolean] :nowait (false)
+    #   Ignored by Bunny, always @false@.
+    #
+    # @return [Bunny::Queue09]
     def queue(name = nil, opts = {})
       if name.is_a?(Hash)
         opts = name
@@ -285,21 +253,13 @@ Queue
       queues[name] || Bunny::Queue09.new(self, name, opts)
     end
 
-=begin rdoc
-
-=== DESCRIPTION:
-
-Asks the broker to redeliver all unacknowledged messages on a specified channel. Zero or
-more messages may be redelivered.
-
-==== Options:
-
-* <tt>:requeue => true or false (_default_)</tt> - If set to _false_, the message will be
-redelivered to the original recipient. If set to _true_, the server will attempt to requeue
-the message, potentially then delivering it to an alternative subscriber.
-
-=end
-
+    # Asks the broker to redeliver all unacknowledged messages on a specified channel. Zero or
+    # more messages may be redelivered.
+    #
+    # @option opts [Boolean] :requeue (false)
+    #   If set to @false@, the message will be redelivered to the original recipient.
+    #   If set to @true@, the server will attempt to requeue the message, potentially
+    #   then delivering it to an alternative subscriber.
     def recover(opts = {})
       send_frame(Qrack::Protocol09::Basic::Recover.new({ :requeue => false }.merge(opts)))
     end
@@ -328,19 +288,10 @@ the message, potentially then delivering it to an alternative subscriber.
       send_frame(hb)
     end
 
-=begin rdoc
-
-=== DESCRIPTION:
-
-Opens a communication channel and starts a connection. If an error occurs, a
-_Bunny_::_ProtocolError_ is raised. If successful, _Client_._status_ is set to <tt>:connected</tt>.
-
-==== RETURNS:
-
-<tt>:connected</tt> if successful.
-
-=end
-
+    # Opens a communication channel and starts a connection. If an error occurs, a
+    # {Bunny::ProtocolError} is raised. If successful, {Client.status} is set to @:connected@.
+    #
+    # @return [Symbol] @:connected@ if successful.
     def start_session
       @connecting = true
 
@@ -365,19 +316,11 @@ _Bunny_::_ProtocolError_ is raised. If successful, _Client_._status_ is set to <
 
     alias start start_session
 
-=begin rdoc
-
-=== DESCRIPTION:
-This method commits all messages published and acknowledged in
-the current transaction. A new transaction starts immediately
-after a commit.
-
-==== RETURNS:
-
-<tt>:commit_ok</tt> if successful.
-
-=end
-
+    # This method commits all messages published and acknowledged in
+    # the current transaction. A new transaction starts immediately
+    # after a commit.
+    #
+    # @return [Symbol] @:commit_ok@ if successful.
     def tx_commit
       send_frame(Qrack::Protocol09::Tx::Commit.new())
 
@@ -389,19 +332,11 @@ after a commit.
       :commit_ok
     end
 
-=begin rdoc
-
-=== DESCRIPTION:
-This method abandons all messages published and acknowledged in
-the current transaction. A new transaction starts immediately
-after a rollback.
-
-==== RETURNS:
-
-<tt>:rollback_ok</tt> if successful.
-
-=end
-
+    # This method abandons all messages published and acknowledged in
+    # the current transaction. A new transaction starts immediately
+    # after a rollback.
+    #
+    # @return [Symbol] @:rollback_ok@ if successful.
     def tx_rollback
       send_frame(Qrack::Protocol09::Tx::Rollback.new())
 
@@ -413,19 +348,11 @@ after a rollback.
       :rollback_ok
     end
 
-=begin rdoc
-
-=== DESCRIPTION:
-This method sets the channel to use standard transactions. The
-client must use this method at least once on a channel before
-using the Commit or Rollback methods.
-
-==== RETURNS:
-
-<tt>:select_ok</tt> if successful.
-
-=end
-
+    # This method sets the channel to use standard transactions. The
+    # client must use this method at least once on a channel before
+    # using the Commit or Rollback methods.
+    #
+    # @return [Symbol] @:select_ok@ if successful.
     def tx_select
       send_frame(Qrack::Protocol09::Tx::Select.new())
 

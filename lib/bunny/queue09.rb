@@ -2,15 +2,8 @@
 
 module Bunny
 
-=begin rdoc
-
-=== DESCRIPTION:
-
-Queues store and forward messages. Queues can be configured in the server or created at runtime.
-Queues must be attached to at least one exchange in order to receive messages from publishers.
-
-=end
-
+  # Queues store and forward messages. Queues can be configured in the server or created at runtime.
+  # Queues must be attached to at least one exchange in order to receive messages from publishers.
   class Queue09 < Qrack::Queue
 
     def initialize(client, name, opts = {})
@@ -49,24 +42,18 @@ Queues must be attached to at least one exchange in order to receive messages fr
       client.queues[@name] = self
     end
 
-=begin rdoc
-
-=== DESCRIPTION:
-
-Acknowledges one or more messages delivered via the _Deliver_ or _Get_-_Ok_ methods. The client can
-ask to confirm a single message or a set of messages up to and including a specific message.
-
-==== OPTIONS:
-
-* <tt>:delivery_tag</tt>
-* <tt>:multiple => true or false (_default_)</tt> - If set to _true_, the delivery tag is treated
-  as "up to and including", so that the client can acknowledge multiple messages with a single
-  method. If set to _false_, the delivery tag refers to a single message. If the multiple field
-  is _true_, and the delivery tag is zero, tells the server to acknowledge all outstanding messages.
-
-=end
-
-    def ack(opts={})
+    # Acknowledges one or more messages delivered via the _Deliver_ or _Get_-_Ok_ methods. The client can
+    # ask to confirm a single message or a set of messages up to and including a specific message.
+    #
+    # @option opts [String] :delivery_tag
+    #
+    # @option opts [Boolean] :multiple (false)
+    #   If set to @true@, the delivery tag is treated as "up to and including",
+    #   so that the client can acknowledge multiple messages with a single method.
+    #   If set to @false@, the delivery tag refers to a single message.
+    #   If the multiple field is @true@, and the delivery tag is zero,
+    #   tells the server to acknowledge all outstanding messages.
+    def ack(opts = {})
       # Set delivery tag
       if delivery_tag.nil? and opts[:delivery_tag].nil?
         raise Bunny::AcknowledgementError, "No delivery tag received"
@@ -82,23 +69,18 @@ ask to confirm a single message or a set of messages up to and including a speci
       self.delivery_tag = nil
     end
 
-=begin rdoc
-
-=== DESCRIPTION:
-
-Binds a queue to an exchange. Until a queue is bound it will not receive any messages. Queues are
-bound to the direct exchange '' by default. If error occurs, a _Bunny_::_ProtocolError_ is raised.
-
-* <tt>:key => 'routing key'* <tt>:key => 'routing_key'</tt> - Specifies the routing key for
-  the binding. The routing key is used for routing messages depending on the exchange configuration.
-* <tt>:nowait => true or false (_default_)</tt> - Ignored by Bunny, always _false_.
-
-==== RETURNS:
-
-<tt>:bind_ok</tt> if successful.
-
-=end
-
+    # Binds a queue to an exchange. Until a queue is bound it won't receive
+    # any messages. Queues are bound to the direct exchange '' by default.
+    # If error occurs, a {Bunny::ProtocolError} is raised.
+    #
+    # @option opts [String] :key
+    #   Specifies the routing key for the binding. The routing key is used
+    #   for routing messages depending on the exchange configuration.
+    #
+    # @option opts [Boolean] :nowait (false)
+    #   Ignored by Bunny, always @false@.
+    #
+    # @return [Symbol] @:bind_ok@ if successful.
     def bind(exchange, opts = {})
       exchange = exchange.respond_to?(:name) ? exchange.name : exchange
 
@@ -124,29 +106,22 @@ bound to the direct exchange '' by default. If error occurs, a _Bunny_::_Protoco
       :bind_ok
     end
 
-=begin rdoc
-
-=== DESCRIPTION:
-
-Requests that a queue is deleted from broker/server. When a queue is deleted any pending messages
-are sent to a dead-letter queue if this is defined in the server configuration. Removes reference
-from queues if successful. If an error occurs raises _Bunny_::_ProtocolError_.
-
-==== Options:
-
-* <tt>:if_unused => true or false (_default_)</tt> - If set to _true_, the server will only
-  delete the queue if it has no consumers. If the queue has consumers the server does not
-  delete it but raises a channel exception instead.
-* <tt>:if_empty => true or false (_default_)</tt> - If set to _true_, the server will only
-  delete the queue if it has no messages. If the queue is not empty the server raises a channel
-  exception.
-* <tt>:nowait => true or false (_default_)</tt> - Ignored by Bunny, always _false_.
-
-==== Returns:
-
-<tt>:delete_ok</tt> if successful
-=end
-
+    # Requests that a queue is deleted from broker/server. When a queue is deleted any pending messages
+    # are sent to a dead-letter queue if this is defined in the server configuration. Removes reference
+    # from queues if successful. If an error occurs raises _Bunny_::_ProtocolError_.
+    #
+    # @option opts [Boolean] :if_unused (false)
+    #   If set to @true@, the server will only delete the queue if it has no consumers.
+    #   If the queue has consumers the server does not delete it but raises a channel exception instead.
+    #
+    # @option opts [Boolean] :if_empty (false)
+    #   If set to @true@, the server will only delete the queue if it has no messages.
+    #   If the queue is not empty the server raises a channel exception.
+    #
+    # @option opts [Boolean] :nowait (false)
+    #   Ignored by Bunny, always @false@.
+    #
+    # @return [Symbol] @:delete_ok@ if successful
     def delete(opts = {})
       # ignore the :nowait option if passed, otherwise program will hang waiting for a
       # response that will not be sent by the server
@@ -166,35 +141,15 @@ from queues if successful. If an error occurs raises _Bunny_::_ProtocolError_.
       :delete_ok
     end
 
-=begin rdoc
-
-=== DESCRIPTION:
-
-Gets a message from a queue in a synchronous way. If error occurs, raises _Bunny_::_ProtocolError_.
-
-==== OPTIONS:
-
-* <tt>:ack => false (_default_) or true</tt> - If set to _false_, the server does not expect an
-  acknowledgement message from the client. If set to _true_, the server expects an acknowledgement
-  message from the client and will re-queue the message if it does not receive one within a time specified
-  by the server.
-
-==== RETURNS:
-
-Hash <tt>{:header, :payload, :delivery_details}</tt>. <tt>:delivery_details</tt> is
-a hash <tt>{:consumer_tag, :delivery_tag, :redelivered, :exchange, :routing_key}</tt>.
-
-If the queue is empty the returned hash will contain the values -
-
-  :header => nil
-  :payload => :queue_empty
-  :delivery_details => nil
-
-N.B. If a block is provided then the hash will be passed into the block and the return value
-will be nil.
-
-=end
-
+    # Gets a message from a queue in a synchronous way. If error occurs, raises _Bunny_::_ProtocolError_.
+    #
+    # @option opts [Boolean] :ack (false)
+    #   If set to @false@, the server does not expect an acknowledgement message
+    #   from the client. If set to @true@, the server expects an acknowledgement
+    #   message from the client and will re-queue the message if it does not receive
+    #   one within a time specified by the server.
+    #
+    # @return [Hash] Hash with @:header@, @:payload@ and @:delivery_details@ keys. @:delivery_details@ is a hash @:consumer_tag@, @:delivery_tag@, @:redelivered@, @:exchange@ and @:routing_key@. If the queue is empty the returned hash will contain: @{:header => nil, :payload => :queue_empty, :delivery_details => nil}@. N.B. If a block is provided then the hash will be passed into the block and the return value will be nil.
     def pop(opts = {}, &blk)
 
       # do we want to have to provide an acknowledgement?
@@ -241,22 +196,13 @@ will be nil.
       blk ? blk.call(msg_hash) : msg_hash
     end
 
-=begin rdoc
-
-=== DESCRIPTION:
-
-Removes all messages from a queue.  It does not cancel consumers.  Purged messages are deleted
-without any formal "undo" mechanism. If an error occurs raises _Bunny_::_ProtocolError_.
-
-==== Options:
-
-* <tt>:nowait => true or false (_default_)</tt> - Ignored by Bunny, always _false_.
-
-==== Returns:
-
-<tt>:purge_ok</tt> if successful
-=end
-
+    # Removes all messages from a queue.  It does not cancel consumers.  Purged messages are deleted
+    # without any formal "undo" mechanism. If an error occurs raises {Bunny::ProtocolError}.
+    #
+    # @option opts [Boolean] :nowait (false)
+    #   Ignored by Bunny, always @false@.
+    #
+    # @return [Symbol] @:purge_ok@ if successful
     def purge(opts = {})
       # ignore the :nowait option if passed, otherwise program will hang waiting for a
       # response that will not be sent by the server
@@ -274,14 +220,7 @@ without any formal "undo" mechanism. If an error occurs raises _Bunny_::_Protoco
       :purge_ok
     end
 
-=begin rdoc
-
-=== DESCRIPTION:
-
-Returns hash {:message_count, :consumer_count}.
-
-=end
-
+    # @return [Hash] Hash with keys @:message_count@ and @consumer_count@.
     def status
       opts = { :queue => name, :passive => true, :deprecated_ticket => 0 }
       client.send_frame(Qrack::Protocol09::Queue::Declare.new(opts))
@@ -299,23 +238,15 @@ Returns hash {:message_count, :consumer_count}.
       @subscription = nil
     end
 
-=begin rdoc
-
-=== DESCRIPTION:
-
-Removes a queue binding from an exchange. If error occurs, a _Bunny_::_ProtocolError_ is raised.
-
-==== OPTIONS:
-* <tt>:key => 'routing key'* <tt>:key => 'routing_key'</tt> - Specifies the routing key for
-  the binding.
-* <tt>:nowait => true or false (_default_)</tt> - Ignored by Bunny, always _false_.
-
-==== RETURNS:
-
-<tt>:unbind_ok</tt> if successful.
-
-=end
-
+    # Removes a queue binding from an exchange. If error occurs, a _Bunny_::_ProtocolError_ is raised.
+    #
+    # @option opts [String] :key
+    #   Specifies the routing key for the binding.
+    #
+    # @option opts [Boolean] :nowait (false)
+    #   Ignored by Bunny, always @false@.
+    #
+    # @return [Symbol] @:unbind_ok@ if successful.
     def unbind(exchange, opts = {})
       exchange = exchange.respond_to?(:name) ? exchange.name : exchange
 
@@ -341,24 +272,16 @@ Removes a queue binding from an exchange. If error occurs, a _Bunny_::_ProtocolE
       :unbind_ok
     end
 
-=begin rdoc
-
-=== DESCRIPTION:
-
-Cancels a consumer. This does not affect already delivered messages, but it does mean
-the server will not send any more messages for that consumer.
-
-==== OPTIONS:
-
-* <tt>:consumer_tag => '_tag_'</tt> - Specifies the identifier for the consumer.
-* <tt>:nowait => true or false (_default_)</tt> - Ignored by Bunny, always _false_.
-
-==== Returns:
-
-<tt>:unsubscribe_ok</tt> if successful
-
-=end
-
+    # Cancels a consumer. This does not affect already delivered messages, but it does mean
+    # the server will not send any more messages for that consumer.
+    #
+    # @option opts [String] :consumer_tag
+    #   Specifies the identifier for the consumer.
+    #
+    # @option opts [Boolean] :nowait (false)
+    #   Ignored by Bunny, always @false@.
+    #
+    # @return [Symbol] @:unsubscribe_ok@ if successful
     def unsubscribe(opts = {})
       # Default consumer_tag from subscription if not passed in
       consumer_tag = subscription ? subscription.consumer_tag : opts[:consumer_tag]

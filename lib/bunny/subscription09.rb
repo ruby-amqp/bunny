@@ -2,65 +2,64 @@
 
 module Bunny
 
-=begin rdoc
-
-=== DESCRIPTION:
-
-Asks the server to start a "consumer", which is a transient request for messages from a specific
-queue. Consumers last as long as the channel they were created on, or until the client cancels them
-with an _unsubscribe_. Every time a message reaches the queue it is passed to the _blk_ for
-processing. If error occurs, _Bunny_::_ProtocolError_ is raised.
-
-==== OPTIONS:
-* <tt>:consumer_tag => '_tag_'</tt> - Specifies the identifier for the consumer. The consumer tag is
-  local to a connection, so two clients can use the same consumer tags. If this option is not
-  specified a server generated name is used.
-* <tt>:ack => false (_default_) or true</tt> - If set to _false_, the server does not expect an
-  acknowledgement message from the client. If set to _true_, the server expects an acknowledgement
-  message from the client and will re-queue the message if it does not receive one within a time specified
-  by the server.
-* <tt>:exclusive => true or false (_default_)</tt> - Request exclusive consumer access, meaning
-  only this consumer can access the queue.
-* <tt>:nowait => true or false (_default_)</tt> - Ignored by Bunny, always _false_.
-* <tt>:timeout => number of seconds - The subscribe loop will continue to wait for
-  messages until terminated (Ctrl-C or kill command) or this timeout interval is reached.
-* <tt>:message_max => max number messages to process</tt> - When the required number of messages
-  is processed subscribe loop is exited.
-
-==== OPERATION:
-
-Passes a hash of message information to the block, if one has been supplied. The hash contains
-:header, :payload and :delivery_details. The structure of the data is as follows -
-
-:header has instance variables -
-  @klass
-  @size
-  @weight
-  @properties is a hash containing -
-    :content_type
-    :delivery_mode
-    :priority
-
-:payload contains the message contents
-
-:delivery details is a hash containing -
-  :consumer_tag
-  :delivery_tag
-  :redelivered
-  :exchange
-  :routing_key
-
-If the :timeout option is specified then Qrack::ClientTimeout is raised if method times out
-waiting to receive the next message from the queue.
-
-==== EXAMPLES
-
-my_queue.subscribe(:timeout => 5) {|msg| puts msg[:payload]}
-
-my_queue.subscribe(:message_max => 10, :ack => true) {|msg| puts msg[:payload]}
-
-=end
-
+  # Asks the server to start a "consumer", which is a transient request for messages from a specific
+  # queue. Consumers last as long as the channel they were created on, or until the client cancels them
+  # with an @unsubscribe@. Every time a message reaches the queue it is passed to the @blk@ for
+  # processing. If error occurs, {Bunny::ProtocolError} is raised.
+  #
+  # @option opts [String] :consumer_tag
+  #   Specifies the identifier for the consumer. The consumer tag is
+  #   local to a connection, so two clients can use the same consumer tags.
+  #   If this option is not specified a server generated name is used.
+  #
+  # @option opts [Boolean] :ack (false)
+  #   If set to @false@, the server does not expect an acknowledgement message
+  #   from the client. If set to @true, the server expects an acknowledgement
+  #   message from the client and will re-queue the message if it does not
+  #   receive one within a time specified by the server.
+  #
+  # @option opts [Boolean] :exclusive (false)
+  #   Request exclusive consumer access, meaning only this consumer can access the queue.
+  #
+  # @option opts [Boolean] :nowait (false)
+  #   Ignored by Bunny, always @false@.
+  #
+  # @option opts [Numeric] :timeout
+  #   The subscribe loop will continue to wait for messages
+  #   until terminated (Ctrl-C or kill command) or this timeout interval is reached.
+  #
+  # @option opts [Integer] :message_max
+  #   When the required number of messages is processed subscribe loop is exited.
+  #
+  # h2. Operation
+  #
+  # Passes a hash of message information to the block, if one has been supplied. The hash contains
+  # :header, :payload and :delivery_details. The structure of the data is as follows -
+  #
+  # :header has instance variables -
+  #   @klass
+  #   @size
+  #   @weight
+  #   @properties is a hash containing -
+  #     :content_type
+  #     :delivery_mode
+  #     :priority
+  #
+  # :payload contains the message contents
+  #
+  # :delivery details is a hash containing -
+  #   :consumer_tag
+  #   :delivery_tag
+  #   :redelivered
+  #   :exchange
+  #   :routing_key
+  #
+  # If the :timeout option is specified then Qrack::ClientTimeout is raised if method times out
+  # waiting to receive the next message from the queue.
+  #
+  # @example
+  #   my_queue.subscribe(timeout: 5) { |msg| puts msg[:payload] }
+  #   my_queue.subscribe(message_max: 10, ack: true) { |msg| puts msg[:payload] }
   class Subscription09 < Qrack::Subscription
 
     def setup_consumer
