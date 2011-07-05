@@ -20,7 +20,7 @@ extend Module.new {
   end
 }
 
-gem "SystemTimer", "1.2", :platform => :ruby_19
+gem "SystemTimer", "1.2", :platform => :ruby_18
 
 group :development do
   gem "rake"
