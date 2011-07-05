@@ -9,13 +9,13 @@ module Qrack
     attr_accessor :delivery_tag, :subscription
 
 
-    # Returns consumer count from Queue#status.
+    # Returns consumer count from {Queue#status}.
     def consumer_count
       s = status
       s[:consumer_count]
     end
 
-    # Returns message count from Queue#status.
+    # Returns message count from {Queue#status}.
     def message_count
       s = status
       s[:message_count]
