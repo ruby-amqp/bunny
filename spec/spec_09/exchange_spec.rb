@@ -8,7 +8,7 @@
 # If this is not the case, please change the 'Bunny.new' call below to include
 # the relevant arguments e.g. @b = Bunny.new(:user => 'john', :pass => 'doe', :host => 'foobar')
 
-require File.expand_path(File.join(File.dirname(__FILE__), %w[.. .. lib bunny]))
+require "bunny"
 
 describe 'Exchange' do
 
