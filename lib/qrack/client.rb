@@ -93,13 +93,10 @@ module Qrack
     alias next_method next_payload
 
     def read(*args)
-      begin
-        send_command(:read, *args)
-        # Got a SIGINT while waiting; give any traps a chance to run
-      rescue Errno::EINTR
-        retry
-      end
-
+      send_command(:read, *args)
+      # Got a SIGINT while waiting; give any traps a chance to run
+    rescue Errno::EINTR
+      retry
     end
 
   # Checks to see whether or not an undeliverable message has been returned as a result of a publish
