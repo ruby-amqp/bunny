@@ -123,6 +123,8 @@ module Qrack
                            table.read(:timestamp)
                          when 70 # 'F'
                            table.read(:table)
+                         when 116 # 't'
+                           table.read(:octet)
                          end
             end
 
