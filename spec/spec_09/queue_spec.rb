@@ -15,6 +15,8 @@ describe 'Queue' do
   before(:each) do
     @b = Bunny.new(:spec => '09')
     @b.start
+
+    @default_exchange = @b.exchange("")
   end
 
   it "should ignore the :nowait option when instantiated" do
@@ -57,14 +59,9 @@ describe 'Queue' do
     q.unbind(exch).should == :unbind_ok
   end
 
-  it "should be able to publish a message" do
-    q = @b.queue('test1')
-    q.publish('This is a test message')
-    q.message_count.should == 1
-  end
-
   it "should be able to pop a message complete with header and delivery details" do
     q = @b.queue('test1')
+    @default_exchange.publish('This is a test message', :key => 'test1')
     msg = q.pop()
     msg.should be_an_instance_of(Hash)
     msg[:header].should be_an_instance_of(Bunny::Protocol09::Header)
@@ -75,7 +72,7 @@ describe 'Queue' do
 
   it "should be able to pop a message and just get the payload" do
     q = @b.queue('test1')
-    q.publish('This is another test message')
+    @default_exchange.publish('This is another test message', :key => 'test1')
     msg = q.pop[:payload]
     msg.should == 'This is another test message'
     q.message_count.should == 0
@@ -84,21 +81,21 @@ describe 'Queue' do
   it "should be able to pop a message where body length exceeds max frame size" do
     q = @b.queue('test1')
     lg_msg = 'z' * 142000
-    q.publish(lg_msg)
+    @default_exchange.publish(lg_msg, :key => 'test1')
     msg = q.pop[:payload]
     msg.should == lg_msg
   end
 
   it "should be able call a block when popping a message" do
     q = @b.queue('test1')
-    q.publish('This is another test message')
+    @default_exchange.publish('This is another test message', :key => 'test1')
     q.pop { |msg| msg[:payload].should == 'This is another test message' }
     q.pop { |msg| msg[:payload].should == :queue_empty }
   end
 
   it "should raise an error if purge fails" do
     q = @b.queue('test1')
-    5.times {q.publish('This is another test message')}
+    5.times { @default_exchange.publish('This is another test message', :key => 'test1') }
     q.message_count.should == 5
     lambda {q.purge(:queue => 'bogus')}.should raise_error(Bunny::ForcedChannelCloseError)
   end
@@ -112,7 +109,7 @@ describe 'Queue' do
 
   it "should return an empty message when popping an empty queue" do
     q = @b.queue('test1')
-    q.publish('This is another test message')
+    @default_exchange.publish('This is another test message', :key => 'test1')
     q.pop
     msg = q.pop[:payload]
     msg.should == :queue_empty
@@ -120,7 +117,7 @@ describe 'Queue' do
 
   it "should stop subscription without processing messages if max specified is 0" do
     q = @b.queue('test1')
-    5.times {q.publish('Yet another test message')}
+    5.times { @default_exchange.publish('Yet another test message', :key => 'test1') }
     q.message_count.should == 5
     q.subscribe(:message_max => 0)
     q.message_count.should == 5
@@ -129,7 +126,7 @@ describe 'Queue' do
 
   it "should stop subscription after processing number of messages specified > 0" do
     q = @b.queue('test1')
-    5.times {q.publish('Yet another test message')}
+    5.times { @default_exchange.publish('Yet another test message', :key => 'test1') }
     q.message_count.should == 5
     q.subscribe(:message_max => 5)
   end
@@ -137,7 +134,7 @@ describe 'Queue' do
   it "should stop subscription after processing message_max messages < total in queue" do
     q = @b.queue('test1')
     @b.qos()
-    10.times {q.publish('Yet another test message')}
+    10.times { @default_exchange.publish('Yet another test message', :key => 'test1') }
     q.message_count.should == 10
     q.subscribe(:message_max => 5, :ack => true)
     q.message_count.should == 5
@@ -152,7 +149,7 @@ describe 'Queue' do
 
   it "should pass correct block parameters through on subscribe" do
     q = @b.queue('test1')
-    q.publish("messages pop\'n")
+    @default_exchange.publish("messages pop'n", :key => 'test1')
 
     q.subscribe do |msg|
       msg[:header].should be_an_instance_of Qrack::Protocol09::Header
@@ -166,7 +163,7 @@ describe 'Queue' do
 
   it "should finish processing subscription messages if break is called in block" do
     q = @b.queue('test1')
-    q.publish('messages in my quezen')
+    @default_exchange.publish('messages in my quezen', :key => 'test1')
 
     q.subscribe do |msg|
       msg[:payload].should == 'messages in my quezen'
@@ -174,7 +171,7 @@ describe 'Queue' do
       break
     end
 
-    5.times {|i| q.publish("#{i}")}
+    5.times {|i| @default_exchange.publish("#{i}", :key => 'test1') }
     q.subscribe do |msg|
       if msg[:payload] == '4'
         q.unsubscribe
