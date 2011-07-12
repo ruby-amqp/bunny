@@ -30,7 +30,7 @@ module Bunny
     #   Number of seconds. Defaults to 0 which means no heartbeat.
     # @option opts [Integer] :connect_timeout (5)
     #   Number of seconds before {Qrack::ConnectionTimeout} is raised.@
-    def initialize(opts = {})
+    def initialize(connection_string_or_opts = Hash.new, opts = Hash.new)
       super
       @spec = '0-9-1'
       @port = opts[:port] || (opts[:ssl] ? Qrack::Protocol09::SSL_PORT : Qrack::Protocol09::PORT)

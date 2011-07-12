@@ -1,5 +1,7 @@
 # encoding: utf-8
 
+require "qrack/amq-client-url"
+
 module Qrack
 
   class ClientTimeout < Timeout::Error; end
@@ -14,7 +16,17 @@ module Qrack
     attr_reader   :status, :host, :vhost, :port, :logging, :spec, :heartbeat
     attr_accessor :channel, :logfile, :exchanges, :queues, :channels, :message_in, :message_out, :connecting
 
-    def initialize(opts = {})
+
+    def initialize(connection_string_or_opts = Hash.new, opts = Hash.new)
+      opts = case connection_string_or_opts
+      when String then
+        AMQ::Client::Settings.parse_amqp_url(connection_string_or_opts)
+      when Hash then
+        connection_string_or_opts
+      else
+        Hash.new
+      end.merge(opts)
+
       @host   = opts[:host] || 'localhost'
       @user   = opts[:user]  || 'guest'
       @pass   = opts[:pass]  || 'guest'
