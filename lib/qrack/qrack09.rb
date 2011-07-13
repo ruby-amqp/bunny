@@ -12,14 +12,9 @@ require 'qrack/client'
 require 'qrack/channel'
 require 'qrack/queue'
 require 'qrack/subscription'
+require 'qrack/errors'
 
 module Qrack
-
   include Protocol09
   include Transport09
-
-  # Errors
-  class BufferOverflowError < StandardError; end
-  class InvalidTypeError < StandardError; end
-
 end
