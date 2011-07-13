@@ -5,7 +5,9 @@ require "thread"
 require "timeout"
 require "logger"
 
-require "bunny/version"
+require File.expand_path("../bunny/version", __FILE__)
+# if we don't require the version file the same way as in the gemspec,
+# the version file will be loaded twice. and we hate warnings.
 
 module Bunny
 
