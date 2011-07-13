@@ -99,7 +99,8 @@ module Qrack
     end
 
     def next_payload(options = {})
-      next_frame(options).payload
+      res = next_frame(options)
+      res.payload if res
     end
 
     alias next_method next_payload
