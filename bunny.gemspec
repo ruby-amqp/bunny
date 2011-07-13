@@ -29,7 +29,7 @@ Gem::Specification.new do |s|
 
   # Files.
   s.has_rdoc = true
-  s.extra_rdoc_files = ["README.rdoc"]
+  s.extra_rdoc_files = ["README.textile"]
   s.rdoc_options = ["--main", "README.rdoc"]
   s.files         = `git ls-files`.split("\n")
   s.test_files    = `git ls-files -- spec/*`.split("\n")
