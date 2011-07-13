@@ -21,7 +21,7 @@ b.start
 q = b.queue('test1')
 
 # publish a message to the queue
-q.publish('Hello everybody!')
+q.publish('➸ Hello everybody ☺!')
 
 # get message from the queue
 msg = q.pop[:payload]
