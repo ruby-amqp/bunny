@@ -35,6 +35,10 @@ module Bunny
 
   def self.new(connection_string_or_opts = Hash.new, opts = Hash.new)
     # Set up Bunny according to AMQP spec version required
+    if connection_string_or_opts.respond_to?(:keys) && opts.empty?
+      opts = connection_string_or_opts
+    end
+
     spec_version = opts[:spec] || '08'
 
     # Return client
