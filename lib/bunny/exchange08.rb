@@ -118,6 +118,7 @@ if any, is committed.
 
 * <tt>:key => 'routing_key'</tt> - Specifies the routing key for the message. The routing key is
   used for routing messages depending on the exchange configuration.
+* <tt>:content_type => 'content/type'</tt> - Specifies the content type to use for the message.
 * <tt>:mandatory => true or false (_default_)</tt> - Tells the server how to react if the message
   cannot be routed to a queue. If set to _true_, the server will return an unroutable message
   with a Return method. If this flag is zero, the server silently drops the message.
@@ -145,6 +146,7 @@ nil
       mandatory = opts.delete(:mandatory)
       immediate = opts.delete(:immediate)
       delivery_mode = opts.delete(:persistent) ? 2 : 1
+      content_type = opts.delete(:content_type) || 'application/octet-stream'
 
       out << Qrack::Protocol::Basic::Publish.new({ :exchange => name,
                                                    :routing_key => routing_key,
@@ -154,7 +156,7 @@ nil
       out << Qrack::Protocol::Header.new(
         Qrack::Protocol::Basic,
         data.bytesize, {
-          :content_type  => 'application/octet-stream',
+          :content_type  => content_type,
           :delivery_mode => delivery_mode,
           :priority      => 0
         }.merge(opts)
