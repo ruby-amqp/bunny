@@ -11,7 +11,7 @@ require 'transport/frame09'
 require 'qrack/client'
 require 'qrack/channel'
 require 'qrack/queue'
-require 'qrack/subscription'
+require 'bunny/consumer'
 require 'qrack/errors'
 
 module Qrack
