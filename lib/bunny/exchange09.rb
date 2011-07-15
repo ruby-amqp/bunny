@@ -103,6 +103,9 @@ module Bunny
     #   Specifies the routing key for the message. The routing key is
     #   used for routing messages depending on the exchange configuration.
     #
+    # @option opts [String] :content_type
+    #   Specifies the content type for the message.
+    #
     # @option opts [Boolean] :mandatory (false)
     #   Tells the server how to react if the message cannot be routed to a queue.
     #   If set to @true@, the server will return an unroutable message
@@ -130,6 +133,7 @@ module Bunny
       mandatory = opts.delete(:mandatory)
       immediate = opts.delete(:immediate)
       delivery_mode = opts.delete(:persistent) ? 2 : 1
+      content_type = opts.delete(:content_type) || 'application/octet-stream'
 
       out << Qrack::Protocol09::Basic::Publish.new({ :exchange => name,
                                                      :routing_key => routing_key,
@@ -140,7 +144,7 @@ module Bunny
       out << Qrack::Protocol09::Header.new(
                                            Qrack::Protocol09::Basic,
                                            data.bytesize, {
-                                             :content_type  => 'application/octet-stream',
+                                             :content_type  => content_type,
                                              :delivery_mode => delivery_mode,
                                              :priority      => 0
                                            }.merge(opts)
