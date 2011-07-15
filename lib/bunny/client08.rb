@@ -179,7 +179,7 @@ Exchange
     end
 
     def open_connection
-      client_opts = { :platform => 'Ruby', :product => 'Bunny', :information => 'http://github.com/celldee/bunny', :version => VERSION }
+      client_opts = { :platform => 'Ruby', :product => 'Bunny', :information => 'http://github.com/ruby-amqp/bunny', :version => VERSION }
 
       send_frame(Qrack::Protocol::Connection::StartOk.new(client_opts, 'AMQPLAIN', {:LOGIN => @user, :PASSWORD => @pass}, 'en_US'))
 

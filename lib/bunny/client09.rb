@@ -154,7 +154,7 @@ module Bunny
     end
 
     def open_connection
-      client_props = { :platform => 'Ruby', :product => 'Bunny', :information => 'http://github.com/celldee/bunny', :version => VERSION }
+      client_props = { :platform => 'Ruby', :product => 'Bunny', :information => 'http://github.com/ruby-amqp/bunny', :version => VERSION }
       start_opts = {
         :client_properties => client_props,
         :mechanism => 'PLAIN',
