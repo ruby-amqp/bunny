@@ -1,7 +1,13 @@
 # encoding: utf-8
 
+#################################################
+# WARNING: THIS CLASS IS DEPRECATED, DO NOT     #
+# USE IT DIRECTLY! USE BUNNY::CONSUMER INSTEAD! #
+#################################################
+
 module Qrack
   # Subscription ancestor class
+  # @deprecated
   class Subscription
 
     attr_accessor :consumer_tag, :delivery_tag, :message_max, :timeout, :ack, :exclusive
@@ -33,9 +39,6 @@ module Qrack
       # Initialize message counter
       @message_count = 0
 
-      # Give queue reference to this subscription
-      @queue.subscription = self
-
       # Store options
       @opts = opts
     end
@@ -55,7 +58,7 @@ module Qrack
         begin
           method = client.next_method(:timeout => timeout)
         rescue Qrack::ClientTimeout
-          queue.unsubscribe()
+          queue.unsubscribe
           break
         end
 
