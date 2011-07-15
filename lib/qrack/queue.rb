@@ -5,8 +5,12 @@ module Qrack
   # Queue ancestor class
   class Queue
 
+    # @return [AMQ::Client::Consumer] Default consumer (registered with {Queue#subscribe}).
+    attr_accessor :default_consumer
+
     attr_reader :name, :client
-    attr_accessor :delivery_tag, :subscription
+
+    attr_accessor :delivery_tag
 
 
     # Returns consumer count from {Queue#status}.
