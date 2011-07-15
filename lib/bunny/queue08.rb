@@ -49,6 +49,23 @@ Queues must be attached to at least one exchange in order to receive messages fr
       client.queues[@name] = self
     end
 
+    # @return [Bunny::Consumer] Default consumer associated with this queue (if any), or nil
+    # @note Default consumer is the one registered with the convenience {Bunny::Queue#subscribe} method. It has no special properties of any kind.
+    # @see Queue#subscribe
+    # @see Bunny::Consumer
+    # @api public
+    def default_consumer
+      @default_consumer
+    end
+
+
+    # @return [Class]
+    # @private
+    def self.consumer_class
+      # Bunny::Consumer
+      Bunny::Subscription
+    end # self.consumer_class
+
 =begin rdoc
 
 === DESCRIPTION:
@@ -287,12 +304,11 @@ Returns hash {:message_count, :consumer_count}.
     end
 
     def subscribe(opts = {}, &blk)
-      # Create subscription
-      s = Bunny::Subscription.new(client, self, opts)
-      s.start(&blk)
+      raise RuntimeError.new("This queue already has default consumer. Please instantiate Bunny::Consumer directly and call its #consume method to register additional consumers.") if @default_consumer && ! opts[:consumer_tag]
 
-      # Reset when subscription finished
-      @subscription = nil
+      # Create a subscription.
+      @default_consumer = self.class.consumer_class.new(client, self, opts)
+      @default_consumer.consume(&blk)
     end
 
 =begin rdoc
@@ -315,7 +331,7 @@ the server will not send any more messages for that consumer.
 
     def unsubscribe(opts = {})
       # Default consumer_tag from subscription if not passed in
-      consumer_tag = subscription ? subscription.consumer_tag : opts[:consumer_tag]
+      consumer_tag = @default_consumer ? @default_consumer.consumer_tag : opts[:consumer_tag]
 
       # Must have consumer tag to tell server what to unsubscribe
       raise Bunny::UnsubscribeError,
@@ -329,7 +345,7 @@ the server will not send any more messages for that consumer.
       client.check_response(method, Qrack::Protocol::Basic::CancelOk, "Error unsubscribing from queue #{name}")
 
       # Reset subscription
-      @subscription = nil
+      @default_consumer = nil
 
       # Return confirmation
       :unsubscribe_ok

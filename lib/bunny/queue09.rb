@@ -5,7 +5,6 @@ module Bunny
   # Queues store and forward messages. Queues can be configured in the server or created at runtime.
   # Queues must be attached to at least one exchange in order to receive messages from publishers.
   class Queue09 < Qrack::Queue
-
     def initialize(client, name, opts = {})
       # check connection to server
       raise Bunny::ConnectionError, 'Not connected to server' if client.status == :not_connected
@@ -41,6 +40,22 @@ module Bunny
       @name = method.queue
       client.queues[@name] = self
     end
+
+    # @return [Bunny::Consumer] Default consumer associated with this queue (if any), or nil
+    # @note Default consumer is the one registered with the convenience {Bunny::Queue#subscribe} method. It has no special properties of any kind.
+    # @see Queue#subscribe
+    # @see Bunny::Consumer
+    # @api public
+    def default_consumer
+      @default_consumer
+    end
+
+    # @return [Class]
+    # @private
+    def self.consumer_class
+      # Bunny::Consumer
+      Bunny::Subscription09
+    end # self.consumer_class
 
     # Acknowledges one or more messages delivered via the _Deliver_ or _Get_-_Ok_ methods. The client can
     # ask to confirm a single message or a set of messages up to and including a specific message.
@@ -108,7 +123,7 @@ module Bunny
 
     # Requests that a queue is deleted from broker/server. When a queue is deleted any pending messages
     # are sent to a dead-letter queue if this is defined in the server configuration. Removes reference
-    # from queues if successful. If an error occurs raises _Bunny_::_ProtocolError_.
+    # from queues if successful. If an error occurs raises @Bunny::ProtocolError@.
     #
     # @option opts [Boolean] :if_unused (false)
     #   If set to @true@, the server will only delete the queue if it has no consumers.
@@ -226,12 +241,11 @@ module Bunny
     end
 
     def subscribe(opts = {}, &blk)
-      # Create subscription
-      s = Bunny::Subscription09.new(client, self, opts)
-      s.start(&blk)
+      raise RuntimeError.new("This queue already has default consumer. Please instantiate Bunny::Consumer directly and call its #consume method to register additional consumers.") if @default_consumer && ! opts[:consumer_tag]
 
-      # Reset when subscription finished
-      @subscription = nil
+      # Create a subscription.
+      @default_consumer = self.class.consumer_class.new(client, self, opts)
+      @default_consumer.consume(&blk)
     end
 
     # Removes a queue binding from an exchange. If error occurs, a _Bunny_::_ProtocolError_ is raised.
@@ -280,7 +294,7 @@ module Bunny
     # @return [Symbol] @:unsubscribe_ok@ if successful
     def unsubscribe(opts = {})
       # Default consumer_tag from subscription if not passed in
-      consumer_tag = subscription ? subscription.consumer_tag : opts[:consumer_tag]
+      consumer_tag = @default_consumer ? @default_consumer.consumer_tag : opts[:consumer_tag]
 
       # Must have consumer tag to tell server what to unsubscribe
       raise Bunny::UnsubscribeError,
@@ -294,7 +308,7 @@ module Bunny
       client.check_response(method, Qrack::Protocol09::Basic::CancelOk, "Error unsubscribing from queue #{name}")
 
       # Reset subscription
-      @subscription = nil
+      @default_consumer = nil
 
       # Return confirmation
       :unsubscribe_ok
