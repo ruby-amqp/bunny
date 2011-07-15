@@ -61,7 +61,7 @@ my_queue.subscribe(:message_max => 10, :ack => true) {|msg| puts msg[:payload]}
 
 =end
 
-  class Subscription < Qrack::Subscription
+  class Subscription < Bunny::Consumer
 
     def setup_consumer
       subscription_options = {

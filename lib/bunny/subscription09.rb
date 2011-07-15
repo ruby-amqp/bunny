@@ -60,7 +60,7 @@ module Bunny
   # @example
   #   my_queue.subscribe(timeout: 5) { |msg| puts msg[:payload] }
   #   my_queue.subscribe(message_max: 10, ack: true) { |msg| puts msg[:payload] }
-  class Subscription09 < Qrack::Subscription
+  class Subscription09 < Bunny::Consumer
 
     def setup_consumer
       subscription_options = {
