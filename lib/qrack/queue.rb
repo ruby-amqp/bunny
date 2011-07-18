@@ -29,9 +29,9 @@ module Qrack
 
     # @return [NilClass] nil
     # @deprecated
-    # @note This method will be removed before 0.7 release.
+    # @note This method will be removed before 0.8 release.
     def publish(data, opts = {})
-      Bunny.deprecation_warning("Qrack::Queue#publish", "0.7")
+      Bunny.deprecation_warning("Qrack::Queue#publish", "0.8")
       exchange.publish(data, opts)
     end
 
