@@ -1,2 +1,3 @@
-= Version 0.6.3
+= Version 0.7
   * Encoding of source files is set to UTF-8 on Ruby 1.9.
+  * Queue#publish deprecated.
