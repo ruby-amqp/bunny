@@ -13,7 +13,7 @@ require "bunny"
 describe 'Queue' do
 
   before(:each) do
-    @b = Bunny.new(:spec => '09')
+    @b = Bunny.new
     @b.start
 
     @default_exchange = @b.exchange("")
@@ -64,7 +64,7 @@ describe 'Queue' do
     @default_exchange.publish('This is a test message', :key => 'test1')
     msg = q.pop()
     msg.should be_an_instance_of(Hash)
-    msg[:header].should be_an_instance_of(Bunny::Protocol09::Header)
+    msg[:header].should be_an_instance_of(Bunny::Protocol::Header)
     msg[:payload].should == 'This is a test message'
     msg[:delivery_details].should be_an_instance_of(Hash)
     q.message_count.should == 0
@@ -152,7 +152,7 @@ describe 'Queue' do
     @default_exchange.publish("messages pop'n", :key => 'test1')
 
     q.subscribe do |msg|
-      msg[:header].should be_an_instance_of Qrack::Protocol09::Header
+      msg[:header].should be_an_instance_of Qrack::Protocol::Header
       msg[:payload].should == "messages pop'n"
       msg[:delivery_details].should_not be_nil
 

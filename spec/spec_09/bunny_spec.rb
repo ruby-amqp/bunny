@@ -13,7 +13,7 @@ require "bunny"
 describe Bunny do
 
   before(:each) do
-    @b = Bunny.new(:spec => '09')
+    @b = Bunny.new
     @b.start
   end
 
@@ -24,7 +24,7 @@ describe Bunny do
   it "should be able to create and open a new channel" do
     c = @b.create_channel
     c.number.should == 2
-    c.should be_an_instance_of(Bunny::Channel09)
+    c.should be_an_instance_of(Bunny::Channel)
     @b.channels.size.should == 3
     c.open.should == :open_ok
     @b.channel.number.should == 2
@@ -42,14 +42,14 @@ describe Bunny do
 
   it "should be able to create an exchange" do
     exch = @b.exchange('test_exchange')
-    exch.should be_an_instance_of(Bunny::Exchange09)
+    exch.should be_an_instance_of(Bunny::Exchange)
     exch.name.should == 'test_exchange'
     @b.exchanges.has_key?('test_exchange').should be(true)
   end
 
   it "should be able to create a queue" do
     q = @b.queue('test1')
-    q.should be_an_instance_of(Bunny::Queue09)
+    q.should be_an_instance_of(Bunny::Queue)
     q.name.should == 'test1'
     @b.queues.has_key?('test1').should be(true)
   end
