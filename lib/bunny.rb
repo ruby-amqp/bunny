@@ -27,8 +27,8 @@ module Bunny
   end
 
   # Print deprecation warning.
-  def self.deprecation_warning(method, version)
-    warn "~ #{method} will be removed in Bunny #{version}."
+  def self.deprecation_warning(method, version, explanation)
+    warn "~ #{method} will be removed in Bunny #{version}. #{explanation}"
   end
 
   # Instantiates new Bunny::Client
