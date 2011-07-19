@@ -1,7 +1,7 @@
 PATH
   remote: .
   specs:
-    bunny (0.7)
+    bunny (0.7.1)
 
 GEM
   remote: http://rubygems.org/
