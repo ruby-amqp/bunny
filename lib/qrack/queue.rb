@@ -31,7 +31,7 @@ module Qrack
     # @deprecated
     # @note This method will be removed before 0.8 release.
     def publish(data, opts = {})
-      Bunny.deprecation_warning("Qrack::Queue#publish", "0.8")
+      Bunny.deprecation_warning("Qrack::Queue#publish", "0.8", "Use direct_exchange = bunny.exchange(''); direct_exchange.publish('message', key: queue.name) if you want to publish directly to one given queue. For more informations see https://github.com/ruby-amqp/bunny/issues/15 and for more theoretical explanation check http://bit.ly/nOF1CK")
       exchange.publish(data, opts)
     end
 
