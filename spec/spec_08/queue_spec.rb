@@ -12,6 +12,10 @@ require File.expand_path(File.join(File.dirname(__FILE__), %w[.. .. lib bunny]))
 
 describe 'Queue' do
 
+  def expect_deprecation_warning_for_publishing_on_queue(q, n=1)
+    Bunny.should_receive(:deprecation_warning).with("Qrack::Queue#publish", "0.8", anything).exactly(n).times
+  end
+
   before(:each) do
     @b = Bunny.new
     @b.start
@@ -59,6 +63,7 @@ describe 'Queue' do
 
   it "should be able to publish a message" do
     q = @b.queue('test1')
+    expect_deprecation_warning_for_publishing_on_queue(q)
     q.publish('This is a test message')
     q.message_count.should == 1
   end
@@ -75,6 +80,7 @@ describe 'Queue' do
 
   it "should be able to pop a message and just get the payload" do
     q = @b.queue('test1')
+    expect_deprecation_warning_for_publishing_on_queue(q)
     q.publish('This is another test message')
     msg = q.pop[:payload]
     msg.should == 'This is another test message'
@@ -84,6 +90,7 @@ describe 'Queue' do
   it "should be able to pop a message where body length exceeds max frame size" do
     q = @b.queue('test1')
     lg_msg = 'z' * 142000
+    expect_deprecation_warning_for_publishing_on_queue(q)
     q.publish(lg_msg)
     msg = q.pop[:payload]
     msg.should == lg_msg
@@ -91,6 +98,7 @@ describe 'Queue' do
 
   it "should be able call a block when popping a message" do
     q = @b.queue('test1')
+    expect_deprecation_warning_for_publishing_on_queue(q)
     q.publish('This is another test message')
     q.pop { |msg| msg[:payload].should == 'This is another test message' }
     q.pop { |msg| msg[:payload].should == :queue_empty }
@@ -98,6 +106,7 @@ describe 'Queue' do
 
   it "should raise an error if purge fails" do
     q = @b.queue('test1')
+    expect_deprecation_warning_for_publishing_on_queue(q, 5)
     5.times {q.publish('This is another test message')}
     q.message_count.should == 5
     lambda {q.purge(:queue => 'bogus')}.should raise_error(Bunny::ForcedChannelCloseError)
@@ -112,6 +121,7 @@ describe 'Queue' do
 
   it "should return an empty message when popping an empty queue" do
     q = @b.queue('test1')
+    expect_deprecation_warning_for_publishing_on_queue(q)
     q.publish('This is another test message')
     q.pop
     msg = q.pop[:payload]
@@ -120,6 +130,7 @@ describe 'Queue' do
 
   it "should stop subscription without processing messages if max specified is 0" do
     q = @b.queue('test1')
+    expect_deprecation_warning_for_publishing_on_queue(q, 5)
     5.times {q.publish('Yet another test message')}
     q.message_count.should == 5
     q.subscribe(:message_max => 0)
@@ -129,6 +140,7 @@ describe 'Queue' do
 
   it "should stop subscription after processing number of messages specified > 0" do
     q = @b.queue('test1')
+    expect_deprecation_warning_for_publishing_on_queue(q, 5)
     5.times {q.publish('Yet another test message')}
     q.message_count.should == 5
     q.subscribe(:message_max => 5)
@@ -137,6 +149,7 @@ describe 'Queue' do
   it "should stop subscription after processing message_max messages < total in queue" do
     q = @b.queue('test1')
     @b.qos()
+    expect_deprecation_warning_for_publishing_on_queue(q, 10)
     10.times {q.publish('Yet another test message')}
     q.message_count.should == 10
     q.subscribe(:message_max => 5, :ack => true)
@@ -152,6 +165,7 @@ describe 'Queue' do
 
   it "should pass correct block parameters through on subscribe" do
     q = @b.queue('test1')
+    expect_deprecation_warning_for_publishing_on_queue(q)
     q.publish("messages pop\'n")
 
     q.subscribe do |msg|
@@ -166,6 +180,7 @@ describe 'Queue' do
 
   it "should finish processing subscription messages if break is called in block" do
     q = @b.queue('test1')
+    expect_deprecation_warning_for_publishing_on_queue(q, 6)
     q.publish('messages in my quezen')
 
     q.subscribe do |msg|
