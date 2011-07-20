@@ -62,7 +62,7 @@ module Qrack
         def properties() @properties ||= [] end
 
         def id()   self::ID end
-        def name() self::NAME end
+        def name() self::NAME.to_s end
       end
 
       class Method
@@ -80,7 +80,7 @@ module Qrack
 
           def parent() Protocol.const_get(self.to_s[/Protocol::(.+?)::/,1]) end
           def id()     self::ID end
-          def name()   self::NAME end
+          def name()   self::NAME.to_s end
         end
 
         def == b
