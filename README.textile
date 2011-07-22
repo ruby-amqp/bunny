@@ -12,7 +12,7 @@ You can use Bunny to:
 
 h2. Quick Start
 
-``` ruby
+<pre>
 require "bunny"
 
 b = Bunny.new(:logging => true)
@@ -36,16 +36,16 @@ puts "This is the message: " + msg + "\n\n"
 
 # close the connection
 b.stop
-```
+</pre>
 
 ... or just:
 
-``` ruby
+<pre>
 require "bunny"
 
 # Create a direct queue named "my_testq"
 Bunny.run { |c| c.queue("my_testq") }
-```
+</pre>
 
 Please see the @examples@ directory for additional usage information.
 
