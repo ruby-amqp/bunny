@@ -1,6 +1,6 @@
 h1. About
 
-Bunny is a synchronous "AMQP":http://bit.ly/hw2ELX client. It supports Ruby 1.9.2, 1.8.7, Ruby Enterprise Edition and JRuby. Protocol-wise, Bunny supports AMQP 0.9.1 and 0.8. Support for AMQP 0.8 will be dropped in the next version of Bunny (0.7) because most of popular AMQP brokers such as RabbitMQ already stopped or planning to stop supporting it in the near future.
+Bunny is a synchronous "AMQP":http://bit.ly/hw2ELX client. It supports Ruby 1.9.2, 1.8.7, Ruby Enterprise Edition and JRuby. Protocol-wise, Bunny supports AMQP 0.9.1 and 0.8. Support for AMQP 0.8 will be dropped in the next version of Bunny (0.8) because most of popular AMQP brokers such as RabbitMQ have already stopped or are planning to stop supporting it in the near future.
 
 Bunny is based on a great deal of useful code from the "amqp Ruby gem":http://github.com/ruby-amqp/amqp and "Carrot":http://github.com/famoseagle/carrot.
 
@@ -23,8 +23,11 @@ b.start
 # declare a queue
 q = b.queue("test1")
 
-# publish a message to the queue
-q.publish("Hello everybody!")
+# declare default direct exchange which is bound to all queues
+e = b.exchange("")
+
+# publish a message to the exchange which then gets routed to the queue
+e.publish("Hello, everybody!", :key => 'test1')
 
 # get message from the queue
 msg = q.pop[:payload]
@@ -45,6 +48,10 @@ Bunny.run { |c| c.queue("my_testq") }
 </pre>
 
 Please see the @examples@ directory for additional usage information.
+
+h1. AMQP Resources
+
+* "AMQP 0.9.1 model explained":http://bit.ly/amqp-model-explained - Introductory explanation of the AMQP v0.9.1 specification with particular reference to RabbitMQ
 
 h1. Links
 
