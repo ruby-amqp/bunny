@@ -1,5 +1,5 @@
 # encoding: utf-8
 
 module Bunny
-  VERSION = "0.7.3.pre"
+  VERSION = "0.7.3"
 end
