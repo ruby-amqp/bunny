@@ -32,7 +32,6 @@ module Bunny
     #   Number of seconds before {Qrack::ConnectionTimeout} is raised.@
     def initialize(connection_string_or_opts = Hash.new, opts = Hash.new)
       super
-      @port = opts[:port] || (opts[:ssl] ? Qrack::Protocol::SSL_PORT : Qrack::Protocol::PORT)
     end
 
     # Checks response from AMQP methods and takes appropriate action

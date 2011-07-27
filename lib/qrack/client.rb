@@ -28,6 +28,7 @@ module Qrack
       end.merge(opts)
 
       @host   = opts[:host] || 'localhost'
+      @port   = opts[:port] || (opts[:ssl] ? Qrack::Protocol::SSL_PORT : Qrack::Protocol::PORT)
       @user   = opts[:user]  || 'guest'
       @pass   = opts[:pass]  || 'guest'
       @vhost  = opts[:vhost] || '/'
