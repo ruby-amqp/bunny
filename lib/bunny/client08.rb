@@ -51,8 +51,8 @@ Sets up a Bunny::Client object ready for connection to a broker/server. _Client_
     def initialize(connection_string_or_opts = Hash.new, opts = Hash.new)
       super
       @spec = '0-8'
-      @port = opts[:port] || (opts[:ssl] ? Qrack::Protocol::SSL_PORT : Qrack::Protocol::PORT)
-      @insist = opts[:insist]
+      @port = self.__opts__[:port] || (self.__opts__[:ssl] ? Qrack::Protocol::SSL_PORT : Qrack::Protocol::PORT)
+      @insist = self.__opts__[:insist]
     end
 
 =begin rdoc

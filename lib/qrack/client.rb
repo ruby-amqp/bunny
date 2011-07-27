@@ -16,6 +16,9 @@ module Qrack
     attr_reader   :status, :host, :vhost, :port, :logging, :spec, :heartbeat
     attr_accessor :channel, :logfile, :exchanges, :queues, :channels, :message_in, :message_out, :connecting
 
+    # Temporary hack to make Bunny 0.7 work with port number in AMQP URL.
+    # This is not necessary on Bunny 0.8 as it removes support of AMQP 0.8.
+    attr_reader :__opts__
 
     def initialize(connection_string_or_opts = Hash.new, opts = Hash.new)
       opts = case connection_string_or_opts
@@ -26,6 +29,11 @@ module Qrack
       else
         Hash.new
       end.merge(opts)
+
+      # Temporary hack to make Bunny 0.7 work with port number in AMQP URL.
+      # This is not necessary on Bunny 0.8 as it removes support of AMQP 0.8.
+      @__opts__ = opts
+
 
       @host   = opts[:host] || 'localhost'
       @user   = opts[:user]  || 'guest'

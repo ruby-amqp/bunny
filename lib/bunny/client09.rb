@@ -33,7 +33,7 @@ module Bunny
     def initialize(connection_string_or_opts = Hash.new, opts = Hash.new)
       super
       @spec = '0-9-1'
-      @port = opts[:port] || (opts[:ssl] ? Qrack::Protocol09::SSL_PORT : Qrack::Protocol09::PORT)
+      @port = self.__opts__[:port] || (self.__opts__[:ssl] ? Qrack::Protocol09::SSL_PORT : Qrack::Protocol09::PORT)
     end
 
     # Checks response from AMQP methods and takes appropriate action
