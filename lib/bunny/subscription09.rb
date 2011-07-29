@@ -54,8 +54,9 @@ module Bunny
   #   :exchange
   #   :routing_key
   #
-  # If the :timeout option is specified then Qrack::ClientTimeout is raised if method times out
-  # waiting to receive the next message from the queue.
+  # If the :timeout option is specified then the subscription will
+  # automatically cease if the given number of seconds passes with no
+  # message arriving.
   #
   # @example
   #   my_queue.subscribe(timeout: 5) { |msg| puts msg[:payload] }
