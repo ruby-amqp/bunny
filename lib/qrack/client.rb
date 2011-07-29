@@ -6,6 +6,7 @@ module Qrack
 
   class ClientTimeout < Timeout::Error; end
   class ConnectionTimeout < Timeout::Error; end
+  class FrameTimeout < Timeout::Error; end
 
   # Client ancestor class
   class Client
@@ -130,7 +131,7 @@ module Qrack
 
       begin
         frame = next_frame(:timeout => opts[:timeout] || 0.1)
-      rescue Qrack::ClientTimeout
+      rescue Qrack::FrameTimeout
         return {:header => nil, :payload => :no_return, :return_details => nil}
       end
 
