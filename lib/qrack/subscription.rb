@@ -57,7 +57,7 @@ module Qrack
 
         begin
           method = client.next_method(:timeout => timeout)
-        rescue Qrack::ClientTimeout
+        rescue Qrack::FrameTimeout
           queue.unsubscribe
           break
         end
