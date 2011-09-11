@@ -7,3 +7,4 @@
 .yardoc
 .rvmrc
 Gemfile.lock
+.rbx/*
