@@ -358,7 +358,7 @@ module Bunny
 
       method = next_method
 
-      check_response(method, Qrack::Protocol::Tx::SelectOk, "Error initiating transactions for current channel")
+      check_response(method, Qrack::Protocol09::Tx::SelectOk, "Error initiating transactions for current channel")
 
       # return confirmation
       :select_ok
