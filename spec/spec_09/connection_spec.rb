@@ -16,4 +16,14 @@ describe Bunny do
     b.host.should eql("tagadab")
   end
 
+  it "should be able to open a TCPSocket with a timeout" do
+    b = Bunny.new(:spec => "0.9")
+    connect_timeout = 1
+    lambda { 
+      Bunny::Timer::timeout(connect_timeout, Qrack::ConnectionTimeout) do
+        TCPSocket.new(b.host, b.port) 
+      end
+    }.should_not raise_error(Exception)
+  end
+
 end
