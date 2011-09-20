@@ -64,7 +64,7 @@ module Bunny
 
   Timer = if RUBY_VERSION < "1.9"
             begin
-              require File.expand_path(File.join(File.dirname(__FILE__), 'timeout.rb'))
+              require File.expand_path(File.join(File.dirname(__FILE__), 'system_timer.rb'))
               Bunny::SystemTimer
             rescue LoadError
               Timeout
