@@ -16,6 +16,11 @@ describe 'Queue' do
     Bunny.should_receive(:deprecation_warning).with("Qrack::Queue#publish", "0.8", anything).exactly(n).times
   end
 
+  def message_count(queue, sleep_time = 0.1)
+    sleep sleep_time
+    queue.message_count
+  end
+
   before(:each) do
     @b = Bunny.new
     @b.start
@@ -65,7 +70,7 @@ describe 'Queue' do
     q = @b.queue('test1')
     expect_deprecation_warning_for_publishing_on_queue(q)
     q.publish('This is a test message')
-    q.message_count.should == 1
+    message_count(q).should == 1
   end
 
   it "should be able to pop a message complete with header and delivery details" do
@@ -75,7 +80,7 @@ describe 'Queue' do
     msg[:header].should be_an_instance_of(Bunny::Protocol::Header)
     msg[:payload].should == 'This is a test message'
     msg[:delivery_details].should be_an_instance_of(Hash)
-    q.message_count.should == 0
+    message_count(q).should == 0
   end
 
   it "should be able to pop a message and just get the payload" do
@@ -84,7 +89,7 @@ describe 'Queue' do
     q.publish('This is another test message')
     msg = q.pop[:payload]
     msg.should == 'This is another test message'
-    q.message_count.should == 0
+    message_count(q).should == 0
   end
 
   it "should be able to pop a message where body length exceeds max frame size" do
@@ -108,15 +113,15 @@ describe 'Queue' do
     q = @b.queue('test1')
     expect_deprecation_warning_for_publishing_on_queue(q, 5)
     5.times {q.publish('This is another test message')}
-    q.message_count.should == 5
+    message_count(q).should == 5
     lambda {q.purge(:queue => 'bogus')}.should raise_error(Bunny::ForcedChannelCloseError)
   end
 
   it "should be able to be purged to remove all of its messages" do
     q = @b.queue('test1')
-    q.message_count.should == 5
+    message_count(q).should == 5
     q.purge.should == :purge_ok
-    q.message_count.should == 0
+    message_count(q).should == 0
   end
 
   it "should return an empty message when popping an empty queue" do
@@ -132,9 +137,9 @@ describe 'Queue' do
     q = @b.queue('test1')
     expect_deprecation_warning_for_publishing_on_queue(q, 5)
     5.times {q.publish('Yet another test message')}
-    q.message_count.should == 5
+    message_count(q).should == 5
     q.subscribe(:message_max => 0)
-    q.message_count.should == 5
+    message_count(q).should == 5
     q.purge.should == :purge_ok
   end
 
@@ -142,7 +147,7 @@ describe 'Queue' do
     q = @b.queue('test1')
     expect_deprecation_warning_for_publishing_on_queue(q, 5)
     5.times {q.publish('Yet another test message')}
-    q.message_count.should == 5
+    message_count(q).should == 5
     q.subscribe(:message_max => 5)
   end
 
@@ -151,9 +156,9 @@ describe 'Queue' do
     @b.qos()
     expect_deprecation_warning_for_publishing_on_queue(q, 10)
     10.times {q.publish('Yet another test message')}
-    q.message_count.should == 10
+    message_count(q).should == 10
     q.subscribe(:message_max => 5, :ack => true)
-    q.message_count.should == 5
+    message_count(q).should == 5
     q.purge.should == :purge_ok
   end
 
