@@ -17,6 +17,15 @@ describe 'Exchange' do
     @b.start
   end
 
+  after(:each) do
+    begin
+      @b.stop
+    rescue Exception
+    ensure
+      @b = nil
+    end
+  end
+
   it "should raise an error if instantiated as non-existent type" do
     lambda { @b.exchange('bogus_ex', :type => :bogus) }.should raise_error(Bunny::ForcedConnectionCloseError)
     @b.status.should == :not_connected

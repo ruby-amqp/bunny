@@ -13,6 +13,7 @@ describe Bunny do
     it "handles port properly" do
       bunny = Bunny.new("amqp://dev.rabbitmq.com:1212")
       bunny.port.should eql(1212)
+      bunny.stop
     end
   end
 end
