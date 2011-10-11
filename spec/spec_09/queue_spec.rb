@@ -19,6 +19,11 @@ describe 'Queue' do
     @default_exchange = @b.exchange("")
   end
 
+  def message_count(queue, sleep_time = 0.1)
+    sleep sleep_time
+    queue.message_count
+  end
+
   it "should ignore the :nowait option when instantiated" do
     q = @b.queue('test0', :nowait => true)
   end
@@ -67,7 +72,7 @@ describe 'Queue' do
     msg[:header].should be_an_instance_of(Bunny::Protocol::Header)
     msg[:payload].should == 'This is a test message'
     msg[:delivery_details].should be_an_instance_of(Hash)
-    q.message_count.should == 0
+    message_count(q).should == 0
   end
 
   it "should be able to pop a message and just get the payload" do
@@ -75,7 +80,7 @@ describe 'Queue' do
     @default_exchange.publish('This is another test message', :key => 'test1')
     msg = q.pop[:payload]
     msg.should == 'This is another test message'
-    q.message_count.should == 0
+    message_count(q).should == 0
   end
 
   it "should be able to pop a message where body length exceeds max frame size" do
@@ -96,15 +101,15 @@ describe 'Queue' do
   it "should raise an error if purge fails" do
     q = @b.queue('test1')
     5.times { @default_exchange.publish('This is another test message', :key => 'test1') }
-    q.message_count.should == 5
+    message_count(q).should == 5
     lambda {q.purge(:queue => 'bogus')}.should raise_error(Bunny::ForcedChannelCloseError)
   end
 
   it "should be able to be purged to remove all of its messages" do
     q = @b.queue('test1')
-    q.message_count.should == 5
+    message_count(q).should == 5
     q.purge.should == :purge_ok
-    q.message_count.should == 0
+    message_count(q).should == 0
   end
 
   it "should return an empty message when popping an empty queue" do
@@ -118,16 +123,16 @@ describe 'Queue' do
   it "should stop subscription without processing messages if max specified is 0" do
     q = @b.queue('test1')
     5.times { @default_exchange.publish('Yet another test message', :key => 'test1') }
-    q.message_count.should == 5
+    message_count(q).should == 5
     q.subscribe(:message_max => 0)
-    q.message_count.should == 5
+    message_count(q).should == 5
     q.purge.should == :purge_ok
   end
 
   it "should stop subscription after processing number of messages specified > 0" do
     q = @b.queue('test1')
     5.times { @default_exchange.publish('Yet another test message', :key => 'test1') }
-    q.message_count.should == 5
+    message_count(q).should == 5
     q.subscribe(:message_max => 5)
   end
 
@@ -135,9 +140,9 @@ describe 'Queue' do
     q = @b.queue('test1')
     @b.qos()
     10.times { @default_exchange.publish('Yet another test message', :key => 'test1') }
-    q.message_count.should == 10
+    message_count(q).should == 10
     q.subscribe(:message_max => 5, :ack => true)
-    q.message_count.should == 5
+    message_count(q).should == 5
     q.purge.should == :purge_ok
   end
 
