@@ -1,3 +1,7 @@
+= Version 0.7.7
+
+ * avoid warnings caused by duplicating code from the amq-client gem
+
 = Version 0.7.6
 
  * API mismatch between Timer/SystemTimer on Ruby 1.9 vs Ruby 1.8 is resolved.
