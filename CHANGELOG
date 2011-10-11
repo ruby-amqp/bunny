@@ -1,3 +1,7 @@
+= Version 0.7.8
+
+ * test suite cleanup (eliminated some race conditions related to queue.message_count)
+
 = Version 0.7.7
 
  * avoid warnings caused by duplicating code from the amq-client gem
