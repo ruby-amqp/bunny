@@ -1,6 +1,12 @@
 # encoding: utf-8
 
-require "qrack/amq-client-url"
+begin
+  # try loading AMQ::Client::Setttings form the amq client gem, if it has been already loaded
+  # this avoids "warning: already initialized constant AMQP_PORTS"
+  require "amq/client/settings"
+rescue LoadError
+  require "qrack/amq-client-url"
+end
 
 module Qrack
 
