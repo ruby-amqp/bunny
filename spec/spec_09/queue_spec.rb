@@ -19,6 +19,15 @@ describe 'Queue' do
     @default_exchange = @b.exchange("")
   end
 
+  after(:each) do
+    begin
+      @b.stop
+    rescue Exception
+    ensure
+      @b = nil
+    end
+  end
+
   def message_count(queue, sleep_time = 0.1)
     sleep sleep_time
     queue.message_count

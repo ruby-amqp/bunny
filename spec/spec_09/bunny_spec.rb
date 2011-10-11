@@ -17,6 +17,15 @@ describe Bunny do
     @b.start
   end
 
+  after(:each) do
+    begin
+      @b.stop
+    rescue Exception
+    ensure
+      @b = nil
+    end
+  end
+
   it "should connect to an AMQP server" do
     @b.status.should == :connected
   end

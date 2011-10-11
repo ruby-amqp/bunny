@@ -26,6 +26,15 @@ describe 'Queue' do
     @b.start
   end
 
+  after(:each) do
+    begin
+      @b.stop
+    rescue Exception
+    ensure
+      @b = nil
+    end
+  end
+
   it "should ignore the :nowait option when instantiated" do
     q = @b.queue('test0', :nowait => true)
   end
