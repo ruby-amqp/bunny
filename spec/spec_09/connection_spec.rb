@@ -18,10 +18,10 @@ describe Bunny do
 
   it "should be able to open a TCPSocket with a timeout" do
     b = Bunny.new
-    connect_timeout = 1
-    lambda { 
+    connect_timeout = 5
+    lambda {
       Bunny::Timer::timeout(connect_timeout, Qrack::ConnectionTimeout) do
-        TCPSocket.new(b.host, b.port) 
+        TCPSocket.new(b.host, b.port)
       end
     }.should_not raise_error(Exception)
   end
