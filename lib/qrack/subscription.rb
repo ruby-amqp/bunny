@@ -61,6 +61,8 @@ module Qrack
         begin
           method = client.next_method(:timeout => timeout)
         rescue Qrack::FrameTimeout
+          # Stop consuming messages
+          queue.unsubscribe()
           break
         end
 
@@ -84,11 +86,18 @@ module Qrack
 
         # Exit loop if message_max condition met
         if (!message_max.nil? and message_count == message_max)
+          # Stop consuming messages
+          queue.unsubscribe()
+          
           # Acknowledge receipt of the final message
           queue.ack() if @ack
+          
           # Quit the loop
           break
         elsif(@break_when_empty && queue.message_count == 0)
+          # Stop consuming messages
+          queue.unsubscribe()
+          
           queue.ack() if @ack
           break
         end
@@ -99,9 +108,6 @@ module Qrack
         # deferred.
         queue.ack() if @ack
       end
-      
-      # Stop consuming messages
-      queue.unsubscribe()
     end
 
   end
