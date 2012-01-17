@@ -36,6 +36,8 @@ module Qrack
       @logfile = opts[:logfile] || nil
       @logging = opts[:logging] || false
       @ssl = opts[:ssl] || false
+      @ssl_cert = opts[:ssl_cert] || nil
+      @ssl_key = opts[:ssl_key] || nil
       @verify_ssl = opts[:verify_ssl].nil? || opts[:verify_ssl]
       @status = :not_connected
       @frame_max = opts[:frame_max] || 131072
@@ -203,7 +205,16 @@ module Qrack
 
         if @ssl
           require 'openssl' unless defined? OpenSSL::SSL
-          @socket = OpenSSL::SSL::SSLSocket.new(@socket)
+          sslctx = OpenSSL::SSL::SSLContext.new
+          if @ssl_cert
+            cert_file = File.open(@ssl_cert)
+            sslctx.cert = OpenSSL::X509::Certificate.new(cert_file.read)
+          end
+          if @ssl_key
+            key_file = File.open(@ssl_key)
+            sslctx.key = OpenSSL::PKey::RSA.new(key_file.read)
+          end
+          @socket = OpenSSL::SSL::SSLSocket.new(@socket, sslctx)
           @socket.sync_close = true
           @socket.connect
           @socket.post_connection_check(host) if @verify_ssl
