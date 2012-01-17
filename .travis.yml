@@ -1,4 +1,3 @@
-# https://github.com/travis-ci/travis-ci/wiki/.travis.yml-options
 bundler_args: --without development
 script: "bundle exec rspec spec"
 rvm:
