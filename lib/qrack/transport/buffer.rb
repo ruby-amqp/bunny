@@ -44,13 +44,13 @@ module Qrack
         @pos = 0
       end
 
-      def read_properties *types
+      def read_properties(cancellator, *types)
         types.shift if types.first == :properties
 
         i = 0
         values = []
 
-        while props = read(:short)
+        while props = read(cancellator, :short)
           (0..14).each do |n|
             # no more property types
             break unless types[i]
@@ -77,36 +77,39 @@ module Qrack
         end
 
         values.map do |value|
-          value.is_a?(Symbol) ? read(value) : value
+          value.is_a?(Symbol) ? read(cancellator, value) : value
         end
       end
 
-      def read *types
+      def read(*types)
+        if types.first.is_a?(IO) || types.first.nil?
+          cancellator = types.shift
+        end
         if types.first == :properties
-          return read_properties(*types)
+          return read_properties(cancellator, *types)
         end
 
         values = types.map do |type|
           case type
           when :octet
-            _read(1, 'C')
+            _read(1, 'C', cancellator)
           when :short
-            _read(2, 'n')
+            _read(2, 'n', cancellator)
           when :long
-            _read(4, 'N')
+            _read(4, 'N', cancellator)
           when :longlong
-            upper, lower = _read(8, 'NN')
+            upper, lower = _read(8, 'NN', cancellator)
             upper << 32 | lower
           when :shortstr
-            _read read(:octet)
+            _read(read(cancellator, :octet), nil, cancellator)
           when :longstr
-            _read read(:long)
+            _read(read(cancellator, :long), nil, cancellator)
           when :timestamp
-            Time.at read(:longlong)
+            Time.at read(cancellator, :longlong)
           when :table
             t = Hash.new
 
-            table = Buffer.new(read(:longstr))
+            table = Buffer.new(read(cancellator, :longstr))
             until table.empty?
               key, type = table.read(:shortstr, :octet)
               key = key.intern
@@ -131,13 +134,13 @@ module Qrack
             t
           when :bit
             if (@bits ||= []).empty?
-              val = read(:octet)
+              val = read(cancellator, :octet)
               @bits = (0..7).map{|i| (val & (1 << i)) != 0 }
             end
 
             @bits.shift
           else
-            raise Qrack::InvalidTypeError, "Cannot read data of type #{type}"
+            raise Qrack::InvalidTypeError, "Cannot read data of type #{type.inspect}"
           end
         end
 
@@ -250,9 +253,9 @@ module Qrack
         end
       end
 
-      def _read(size, pack = nil)
+      def _read(size, pack = nil, cancellator = nil)
         if @data.is_a?(Qrack::Client)
-          raw = @data.read(size)
+          raw = @data.cancellable_read(cancellator, size)
           return raw if raw.nil? or pack.nil?
           return raw.unpack(pack).first
         end
