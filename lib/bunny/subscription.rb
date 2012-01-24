@@ -33,8 +33,9 @@ module Bunny
   #
   # @option opts [IO] :cancellator (nil)
   #   A cancellator can be used to for cancelling the subscribe loop from another
-  #   thread or from a signal handler. When you write to this IO object, the subscribe
-  #   loop will be exited after the current message has been processed.
+  #   thread or from a signal handler. Whenever Bunny notices that this IO object has
+  #   become readable, the subscribe loop will be exited after the current message
+  #   has been processed.
   #
   # h2. Operation
   #
