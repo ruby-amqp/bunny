@@ -126,6 +126,10 @@ module Qrack
                            table.read(:timestamp)
                          when 70 # 'F'
                            table.read(:table)
+                         when 65 # 'A'
+                           table.read(:array)
+                         when 108 # 'l'
+                           table.read(:longlong)
                          when 116 # 't'
                            table.read(:octet)
                          end
@@ -139,6 +143,19 @@ module Qrack
             end
 
             @bits.shift
+          when :array
+            a = Array.new
+
+            array = Buffer.new(read(:longstr))
+            until array.empty?
+              type = array.read(:octet)
+              a << case type
+                   when 70 # 'F'
+                     array.read(:table)
+                   end
+            end
+
+            a
           else
             raise Qrack::InvalidTypeError, "Cannot read data of type #{type.inspect}"
           end
