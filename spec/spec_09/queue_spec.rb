@@ -175,6 +175,25 @@ describe 'Queue' do
     end
   end
 
+  it "should cancel subscription if a Bunny::ForceUnsubscribe exception is raised" do
+    cancelled = false
+
+    subscribe_thread = Thread.new do
+      q = @b.queue('test1')
+      q.subscribe do |msg|
+      end
+
+      # make sure the exception was caught and we got this far
+      cancelled = true
+    end
+
+    sleep 0.1 # wait for Thread to start
+    subscribe_thread.raise Bunny::ForceUnsubscribe
+    subscribe_thread.join
+
+    cancelled.should == true
+  end
+
   it "should finish processing subscription messages if break is called in block" do
     q = @b.queue('test1')
     @default_exchange.publish('messages in my quezen', :key => 'test1')
