@@ -174,17 +174,6 @@ describe 'Queue' do
       break
     end
   end
-  
-  specify "subscribe method should support cancellation through a cancellator IO object" do
-    q = @b.queue('test1')
-    a, b = IO.pipe
-    b.close
-    block_called = false
-    q.subscribe(:cancellator => a) do |msg|
-      block_called = true
-    end
-    block_called.should be_false
-  end
 
   it "should finish processing subscription messages if break is called in block" do
     q = @b.queue('test1')
