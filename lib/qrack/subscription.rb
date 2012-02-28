@@ -39,9 +39,6 @@ module Qrack
       # Initialize message counter
       @message_count = 0
 
-      # Store cancellator
-      @cancellator = opts[:cancellator]
-
       # Store options
       @opts = opts
     end
@@ -59,12 +56,9 @@ module Qrack
       loop do
 
         begin
-          method = client.next_method(:timeout => timeout,
-            :cancellator => @cancellator)
-        rescue Qrack::FrameTimeout
+          method = client.next_method(:timeout => timeout)
+        rescue Qrack::FrameTimeout, Bunny::ForceUnsubscribe
           queue.unsubscribe
-          break
-        rescue Qrack::Cancelled
           break
         end
 

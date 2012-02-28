@@ -31,12 +31,6 @@ module Bunny
   # @option opts [Integer] :message_max
   #   When the required number of messages is processed subscribe loop is exited.
   #
-  # @option opts [IO] :cancellator (nil)
-  #   A cancellator can be used to for cancelling the subscribe loop from another
-  #   thread or from a signal handler. Whenever Bunny notices that this IO object has
-  #   become readable, the subscribe loop will be exited after the current message
-  #   has been processed.
-  #
   # h2. Operation
   #
   # Passes a hash of message information to the block, if one has been supplied. The hash contains
