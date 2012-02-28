@@ -12,6 +12,7 @@ def spec_details(spec)
   meta['minor']     = spec['minor-version']
   meta['revision']  = spec['revision']
   meta['port']      = spec['port']
+  meta['ssl_port']  = spec['ssl_port']
   meta['comment']   = "AMQ Protocol version #{meta['major']}.#{meta['minor']}.#{meta['revision']}"
 
   meta
@@ -188,6 +189,7 @@ ERB.new(%q[
       VERSION_MINOR = <%= spec_info['minor'] %>
       REVISION      = <%= spec_info['revision'] %>
       PORT          = <%= spec_info['port'] %>
+      SSL_PORT      = <%= spec_info['ssl_port'] %>
 
       RESPONSES = {
         <%- other_constants.each do |value, name| -%>
@@ -373,10 +375,10 @@ ERB.new(%q[
           end
         end
 
-        def self.parse buf
+        def self.parse(buf, cancellator = nil)
           buf = Transport::Buffer.new(buf) unless buf.is_a? Transport::Buffer
           buf.extract do
-            id, channel, payload, footer = buf.read(:octet, :short, :longstr, :octet)
+            id, channel, payload, footer = buf.read(cancellator, :octet, :short, :longstr, :octet)
             Qrack::Transport.const_get(@types[id]).new(payload, channel) if footer == FOOTER
           end
         end
