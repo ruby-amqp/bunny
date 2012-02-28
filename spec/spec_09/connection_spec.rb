@@ -26,4 +26,9 @@ describe Bunny do
     }.should_not raise_error(Exception)
   end
 
+  it "should know the default port of a SSL connection" do
+    b = Bunny.new(:ssl => true)
+    b.port.should eql(5671)
+  end
+
 end
