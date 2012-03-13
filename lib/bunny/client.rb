@@ -122,12 +122,8 @@ module Bunny
       case
       when channel.frame_buffer.size > 0
         frame = channel.frame_buffer.shift
-      when (timeout = opts[:timeout]) && timeout > 0
-        Bunny::Timer::timeout(timeout, Qrack::FrameTimeout) do
-          frame = Qrack::Transport::Frame.parse(buffer, opts[:cancellator])
-        end
       else
-        frame = Qrack::Transport::Frame.parse(buffer, opts[:cancellator])
+        frame = Qrack::Transport::Frame.parse(buffer, opts)
       end
 
       @logger.info("received") { frame } if @logging

@@ -7,7 +7,6 @@ module Qrack
   class ClientTimeout < Timeout::Error; end
   class ConnectionTimeout < Timeout::Error; end
   class FrameTimeout < Timeout::Error; end
-  class Cancelled < StandardError; end
 
   # Client ancestor class
   class Client
@@ -117,25 +116,6 @@ module Qrack
       retry
     end
 
-    def cancellable_read(cancellator, *args)
-      begin
-        raise Bunny::ConnectionError, 'No connection - socket has not been cread' if !@socket
-        ios = select([@socket, cancellator].compact, nil, nil, @read_write_timeout)
-        if ios[0].empty?
-          close_socket
-          raise Bunny::ServerDown, "Read timeout"
-        elsif cancellator && ios[0].include?(cancellator)
-          close_socket
-          raise Qrack::Cancelled
-        else
-          @socket.__send__(:read, *args)
-        end
-      rescue Errno::EPIPE, Errno::EAGAIN, Qrack::ClientTimeout, IOError => e
-        close_socket
-        raise Bunny::ServerDownError, e.message
-      end
-    end
-
   # Checks to see whether or not an undeliverable message has been returned as a result of a publish
   # with the <tt>:immediate</tt> or <tt>:mandatory</tt> options.
 
@@ -175,6 +155,11 @@ module Qrack
 
     def write(*args)
       send_command(:write, *args)
+    end
+
+    def read_ready?(timeout, cancelator = nil)
+      io = IO.select([ @socket, cancelator ].compact, nil, nil, timeout)
+      io and io[0].include?(@socket)
     end
 
     private

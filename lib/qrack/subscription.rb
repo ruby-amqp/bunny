@@ -64,8 +64,6 @@ module Qrack
         rescue Qrack::FrameTimeout
           queue.unsubscribe
           break
-        rescue Qrack::Cancelled
-          break
         end
 
         # Increment message counter
