@@ -55,15 +55,30 @@ module Qrack
       # Notify server about new consumer
       setup_consumer
 
+      # We need to keep track of three possible subscription states
+      # :subscribed, :pending, and :unsubscribed
+      # 'pending' occurs because of network latency, where we tried to unsubscribe but were already given a message
+      subscribe_state = :subscribed
+
       # Start subscription loop
       loop do
 
         begin
-          method = client.next_method(:timeout => timeout,
-            :cancellator => @cancellator)
+          method = client.next_method(:timeout => timeout, :cancellator => @cancellator)
         rescue Qrack::FrameTimeout
-          queue.unsubscribe
-          break
+          begin
+            queue.unsubscribe
+            subscribe_state = :unsubscribed
+
+            break
+          rescue Bunny::ProtocolError
+            # Unsubscribe failed because we actually got a message, so we're in a weird state.
+            # We have to keep processing the message or else it may be lost...
+            # ...and there is also a CancelOk method floating around that we need to consume from the socket
+
+            method = client.last_method
+            subscribe_state = :pending
+          end
         end
 
         # Increment message counter
@@ -71,25 +86,55 @@ module Qrack
 
         # get delivery tag to use for acknowledge
         queue.delivery_tag = method.delivery_tag if @ack
-
         header = client.next_payload
+
+        # The unsubscribe ok may be sprinked into the payload
+        if subscribe_state == :pending and header.is_a?(Qrack::Protocol::Basic::CancelOk)
+          # We popped off the CancelOk, so we don't have to keep looking for it
+          subscribe_state = :unsubscribed
+
+          # Get the actual header now
+          header = client.next_payload
+        end
 
         # If maximum frame size is smaller than message payload body then message
         # will have a message header and several message bodies
         msg = ''
         while msg.length < header.size
-          msg << client.next_payload
+          message = client.next_payload
+
+          # The unsubscribe ok may be sprinked into the payload
+          if subscribe_state == :pending and message.is_a?(Qrack::Protocol::Basic::CancelOk)
+            # We popped off the CancelOk, so we don't have to keep looking for it
+            subscribe_state = :unsubscribed
+            next
+          end
+
+          msg << message
         end
 
         # If block present, pass the message info to the block for processing
         blk.call({:header => header, :payload => msg, :delivery_details => method.arguments}) if !blk.nil?
 
-        # Exit loop if message_max condition met
-        if (!message_max.nil? and message_count == message_max)
-          # Stop consuming messages
-          queue.unsubscribe()
+        # Unsubscribe if we've encountered the maximum number of messages
+        if subscribe_state == :subscribed and !message_max.nil? and message_count == message_max
+          queue.unsubscribe
+          subscribe_state = :unsubscribed
+        end
+
+        # Exit the loop if we've unsubscribed
+        if subscribe_state != :subscribed
+          # We still haven't found the CancelOk, so it's the next method
+          if subscribe_state == :pending
+            method = client.next_method
+            client.check_response(method, Qrack::Protocol::Basic::CancelOk, "Error unsubscribing from queue #{queue.name}, got #{method.class}")
+
+            subscribe_state = :unsubscribed
+          end
+
           # Acknowledge receipt of the final message
           queue.ack() if @ack
+
           # Quit the loop
           break
         end
