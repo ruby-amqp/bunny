@@ -51,10 +51,15 @@ module Qrack
         end
       end
 
-      def self.parse(buf, cancellator = nil)
+      def self.parse(buf, opts)
         buf = Transport::Buffer.new(buf) unless buf.is_a? Transport::Buffer
+
+        if opts[:timeout] or opts[:cancellator]
+          raise Qrack::FrameTimeout unless buf.read_ready?(opts[:timeout], opts[:cancellator])
+        end
+
         buf.extract do
-          id, channel, payload, footer = buf.read(cancellator, :octet, :short, :longstr, :octet)
+          id, channel, payload, footer = buf.read(:octet, :short, :longstr, :octet)
           Qrack::Transport.const_get(@types[id]).new(payload, channel) if footer == FOOTER
         end
       end

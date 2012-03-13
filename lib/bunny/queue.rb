@@ -291,6 +291,9 @@ module Bunny
     # @option opts [Boolean] :nowait (false)
     #   Ignored by Bunny, always @false@.
     #
+    # @option opts [Boolean] :nowait (false)
+    #   Ignored by Bunny, always @false@.
+    #
     # @return [Symbol] @:unsubscribe_ok@ if successful
     def unsubscribe(opts = {})
       # Default consumer_tag from subscription if not passed in
@@ -303,12 +306,12 @@ module Bunny
       # Cancel consumer
       client.send_frame(Qrack::Protocol::Basic::Cancel.new(:consumer_tag => consumer_tag, :nowait => false))
 
-      method = client.next_method
-
-      client.check_response(method, Qrack::Protocol::Basic::CancelOk, "Error unsubscribing from queue #{name}")
-
       # Reset subscription
       @default_consumer = nil
+
+      method = client.next_method
+
+      client.check_response(method, Qrack::Protocol::Basic::CancelOk, "Error unsubscribing from queue #{name}, got #{method.class}")
 
       # Return confirmation
       :unsubscribe_ok
