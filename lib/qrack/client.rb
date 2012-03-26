@@ -38,6 +38,8 @@ module Qrack
       @ssl = opts[:ssl] || false
       @ssl_cert = opts[:ssl_cert] || nil
       @ssl_key = opts[:ssl_key] || nil
+      @ssl_cert_string = opts[:ssl_cert_string] || nil
+      @ssl_key_string = opts[:ssl_key_string] || nil
       @verify_ssl = opts[:verify_ssl].nil? || opts[:verify_ssl]
       @status = :not_connected
       @frame_max = opts[:frame_max] || 131072
@@ -212,14 +214,7 @@ module Qrack
         if @ssl
           require 'openssl' unless defined? OpenSSL::SSL
           sslctx = OpenSSL::SSL::SSLContext.new
-          if @ssl_cert
-            cert_file = File.open(@ssl_cert)
-            sslctx.cert = OpenSSL::X509::Certificate.new(cert_file.read)
-          end
-          if @ssl_key
-            key_file = File.open(@ssl_key)
-            sslctx.key = OpenSSL::PKey::RSA.new(key_file.read)
-          end
+          initialize_client_pair(sslctx)
           @socket = OpenSSL::SSL::SSLSocket.new(@socket, sslctx)
           @socket.sync_close = true
           @socket.connect
@@ -232,6 +227,19 @@ module Qrack
       end
 
       @socket
+    end
+
+    def initialize_client_pair(sslctx)
+      if @ssl_cert
+        @ssl_cert_string = File.read(@ssl_cert)
+      end
+      if @ssl_key
+        @ssl_key_string = File.read(@ssl_key)
+      end
+
+      sslctx.cert = OpenSSL::X509::Certificate.new(@ssl_cert_string) if @ssl_cert_string
+      sslctx.key = OpenSSL::PKey::RSA.new(@ssl_key_string) if @ssl_key_string
+      sslctx
     end
 
   end
