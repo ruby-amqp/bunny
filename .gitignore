@@ -8,3 +8,5 @@
 .rvmrc
 Gemfile.lock
 .rbx/*
+.tags
+.tags_sorted_by_file
