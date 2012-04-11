@@ -128,12 +128,16 @@ module Bunny
       opts = opts.dup
       out = []
 
+
       # Set up options
       routing_key = opts.delete(:key) || key
       mandatory = opts.delete(:mandatory)
       immediate = opts.delete(:immediate)
       delivery_mode = opts.delete(:persistent) ? 2 : 1
       content_type = opts.delete(:content_type) || 'application/octet-stream'
+      reply_to = opts.delete(:reply_to)
+      correlation_id = opts.delete(:correlation_id)
+      user_id = opts.delete(:user_id)
 
       out << Qrack::Protocol::Basic::Publish.new({ :exchange => name,
                                                      :routing_key => routing_key,
@@ -146,6 +150,9 @@ module Bunny
                                            data.bytesize, {
                                              :content_type  => content_type,
                                              :delivery_mode => delivery_mode,
+                                             :reply_to => reply_to,
+                                             :correlation_id => correlation_id,
+                                             :user_id => user_id,
                                              :priority      => 0
                                            }.merge(opts)
                                            )
