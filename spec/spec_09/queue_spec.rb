@@ -84,6 +84,18 @@ describe 'Queue' do
     message_count(q).should == 0
   end
 
+  it "should be able to send reply_to, correlation_id and user_id headers " do
+    q = @b.queue('test1')
+    @default_exchange.publish('This is a test message', :key => 'test1', 
+                              :reply_to => 'test_reply_to',
+                              :correlation_id => '987654',
+                              :user_id => 'guest')
+    msg = q.pop()
+    msg[:header].properties[:reply_to].should == 'test_reply_to'
+    msg[:header].properties[:correlation_id].should == '987654'
+    msg[:header].properties[:user_id].should == 'guest'
+  end
+
   it "should be able to pop a message and just get the payload" do
     q = @b.queue('test1')
     @default_exchange.publish('This is another test message', :key => 'test1')
