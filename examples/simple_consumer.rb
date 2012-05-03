@@ -48,7 +48,7 @@ q.bind(exch, :key => 'fred')
 
 # subscribe to queue
 q.subscribe(:consumer_tag => 'testtag1', :timeout => 30) do |msg|
-  puts "#{q.subscription.message_count}: #{msg[:payload]}"
+  puts "#{q.default_consumer.message_count}: #{msg[:payload]}"
 end
 
 # Close client
