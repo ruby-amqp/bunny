@@ -43,13 +43,12 @@ module Bunny
     setup(connection_string_or_opts, opts)
   end
 
-  # Runs a code block using a short-lived connection
-
-  def self.run(opts = {}, &block)
+  # Runs a code block using a Bunny connection
+  def self.run(connection_string_or_opts = {}, opts = {}, &block)
     raise ArgumentError, 'Bunny#run requires a block' unless block
 
     # Set up Bunny
-    client = setup(opts)
+    client = setup(connection_string_or_opts, opts)
 
     begin
       client.start
