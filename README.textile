@@ -10,12 +10,13 @@ You can use Bunny to:
 
 * Create and delete exchanges
 * Create and delete queues
-* Publish and consume messages
+* Publish and synchronously consume (basic.get) messages
 
 But it does not support
 
 * Arrays, hashes or even symbols in message headers
 * Framing of large messages
+* Many AMQP operations
 * RabbitMQ extensions
 * AMQP 0.9.1-only brokers
 
