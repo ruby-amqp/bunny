@@ -20,6 +20,8 @@ But it does not support
 * RabbitMQ extensions
 * AMQP 0.9.1-only brokers
 
+h2. Bunny is NOT actively maintained
+
 Bunny is also **not actively maintained**. Consider using Hot Bunnies (JRuby) or amqp gem instead.
 
 
