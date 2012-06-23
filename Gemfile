@@ -23,6 +23,7 @@ gem "SystemTimer", "1.2", :platform => :ruby_18
 
 group :development do
   gem "rake"
+  gem "effin_utf8"
 end
 
 group :test do
