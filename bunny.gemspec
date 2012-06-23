@@ -27,6 +27,9 @@ Gem::Specification.new do |s|
     "c2thZXNAcmFpbHNleHByZXNzLmRl\n"].
     map { |mail| Base64.decode64(mail) }
 
+  # Dependencies
+  s.add_dependency "amq-protocol", ">= 0.9.1"
+
   # Files.
   s.has_rdoc = true
   s.extra_rdoc_files = ["README.textile"]
@@ -34,13 +37,4 @@ Gem::Specification.new do |s|
   s.files         = `git ls-files`.split("\n")
   s.test_files    = `git ls-files -- spec/*`.split("\n")
   s.require_paths = ["lib"]
-
-  begin
-    require "changelog"
-    s.post_install_message = CHANGELOG.new.version_changes
-  rescue LoadError
-  end
-
-  # RubyForge
-  s.rubyforge_project = "bunny-amqp"
 end

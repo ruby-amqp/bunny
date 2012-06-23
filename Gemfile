@@ -23,17 +23,10 @@ gem "SystemTimer", "1.2", :platform => :ruby_18
 
 group :development do
   gem "rake"
-
-  gem "yard", ">= 0.7.2"
-
-  # Yard tags this buddy along.
-  gem "RedCloth",  :platform => :mri
-
-  gem "changelog"
 end
 
 group :test do
-  gem "rspec", "~> 2.6.0"
+  gem "rspec", "~> 2.8.0"
 end
 
 gemspec
