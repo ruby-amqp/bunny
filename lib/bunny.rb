@@ -5,4 +5,13 @@ require "amq/protocol/client"
 
 module Bunny
   PROTOCOL_VERSION = AMQ::Protocol::PROTOCOL_VERSION
+
+
+  def self.version
+    VERSION
+  end
+
+  def self.protocol_version
+    AMQ::Protocol::PROTOCOL_VERSION
+  end
 end
