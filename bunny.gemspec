@@ -8,7 +8,7 @@ Gem::Specification.new do |s|
   s.name = "bunny"
   s.version = Bunny::VERSION.dup
   s.homepage = "http://github.com/ruby-amqp/bunny"
-  s.summary = "Synchronous Ruby AMQP 0.9.1 client"
+  s.summary = "Synchronous Ruby AMQP 0.8.0 client"
   s.description = "A synchronous Ruby AMQP client that enables interaction with AMQP-compliant brokers."
 
   # Sorted alphabetically.
