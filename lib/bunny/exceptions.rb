@@ -23,8 +23,13 @@ module Bunny
     # API
     #
 
-    def initialize(settings)
-      super("AMQP broker closed TCP connection before authentication succeeded: this usually means authentication failure due to misconfiguration or that RabbitMQ version does not support AMQP 0.9.1. Please see http://bit.ly/amqp-gem-080-and-rabbitmq-versions and check your configuration. Settings are #{settings.inspect}.")
+    attr_reader :username, :vhost
+
+    def initialize(username, vhost, password_length)
+      @username = username
+      @vhost    = vhost
+
+      super("AMQP broker closed TCP connection before authentication succeeded: this usually means authentication failure due to misconfiguration or that RabbitMQ version does not support AMQP 0.9.1. Please check your configuration. Username: #{username}, vhost: #{vhost}, password length: #{password_length}")
     end # initialize(settings)
   end # PossibleAuthenticationFailureError
 

@@ -126,19 +126,13 @@ module Bunny
 
     def close
       if socket_open?
-        @channels.reject {|n, _| n == 0 }.each do |_, ch|
-          Bunny::Timer.timeout(@disconnect_timeout, ClientTimeout) { ch.close } if ch.open?
-        end
+        close_all_channels
 
         Bunny::Timer.timeout(@disconnect_timeout, ClientTimeout) { self.close_connection }
       end
     end
     alias stop close
 
-
-    def connected?
-      status == :connected
-    end
 
     def connecting?
       status == :connecting
@@ -147,6 +141,11 @@ module Bunny
     def closed?
       status == :closed
     end
+
+    def open?
+      status == :open || status == :connected
+    end
+    alias connected? open?
 
 
     #
@@ -210,6 +209,12 @@ module Bunny
       self.unregister_channel(ch)
     end
 
+    def close_all_channels
+      @channels.reject {|n, _| n == 0 }.each do |_, ch|
+        Bunny::Timer.timeout(@disconnect_timeout, ClientTimeout) { ch.close } if ch.open?
+      end
+    end
+
     def register_channel(ch)
       @channel_mutex.synchronize do
         @channels[ch.number] = ch
@@ -238,12 +243,24 @@ module Bunny
 
       @server_authentication_mechanisms = (connection_start.mechanisms || "").split(" ")
       @server_locales                   = Array(connection_start.locales)
+
+      @status = :connected
     end
 
     def open_connection
       self.send_frame(AMQ::Protocol::Connection::StartOk.encode(@client_properties, @mechanism, self.encode_credentials(username, password), @locale))
 
-      frame           = read_next_frame
+      frame = begin
+                read_next_frame
+              rescue Errno::ECONNRESET => e
+                nil
+              end
+      if frame.nil?
+        self.close_all_channels
+        @state = :closed
+        raise Bunny::PossibleAuthenticationFailureError.new(self.user, self.vhost, self.password.size)
+      end
+
       connection_tune = frame.decode_payload
       @frame_max      = connection_tune.frame_max.freeze
       @heartbeat      ||= connection_tune.heartbeat
@@ -253,6 +270,8 @@ module Bunny
 
       frame              = read_next_frame
       connection_open_ok = frame.decode_payload
+
+      @status = :open
 
       raise "could not open connection: server did not respond with connection.open-ok" unless connection_open_ok.is_a?(AMQ::Protocol::Connection::OpenOk)
     end
