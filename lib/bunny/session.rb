@@ -35,7 +35,7 @@ module Bunny
     # API
     #
 
-    attr_reader :status, :host, :port, :heartbeat, :user, :pass, :vhost, :frame_max
+    attr_reader :status, :host, :port, :heartbeat, :user, :pass, :vhost, :frame_max, :default_channel
 
     def initialize(connection_string_or_opts = Hash.new, optz = Hash.new)
       opts = case connection_string_or_opts
@@ -45,6 +45,7 @@ module Bunny
                connection_string_or_opts
              end.merge(optz)
 
+      @opts            = opts
       @host            = self.hostname_from(opts)
       @port            = self.port_from(opts)
       @user            = self.username_from(opts)
@@ -67,6 +68,10 @@ module Bunny
       @connect_timeout = self.timeout_from(opts)
 
       @client_properties = opts[:properties] || DEFAULT_CLIENT_PROPERTIES
+
+
+      @channel_mutex     = Mutex.new
+      @channels          = Hash.new
     end
 
     def hostname;     self.host;  end
@@ -82,20 +87,27 @@ module Bunny
       @ssl
     end
 
+    def channel
+      @default_channel
+    end
+
 
     def start
       @status = :connecting
 
-      make_sure_socket_is_initialized
-      init
+      self.make_sure_socket_is_initialized
+      self.init_connection
+      self.open_connection
 
+      @default_channel = self.create_channel
+      @default_channel.open
 
       @status = :connected
     end
 
 
     def create_channel
-      # TODO
+      Bunny::Channel.new(self)
     end
 
 
@@ -149,7 +161,28 @@ module Bunny
       options[:heartbeat] || options[:heartbeat_interval] || options[:requested_heartbeat] || DEFAULT_HEARTBEAT
     end
 
+    def register_channel(ch)
+      @channel_mutex.synchronize do
+        @channels[ch.id] = ch
+      end
+    end
 
+    def unregister_channel(ch)
+      @channel_mutex.synchronize do
+        @channels[ch.id] = nil
+      end
+    end
+
+    protected
+
+    def init_connection
+      self.send_preamble
+      
+    end
+
+    def open_connection
+      # TODO
+    end
 
     def close_connection
       # TODO
@@ -157,9 +190,50 @@ module Bunny
 
 
     def make_sure_socket_is_initialized
-      # TODO
+      self.socket
     end
 
+    # Sends AMQ protocol header (also known as preamble).
+    #
+    # @see http://bit.ly/amqp091spec AMQP 0.9.1 specification (Section 2.2)
+    def send_preamble
+      self.send_raw(AMQ::Protocol::PREAMBLE)
+    end
+
+    # Sends frame to the peer, checking that connection is open.
+    #
+    # @raise [ConnectionClosedError]
+    def send_frame(frame)
+      if closed?
+        raise ConnectionClosedError.new(frame)
+      else
+        self.send_raw(frame.encode)
+      end
+    end
+
+    # Sends raw bytes to the peer
+    def send_raw(*args)
+      send_via_socket(:write, *args)
+    end
+
+    # Sends data down the TCP socket
+    def send_via_socket(cmd, *args)
+      begin
+        raise Bunny::ConnectionError, 'Connection socket has not been created!' if @socket.nil?
+        if @read_write_timeout
+          Bunny::Timer.timeout(@read_write_timeout, Qrack::ClientTimeout) do
+            @socket.__send__(cmd, *args)
+          end
+        else
+          @socket.__send__(cmd, *args)
+        end
+      rescue Errno::EPIPE, Errno::EAGAIN, Qrack::ClientTimeout, IOError => e
+        # Ensure we close the socket when we are down to prevent further
+        # attempts to write to a closed socket
+        close_socket
+        raise Bunny::ServerDownError, e.message
+      end
+    end
 
     def socket
       return @socket if @socket and (@status == :connected) and not @socket.closed?
@@ -183,12 +257,18 @@ module Bunny
           @socket.post_connection_check(host) if @verify_ssl
           @socket
         end
-      rescue => e
+      rescue Exception => e
         @status = :not_connected
-        raise Bunny::ServerDownError, e.message
+        raise Bunny::TCPConnectionFailed.new(e, self.hostname, self.port)
       end
 
       @socket
+    end
+
+    def close_socket(reason = nil)
+      @socket.close if @socket and not @socket.closed?
+      @socket   = nil
+      @status   = :not_connected
     end
 
     def initialize_client_pair(sslctx)

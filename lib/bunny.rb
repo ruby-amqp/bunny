@@ -5,6 +5,8 @@ require "timeout"
 require "bunny/version"
 require "amq/protocol/client"
 
+require "bunny/exceptions"
+
 # Core entities: connection, channel, exchange, queue, consumer
 require "bunny/session"
 require "bunny/channel"
@@ -33,26 +35,6 @@ module Bunny
   # API
   #
 
-  class TCPConnectionFailed < StandardError
-    attr_reader :hostname, :port
-
-    def initialize(hostname, port)
-      super("Could not estabilish TCP connection to #{hostname}:#{port}")
-    end
-  end
-
-  # backwards compatibility
-  ConnectionError = TCPConnectionFailed
-  ServerDownError = TCPConnectionFailed
-
-  # TODO
-  class ForcedChannelCloseError < StandardError; end
-  class ForcedConnectionCloseError < StandardError; end
-  class MessageError < StandardError; end
-  class ProtocolError < StandardError; end
-
-
-
   def self.version
     VERSION
   end
@@ -67,7 +49,7 @@ module Bunny
       opts = connection_string_or_opts
     end
 
-    conn = Session.new(*args)
+    conn = Session.new(connection_string_or_opts, opts)
     @default_connection ||= conn
 
     conn

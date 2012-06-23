@@ -14,9 +14,9 @@ describe Bunny::Session do
       Bunny.new
     end
 
-    xit "successfully connects" do
-      connection.start
-      connection.should be_connected
+    it "successfully connects" do
+      subject.start
+      subject.should be_connected
     end
   end
 
