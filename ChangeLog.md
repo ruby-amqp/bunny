@@ -10,18 +10,6 @@ long running applications that aggressively open and release channels.
 This is also how amqp gem and RabbitMQ Java client manage channel ids.
 
 
-## Bunny::Channel#open returns a OpenOk response
-
-In 0.8.x, `Bunny::Channel#open` returned `:open_ok` (a symbol). In 0.9.0, it returns a response method,
-`channel.open-ok`.
-
-
-## Bunny::Channel#close returns a CloseOk response
-
-In 0.8.x, `Bunny::Channel#open` returned `:close_ok` (a symbol). In 0.9.0, it returns a response method,
-`channel.close-ok`.
-
-
 ## Unified Bunny::ConnectionError and Bunny::ServerDownError
 
 In Bunny 0.8.0 and earlier, `Bunny::ServerDownError` and `Bunny::ConnectionError` large served the same purpose.
