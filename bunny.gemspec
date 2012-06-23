@@ -28,7 +28,7 @@ Gem::Specification.new do |s|
     map { |mail| Base64.decode64(mail) }
 
   # Dependencies
-  s.add_dependency "amq-protocol", ">= 0.9.1"
+  s.add_dependency "amq-protocol", ">= 1.0.0.pre2"
 
   # Files.
   s.has_rdoc = true
