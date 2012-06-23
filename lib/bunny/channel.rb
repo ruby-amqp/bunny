@@ -21,13 +21,22 @@ module Bunny
 
 
     def open
+      @connection.open_channel(self)
+      @status = :open
     end
 
     def close
+      @connection.close_channel(self)
+      @status = :closed
+      self.class.release_channel_id(@id)
     end
 
     def open?
       @status == :open
+    end
+
+    def closed?
+      @status == :closed
     end
 
 

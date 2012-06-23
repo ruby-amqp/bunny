@@ -185,15 +185,40 @@ module Bunny
       options[:heartbeat] || options[:heartbeat_interval] || options[:requested_heartbeat] || DEFAULT_HEARTBEAT
     end
 
+    def open_channel(ch)
+      n = ch.number
+
+      Bunny::Timer.timeout(@disconnect_timeout, ClientTimeout) do
+        self.send_frame(AMQ::Protocol::Channel::Open.encode(n, AMQ::Protocol::EMPTY_STRING))
+      end
+
+      method = self.read_next_frame.decode_payload
+      # TODO: check channel.open-ok
+
+      self.register_channel(ch)
+    end
+
+    def close_channel(ch)
+      n = ch.number
+
+      Bunny::Timer.timeout(@disconnect_timeout, ClientTimeout) do
+        self.send_frame(AMQ::Protocol::Channel::Close.encode(n, 200, "Goodbye", 0, 0))
+      end
+
+      # TODO: check channel.close-ok
+
+      self.unregister_channel(ch)
+    end
+
     def register_channel(ch)
       @channel_mutex.synchronize do
-        @channels[ch.id] = ch
+        @channels[ch.number] = ch
       end
     end
 
     def unregister_channel(ch)
       @channel_mutex.synchronize do
-        @channels[ch.id] = nil
+        @channels.delete(ch.number)
       end
     end
 
