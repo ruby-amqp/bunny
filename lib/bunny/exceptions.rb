@@ -39,5 +39,35 @@ module Bunny
   class MessageError < StandardError; end
   class ProtocolError < StandardError; end
 
+  # raised when read or write I/O operations time out (but only if
+  # a connection is configured to use them)
+  class ClientTimeout     < Timeout::Error; end
+  # raised on initial connection timeout
   class ConnectionTimeout < Timeout::Error; end
+
+
+  # Base exception class for data consistency and framing errors.
+  class InconsistentDataError < StandardError
+  end
+
+  # Raised by adapters when frame does not end with {final octet AMQ::Protocol::Frame::FINAL_OCTET}.
+  # This suggest that there is a bug in adapter or AMQ broker implementation.
+  #
+  # @see http://bit.ly/amqp091spec AMQP 0.9.1 specification (Section 2.3)
+  class NoFinalOctetError < InconsistentDataError
+    def initialize
+      super("Frame doesn't end with #{AMQ::Protocol::Frame::FINAL_OCTET} as it must, which means the size is miscalculated.")
+    end
+  end
+
+  # Raised by adapters when actual frame payload size in bytes is not equal
+  # to the size specified in that frame's header.
+  # This suggest that there is a bug in adapter or AMQ broker implementation.
+  #
+  # @see http://bit.ly/amqp091spec AMQP 0.9.1 specification (Section 2.3)
+  class BadLengthError < InconsistentDataError
+    def initialize(expected_length, actual_length)
+      super("Frame payload should be #{expected_length} long, but it's #{actual_length} long.")
+    end
+  end
 end

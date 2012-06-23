@@ -30,12 +30,15 @@ module Bunny
       :information  => "http://github.com/ruby-amqp/bunny"
     }
 
+    DEFAULT_LOCALE = "en_GB"
+
 
     #
     # API
     #
 
     attr_reader :status, :host, :port, :heartbeat, :user, :pass, :vhost, :frame_max, :default_channel
+    attr_reader :server_capabilities, :server_properties, :server_authentication_mechanisms, :server_locales
 
     def initialize(connection_string_or_opts = Hash.new, optz = Hash.new)
       opts = case connection_string_or_opts
@@ -67,11 +70,22 @@ module Bunny
       @heartbeat       = self.heartbeat_from(opts)
       @connect_timeout = self.timeout_from(opts)
 
-      @client_properties = opts[:properties] || DEFAULT_CLIENT_PROPERTIES
+      @client_properties  = opts[:properties] || DEFAULT_CLIENT_PROPERTIES
+      @mechanism          = "PLAIN"
+      @locale             = @opts.fetch(:locale, DEFAULT_LOCALE)
 
+      @read_write_timeout = opts[:socket_timeout]
+      @read_write_timeout = nil if @read_write_timeout == 0
+      @disconnect_timeout = @read_write_timeout || @connect_timeout
 
-      @channel_mutex     = Mutex.new
-      @channels          = Hash.new
+      @chunk_buffer       = ""
+      @frames             = Hash.new { Array.new }
+
+      @channel_mutex      = Mutex.new
+      @channels           = Hash.new
+
+      # Create channel 0
+      @channel            = Bunny::Channel.new(self, 0)
     end
 
     def hostname;     self.host;  end
@@ -122,6 +136,10 @@ module Bunny
 
     def connecting?
       status == :connecting
+    end
+
+    def closed?
+      status == :closed
     end
 
 
@@ -177,11 +195,31 @@ module Bunny
 
     def init_connection
       self.send_preamble
-      
+
+      connection_start = read_next_frame.decode_payload
+
+      @server_properties                = connection_start.server_properties
+      @server_capabilities              = @server_properties["capabilities"]
+
+      @server_authentication_mechanisms = (connection_start.mechanisms || "").split(" ")
+      @server_locales                   = Array(connection_start.locales)
     end
 
     def open_connection
-      # TODO
+      self.send_frame(AMQ::Protocol::Connection::StartOk.encode(@client_properties, @mechanism, self.encode_credentials(username, password), @locale))
+
+      frame           = read_next_frame
+      connection_tune = frame.decode_payload
+      @frame_max      = connection_tune.frame_max.freeze
+      @heartbeat      ||= connection_tune.heartbeat
+
+      self.send_frame(AMQ::Protocol::Connection::TuneOk.encode(@channel_max, @frame_max, @heartbeat))
+      self.send_frame(AMQ::Protocol::Connection::Open.encode(self.vhost))
+
+      frame              = read_next_frame
+      connection_open_ok = frame.decode_payload
+
+      raise "could not open connection: server did not respond with connection.open-ok" unless connection_open_ok.is_a?(AMQ::Protocol::Connection::OpenOk)
     end
 
     def close_connection
@@ -211,28 +249,60 @@ module Bunny
       end
     end
 
-    # Sends raw bytes to the peer
-    def send_raw(*args)
-      send_via_socket(:write, *args)
-    end
-
-    # Sends data down the TCP socket
-    def send_via_socket(cmd, *args)
+    # Writes data to the socket. If read/write timeout was specified, Bunny::ClientTimeout will be raised
+    # if the operation times out.
+    #
+    # @raise [ClientTimeout]
+    def write(*args)
       begin
-        raise Bunny::ConnectionError, 'Connection socket has not been created!' if @socket.nil?
+        raise Bunny::ConnectionError, 'No connection - socket has not been created' if !@socket
         if @read_write_timeout
-          Bunny::Timer.timeout(@read_write_timeout, Qrack::ClientTimeout) do
-            @socket.__send__(cmd, *args)
+          Bunny::Timer.timeout(@read_write_timeout, Bunny::ClientTimeout) do
+            @socket.write(*args)
           end
         else
-          @socket.__send__(cmd, *args)
+          @socket.write(*args)
         end
-      rescue Errno::EPIPE, Errno::EAGAIN, Qrack::ClientTimeout, IOError => e
-        # Ensure we close the socket when we are down to prevent further
-        # attempts to write to a closed socket
+      rescue Errno::EPIPE, Errno::EAGAIN, Bunny::ClientTimeout, IOError => e
         close_socket
-        raise Bunny::ServerDownError, e.message
+        raise Bunny::ConnectionError, e.message
       end
+    end
+    alias send_raw write
+
+
+    # Reads data from the socket. If read/write timeout was specified, Bunny::ClientTimeout will be raised
+    # if the operation times out.
+    #
+    # @raise [ClientTimeout]
+    def read_raw(*args)
+      begin
+        raise Bunny::ConnectionError, 'No connection - socket has not been created' if !@socket
+        if @read_write_timeout
+          Bunny::Timer.timeout(@read_write_timeout, Bunny::ClientTimeout) do
+            @socket.read(*args)
+          end
+        else
+          @socket.read(*args)
+        end
+      rescue Errno::EPIPE, Errno::EAGAIN, Bunny::ClientTimeout, IOError => e
+        close_socket
+        raise Bunny::ConnectionError, e.message
+      end
+    end
+
+
+    # Reads data from the socket, retries on SIGINT signals
+    def read(*args)
+      self.read_raw(*args)
+      # Got a SIGINT while waiting; give any traps a chance to run
+    rescue Errno::EINTR
+      retry
+    end
+
+    def read_ready?(timeout, cancelator = nil)
+      io = IO.select([@socket, cancelator].compact, nil, nil, timeout)
+      io && io[0].include?(@socket)
     end
 
     def socket
@@ -284,6 +354,72 @@ module Bunny
       sslctx
     end
 
+
+    # @api plugin
+    # @see http://tools.ietf.org/rfc/rfc2595.txt RFC 2595
+    def encode_credentials(username, password)
+      "\0#{username}\0#{password}"
+    end # encode_credentials(username, password)
+
+
+    def read_next_frame(opts = {})
+      Bunny::Framing::IO::Frame.decode(@socket)
+    end
+
+    # Utility methods
+
+    # Determines, whether the received frameset is ready to be further processed
+    def frameset_complete?(frames)
+      return false if frames.empty?
+      first_frame = frames[0]
+      first_frame.final? || (first_frame.method_class.has_content? && content_complete?(frames[1..-1]))
+    end
+
+    # Determines, whether given frame array contains full content body
+    def content_complete?(frames)
+      return false if frames.empty?
+      header = frames[0]
+      raise "Not a content header frame first: #{header.inspect}" unless header.kind_of?(AMQ::Protocol::HeaderFrame)
+      header.body_size == frames[1..-1].inject(0) {|sum, frame| sum + frame.payload.size }
+    end
+
+
+    # Processes a single frame.
+    #
+    # @param [AMQ::Protocol::Frame] frame
+    # @api plugin
+    def receive_frame(frame)
+      @frames[frame.channel] ||= Array.new
+      @frames[frame.channel] << frame
+
+      if frameset_complete?(@frames[frame.channel])
+        receive_frameset(@frames[frame.channel])
+        # for channel.close, frame.channel will be nil. MK.
+        clear_frames_on(frame.channel) if @frames[frame.channel]
+      end
+    end
+
+
+    # Processes a frameset by finding and invoking a suitable handler.
+    # Heartbeat frames are treated in a special way: they simply update @last_server_heartbeat
+    # value.
+    #
+    # @param [Array<AMQ::Protocol::Frame>] frames
+    # @api plugin
+    def receive_frameset(frames)
+      frame = frames.first
+
+      if AMQ::Protocol::HeartbeatFrame === frame
+        @last_server_heartbeat = Time.now
+      else
+        # if callable = AMQ::Client::HandlersRegistry.find(frame.method_class)
+        #   f = frames.shift
+        #   callable.call(self, f, frames)
+        # else
+        #   raise MissingHandlerError.new(frames.first)
+        # end
+      end
+    end
   end # Session
 
   # backwards compatibility

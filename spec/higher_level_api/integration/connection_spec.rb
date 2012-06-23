@@ -14,9 +14,18 @@ describe Bunny::Session do
       Bunny.new
     end
 
-    it "successfully connects" do
+    it "successfully negotiates the connection" do
       subject.start
       subject.should be_connected
+
+      subject.server_properties.should_not be_nil
+      subject.server_capabilities.should_not be_nil
+
+      props = subject.server_properties
+
+      props["product"].should_not be_nil
+      props["platform"].should_not be_nil
+      props["version"].should_not be_nil
     end
   end
 
@@ -25,9 +34,18 @@ describe Bunny::Session do
       described_class.new(:connection_timeout => 5)
     end
 
-    xit "successfully connects" do
-      connection.start
-      connection.should be_connected
+    it "successfully connects" do
+      subject.start
+      subject.should be_connected
+
+      subject.server_properties.should_not be_nil
+      subject.server_capabilities.should_not be_nil
+
+      props = subject.server_properties
+
+      props["product"].should_not be_nil
+      props["platform"].should_not be_nil
+      props["version"].should_not be_nil
     end
   end
 

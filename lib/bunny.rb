@@ -5,6 +5,8 @@ require "timeout"
 require "bunny/version"
 require "amq/protocol/client"
 
+require "bunny/framing"
+
 require "bunny/exceptions"
 
 # Core entities: connection, channel, exchange, queue, consumer

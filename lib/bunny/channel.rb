@@ -8,8 +8,7 @@ module Bunny
     # API
     #
 
-
-    attr_accessor :id
+    attr_accessor :id, :connection, :status
 
 
     def initialize(connection = nil, id = nil)

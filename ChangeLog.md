@@ -1,5 +1,11 @@
 # Changes between Bunny 0.8.x and 0.9.0
 
+## Bunny::Client#write now raises Bunny::ConnectionError
+
+Bunny::Client#write now raises `Bunny::ConnectionError` instead of `Bunny::ServerDownError` when network
+I/O operations fail.
+
+
 ## Bunny::Client.create_channel now uses a bitset-based allocator
 
 Instead of reusing channel instances, `Bunny::Client.create_channel` now opens new channels and
@@ -8,12 +14,6 @@ channels are reused or shared without developer's explicit intent but also work 
 long running applications that aggressively open and release channels.
 
 This is also how amqp gem and RabbitMQ Java client manage channel ids.
-
-
-## Unified Bunny::ConnectionError and Bunny::ServerDownError
-
-In Bunny 0.8.0 and earlier, `Bunny::ServerDownError` and `Bunny::ConnectionError` large served the same purpose.
-They are now just aliases.
 
 
 ## Bunny::ServerDownError is now Bunny::TCPConnectionFailed
