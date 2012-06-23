@@ -1,10 +1,12 @@
 h1. About bunny
 
-Bunny is a synchronous "AMQP 0.8.0":http://bit.ly/amqp-model-explained client. It supports Ruby 1.9.2, 1.8.7, Ruby Enterprise Edition and JRuby. Protocol-wise, Bunny supports AMQP 0.9.1 and 0.8. Support for AMQP 0.8 will be dropped in the next version of Bunny (0.8) because most of popular AMQP brokers such as RabbitMQ have already stopped or are planning to stop supporting it in the near future.
+Bunny is a synchronous "AMQP 0.8.0":http://bit.ly/amqp-model-explained client. It supports Ruby 1.9.3, 1.9.2, 1.8.7,
+Ruby Enterprise Edition and JRuby.
 
 h2. Limited Functionality Disclaimer
 
-Bunny is very simplistic and does not support many features
+Bunny 0.7.x and 0.8.x releases do not support many features and have serious limitations that may prevent it from
+working with future RabbitMQ releases.
 
 You can use Bunny to:
 
