@@ -158,7 +158,7 @@ module Bunny
 
     def port_from(options)
       if options[:tls] || options[:ssl]
-        AMQ::Protocol::TLS_PORT
+        options.fetch(:port, AMQ::Protocol::TLS_PORT)
       else
         options.fetch(:port, AMQ::Protocol::DEFAULT_PORT)
       end
