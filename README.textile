@@ -20,9 +20,16 @@ But it does not support
 * RabbitMQ extensions
 * AMQP 0.9.1-only brokers
 
-h2. Bunny is NOT actively maintained
 
-Bunny is also **not actively maintained**. Consider using Hot Bunnies (JRuby) or amqp gem instead.
+h2. Bunny is about to undergo a lot of internal changes
+
+Bunny is a very old library with **a lot** of missing functionality. It also implements an older version of the spec
+and may or may not work with future RabbitMQ versions. As such, Bunny is about to undergo serious internal changes.
+We will make our best to keep them as backwards compatible as possible but within reason.
+
+See [this announcement](https://groups.google.com/forum/?fromgroups#!topic/ruby-amqp/crNVGEuHm68) to learn more.
+
+In the meantime, consider using Hot Bunnies (JRuby) or "amqp gem":http://rubyamqp.info instead.
 
 
 h2. Quick Start
