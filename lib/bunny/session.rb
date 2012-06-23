@@ -124,8 +124,14 @@ module Bunny
       Bunny::Channel.new(self)
     end
 
-
     def close
+      if socket_open?
+        @channels.reject {|n, _| n == 0 }.each do |_, ch|
+          Bunny::Timer.timeout(@disconnect_timeout, ClientTimeout) { ch.close } if ch.open?
+        end
+
+        Bunny::Timer.timeout(@disconnect_timeout, ClientTimeout) { self.close_connection }
+      end
     end
     alias stop close
 
@@ -193,6 +199,10 @@ module Bunny
 
     protected
 
+    def socket_open?
+      !@socket.nil? && !@socket.closed?
+    end
+
     def init_connection
       self.send_preamble
 
@@ -223,7 +233,12 @@ module Bunny
     end
 
     def close_connection
-      # TODO
+      self.send_frame(AMQ::Protocol::Connection::Close.encode(200, "Goodbye", 0, 0))
+
+      method = self.read_next_frame.decode_payload
+      close_socket
+
+      method
     end
 
 

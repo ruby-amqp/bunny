@@ -6,6 +6,10 @@ describe Bunny::Session do
 
   let(:tls_port) { AMQ::Protocol::TLS_PORT }
 
+  after :each do
+    subject.close
+  end
+
   context "initialized via connection URI" do
   end
 
