@@ -39,6 +39,7 @@ module Bunny
 
     attr_reader :status, :host, :port, :heartbeat, :user, :pass, :vhost, :frame_max, :default_channel
     attr_reader :server_capabilities, :server_properties, :server_authentication_mechanisms, :server_locales
+    attr_reader :default_channel
 
     def initialize(connection_string_or_opts = Hash.new, optz = Hash.new)
       opts = case connection_string_or_opts
@@ -85,7 +86,7 @@ module Bunny
       @channels           = Hash.new
 
       # Create channel 0
-      @channel            = Bunny::Channel.new(self, 0)
+      @channel0           = Bunny::Channel.new(self, 0)
     end
 
     def hostname;     self.host;  end
@@ -99,6 +100,10 @@ module Bunny
 
     def uses_ssl?
       @ssl
+    end
+
+    def channel0
+      @channel0
     end
 
     def channel
@@ -115,8 +120,6 @@ module Bunny
 
       @default_channel = self.create_channel
       @default_channel.open
-
-      @status = :connected
     end
 
 
@@ -229,6 +232,25 @@ module Bunny
       end
     end
 
+    # Exposed primarily for Bunny::Channel
+    # @private
+    def read_next_frame(opts = {})
+      Bunny::Framing::IO::Frame.decode(@socket)
+    end
+
+    # Sends frame to the peer, checking that connection is open.
+    # Exposed primarily for Bunny::Channel
+    #
+    # @raise [ConnectionClosedError]
+    # @private
+    def send_frame(frame)
+      if closed?
+        raise ConnectionClosedError.new(frame)
+      else
+        self.send_raw(frame.encode)
+      end
+    end
+
     protected
 
     def socket_open?
@@ -297,17 +319,6 @@ module Bunny
     # @see http://bit.ly/amqp091spec AMQP 0.9.1 specification (Section 2.2)
     def send_preamble
       self.send_raw(AMQ::Protocol::PREAMBLE)
-    end
-
-    # Sends frame to the peer, checking that connection is open.
-    #
-    # @raise [ConnectionClosedError]
-    def send_frame(frame)
-      if closed?
-        raise ConnectionClosedError.new(frame)
-      else
-        self.send_raw(frame.encode)
-      end
     end
 
     # Writes data to the socket. If read/write timeout was specified, Bunny::ClientTimeout will be raised
@@ -421,11 +432,6 @@ module Bunny
     def encode_credentials(username, password)
       "\0#{username}\0#{password}"
     end # encode_credentials(username, password)
-
-
-    def read_next_frame(opts = {})
-      Bunny::Framing::IO::Frame.decode(@socket)
-    end
 
     # Utility methods
 
