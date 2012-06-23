@@ -9,7 +9,7 @@ Gem::Specification.new do |s|
   s.version = Bunny::VERSION.dup
   s.homepage = "http://github.com/ruby-amqp/bunny"
   s.summary = "Synchronous Ruby AMQP 0.9.1 client"
-  s.description = "A synchronous Ruby AMQP client that enables interaction with AMQP-compliant brokers."
+  s.description = "A synchronous Ruby AMQP 0.9.1 client"
 
   # Sorted alphabetically.
   s.authors = [
@@ -28,7 +28,7 @@ Gem::Specification.new do |s|
     map { |mail| Base64.decode64(mail) }
 
   # Dependencies
-  s.add_dependency "amq-protocol", ">= 1.0.0.pre2"
+  s.add_dependency "amq-protocol", ">= 1.0.0.pre3"
 
   # Files.
   s.has_rdoc = true
