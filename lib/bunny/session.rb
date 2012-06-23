@@ -157,11 +157,13 @@ module Bunny
     end
 
     def port_from(options)
-      if options[:tls] || options[:ssl]
-        options.fetch(:port, AMQ::Protocol::TLS_PORT)
-      else
-        options.fetch(:port, AMQ::Protocol::DEFAULT_PORT)
-      end
+      fallback = if options[:tls] || options[:ssl]
+                   AMQ::Protocol::TLS_PORT
+                 else
+                   AMQ::Protocol::DEFAULT_PORT
+                 end
+
+      options.fetch(:port, fallback)
     end
 
     def vhost_from(options)
