@@ -27,12 +27,13 @@ Bunny is a very old library with **a lot** of missing functionality. It also imp
 and may or may not work with future RabbitMQ versions. As such, Bunny is about to undergo serious internal changes.
 We will make our best to keep them as backwards compatible as possible but within reason.
 
-See [this announcement](https://groups.google.com/forum/?fromgroups#!topic/ruby-amqp/crNVGEuHm68) to learn more.
+See "this announcement":https://groups.google.com/forum/?fromgroups#!topic/ruby-amqp/crNVGEuHm68 to learn more.
 
-In the meantime, consider using Hot Bunnies (JRuby) or "amqp gem":http://rubyamqp.info instead.
+In the meantime, consider using Hot Bunnies (JRuby) or "amqp gem":http://rubyamqp.info instead. The last release
+of AMQP 0.8 version of Bunny is `0.8.0` which is the same as `0.7.9` but hits at the protocol version better.
 
 
-h2. Quick Start
+h2. Quick Start for Bunny 0.7.x and 0.8.x
 
 <pre>
 require "bunny"
