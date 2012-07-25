@@ -67,7 +67,9 @@ module Bunny
 
       method = next_method
 
-      check_response(method, Qrack::Protocol::Connection::CloseOk, "Error closing connection")
+      r = check_response(method, Qrack::Protocol::Connection::CloseOk, "Error closing connection")
+
+      r == :response_ok ? :not_connected : r
 
     end
 
