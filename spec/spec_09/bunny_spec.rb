@@ -30,6 +30,11 @@ describe Bunny do
     @b.status.should == :connected
   end
 
+  it "should disconnect giving the right status" do
+    @b.stop
+    @b.status.should == :not_connected
+  end
+
   it "should be able to create and open a new channel" do
     c = @b.create_channel
     c.number.should == 2
