@@ -167,6 +167,28 @@ describe 'Queue' do
     q.purge.should == :purge_ok
   end
 
+  it "should put a message back when it is rejected" do
+    q = @b.queue('test1')
+    5.times { @default_exchange.publish('Yet another test message', :key => 'test1') }
+    message_count(q).should == 5
+    msg = q.pop(:ack => true)
+    message_count(q).should == 4
+    q.reject
+    message_count(q).should == 5
+    q.purge.should == :purge_ok
+  end
+
+  it "should discard the message when it is rejected with requeue set false" do
+    q = @b.queue('test1')
+    5.times { @default_exchange.publish('Yet another test message', :key => 'test1') }
+    message_count(q).should == 5
+    msg = q.pop(:ack => true)
+    message_count(q).should == 4
+    q.reject(:requeue => false)
+    message_count(q).should == 4
+    q.purge.should == :purge_ok
+  end
+
   it "should raise an error when delete fails" do
     q = @b.queue('test1')
     lambda {q.delete(:queue => 'bogus')}.should raise_error(Bunny::ForcedChannelCloseError)

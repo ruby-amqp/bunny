@@ -84,6 +84,31 @@ module Bunny
       self.delivery_tag = nil
     end
 
+    # Rejects one or more messages delivered via the _Deliver_ or _Get_-_Ok_ methods. The client can
+    # ask to reject a single message.
+    #
+    # @option opts [String] :delivery_tag
+    #
+    # @option opts [Boolean] :requeue (true)
+    #   If set to @true@, the server will attempt to requeue the message.
+    #   If requeue is false or the requeue attempt fails the messages are
+    #   discarded or dead-lettered.
+    def reject(opts = {})
+      # Set delivery tag
+      if delivery_tag.nil? and opts[:delivery_tag].nil?
+        raise Bunny::RejectionError, "No delivery tag received"
+      else
+        self.delivery_tag = opts[:delivery_tag] if delivery_tag.nil?
+      end
+
+      opts = {:delivery_tag => delivery_tag, :requeue => true}.merge(opts)
+
+      client.send_frame(Qrack::Protocol::Basic::Reject.new(opts))
+
+      # reset delivery tag
+      self.delivery_tag = nil
+    end
+
     # Binds a queue to an exchange. Until a queue is bound it won't receive
     # any messages. Queues are bound to the direct exchange '' by default.
     # If error occurs, a {Bunny::ProtocolError} is raised.
