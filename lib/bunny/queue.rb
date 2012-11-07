@@ -1,5 +1,10 @@
+require "bunny/compatibility"
+
 module Bunny
   class Queue
+
+    include Bunny::Compatibility
+
 
     #
     # API
@@ -70,15 +75,6 @@ module Bunny
     def declare!
       queue_declare_ok = @channel.queue_declare(@name, @options)
       @name = queue_declare_ok.queue
-    end
-
-    # @private
-    def channel_from(channel_or_connection)
-      if channel_or_connection.is_a?(Bunny::Session)
-        channel_or_connection.default_channel
-      else
-        channel_or_connection
-      end
     end
 
     # @private

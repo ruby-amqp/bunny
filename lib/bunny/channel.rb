@@ -1,6 +1,9 @@
 require "thread"
 require "amq/int_allocator"
 
+require "bunny/exchange"
+require "bunny/queue"
+
 module Bunny
   class Channel
 
@@ -67,6 +70,28 @@ module Bunny
     end
 
 
+
+    #
+    # Higher-level API, similar to amqp gem
+    #
+
+    def fanout(name, opts = {})
+      Exchange.new(self, :fanout, name, opts)
+    end
+
+    def direct(name, opts = {})
+      Exchange.new(self, :direct, name, opts)
+    end
+
+    def topic(name, opts = {})
+      Exchange.new(self, :topic, name, opts)
+    end
+
+    def headers(name, opts = {})
+      Exchange.new(self, :headers, name, opts)
+    end
+
+
     #
     # Lower-level API, exposes protocol operations as they are defined in the protocol,
     # without any OO sugar on top, by design.
@@ -86,6 +111,27 @@ module Bunny
 
       frame = @connection.read_next_frame
       frame.decode_payload
+    end
+
+    def queue_bind(name, exchange, opts = {})
+      raise NotImplementedError
+    end
+
+
+    # exchange.*
+
+    def exchange_declare(name, type, opts = {})
+      @connection.send_frame(AMQ::Protocol::Exchange::Declare.encode(@id, name, type.to_s, opts.fetch(:passive, false), opts.fetch(:durable, false), opts.fetch(:auto_delete, false), false, false, opts[:arguments]))
+
+      frame = @connection.read_next_frame
+      frame.decode_payload      
+    end
+
+    def exchange_delete(name, opts = {})
+      @connection.send_frame(AMQ::Protocol::Exchange::Delete.encode(@id, name, opts[:if_unused], false))
+
+      frame = @connection.read_next_frame
+      frame.decode_payload      
     end
 
 
