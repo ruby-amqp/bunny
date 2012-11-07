@@ -64,6 +64,10 @@ module Bunny
       @channel.queue_bind(@name, exchange, opts)
     end
 
+    def unbind(exchange, opts = {})
+      @channel.queue_unbind(@name, exchange, opts)
+    end
+
 
     # Deletes the queue
     # @api public

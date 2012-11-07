@@ -126,6 +126,19 @@ module Bunny
       frame.decode_payload
     end
 
+    def queue_unbind(name, exchange, opts = {})
+      exchange_name = if exchange.respond_to?(:name)
+                        exchange.name
+                      else
+                        exchange
+                      end
+
+      @connection.send_frame(AMQ::Protocol::Queue::Unbind.encode(@id, name, exchange_name, opts[:routing_key], opts[:arguments]))
+
+      frame = @connection.read_next_frame
+      frame.decode_payload
+    end
+
 
     # exchange.*
 
