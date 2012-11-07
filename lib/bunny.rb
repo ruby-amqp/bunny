@@ -6,8 +6,8 @@ require "bunny/version"
 require "amq/protocol/client"
 
 require "bunny/framing"
-
 require "bunny/exceptions"
+require "bunny/socket"
 
 # Core entities: connection, channel, exchange, queue, consumer
 require "bunny/session"

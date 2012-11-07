@@ -1,6 +1,8 @@
 require "socket"
 require "thread"
 
+require "bunny/socket"
+
 require "amq/protocol/client"
 
 module Bunny
@@ -241,7 +243,7 @@ module Bunny
     # Exposed primarily for Bunny::Channel
     # @private
     def read_next_frame(opts = {})
-      raise Bunny::FrameTimeout.new("I/O timeout") unless self.read_ready?(opts.fetch(:timeout, 3))
+      raise Bunny::ClientTimeout.new("I/O timeout") unless self.read_ready?(opts.fetch(:timeout, 3))
 
       Bunny::Framing::IO::Frame.decode(@socket)
     end
@@ -286,7 +288,7 @@ module Bunny
                 read_next_frame
               # frame timeout means the broker has closed the TCP connection, which it
               # does per 0.9.1 spec .
-              rescue Errno::ECONNRESET, FrameTimeout => e
+              rescue Errno::ECONNRESET, ClientTimeout => e
                 nil
               end
       if frame.nil?
@@ -392,12 +394,9 @@ module Bunny
 
       begin
         @socket = Bunny::Timer.timeout(@connect_timeout, ConnectionTimeout) do
-          TCPSocket.new(host, port)
-        end
-
-        # TODO: support more socket options
-        if Socket.constants.include?('TCP_NODELAY') || Socket.constants.include?(:TCP_NODELAY)
-          @socket.setsockopt Socket::IPPROTO_TCP, Socket::TCP_NODELAY, 1
+          Bunny::Socket.open(host, port,
+                             :keepalive      => @opts[:keepalive],
+                             :socket_timeout => @connect_timeout)
         end
 
         if @ssl

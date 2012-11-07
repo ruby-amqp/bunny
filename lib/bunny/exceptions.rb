@@ -7,9 +7,6 @@ module Bunny
     end
   end
 
-  class FrameTimeout < StandardError
-  end
-
   class ConnectionClosedError < StandardError
     def initialize(frame)
       if frame.respond_to?(:method_class)
