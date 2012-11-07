@@ -12,7 +12,6 @@ describe Bunny::Exchange do
     context "with a non-predefined name" do
       it "is declared" do
         ch = connection.create_channel
-        ch.open
 
         name = "bunny.tests.exchages.fanout"
         x    = ch.fanout(name)
@@ -26,12 +25,42 @@ describe Bunny::Exchange do
     context "with a predefined name" do
       it "is NOT declared" do
         ch = connection.create_channel
-        ch.open
 
         name = "amq.fanout"
         x    = ch.fanout(name)
         x.name.should == name
 
+        ch.close
+      end
+    end
+
+    context "with the durable property" do
+      it "is declared as durable" do
+        ch = connection.create_channel
+
+        name = "bunny.tests.exchages.durable"
+        x    = ch.fanout(name, :durable => true)
+        x.name.should == name
+        x.should be_durable
+        x.should_not be_auto_delete
+
+        x.delete
+        ch.close
+      end
+    end
+
+
+    context "with the auto-delete property" do
+      it "is declared as auto-delete" do
+        ch = connection.create_channel
+
+        name = "bunny.tests.exchages.auto-delete"
+        x    = ch.fanout(name, :auto_delete => true)
+        x.name.should == name
+        x.should_not be_durable
+        x.should be_auto_delete
+
+        x.delete
         ch.close
       end
     end
@@ -41,7 +70,6 @@ describe Bunny::Exchange do
     context "with a non-predefined name" do
       it "is declared" do
         ch = connection.create_channel
-        ch.open
 
         name = "bunny.tests.exchages.direct"
         x    = ch.direct(name)
@@ -55,7 +83,6 @@ describe Bunny::Exchange do
     context "with a predefined name" do
       it "is NOT declared" do
         ch = connection.create_channel
-        ch.open
 
         name = "amq.direct"
         x    = ch.direct(name)
@@ -70,7 +97,6 @@ describe Bunny::Exchange do
     context "with a non-predefined name" do
       it "is declared" do
         ch = connection.create_channel
-        ch.open
 
         name = "bunny.tests.exchages.topic"
         x    = ch.topic(name)
@@ -84,7 +110,6 @@ describe Bunny::Exchange do
     context "with a predefined name" do
       it "is NOT declared" do
         ch = connection.create_channel
-        ch.open
 
         name = "amq.topic"
         x    = ch.topic(name)
@@ -99,7 +124,6 @@ describe Bunny::Exchange do
     context "with a non-predefined name" do
       it "is declared" do
         ch = connection.create_channel
-        ch.open
 
         name = "bunny.tests.exchages.headers"
         x    = ch.headers(name)
@@ -113,7 +137,6 @@ describe Bunny::Exchange do
     context "with a predefined name (amq.match)" do
       it "is NOT declared" do
         ch = connection.create_channel
-        ch.open
 
         name = "amq.match"
         x    = ch.headers(name)
@@ -126,7 +149,6 @@ describe Bunny::Exchange do
     context "with a predefined name (amq.headers)" do
       it "is NOT declared" do
         ch = connection.create_channel
-        ch.open
 
         name = "amq.headers"
         x    = ch.headers(name)

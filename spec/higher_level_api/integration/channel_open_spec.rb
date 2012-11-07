@@ -13,9 +13,7 @@ describe Bunny::Channel do
 
   context "open without explicitly provided id" do
     subject do
-      ch = connection.create_channel
-      ch.open
-      ch
+      connection.create_channel
     end
 
     it "gets an allocated id and is successfully opened" do

@@ -121,12 +121,13 @@ module Bunny
       self.open_connection
 
       @default_channel = self.create_channel
-      @default_channel.open
     end
 
 
     def create_channel
-      Bunny::Channel.new(self)
+      ch = Bunny::Channel.new(self)
+      ch.open
+      ch
     end
 
     def close

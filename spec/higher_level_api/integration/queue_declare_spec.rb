@@ -12,7 +12,6 @@ describe Bunny::Queue do
 
     it "declares a new queue with that name" do
       ch   = connection.create_channel
-      ch.open
 
       q    = ch.queue(name)
       q.name.should == name
@@ -22,7 +21,6 @@ describe Bunny::Queue do
 
     it "caches that queue" do
       ch   = connection.create_channel
-      ch.open
 
       q = ch.queue(name)
       ch.queue(name).object_id.should == q.object_id
@@ -35,7 +33,6 @@ describe Bunny::Queue do
   context "when queue name is passed on as an empty string" do
     it "uses server-assigned queue name" do
       ch   = connection.create_channel
-      ch.open
 
       q = ch.queue("")
       q.name.should_not be_empty
@@ -51,7 +48,6 @@ describe Bunny::Queue do
   context "when queue is declared as durable" do
     it "declares it as durable" do
       ch   = connection.create_channel
-      ch.open
 
       q = ch.queue("bunny.tests.queues.durable", :durable => true)
       q.should be_durable
@@ -68,7 +64,6 @@ describe Bunny::Queue do
   context "when queue is declared as exclusive" do
     it "declares it as exclusive" do
       ch   = connection.create_channel
-      ch.open
 
       q = ch.queue("bunny.tests.queues.exclusive", :exclusive => true)
       q.should be_exclusive
@@ -83,7 +78,6 @@ describe Bunny::Queue do
   context "when queue is declared as auto-delete" do
     it "declares it as auto-delete" do
       ch   = connection.create_channel
-      ch.open
 
       q = ch.queue("bunny.tests.queues.auto-delete", :auto_delete => true)
       q.should be_auto_delete

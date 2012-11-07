@@ -60,6 +60,11 @@ module Bunny
     end
 
 
+    def bind(exchange, opts = {})
+      @channel.queue_bind(@name, exchange, opts)
+    end
+
+
     # Deletes the queue
     # @api public
     def delete(opts = {})

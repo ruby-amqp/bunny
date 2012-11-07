@@ -114,7 +114,16 @@ module Bunny
     end
 
     def queue_bind(name, exchange, opts = {})
-      raise NotImplementedError
+      exchange_name = if exchange.respond_to?(:name)
+                        exchange.name
+                      else
+                        exchange
+                      end
+
+      @connection.send_frame(AMQ::Protocol::Queue::Bind.encode(@id, name, exchange_name, opts[:routing_key], false, opts[:arguments]))
+
+      frame = @connection.read_next_frame
+      frame.decode_payload
     end
 
 
