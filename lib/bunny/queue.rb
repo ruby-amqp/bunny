@@ -19,10 +19,11 @@ module Bunny
       @exclusive        = @options[:exclusive]
       @server_named     = @name.empty?
       @auto_delete      = @options[:auto_delete]
+      @arguments        = @options[:arguments]
 
       @default_consumer = nil
 
-      declare!
+      declare! unless opts[:no_declare]
     end
 
     # @return [Boolean] true if this queue was declared as durable (will survive broker restart).
@@ -49,9 +50,15 @@ module Bunny
       @server_named
     end # server_named?
 
+    def arguments
+      @arguments
+    end
 
+
+    # Deletes the queue
+    # @api public
     def delete(opts = {})
-      queue_delete_ok = @channel.queue_delete(@name, opts)
+      @channel.queue_delete(@name, opts)
     end
 
 
@@ -59,11 +66,13 @@ module Bunny
     # Implementation
     #
 
+    # @private
     def declare!
       queue_declare_ok = @channel.queue_declare(@name, @options)
       @name = queue_declare_ok.queue
     end
 
+    # @private
     def channel_from(channel_or_connection)
       if channel_or_connection.is_a?(Bunny::Session)
         channel_or_connection.default_channel
@@ -86,8 +95,8 @@ module Bunny
         {
           :passive     => false,
           :durable     => false,
-          :exclusive   => true,
-          :auto_delete => true,
+          :exclusive   => false,
+          :auto_delete => false,
           :arguments   => nil
         }.merge(h)
       else

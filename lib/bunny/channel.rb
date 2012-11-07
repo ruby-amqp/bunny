@@ -75,7 +75,7 @@ module Bunny
     # queue.*
 
     def queue_declare(name, opts = {})
-      @connection.send_frame(AMQ::Protocol::Queue::Declare.encode(@id, name, opts[:passive], opts[:durable], opts[:exclusive], opts[:auto_delete], false, opts[:arguments]))
+      @connection.send_frame(AMQ::Protocol::Queue::Declare.encode(@id, name, opts.fetch(:passive, false), opts.fetch(:durable, false), opts.fetch(:exclusive, false), opts.fetch(:auto_delete, false), false, opts[:arguments]))
 
       frame = @connection.read_next_frame
       frame.decode_payload
