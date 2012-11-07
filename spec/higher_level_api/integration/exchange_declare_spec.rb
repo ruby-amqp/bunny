@@ -22,6 +22,19 @@ describe Bunny::Exchange do
         ch.close
       end
     end
+
+    context "with a predefined name" do
+      it "is NOT declared" do
+        ch = connection.create_channel
+        ch.open
+
+        name = "amq.fanout"
+        x    = ch.fanout(name)
+        x.name.should == name
+
+        ch.close
+      end
+    end
   end
 
   context "of type direct" do
@@ -35,6 +48,19 @@ describe Bunny::Exchange do
         x.name.should == name
 
         x.delete
+        ch.close
+      end
+    end
+
+    context "with a predefined name" do
+      it "is NOT declared" do
+        ch = connection.create_channel
+        ch.open
+
+        name = "amq.direct"
+        x    = ch.direct(name)
+        x.name.should == name
+
         ch.close
       end
     end
@@ -54,6 +80,19 @@ describe Bunny::Exchange do
         ch.close
       end
     end
+
+    context "with a predefined name" do
+      it "is NOT declared" do
+        ch = connection.create_channel
+        ch.open
+
+        name = "amq.topic"
+        x    = ch.topic(name)
+        x.name.should == name
+
+        ch.close
+      end
+    end
   end
 
   context "of type headers" do
@@ -67,6 +106,32 @@ describe Bunny::Exchange do
         x.name.should == name
 
         x.delete
+        ch.close
+      end
+    end
+
+    context "with a predefined name (amq.match)" do
+      it "is NOT declared" do
+        ch = connection.create_channel
+        ch.open
+
+        name = "amq.match"
+        x    = ch.headers(name)
+        x.name.should == name
+
+        ch.close
+      end
+    end
+
+    context "with a predefined name (amq.headers)" do
+      it "is NOT declared" do
+        ch = connection.create_channel
+        ch.open
+
+        name = "amq.headers"
+        x    = ch.headers(name)
+        x.name.should == name
+
         ch.close
       end
     end

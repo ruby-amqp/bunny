@@ -68,7 +68,7 @@ module Bunny
       @auto_delete      = @options[:auto_delete]
       @arguments        = @options[:arguments]
 
-      declare! unless opts[:no_declare]
+      declare! unless opts[:no_declare] || @name =~ /^amq\..+/
     end
 
     # @return [Boolean] true if this exchange was declared as durable (will survive broker restart).
