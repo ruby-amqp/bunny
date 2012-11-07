@@ -31,3 +31,5 @@ group :test do
 end
 
 gemspec
+
+gem "amq-protocol", :git => "git://github.com/ruby-amqp/amq-protocol.git", :branch => "master"
