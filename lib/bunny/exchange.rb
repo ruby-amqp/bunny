@@ -55,7 +55,7 @@ module Bunny
 
 
     def initialize(channel_or_connection, type, name, opts = {})
-      
+
 
       # old Bunny versions pass a connection here. In that case,
       # we just use default channel from it. MK.
@@ -68,7 +68,7 @@ module Bunny
       @auto_delete      = @options[:auto_delete]
       @arguments        = @options[:arguments]
 
-      declare! unless opts[:no_declare] || @name =~ /^amq\..+/
+      declare! unless opts[:no_declare] || (@name =~ /^amq\..+/) || (@name == AMQ::Protocol::EMPTY_STRING)
     end
 
     # @return [Boolean] true if this exchange was declared as durable (will survive broker restart).
@@ -86,6 +86,15 @@ module Bunny
     def arguments
       @arguments
     end
+
+
+
+    def publish(payload, opts = {})
+      @channel.basic_publish(payload, self.name, opts.delete(:routing_key), opts)
+
+      self
+    end
+
 
     # Deletes the exchange
     # @api public

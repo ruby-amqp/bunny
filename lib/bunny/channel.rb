@@ -24,6 +24,9 @@ module Bunny
       @queues     = Hash.new
       @exchanges  = Hash.new
       @consumers  = Hash.new
+
+      # synchronizes frameset delivery. MK.
+      @mutex     = Mutex.new
     end
 
 
@@ -69,6 +72,9 @@ module Bunny
       @connection
     end
 
+    def frame_size
+      @connection.frame_max
+    end
 
 
     #
@@ -91,11 +97,32 @@ module Bunny
       Exchange.new(self, :headers, name, opts)
     end
 
+    def default_exchange
+      self.direct("", :no_declare => true)
+    end
+
 
     #
     # Lower-level API, exposes protocol operations as they are defined in the protocol,
     # without any OO sugar on top, by design.
     #
+
+    # basic.*
+
+    def basic_publish(payload, exchange, routing_key, opts = {})
+      exchange_name = if exchange.respond_to?(:name)
+                        exchange.name
+                      else
+                        exchange
+                      end
+
+      meta = { :priority => 0, :delivery_mode => 2, :content_type => "application/octet-stream" }.
+        merge(opts)
+      @connection.send_frameset(AMQ::Protocol::Basic::Publish.encode(@id, payload, meta, @name, routing_key, meta[:mandatory], false, (frame_size || @connection.frame_max)), self)
+
+      self
+    end
+
 
     # queue.*
 
@@ -162,6 +189,12 @@ module Bunny
     #
     # Implementation
     #
+
+    # Synchronizes given block using this channel's mutex.
+    # @api public
+    def synchronize(&block)
+      @mutex.synchronize(&block)
+    end
 
     def register_queue(queue)
       @queues[queue.name] = queue

@@ -75,6 +75,23 @@ module Bunny
       @channel.queue_delete(@name, opts)
     end
 
+    def status
+      queue_declare_ok = @channel.queue_declare(@name, @options.merge(:passive => true))
+      {:message_count => queue_declare_ok.message_count,
+      :consumer_count => queue_declare_ok.consumer_count}
+    end
+
+    def message_count
+      s = self.status
+      s[:message_count]
+    end
+
+    def consumer_count
+      s = self.status
+      s[:consumer_count]
+    end
+
+
 
     #
     # Implementation
