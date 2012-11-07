@@ -42,6 +42,8 @@ describe Bunny::Queue do
 
       q = ch.queue("")
       q.name.should_not be_empty
+      q.name.should =~ /^amq.gen.+/
+      q.should be_server_named
       q.delete
 
       conn.close
