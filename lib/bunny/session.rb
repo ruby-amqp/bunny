@@ -196,7 +196,8 @@ module Bunny
         self.send_frame(AMQ::Protocol::Channel::Open.encode(n, AMQ::Protocol::EMPTY_STRING))
       end
 
-      method = self.read_next_frame.decode_payload
+      frame  = self.read_next_frame
+      method = frame.decode_payload
       # TODO: check channel.open-ok
 
       self.register_channel(ch)
@@ -232,9 +233,16 @@ module Bunny
       end
     end
 
+    def read_ready?(timeout)
+      readable, _, _ = IO.select(@socket, nil, nil, timeout)
+      readable && readable.include?(socket)
+    end
+
     # Exposed primarily for Bunny::Channel
     # @private
     def read_next_frame(opts = {})
+      raise Bunny::FrameTimeout.new("I/O timeout") unless self.read_ready?(opts.fetch(:timeout, 3))
+
       Bunny::Framing::IO::Frame.decode(@socket)
     end
 
@@ -276,7 +284,9 @@ module Bunny
 
       frame = begin
                 read_next_frame
-              rescue Errno::ECONNRESET => e
+              # frame timeout means the broker has closed the TCP connection, which it
+              # does per 0.9.1 spec .
+              rescue Errno::ECONNRESET, FrameTimeout => e
                 nil
               end
       if frame.nil?
@@ -385,6 +395,7 @@ module Bunny
           TCPSocket.new(host, port)
         end
 
+        # TODO: support more socket options
         if Socket.constants.include?('TCP_NODELAY') || Socket.constants.include?(:TCP_NODELAY)
           @socket.setsockopt Socket::IPPROTO_TCP, Socket::TCP_NODELAY, 1
         end
