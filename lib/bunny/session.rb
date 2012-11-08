@@ -249,6 +249,10 @@ module Bunny
       Bunny::Framing::IO::Frame.decode(@socket)
     end
 
+    def read_fully(*args)
+      @socket.read_fully(*args)
+    end
+
     # Sends frame to the peer, checking that connection is open.
     # Exposed primarily for Bunny::Channel
     #

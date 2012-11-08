@@ -123,6 +123,13 @@ module Bunny
       self
     end
 
+    def basic_get(queue)
+      @connection.send_frame(AMQ::Protocol::Basic::Get.encode(@id, queue, false))
+
+      frame = @connection.read_next_frame
+      frame.decode_payload      
+    end
+
 
     # queue.*
 
@@ -189,6 +196,10 @@ module Bunny
     #
     # Implementation
     #
+
+    def read_next_frame(options = {})
+      @connection.read_next_frame(options = {})
+    end
 
     # Synchronizes given block using this channel's mutex.
     # @api public

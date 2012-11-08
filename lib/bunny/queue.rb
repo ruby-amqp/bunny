@@ -69,6 +69,26 @@ module Bunny
     end
 
 
+    def pop(opts = {}, &block)
+      response = @channel.basic_get(@name)
+
+      h = if response.is_a?(AMQ::Protocol::Basic::GetOk)
+            header   = @channel.read_next_frame
+            content  = @channel.read_next_frame
+
+            envelope = {:delivery_tag => response.delivery_tag, :redelivered => response.redelivered, :exchange => response.exchange, :routing_key => response.routing_key, :message_count => response.message_count}
+
+            Hash[:header           => header.decode_payload,
+                 :payload          => content.decode_payload,
+                 :delivery_details => envelope]
+          else
+            {:header => nil, :payload => :queue_empty, :delivery_details => nil}
+          end
+
+      block ? block.call(h) : h
+    end
+
+
     # Deletes the queue
     # @api public
     def delete(opts = {})
@@ -78,7 +98,7 @@ module Bunny
     def status
       queue_declare_ok = @channel.queue_declare(@name, @options.merge(:passive => true))
       {:message_count => queue_declare_ok.message_count,
-      :consumer_count => queue_declare_ok.consumer_count}
+        :consumer_count => queue_declare_ok.consumer_count}
     end
 
     def message_count

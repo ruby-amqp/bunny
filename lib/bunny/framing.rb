@@ -35,7 +35,7 @@ module Bunny
         def self.decode(io)
           header = io.read(7)
           type, channel, size = self.decode_header(header)
-          data = io.read(size + 1)
+          data = io.read_fully(size + 1)
           payload, frame_end = data[PAYLOAD_SLICE], data[-1, 1]
 
           # 1) the size is miscalculated

@@ -20,12 +20,12 @@ module Bunny
       end
     end
 
-    def readfull(count)
+    def read_fully(count)
       value = ''
       begin
         loop do
           value << read_nonblock(count - value.bytesize)
-          break if value.bytesize == count
+          break if value.bytesize >= count
         end
       rescue Errno::EAGAIN, Errno::EWOULDBLOCK
         if IO.select([self], nil, nil, options[:socket_timeout])
