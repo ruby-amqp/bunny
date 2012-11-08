@@ -73,13 +73,12 @@ module Bunny
       response = @channel.basic_get(@name)
 
       h = if response.is_a?(AMQ::Protocol::Basic::GetOk)
-            header   = @channel.read_next_frame
-            content  = @channel.read_next_frame
+            header, content = self.receive_delivery
 
             envelope = {:delivery_tag => response.delivery_tag, :redelivered => response.redelivered, :exchange => response.exchange, :routing_key => response.routing_key, :message_count => response.message_count}
 
             Hash[:header           => header.decode_payload,
-                 :payload          => content.decode_payload,
+                 :payload          => content,
                  :delivery_details => envelope]
           else
             {:header => nil, :payload => :queue_empty, :delivery_details => nil}
@@ -87,6 +86,23 @@ module Bunny
 
       block ? block.call(h) : h
     end
+
+    def receive_delivery
+      header   = @channel.read_next_frame
+      content  = ''
+
+      if header.body_size > 0
+        loop do
+          body_frame = @channel.read_next_frame
+          content << body_frame.decode_payload
+
+          break if content.bytesize >= header.body_size
+        end
+      end
+
+      [header, content]
+    end
+    protected :receive_delivery
 
 
     # Deletes the queue

@@ -55,14 +55,14 @@ describe "Publishing a message to the default exchange" do
   end
 
 
-context "with payload exceeding 128 Kb (max frame size)" do
-    xit "successfully frames the message" do
+  context "with payload exceeding 128 Kb (max frame size)" do
+    it "successfully frames the message" do
       ch = connection.create_channel
 
       q  = ch.queue("", :exclusive => true)
       x  = ch.default_exchange
 
-      as = ("a" * (1024 * 1024 * 4))
+      as = ("a" * (1024 * 1024 * 4 + 28237777))
       x.publish(as, :routing_key => q.name, :persistent => true)
 
       sleep(1)
@@ -80,7 +80,7 @@ context "with payload exceeding 128 Kb (max frame size)" do
 
 
   context "with empty message body" do
-    xit "successfully publishes the message" do
+    it "successfully publishes the message" do
       ch = connection.create_channel
 
       q  = ch.queue("", :exclusive => true)
@@ -96,7 +96,7 @@ context "with payload exceeding 128 Kb (max frame size)" do
       payload  = msg[:payload]
       envelope = msg[:delivery_details]
 
-      payload.should == "xyzzy"
+      payload.should == ""
 
       headers[:content_type].should == "application/octet-stream"
       headers[:delivery_mode].should == 2

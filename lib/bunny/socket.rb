@@ -31,7 +31,7 @@ module Bunny
         if IO.select([self], nil, nil, options[:socket_timeout])
           retry
         else
-          raise Timeout::Error, "IO timeout: #{options.inspect}"
+          raise Timeout::Error, "IO timeout when reading #{count} bytes"
         end
       end
       value
