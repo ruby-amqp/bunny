@@ -58,7 +58,7 @@ module Bunny
   # Raised by adapters when frame does not end with {final octet AMQ::Protocol::Frame::FINAL_OCTET}.
   # This suggest that there is a bug in adapter or AMQ broker implementation.
   #
-  # @see http://bit.ly/amqp091spec AMQP 0.9.1 specification (Section 2.3)
+  # @see http://files.travis-ci.org/docs/amqp/0.9.1/AMQP091Specification.pdf AMQP 0.9.1 specification (Section 2.3)
   class NoFinalOctetError < InconsistentDataError
     def initialize
       super("Frame doesn't end with #{AMQ::Protocol::Frame::FINAL_OCTET} as it must, which means the size is miscalculated.")
@@ -69,10 +69,41 @@ module Bunny
   # to the size specified in that frame's header.
   # This suggest that there is a bug in adapter or AMQ broker implementation.
   #
-  # @see http://bit.ly/amqp091spec AMQP 0.9.1 specification (Section 2.3)
+  # @see http://files.travis-ci.org/docs/amqp/0.9.1/AMQP091Specification.pdf AMQP 0.9.1 specification (Section 2.3)
   class BadLengthError < InconsistentDataError
     def initialize(expected_length, actual_length)
       super("Frame payload should be #{expected_length} long, but it's #{actual_length} long.")
     end
+  end
+
+
+  class ChannelAlreadyClosed < StandardError
+    attr_reader :channel
+
+    def initialize(message, ch)
+      super(message)
+
+      @channel = ch
+    end
+  end
+
+  class ChannelLevelException < StandardError
+    attr_reader :channel, :channel_close
+
+    def initialize(message, ch, channel_close)
+      super(message)
+
+      @channel       = ch
+      @channel_close = channel_close
+    end
+  end
+
+  class PreconditionFailed < ChannelLevelException
+  end
+
+  class ResourceLocked < ChannelLevelException
+  end
+
+  class AccessRefused < ChannelLevelException
   end
 end

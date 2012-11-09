@@ -105,4 +105,19 @@ describe Bunny::Queue do
       ch.close
     end
   end
+
+
+  context "when queue is declared with a different set of attributes" do
+    it "raises an exception" do
+      ch   = connection.create_channel
+
+      q = ch.queue("bunny.tests.queues.auto-delete", :auto_delete => true, :durable => false)
+      expect {
+        # force re-declaration
+        ch.queue_declare("bunny.tests.queues.auto-delete", :auto_delete => false, :durable => true)
+      }.to raise_error(Bunny::PreconditionFailed)
+
+      ch.should be_closed
+    end
+  end
 end

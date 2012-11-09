@@ -37,8 +37,7 @@ module Bunny
 
     def close
       @connection.close_channel(self)
-      @status = :closed
-      self.class.release_channel_id(@id)
+      closed!
     end
 
     def open?
@@ -110,6 +109,8 @@ module Bunny
     # basic.*
 
     def basic_publish(payload, exchange, routing_key, opts = {})
+      check_that_not_closed!
+
       exchange_name = if exchange.respond_to?(:name)
                         exchange.name
                       else
@@ -124,30 +125,41 @@ module Bunny
     end
 
     def basic_get(queue)
+      check_that_not_closed!
+
       @connection.send_frame(AMQ::Protocol::Basic::Get.encode(@id, queue, false))
 
-      frame = @connection.read_next_frame
-      frame.decode_payload      
+      frame = @connection.read_next_frame.decode_payload
+      check_for_channel_level_exception!(frame)
+      frame
     end
 
 
     # queue.*
 
     def queue_declare(name, opts = {})
+      check_that_not_closed!
+
       @connection.send_frame(AMQ::Protocol::Queue::Declare.encode(@id, name, opts.fetch(:passive, false), opts.fetch(:durable, false), opts.fetch(:exclusive, false), opts.fetch(:auto_delete, false), false, opts[:arguments]))
 
-      frame = @connection.read_next_frame
-      frame.decode_payload
+      frame = @connection.read_next_frame.decode_payload
+      check_for_channel_level_exception!(frame)
+      frame
     end
 
     def queue_delete(name, opts = {})
+      check_that_not_closed!
+
       @connection.send_frame(AMQ::Protocol::Queue::Delete.encode(@id, name, opts[:if_unused], opts[:if_empty], false))
 
-      frame = @connection.read_next_frame
-      frame.decode_payload
+      frame = @connection.read_next_frame.decode_payload
+      check_for_channel_level_exception!(frame)
+      frame
     end
 
     def queue_bind(name, exchange, opts = {})
+      check_that_not_closed!
+
       exchange_name = if exchange.respond_to?(:name)
                         exchange.name
                       else
@@ -156,11 +168,14 @@ module Bunny
 
       @connection.send_frame(AMQ::Protocol::Queue::Bind.encode(@id, name, exchange_name, opts[:routing_key], false, opts[:arguments]))
 
-      frame = @connection.read_next_frame
-      frame.decode_payload
+      frame = @connection.read_next_frame.decode_payload
+      check_for_channel_level_exception!(frame)
+      frame
     end
 
     def queue_unbind(name, exchange, opts = {})
+      check_that_not_closed!
+
       exchange_name = if exchange.respond_to?(:name)
                         exchange.name
                       else
@@ -169,25 +184,32 @@ module Bunny
 
       @connection.send_frame(AMQ::Protocol::Queue::Unbind.encode(@id, name, exchange_name, opts[:routing_key], opts[:arguments]))
 
-      frame = @connection.read_next_frame
-      frame.decode_payload
+      frame = @connection.read_next_frame.decode_payload
+      check_for_channel_level_exception!(frame)
+      frame
     end
 
 
     # exchange.*
 
     def exchange_declare(name, type, opts = {})
+      check_that_not_closed!
+
       @connection.send_frame(AMQ::Protocol::Exchange::Declare.encode(@id, name, type.to_s, opts.fetch(:passive, false), opts.fetch(:durable, false), opts.fetch(:auto_delete, false), false, false, opts[:arguments]))
 
-      frame = @connection.read_next_frame
-      frame.decode_payload      
+      frame = @connection.read_next_frame.decode_payload
+      check_for_channel_level_exception!(frame)
+      frame
     end
 
     def exchange_delete(name, opts = {})
+      check_that_not_closed!
+
       @connection.send_frame(AMQ::Protocol::Exchange::Delete.encode(@id, name, opts[:if_unused], false))
 
-      frame = @connection.read_next_frame
-      frame.decode_payload      
+      frame = @connection.read_next_frame.decode_payload
+      check_for_channel_level_exception!(frame)
+      frame
     end
 
 
@@ -213,6 +235,33 @@ module Bunny
 
     def find_queue(name, opts = {})
       @queues[name]
+    end
+
+    protected
+
+    def closed!
+      @status = :closed
+      self.class.release_channel_id(@id)
+    end
+
+    def check_for_channel_level_exception!(frame)
+      case frame
+      when AMQ::Protocol::Channel::Close then
+        closed!
+
+        case frame.reply_code
+        when 403 then
+          raise AccessRefused.new(frame.reply_text, self, frame)
+        when 405 then
+          raise ResourceLocked.new(frame.reply_text, self, frame)
+        when 406 then
+          raise PreconditionFailed.new(frame.reply_text, self, frame)
+        end
+      end
+    end
+
+    def check_that_not_closed!
+      raise ChannelAlreadyClosed.new("cannot use a channel that was already closed! Channel id: #{@id}", self) if closed?
     end
 
 

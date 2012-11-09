@@ -64,6 +64,24 @@ describe Bunny::Exchange do
         ch.close
       end
     end
+
+
+    context "when declared with a different set of attributes" do
+      it "raises an exception" do
+        ch   = connection.create_channel
+
+        x = ch.fanout("bunny.tests.exchanges.fanout", :auto_delete => true, :durable => false)
+        expect {
+          # force re-declaration
+          ch.exchange_declare("bunny.tests.exchanges.fanout", :direct, :auto_delete => false, :durable => true)
+        }.to raise_error(Bunny::PreconditionFailed)
+
+        ch.should be_closed
+        expect {
+          ch.fanout("bunny.tests.exchanges.fanout", :auto_delete => true, :durable => false)
+        }.to raise_error(Bunny::ChannelAlreadyClosed)
+      end
+    end
   end
 
   context "of type direct" do
