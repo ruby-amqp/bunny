@@ -88,4 +88,21 @@ describe Bunny::Queue do
       ch.close
     end
   end
+
+
+  context "when queue is declared with additional arguments (e.g. message TTL)" do
+    let(:args) do
+      {"x-message-ttl" => 1000}
+    end
+
+    it "declares it with all the arguments provided" do
+      ch   = connection.create_channel
+
+      q = ch.queue("bunny.tests.queues.with-arguments", :arguments => args)
+      q.arguments.should == args
+      q.delete
+
+      ch.close
+    end
+  end
 end
