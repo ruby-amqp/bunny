@@ -249,6 +249,8 @@ module Bunny
       when AMQ::Protocol::Channel::Close then
         closed!
 
+        @connection.send_frame(AMQ::Protocol::Channel::CloseOk.encode(@id))
+
         case frame.reply_code
         when 403 then
           raise AccessRefused.new(frame.reply_text, self, frame)
