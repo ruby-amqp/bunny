@@ -251,14 +251,20 @@ module Bunny
 
         @connection.send_frame(AMQ::Protocol::Channel::CloseOk.encode(@id))
 
-        case frame.reply_code
-        when 403 then
-          raise AccessRefused.new(frame.reply_text, self, frame)
-        when 405 then
-          raise ResourceLocked.new(frame.reply_text, self, frame)
-        when 406 then
-          raise PreconditionFailed.new(frame.reply_text, self, frame)
-        end
+        klass = case frame.reply_code
+                when 403 then
+                  AccessRefused
+                when 404 then
+                  NotFound
+                when 405 then
+                  ResourceLocked
+                when 406 then
+                  PreconditionFailed
+                else
+                  ChannelLevelException
+                end
+
+        raise klass.new(frame.reply_text, self, frame)
       end
     end
 

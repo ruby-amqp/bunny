@@ -101,6 +101,9 @@ module Bunny
   class PreconditionFailed < ChannelLevelException
   end
 
+  class NotFound < ChannelLevelException
+  end
+
   class ResourceLocked < ChannelLevelException
   end
 
