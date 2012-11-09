@@ -13,9 +13,22 @@ describe Bunny::Queue, "#delete" do
       ch = connection.create_channel
       q  = ch.queue("")
 
-      puts(q.delete)
+      q.delete
       expect {
         q.delete
+      }.to raise_error(Bunny::NotFound)
+
+      ch.close
+    end
+  end
+
+
+  context "with a name of an existing queue" do
+    it "raises an exception" do
+      ch = connection.create_channel
+
+      expect {
+        ch.queue_delete("sdkhflsdjflskdjflsd#{rand}")
       }.to raise_error(Bunny::NotFound)
 
       ch.close
