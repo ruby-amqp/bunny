@@ -223,9 +223,9 @@ module Bunny
         self.send_frame(AMQ::Protocol::Channel::Open.encode(n, AMQ::Protocol::EMPTY_STRING))
       end
 
+      # TODO: check the response
       frame  = self.read_next_frame
       method = frame.decode_payload
-      # TODO: check channel.open-ok
 
       self.register_channel(ch)
     end
@@ -237,14 +237,16 @@ module Bunny
         self.send_frame(AMQ::Protocol::Channel::Close.encode(n, 200, "Goodbye", 0, 0))
       end
 
-      # TODO: check channel.close-ok
+      # TODO: check the response
+      frame  = self.read_next_frame
+      method = frame.decode_payload
 
       self.unregister_channel(ch)
     end
 
     def close_all_channels
-      @channels.reject {|n, _| n == 0 }.each do |_, ch|
-        Bunny::Timer.timeout(@disconnect_timeout, ClientTimeout) { ch.close } if ch.open?
+      @channels.reject {|n, ch| n == 0 || !ch.open? }.each do |_, ch|
+        Bunny::Timer.timeout(@disconnect_timeout, ClientTimeout) { ch.close }
       end
     end
 
@@ -333,8 +335,8 @@ module Bunny
 
       frame = begin
                 read_next_frame
-              # frame timeout means the broker has closed the TCP connection, which it
-              # does per 0.9.1 spec.
+                # frame timeout means the broker has closed the TCP connection, which it
+                # does per 0.9.1 spec.
               rescue Errno::ECONNRESET, ClientTimeout => e
                 nil
               end
