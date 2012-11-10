@@ -344,7 +344,7 @@ module Bunny
                 read_next_frame
                 # frame timeout means the broker has closed the TCP connection, which it
                 # does per 0.9.1 spec.
-              rescue Errno::ECONNRESET, ClientTimeout => e
+              rescue Errno::ECONNRESET, ClientTimeout, AMQ::Protocol::EmptyResponseError => e
                 nil
               end
       if frame.nil?
