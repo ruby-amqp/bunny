@@ -297,6 +297,43 @@ describe Bunny::Session do
 
 
 
+  context "initialized with :host => 127.0.0.1 and non-default credentials (take 2)" do
+    after :each do
+      subject.close if subject.open?
+    end
+
+    let(:host)     { "127.0.0.1" }
+    # see ./bin/ci/before_build.sh
+    let(:username) { "bunny_gem" }
+    let(:password) { "bunny_password" }
+    let(:vhost)    { "bunny_testbed" }
+    let(:interval) { 1 }
+
+    subject do
+      described_class.new(:hostname => host, :user => username, :pass => password, :vhost => vhost, :heartbeat_interval => interval)
+    end
+
+    it "successfully connects" do
+      subject.start
+      subject.should be_connected
+
+      subject.server_properties.should_not be_nil
+      subject.server_capabilities.should_not be_nil
+
+      props = subject.server_properties
+
+      props["product"].should_not be_nil
+      props["platform"].should_not be_nil
+      props["version"].should_not be_nil
+    end
+
+    it "uses provided heartbeat interval" do
+      subject.heartbeat.should == interval
+    end
+  end
+
+
+
   context "initialized with :host => 127.0.0.1 and INVALID credentials" do
     let(:host)     { "127.0.0.1" }
     # see ./bin/ci/before_build.sh

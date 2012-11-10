@@ -2,6 +2,7 @@ require "socket"
 require "thread"
 
 require "bunny/socket"
+require "bunny/heartbeat_sender"
 
 require "amq/protocol/client"
 require "amq/settings"
@@ -160,6 +161,27 @@ module Bunny
     # Implementation
     #
 
+    # Writes data to the socket. If read/write timeout was specified, Bunny::ClientTimeout will be raised
+    # if the operation times out.
+    #
+    # @raise [ClientTimeout]
+    def write(*args)
+      begin
+        raise Bunny::ConnectionError, 'No connection - socket has not been created' if !@socket
+        if @read_write_timeout
+          Bunny::Timer.timeout(@read_write_timeout, Bunny::ClientTimeout) do
+            @socket.write(*args)
+          end
+        else
+          @socket.write(*args)
+        end
+      rescue Errno::EPIPE, Errno::EAGAIN, Bunny::ClientTimeout, IOError => e
+        close_socket
+        raise Bunny::ConnectionError, e.message
+      end
+    end
+    alias send_raw write
+
     def hostname_from(options)
       options[:host] || options[:hostname] || DEFAULT_HOST
     end
@@ -248,7 +270,10 @@ module Bunny
     def read_next_frame(opts = {})
       raise Bunny::ClientTimeout.new("I/O timeout") unless self.read_ready?(opts.fetch(:timeout, @read_write_timeout))
 
-      Bunny::Framing::IO::Frame.decode(@socket)
+      frame = Bunny::Framing::IO::Frame.decode(@socket)
+      @heartbeat_sender.signal_activity! if @heartbeat_sender
+
+      frame
     end
 
     def read_fully(*args)
@@ -330,14 +355,25 @@ module Bunny
       connection_open_ok = frame.decode_payload
 
       @status = :open
+      if @heartbeat && @heartbeat > 0
+        initialize_heartbeat_sender
+      end
 
       raise "could not open connection: server did not respond with connection.open-ok" unless connection_open_ok.is_a?(AMQ::Protocol::Connection::OpenOk)
+    end
+
+    def initialize_heartbeat_sender
+      @heartbeat_sender = HeartbeatSender.new(self)
+      @heartbeat_sender.start(@heartbeat)
     end
 
     def close_connection
       self.send_frame(AMQ::Protocol::Connection::Close.encode(200, "Goodbye", 0, 0))
 
       method = self.read_next_frame.decode_payload
+      if @heartbeat_sender
+        @heartbeat_sender.stop
+      end
       close_socket
 
       method
@@ -349,32 +385,9 @@ module Bunny
     end
 
     # Sends AMQ protocol header (also known as preamble).
-    #
-    # @see http://bit.ly/amqp091spec AMQP 0.9.1 specification (Section 2.2)
     def send_preamble
       self.send_raw(AMQ::Protocol::PREAMBLE)
     end
-
-    # Writes data to the socket. If read/write timeout was specified, Bunny::ClientTimeout will be raised
-    # if the operation times out.
-    #
-    # @raise [ClientTimeout]
-    def write(*args)
-      begin
-        raise Bunny::ConnectionError, 'No connection - socket has not been created' if !@socket
-        if @read_write_timeout
-          Bunny::Timer.timeout(@read_write_timeout, Bunny::ClientTimeout) do
-            @socket.write(*args)
-          end
-        else
-          @socket.write(*args)
-        end
-      rescue Errno::EPIPE, Errno::EAGAIN, Bunny::ClientTimeout, IOError => e
-        close_socket
-        raise Bunny::ConnectionError, e.message
-      end
-    end
-    alias send_raw write
 
 
     # Reads data from the socket. If read/write timeout was specified, Bunny::ClientTimeout will be raised
