@@ -127,8 +127,8 @@ module Bunny
     end
 
 
-    def create_channel
-      ch = Bunny::Channel.new(self)
+    def create_channel(n = nil)
+      ch = Bunny::Channel.new(self, n)
       ch.open
       ch
     end
