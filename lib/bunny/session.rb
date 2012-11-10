@@ -2,6 +2,7 @@ require "socket"
 require "thread"
 
 require "bunny/socket"
+require "bunny/channel_id_allocator"
 require "bunny/heartbeat_sender"
 
 require "amq/protocol/client"
@@ -44,6 +45,7 @@ module Bunny
     attr_reader :status, :host, :port, :heartbeat, :user, :pass, :vhost, :frame_max, :default_channel
     attr_reader :server_capabilities, :server_properties, :server_authentication_mechanisms, :server_locales
     attr_reader :default_channel
+    attr_reader :channel_id_allocator
 
     def initialize(connection_string_or_opts = Hash.new, optz = Hash.new)
       opts = case connection_string_or_opts
@@ -85,8 +87,9 @@ module Bunny
 
       @frames             = Hash.new { Array.new }
 
-      @channel_mutex      = Mutex.new
-      @channels           = Hash.new
+      @channel_id_allocator = ChannelIdAllocator.new
+      @channel_mutex        = Mutex.new
+      @channels             = Hash.new
 
       # Create channel 0
       @channel0           = Bunny::Channel.new(self, 0)
@@ -220,6 +223,14 @@ module Bunny
       options[:heartbeat] || options[:heartbeat_interval] || options[:requested_heartbeat] || DEFAULT_HEARTBEAT
     end
 
+    def next_channel_id
+      @channel_id_allocator.next_channel_id
+    end
+
+    def release_channel_id(i)
+      @channel_id_allocator.release_channel_id(i)
+    end
+
     def open_channel(ch)
       n = ch.number
 
@@ -264,7 +275,7 @@ module Bunny
       @channel_mutex.synchronize do
         n = ch.number
 
-        Channel.release_channel_id(n)
+        self.release_channel_id(n)
         @channels.delete(ch.number)
       end
     end
