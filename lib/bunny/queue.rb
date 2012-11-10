@@ -139,6 +139,8 @@ module Bunny
       @name = queue_declare_ok.queue
     end
 
+    protected
+
     # @private
     def self.add_default_options(name, opts, block)
       { :queue => name, :nowait => (block.nil? && !name.empty?) }.merge(opts)
