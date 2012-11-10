@@ -37,4 +37,21 @@ describe Bunny::Channel, "when opened" do
       subject.id.should == 767
     end
   end
+
+
+
+  context "with explicitly provided id that is already taken" do
+    subject do
+      connection.create_channel(767)
+    end
+
+    it "reuses the channel that is already opened" do
+      connection.should be_connected
+      subject.should be_open
+
+      subject.id.should == 767
+
+      connection.create_channel(767).should == subject
+    end
+  end
 end

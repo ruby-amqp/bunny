@@ -128,9 +128,13 @@ module Bunny
 
 
     def create_channel(n = nil)
-      ch = Bunny::Channel.new(self, n)
-      ch.open
-      ch
+      if n && (ch = @channels[n])
+        ch
+      else
+        ch = Bunny::Channel.new(self, n)
+        ch.open
+        ch
+      end
     end
 
     def close

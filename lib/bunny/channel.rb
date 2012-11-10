@@ -243,6 +243,15 @@ module Bunny
     end # self.release_channel_id(i)
 
 
+    def self.allocated_channel_id?(i)
+      channel_id_mutex.synchronize do
+        self.initialize_channel_id_allocator
+
+        @int_allocator.allocated?(i)
+      end      
+    end
+
+
     #
     # Implementation
     #
