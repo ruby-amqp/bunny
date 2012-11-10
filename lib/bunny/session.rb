@@ -258,6 +258,9 @@ module Bunny
 
     def unregister_channel(ch)
       @channel_mutex.synchronize do
+        n = ch.number
+
+        Channel.release_channel_id(n)
         @channels.delete(ch.number)
       end
     end

@@ -214,6 +214,34 @@ module Bunny
 
 
 
+    # Returns next available channel id. This method is thread safe.
+    #
+    # @return [Fixnum]
+    # @api public
+    # @see Channel.release_channel_id
+    # @see Channel.reset_channel_id_allocator
+    def self.next_channel_id
+      channel_id_mutex.synchronize do
+        self.initialize_channel_id_allocator
+
+        @int_allocator.allocate
+      end
+    end
+
+    # Releases previously allocated channel id. This method is thread safe.
+    #
+    # @param [Fixnum] Channel id to release
+    # @api public
+    # @see Channel.next_channel_id
+    # @see Channel.reset_channel_id_allocator
+    def self.release_channel_id(i)
+      channel_id_mutex.synchronize do
+        self.initialize_channel_id_allocator
+
+        @int_allocator.release(i)
+      end
+    end # self.release_channel_id(i)
+
 
     #
     # Implementation
@@ -278,34 +306,6 @@ module Bunny
     def self.channel_id_mutex
       @channel_id_mutex ||= Mutex.new
     end
-
-    # Returns next available channel id. This method is thread safe.
-    #
-    # @return [Fixnum]
-    # @api public
-    # @see Channel.release_channel_id
-    # @see Channel.reset_channel_id_allocator
-    def self.next_channel_id
-      channel_id_mutex.synchronize do
-        self.initialize_channel_id_allocator
-
-        @int_allocator.allocate
-      end
-    end
-
-    # Releases previously allocated channel id. This method is thread safe.
-    #
-    # @param [Fixnum] Channel id to release
-    # @api public
-    # @see Channel.next_channel_id
-    # @see Channel.reset_channel_id_allocator
-    def self.release_channel_id(i)
-      channel_id_mutex.synchronize do
-        self.initialize_channel_id_allocator
-
-        @int_allocator.release(i)
-      end
-    end # self.release_channel_id(i)
 
     # Resets channel allocator. This method is thread safe.
     # @api public
