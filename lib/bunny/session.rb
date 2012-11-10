@@ -4,6 +4,7 @@ require "thread"
 require "bunny/socket"
 
 require "amq/protocol/client"
+require "amq/settings"
 
 module Bunny
   class Session
@@ -46,7 +47,7 @@ module Bunny
     def initialize(connection_string_or_opts = Hash.new, optz = Hash.new)
       opts = case connection_string_or_opts
              when String then
-               # TODO: move URI parsing to amq-protocol
+               AMQ::Settings.parse_amqp_url(connection_string_or_opts)
              when Hash then
                connection_string_or_opts
              end.merge(optz)
@@ -77,11 +78,10 @@ module Bunny
       @mechanism          = "PLAIN"
       @locale             = @opts.fetch(:locale, DEFAULT_LOCALE)
 
-      @read_write_timeout = opts[:socket_timeout]
+      @read_write_timeout = opts[:socket_timeout] || 3
       @read_write_timeout = nil if @read_write_timeout == 0
       @disconnect_timeout = @read_write_timeout || @connect_timeout
 
-      @chunk_buffer       = ""
       @frames             = Hash.new { Array.new }
 
       @channel_mutex      = Mutex.new
@@ -99,10 +99,12 @@ module Bunny
     def uses_tls?
       @ssl
     end
+    alias tls? uses_tls?
 
     def uses_ssl?
       @ssl
     end
+    alias ssl? uses_ssl?
 
     def channel0
       @channel0
@@ -244,7 +246,7 @@ module Bunny
     # Exposed primarily for Bunny::Channel
     # @private
     def read_next_frame(opts = {})
-      raise Bunny::ClientTimeout.new("I/O timeout") unless self.read_ready?(opts.fetch(:timeout, 3))
+      raise Bunny::ClientTimeout.new("I/O timeout") unless self.read_ready?(opts.fetch(:timeout, @read_write_timeout))
 
       Bunny::Framing::IO::Frame.decode(@socket)
     end
@@ -307,7 +309,7 @@ module Bunny
       frame = begin
                 read_next_frame
               # frame timeout means the broker has closed the TCP connection, which it
-              # does per 0.9.1 spec .
+              # does per 0.9.1 spec.
               rescue Errno::ECONNRESET, ClientTimeout => e
                 nil
               end

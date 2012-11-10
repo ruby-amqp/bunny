@@ -10,7 +10,70 @@ describe Bunny::Session do
     after :each do
       subject.close if subject.open?
     end
+
+    context "when schema is not one of [amqp, amqps]" do
+      it "raises ArgumentError" do
+        expect {
+          described_class.new("http://dev.rabbitmq.com")
+        }.to raise_error(ArgumentError, /amqp or amqps schema/)
+      end
+    end
+
+
+    it "handles amqp:// URIs w/o path part" do
+      session = described_class.new("amqp://dev.rabbitmq.com")
+
+      session.vhost.should == "/"
+      session.host.should == "dev.rabbitmq.com"
+      session.port.should == 5672
+      session.ssl?.should be_false
+    end
+
+
+    context "when URI ends in a slash" do
+      it "parses vhost as an empty string" do
+        session = described_class.new("amqp://dev.rabbitmq.com/")
+
+        session.hostname.should == "dev.rabbitmq.com"
+        session.port.should == 5672
+        session.tls?.should be_false
+        session.vhost.should == ""
+      end
+    end
+
+
+    context "when URI ends in /%2Fvault" do
+      it "parses vhost as /vault" do
+        session = described_class.new("amqp://dev.rabbitmq.com/%2Fvault")
+
+        session.hostname.should == "dev.rabbitmq.com"
+        session.port.should == 5672
+        session.tls?.should be_false
+        session.vhost.should == "/vault"
+      end
+    end
+
+
+    context "when URI is amqp://dev.rabbitmq.com/a.path.without.slashes" do
+      it "parses vhost as a.path.without.slashes" do
+        session = described_class.new("amqp://dev.rabbitmq.com/a.path.without.slashes")
+
+        session.hostname.should == "dev.rabbitmq.com"
+        session.port.should == 5672
+        session.tls?.should be_false
+        session.vhost.should == "a.path.without.slashes"
+      end
+    end
+
+    context "when URI is amqp://dev.rabbitmq.com/a/path/with/slashes" do
+      it "raises an ArgumentError" do
+        lambda { described_class.new("amqp://dev.rabbitmq.com/a/path/with/slashes") }.should raise_error(ArgumentError)
+      end
+    end
   end
+
+
+
 
   context "initialized with all defaults" do
     after :each do
