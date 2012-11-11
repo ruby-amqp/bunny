@@ -163,6 +163,9 @@ module Bunny
     end
     alias connected? open?
 
+    def prefetch(prefetch_count)
+      self.basic_qos(prefetch_count, true)
+    end
 
     #
     # Implementation

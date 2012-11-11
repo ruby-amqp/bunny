@@ -100,8 +100,8 @@ module Bunny
       self.direct("", :no_declare => true)
     end
 
-    def prefetch(prefetch_count, global = false)
-      self.basic_qos(prefetch_count, global)
+    def prefetch(prefetch_count)
+      self.basic_qos(prefetch_count, false)
     end
 
 
