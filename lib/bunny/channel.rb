@@ -100,6 +100,10 @@ module Bunny
       self.direct("", :no_declare => true)
     end
 
+    def prefetch(prefetch_count, global = false)
+      self.basic_qos(prefetch_count, global)
+    end
+
 
     #
     # Lower-level API, exposes protocol operations as they are defined in the protocol,
@@ -132,6 +136,17 @@ module Bunny
       frame = @connection.read_next_frame.decode_payload
       check_for_channel_level_exception!(frame)
       frame
+    end
+
+    def basic_qos(prefetch_count, global = false)
+      raise ArgumentError.new("prefetch count must be a positive integer, given: #{prefetch_count}") if prefetch_count < 0
+      check_that_not_closed!
+
+      @connection.send_frame(AMQ::Protocol::Basic::Qos.encode(@id, 0, prefetch_count, global))
+
+      frame = @connection.read_next_frame.decode_payload
+      check_for_channel_level_exception!(frame)
+      frame      
     end
 
 
