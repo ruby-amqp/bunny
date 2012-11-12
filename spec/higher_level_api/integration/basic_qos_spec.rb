@@ -1,6 +1,6 @@
 require "spec_helper"
 
-describe Bunny::Channel do
+describe Bunny::Channel, "#prefetch" do
   let(:connection) do
     c = Bunny.new
     c.start
