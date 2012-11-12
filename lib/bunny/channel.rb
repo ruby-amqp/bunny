@@ -128,10 +128,10 @@ module Bunny
       self
     end
 
-    def basic_get(queue)
+    def basic_get(queue, opts = {})
       check_that_not_closed!
 
-      @connection.send_frame(AMQ::Protocol::Basic::Get.encode(@id, queue, false))
+      @connection.send_frame(AMQ::Protocol::Basic::Get.encode(@id, queue, !opts[:ack]))
 
       frame = @connection.read_next_frame.decode_payload
       check_for_channel_level_exception!(frame)

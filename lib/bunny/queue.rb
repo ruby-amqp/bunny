@@ -69,8 +69,8 @@ module Bunny
     end
 
 
-    def pop(opts = {}, &block)
-      response = @channel.basic_get(@name)
+    def pop(opts = {:ack => true}, &block)
+      response = @channel.basic_get(@name, opts)
 
       h = if response.is_a?(AMQ::Protocol::Basic::GetOk)
             header, content = self.receive_delivery
