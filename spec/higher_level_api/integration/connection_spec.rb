@@ -22,11 +22,14 @@ describe Bunny::Session do
 
     it "handles amqp:// URIs w/o path part" do
       session = described_class.new("amqp://dev.rabbitmq.com")
+      session.start
 
       session.vhost.should == "/"
       session.host.should == "dev.rabbitmq.com"
       session.port.should == 5672
       session.ssl?.should be_false
+
+      session.close
     end
 
 
@@ -36,32 +39,7 @@ describe Bunny::Session do
 
         session.hostname.should == "dev.rabbitmq.com"
         session.port.should == 5672
-        session.tls?.should be_false
         session.vhost.should == ""
-      end
-    end
-
-
-    context "when URI ends in /%2Fvault" do
-      it "parses vhost as /vault" do
-        session = described_class.new("amqp://dev.rabbitmq.com/%2Fvault")
-
-        session.hostname.should == "dev.rabbitmq.com"
-        session.port.should == 5672
-        session.tls?.should be_false
-        session.vhost.should == "/vault"
-      end
-    end
-
-
-    context "when URI is amqp://dev.rabbitmq.com/a.path.without.slashes" do
-      it "parses vhost as a.path.without.slashes" do
-        session = described_class.new("amqp://dev.rabbitmq.com/a.path.without.slashes")
-
-        session.hostname.should == "dev.rabbitmq.com"
-        session.port.should == 5672
-        session.tls?.should be_false
-        session.vhost.should == "a.path.without.slashes"
       end
     end
 
