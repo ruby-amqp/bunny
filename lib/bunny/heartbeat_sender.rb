@@ -9,9 +9,9 @@ module Bunny
     # API
     #
 
-    def initialize(session)
-      @session = session
-      @mutex   = Mutex.new
+    def initialize(transport)
+      @transport = transport
+      @mutex     = Mutex.new
 
       @last_activity_time = Time.now
     end
@@ -52,7 +52,7 @@ module Bunny
       now = Time.now
 
       if now > (@last_activity_time + @period)
-        @session.send_raw(AMQ::Protocol::HeartbeatFrame.encode)
+        @transport.send_raw(AMQ::Protocol::HeartbeatFrame.encode)
       end
     end
   end

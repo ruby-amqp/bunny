@@ -255,7 +255,10 @@ module Bunny
     # Exposed primarily for Bunny::Channel
     # @private
     def read_next_frame(opts = {})
-      @transport.read_next_frame(opts)
+      frame = @transport.read_next_frame(opts)
+
+      @heartbeat_sender.signal_activity! if @heartbeat_sender
+      frame
     end
 
 
@@ -353,7 +356,7 @@ module Bunny
     end
 
     def initialize_heartbeat_sender
-      @heartbeat_sender = HeartbeatSender.new(self)
+      @heartbeat_sender = HeartbeatSender.new(@transport)
       @heartbeat_sender.start(@heartbeat)
     end
 

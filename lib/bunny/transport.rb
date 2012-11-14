@@ -3,6 +3,7 @@ require "thread"
 
 require "bunny/exceptions"
 require "bunny/socket"
+require "bunny/command_assembler"
 
 module Bunny
   class Transport
@@ -36,6 +37,7 @@ module Bunny
       @frames             = Hash.new { Array.new }
 
       initialize_socket
+      initialize_command_assembler
     end
 
 
@@ -105,10 +107,7 @@ module Bunny
     def read_next_frame(opts = {})
       raise Bunny::ClientTimeout.new("I/O timeout") unless self.read_ready?(opts.fetch(:timeout, @read_write_timeout))
 
-      frame = Bunny::Framing::IO::Frame.decode(@socket)
-      @heartbeat_sender.signal_activity! if @heartbeat_sender
-
-      frame
+      @command_assembler.read_frame(@socket)
     end
 
 
@@ -156,22 +155,6 @@ module Bunny
 
     protected
 
-    # Determines, whether the received frameset is ready to be further processed
-    def frameset_complete?(frames)
-      return false if frames.empty?
-      first_frame = frames[0]
-      first_frame.final? || (first_frame.method_class.has_content? && content_complete?(frames[1..-1]))
-    end
-
-    # Determines, whether given frame array contains full content body
-    def content_complete?(frames)
-      return false if frames.empty?
-      header = frames[0]
-      raise "Not a content header frame first: #{header.inspect}" unless header.kind_of?(AMQ::Protocol::HeaderFrame)
-      header.body_size == frames[1..-1].inject(0) {|sum, frame| sum + frame.payload.size }
-    end
-
-
     def initialize_socket
       begin
         @socket = Bunny::Timer.timeout(@connect_timeout, ConnectionTimeout) do
@@ -198,6 +181,10 @@ module Bunny
       @socket
     end
 
+    def initialize_command_assembler
+      @command_assembler = CommandAssembler.new
+    end
+
 
     def initialize_client_pair(sslctx)
       if @ssl_cert
@@ -211,45 +198,6 @@ module Bunny
       sslctx.key = OpenSSL::PKey::RSA.new(@ssl_key_string) if @ssl_key_string
       sslctx
     end
-
-
-    # Processes a single frame.
-    #
-    # @param [AMQ::Protocol::Frame] frame
-    # @api plugin
-    def receive_frame(frame)
-      @frames[frame.channel] ||= Array.new
-      @frames[frame.channel] << frame
-
-      if frameset_complete?(@frames[frame.channel])
-        receive_frameset(@frames[frame.channel])
-        # for channel.close, frame.channel will be nil. MK.
-        clear_frames_on(frame.channel) if @frames[frame.channel]
-      end
-    end
-
-
-    # Processes a frameset by finding and invoking a suitable handler.
-    # Heartbeat frames are treated in a special way: they simply update @last_server_heartbeat
-    # value.
-    #
-    # @param [Array<AMQ::Protocol::Frame>] frames
-    # @api plugin
-    def receive_frameset(frames)
-      frame = frames.first
-
-      if AMQ::Protocol::HeartbeatFrame === frame
-        @last_server_heartbeat = Time.now
-      else
-        # if callable = AMQ::Client::HandlersRegistry.find(frame.method_class)
-        #   f = frames.shift
-        #   callable.call(self, f, frames)
-        # else
-        #   raise MissingHandlerError.new(frames.first)
-        # end
-      end
-    end
-
 
     def timeout_from(options)
       options[:connect_timeout] || options[:connection_timeout] || options[:timeout] || DEFAULT_CONNECTION_TIMEOUT
