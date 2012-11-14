@@ -2,7 +2,10 @@ require "bunny/exceptions"
 
 module Bunny
   class CommandAssembler
-    PAYLOAD_SLICE = (0..-2).freeze
+
+    #
+    # API
+    #
 
     def read_frame(io)
       header = io.read(7)
