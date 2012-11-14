@@ -81,6 +81,10 @@ module Bunny
       !@socket.nil? && !@socket.closed?
     end
 
+    def closed?
+      !open?
+    end
+
     def read_ready?(timeout)
       io = IO.select([@socket].compact, nil, nil, timeout)
       io && io[0].include?(@socket)
@@ -102,6 +106,19 @@ module Bunny
       @heartbeat_sender.signal_activity! if @heartbeat_sender
 
       frame
+    end
+
+
+    # Sends frame to the peer.
+    #
+    # @raise [ConnectionClosedError]
+    # @private
+    def send_frame(frame)
+      if closed?
+        raise ConnectionClosedError.new(frame)
+      else
+        send_raw(frame.encode)
+      end
     end
 
 

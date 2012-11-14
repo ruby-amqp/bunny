@@ -207,10 +207,10 @@ module Bunny
       n = ch.number
 
       Bunny::Timer.timeout(@disconnect_timeout, ClientTimeout) do
-        self.send_frame(AMQ::Protocol::Channel::Open.encode(n, AMQ::Protocol::EMPTY_STRING))
+        @transport.send_frame(AMQ::Protocol::Channel::Open.encode(n, AMQ::Protocol::EMPTY_STRING))
       end
 
-      frame  = self.read_next_frame
+      frame  = @transport.read_next_frame
       method = frame.decode_payload
 
       self.register_channel(ch)
@@ -221,11 +221,11 @@ module Bunny
       n = ch.number
 
       Bunny::Timer.timeout(@disconnect_timeout, ClientTimeout) do
-        self.send_frame(AMQ::Protocol::Channel::Close.encode(n, 200, "Goodbye", 0, 0))
+        @transport.send_frame(AMQ::Protocol::Channel::Close.encode(n, 200, "Goodbye", 0, 0))
       end
 
       # TODO: check the response
-      frame  = self.read_next_frame
+      frame  = @transport.read_next_frame
       method = frame.decode_payload
 
       self.unregister_channel(ch)
@@ -283,7 +283,7 @@ module Bunny
       # If we synchronize on the channel, however, this is both thread safe and pretty fine-grained
       # locking. Note that "single frame" methods do not need this kind of synchronization. MK.
       channel.synchronize do
-        frames.each { |frame| self.send_frame(frame) }
+        frames.each { |frame| @transport.send_frame(frame) }
       end
     end # send_frameset(frames)
 
@@ -308,7 +308,7 @@ module Bunny
     end
 
     def open_connection
-      self.send_frame(AMQ::Protocol::Connection::StartOk.encode(@client_properties, @mechanism, self.encode_credentials(username, password), @locale))
+      @transport.send_frame(AMQ::Protocol::Connection::StartOk.encode(@client_properties, @mechanism, self.encode_credentials(username, password), @locale))
 
       frame = begin
                 read_next_frame
@@ -327,8 +327,8 @@ module Bunny
       @frame_max      = connection_tune.frame_max.freeze
       @heartbeat      ||= connection_tune.heartbeat
 
-      self.send_frame(AMQ::Protocol::Connection::TuneOk.encode(@channel_max, @frame_max, @heartbeat))
-      self.send_frame(AMQ::Protocol::Connection::Open.encode(self.vhost))
+      @transport.send_frame(AMQ::Protocol::Connection::TuneOk.encode(@channel_max, @frame_max, @heartbeat))
+      @transport.send_frame(AMQ::Protocol::Connection::Open.encode(self.vhost))
 
       frame2 = begin
                  read_next_frame
@@ -358,9 +358,9 @@ module Bunny
     end
 
     def close_connection
-      self.send_frame(AMQ::Protocol::Connection::Close.encode(200, "Goodbye", 0, 0))
+      @transport.send_frame(AMQ::Protocol::Connection::Close.encode(200, "Goodbye", 0, 0))
 
-      method = self.read_next_frame.decode_payload
+      method = @transport.read_next_frame.decode_payload
       if @heartbeat_sender
         @heartbeat_sender.stop
       end
@@ -377,7 +377,7 @@ module Bunny
 
     # Sends AMQ protocol header (also known as preamble).
     def send_preamble
-      self.send_raw(AMQ::Protocol::PREAMBLE)
+      @transport.send_raw(AMQ::Protocol::PREAMBLE)
     end
 
 
