@@ -218,6 +218,15 @@ module Bunny
       when AMQ::Protocol::Connection::Close then
         @last_connection_error = instantiate_connection_level_exception(method)
         @continuation_condition.notify_all
+      when AMQ::Protocol::Connection::CloseOk then
+        @last_connection_close_ok = method
+        @event_loop.stop
+        @event_loop = nil
+        @transport.close
+
+        @continuation_condition.notify_all
+      when AMQ::Protocol::Basic::GetEmpty then
+        @channels[ch_number].handle_basic_get_empty(method)
       else
         @channels[ch_number].handle_method(method)
       end
@@ -228,6 +237,16 @@ module Bunny
     end
 
     def handle_frameset(ch_number, frames)
+      method = frames.first
+
+      case method
+      when AMQ::Protocol::Basic::GetOk then
+        @channels[ch_number].handle_basic_get_ok(*frames)
+      when AMQ::Protocol::Basic::GetEmpty then
+        @channels[ch_number].handle_basic_get_empty(*frames)
+      else
+        @channels[ch_number].handle_frameset(*frames)
+      end
     end
 
     def instantiate_connection_level_exception(frame)
@@ -335,6 +354,7 @@ module Bunny
       # locking. Note that "single frame" methods do not need this kind of synchronization. MK.
       channel.synchronize do
         frames.each { |frame| @transport.send_frame(frame) }
+        @transport.flush
       end
     end # send_frameset(frames)
 

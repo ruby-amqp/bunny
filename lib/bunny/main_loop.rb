@@ -19,13 +19,15 @@ module Bunny
     end
 
     def run_loop
-      begin
-        loop do
+      loop do
+        begin
           frame = @transport.read_next_frame
 
-          if frame.final?
-            @session.handle_frame(frame.channel, frame.decode_payload)
-          else
+          if frame.is_a?(AMQ::Protocol::HeartbeatFrame)
+            return
+          end
+
+          if !frame.final? || frame.method_class.has_content?
             header   = @transport.read_next_frame
             content  = ''
 
@@ -38,12 +40,16 @@ module Bunny
               end
             end
 
-            @session.handle_frameset(frame.channel, [frame, header, content])
+            @session.handle_frameset(frame.channel, [frame.decode_payload, header, content])            
+          else
+            @session.handle_frame(frame.channel, frame.decode_payload)
           end
+        rescue Timeout::Error => te
+          # TODO: rework the way we read data, add actual timeout detection/handling
+        rescue Exception => e
+          puts e.message
+          puts e.backtrace
         end
-      rescue Exception => e
-        puts e.message
-        puts e.backtrace
       end
     end
 

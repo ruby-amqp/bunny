@@ -29,7 +29,7 @@ module Bunny
       @ssl_key_string  = opts[:ssl_key_string]
       @verify_ssl      = opts[:verify_ssl].nil? || opts[:verify_ssl]
 
-      @read_write_timeout = opts[:socket_timeout] || 3
+      @read_write_timeout = opts[:socket_timeout] || 1
       @read_write_timeout = nil if @read_write_timeout == 0
       @disconnect_timeout = @read_write_timeout || @connect_timeout
       @connect_timeout    = self.timeout_from(opts)

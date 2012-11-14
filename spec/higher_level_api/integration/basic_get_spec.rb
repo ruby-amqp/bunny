@@ -16,9 +16,25 @@ describe Bunny::Queue, "#pop" do
 
       x.publish("xyzzy", :routing_key => q.name)
 
-      sleep(1)
+      sleep(0.5)
       fetched = q.pop
       fetched[:payload].should == "xyzzy"
+      q.message_count.should == 0
+
+      ch.close
+    end
+  end
+
+
+  context "with an empty queue" do
+    it "returns an empty response" do
+      ch = connection.create_channel
+
+      q  = ch.queue("", :exclusive => true)
+      q.purge
+
+      fetched = q.pop
+      fetched[:payload].should == :queue_empty
       q.message_count.should == 0
 
       ch.close

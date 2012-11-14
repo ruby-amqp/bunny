@@ -136,10 +136,10 @@ module Bunny
       check_that_not_closed!
 
       @connection.send_frame(AMQ::Protocol::Basic::Get.encode(@id, queue, !opts[:ack]))
+      @continuation_condition.wait
 
-      frame = @connection.read_next_frame.decode_payload
-      instantiate_channel_level_exception(frame)
-      frame
+      raise_if_continuation_resulted_in_a_channel_error!
+      @last_basic_get_response
     end
 
     def basic_qos(prefetch_count, global = false)
@@ -148,9 +148,10 @@ module Bunny
 
       @connection.send_frame(AMQ::Protocol::Basic::Qos.encode(@id, 0, prefetch_count, global))
 
-      frame = @connection.read_next_frame.decode_payload
-      instantiate_channel_level_exception(frame)
-      frame
+      @continuation_condition.wait
+      raise_if_continuation_resulted_in_a_channel_error!
+
+      @last_basic_qos_ok
     end
 
 
@@ -176,6 +177,17 @@ module Bunny
       raise_if_continuation_resulted_in_a_channel_error!
 
       @last_queue_delete_ok
+    end
+
+    def queue_purge(name, opts = {})
+      check_that_not_closed!
+
+      @connection.send_frame(AMQ::Protocol::Queue::Purge.encode(@id, name, false))
+
+      @continuation_condition.wait
+      raise_if_continuation_resulted_in_a_channel_error!
+
+      @last_queue_purge_ok
     end
 
     def queue_bind(name, exchange, opts = {})
@@ -245,6 +257,8 @@ module Bunny
         @last_queue_declare_ok = method
       when AMQ::Protocol::Queue::DeleteOk then
         @last_queue_delete_ok = method
+      when AMQ::Protocol::Queue::PurgeOk then
+        @last_queue_purge_ok = method
       when AMQ::Protocol::Queue::BindOk then
         @last_queue_bind_ok = method
       when AMQ::Protocol::Queue::UnbindOk then
@@ -253,6 +267,8 @@ module Bunny
         @last_exchange_declare_ok = method
       when AMQ::Protocol::Exchange::DeleteOk then
         @last_exchange_delete_ok = method
+      when AMQ::Protocol::Basic::QosOk then
+        @last_basic_qos_ok = method
       when AMQ::Protocol::Channel::Close then
         closed!
         @connection.send_frame(AMQ::Protocol::Channel::CloseOk.encode(@id))
@@ -261,9 +277,24 @@ module Bunny
       when AMQ::Protocol::Channel::CloseOk then
         @last_channel_close_ok = method
       else
-        raise "Do not know how to handle #{method.inspect}"
+        raise "Do not know how to handle #{method.inspect} in Bunny::Channel#handle_method"
       end
 
+      @continuation_condition.notify_all
+    end
+
+    def handle_basic_get_ok(basic_get_ok, header, content)
+      envelope = {:delivery_tag => basic_get_ok.delivery_tag, :redelivered => basic_get_ok.redelivered, :exchange => basic_get_ok.exchange, :routing_key => basic_get_ok.routing_key, :message_count => basic_get_ok.message_count}
+
+      @last_basic_get_response = Hash[:header           => header.decode_payload,
+                                      :payload          => content,
+                                      :delivery_details => envelope]
+
+      @continuation_condition.notify_all
+    end
+
+    def handle_basic_get_empty(basic_get_empty)
+      @last_basic_get_response = {:header => nil, :payload => :queue_empty, :delivery_details => nil}
       @continuation_condition.notify_all
     end
 
