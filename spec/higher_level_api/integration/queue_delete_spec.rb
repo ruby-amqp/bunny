@@ -17,8 +17,6 @@ describe Bunny::Queue, "#delete" do
       expect {
         q.delete
       }.to raise_error(Bunny::NotFound)
-
-      ch.close
     end
   end
 
@@ -30,8 +28,6 @@ describe Bunny::Queue, "#delete" do
       expect {
         ch.queue_delete("sdkhflsdjflskdjflsd#{rand}")
       }.to raise_error(Bunny::NotFound)
-
-      ch.close
     end
   end
 end
