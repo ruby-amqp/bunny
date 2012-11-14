@@ -4,6 +4,9 @@ require "thread"
 require "bunny/transport"
 require "bunny/channel_id_allocator"
 require "bunny/heartbeat_sender"
+require "bunny/main_loop"
+
+require "bunny/wait_notify_latch"
 
 require "amq/protocol/client"
 require "amq/settings"
@@ -79,6 +82,9 @@ module Bunny
 
       # Create channel 0
       @channel0           = Bunny::Channel.new(self, 0)
+
+      @continuation_condition = WaitNotifyLatch.new
+      @continuation_responses = []
     end
 
     def hostname;     self.host;  end
@@ -112,6 +118,8 @@ module Bunny
 
       self.init_connection
       self.open_connection
+
+      self.start_main_loop
 
       @default_channel = self.create_channel
     end
@@ -161,8 +169,77 @@ module Bunny
     #
 
 
+    def open_channel(ch)
+      n = ch.number
+
+      Bunny::Timer.timeout(@disconnect_timeout, ClientTimeout) do
+        @transport.send_frame(AMQ::Protocol::Channel::Open.encode(n, AMQ::Protocol::EMPTY_STRING))
+      end
+
+      @continuation_condition.wait
+      raise_if_continuation_resulted_in_a_connection_error!
+
+      self.register_channel(ch)
+      @last_channel_open_ok
+    end
+
+    def close_channel(ch)
+      n = ch.number
+
+      Bunny::Timer.timeout(@disconnect_timeout, ClientTimeout) do
+        @transport.send_frame(AMQ::Protocol::Channel::Close.encode(n, 200, "Goodbye", 0, 0))
+      end
+
+      @continuation_condition.wait
+      raise_if_continuation_resulted_in_a_connection_error!
+
+      self.unregister_channel(ch)
+      @last_channel_close_ok
+    end
+
+    def close_all_channels
+      @channels.reject {|n, ch| n == 0 || !ch.open? }.each do |_, ch|
+        Bunny::Timer.timeout(@disconnect_timeout, ClientTimeout) { ch.close }
+      end
+    end
+
     def send_raw(*args)
       @transport.write(*args)
+    end
+
+    def handle_frame(ch_number, method)
+      case method
+      when AMQ::Protocol::Channel::OpenOk then
+        @last_channel_open_ok = method
+        @continuation_condition.notify_all
+      when AMQ::Protocol::Channel::CloseOk then
+        @last_channel_close_ok = method
+        @continuation_condition.notify_all
+      when AMQ::Protocol::Connection::Close then
+        @last_connection_error = instantiate_connection_level_exception(method)
+        @continuation_condition.notify_all
+      else
+        @channels[ch_number].handle_method(method)
+      end
+    end
+
+    def raise_if_continuation_resulted_in_a_connection_error!
+      raise @last_connection_error if @last_connection_error
+    end
+
+    def handle_frameset(ch_number, frames)
+    end
+
+    def instantiate_connection_level_exception(frame)
+      case frame
+      when AMQ::Protocol::Connection::Close then
+        klass = case frame.reply_code
+                when 504 then
+                  ChannelError
+                end
+
+        klass.new("Connection-level error: #{frame.reply_text}", self, frame)
+      end
     end
 
     def hostname_from(options)
@@ -203,40 +280,6 @@ module Bunny
       @channel_id_allocator.release_channel_id(i)
     end
 
-    def open_channel(ch)
-      n = ch.number
-
-      Bunny::Timer.timeout(@disconnect_timeout, ClientTimeout) do
-        @transport.send_frame(AMQ::Protocol::Channel::Open.encode(n, AMQ::Protocol::EMPTY_STRING))
-      end
-
-      frame  = @transport.read_next_frame
-      method = frame.decode_payload
-
-      self.register_channel(ch)
-      method
-    end
-
-    def close_channel(ch)
-      n = ch.number
-
-      Bunny::Timer.timeout(@disconnect_timeout, ClientTimeout) do
-        @transport.send_frame(AMQ::Protocol::Channel::Close.encode(n, 200, "Goodbye", 0, 0))
-      end
-
-      # TODO: check the response
-      frame  = @transport.read_next_frame
-      method = frame.decode_payload
-
-      self.unregister_channel(ch)
-    end
-
-    def close_all_channels
-      @channels.reject {|n, ch| n == 0 || !ch.open? }.each do |_, ch|
-        Bunny::Timer.timeout(@disconnect_timeout, ClientTimeout) { ch.close }
-      end
-    end
-
     def register_channel(ch)
       @channel_mutex.synchronize do
         @channels[ch.number] = ch
@@ -250,6 +293,11 @@ module Bunny
         self.release_channel_id(n)
         @channels.delete(ch.number)
       end
+    end
+
+    def start_main_loop
+      @event_loop = MainLoop.new(@transport, self)
+      @event_loop.start
     end
 
     # Exposed primarily for Bunny::Channel

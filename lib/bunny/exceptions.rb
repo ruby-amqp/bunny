@@ -109,4 +109,20 @@ module Bunny
 
   class AccessRefused < ChannelLevelException
   end
+
+
+
+  class ConnectionLevelException < StandardError
+    attr_reader :connection, :connection_close
+
+    def initialize(message, connection, connection_close)
+      super(message)
+
+      @connection       = connection
+      @connection_close = connection_close
+    end
+  end
+
+  class ChannelError < ConnectionLevelException
+  end
 end

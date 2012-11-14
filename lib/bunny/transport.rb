@@ -90,7 +90,7 @@ module Bunny
       !open?
     end
 
-    def read_ready?(timeout)
+    def read_ready?(timeout = nil)
       io = IO.select([@socket].compact, nil, nil, timeout)
       io && io[0].include?(@socket)
     end
