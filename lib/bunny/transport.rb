@@ -72,6 +72,9 @@ module Bunny
     end
     alias send_raw write
 
+    def flush
+      @socket.flush
+    end
 
     def read_fully(*args)
       @socket.read_fully(*args)
