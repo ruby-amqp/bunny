@@ -20,12 +20,14 @@ module Bunny
 
     def run_loop
       loop do
+        Thread.exit if @stopped
+
         begin
           frame = @transport.read_next_frame
 
-          if frame.is_a?(AMQ::Protocol::HeartbeatFrame)
-            return
-          end
+          # if frame.is_a?(AMQ::Protocol::HeartbeatFrame)
+          #   return
+          # end
 
           if !frame.final? || frame.method_class.has_content?
             header   = @transport.read_next_frame
@@ -46,7 +48,10 @@ module Bunny
           end
         rescue Timeout::Error => te
           # TODO: rework the way we read data, add actual timeout detection/handling
+        rescue Errno::EBADF => ebadf
+          # ignored, happens when we loop after the transport has already been closed
         rescue Exception => e
+          puts e.class.name
           puts e.message
           puts e.backtrace
         end
@@ -54,7 +59,7 @@ module Bunny
     end
 
     def stop
-      @thread.stop
+      @stopped = true
     end
   end
 end

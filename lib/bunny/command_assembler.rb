@@ -8,7 +8,7 @@ module Bunny
     #
 
     def read_frame(io)
-      header = io.read_fully(7)
+      header = io.read(7)
       type, channel, size = AMQ::Protocol::Frame.decode_header(header)
       payload   = io.read_fully(size)
       frame_end = io.read_fully(1)

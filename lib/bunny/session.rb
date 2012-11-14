@@ -222,6 +222,7 @@ module Bunny
         @last_connection_close_ok = method
         @event_loop.stop
         @event_loop = nil
+
         @transport.close
 
         @continuation_condition.notify_all
@@ -431,14 +432,10 @@ module Bunny
     def close_connection
       @transport.send_frame(AMQ::Protocol::Connection::Close.encode(200, "Goodbye", 0, 0))
 
-      method = @transport.read_next_frame.decode_payload
       if @heartbeat_sender
         @heartbeat_sender.stop
       end
-      @transport.close
       @status   = :not_connected
-
-      method
     end
 
 
