@@ -320,13 +320,8 @@ module Bunny
       @event_loop.start
     end
 
-    # Exposed primarily for Bunny::Channel
-    # @private
-    def read_next_frame(opts = {})
-      frame = @transport.read_next_frame(opts)
-
+    def signal_activity!
       @heartbeat_sender.signal_activity! if @heartbeat_sender
-      frame
     end
 
 
@@ -383,7 +378,7 @@ module Bunny
       @transport.send_frame(AMQ::Protocol::Connection::StartOk.encode(@client_properties, @mechanism, self.encode_credentials(username, password), @locale))
 
       frame = begin
-                read_next_frame
+                @transport.read_next_frame
                 # frame timeout means the broker has closed the TCP connection, which it
                 # does per 0.9.1 spec.
               rescue Errno::ECONNRESET, ClientTimeout, AMQ::Protocol::EmptyResponseError => e
@@ -403,7 +398,7 @@ module Bunny
       @transport.send_frame(AMQ::Protocol::Connection::Open.encode(self.vhost))
 
       frame2 = begin
-                 read_next_frame
+                 @transport.read_next_frame
                  # frame timeout means the broker has closed the TCP connection, which it
                  # does per 0.9.1 spec.
                rescue Errno::ECONNRESET, ClientTimeout, AMQ::Protocol::EmptyResponseError => e

@@ -25,9 +25,11 @@ module Bunny
         begin
           frame = @transport.read_next_frame
 
-          # if frame.is_a?(AMQ::Protocol::HeartbeatFrame)
-          #   return
-          # end
+          @session.signal_activity!
+
+          if frame.is_a?(AMQ::Protocol::HeartbeatFrame)
+            return
+          end
 
           if !frame.final? || frame.method_class.has_content?
             header   = @transport.read_next_frame
