@@ -108,6 +108,15 @@ module Bunny
       self.basic_qos(prefetch_count, false)
     end
 
+    def flow(active)
+      channel_flow(active)
+    end
+
+    def recover(ignored = true)
+      # RabbitMQ only supports basic.recover with requeue = true
+      basic_recover(true)
+    end
+
 
     #
     # Lower-level API, exposes protocol operations as they are defined in the protocol,
@@ -154,17 +163,15 @@ module Bunny
       @last_basic_qos_ok
     end
 
-    # channel.*
-
-    def flow(active)
+    def basic_recover(requeue)
       check_that_not_closed!
 
-      @connection.send_frame(AMQ::Protocol::Channel::Flow.encode(@id, active))
+      @connection.send_frame(AMQ::Protocol::Basic::Recover.encode(@id, requeue))
 
       @continuation_condition.wait
       raise_if_continuation_resulted_in_a_channel_error!
 
-      @last_channel_flow_ok
+      @last_basic_recover_ok
     end
 
 
@@ -258,6 +265,18 @@ module Bunny
       @last_exchange_delete_ok
     end
 
+    # channel.*
+
+    def channel_flow(active)
+      check_that_not_closed!
+
+      @connection.send_frame(AMQ::Protocol::Channel::Flow.encode(@id, active))
+
+      @continuation_condition.wait
+      raise_if_continuation_resulted_in_a_channel_error!
+
+      @last_channel_flow_ok
+    end
 
 
     #
@@ -282,6 +301,8 @@ module Bunny
         @last_exchange_delete_ok = method
       when AMQ::Protocol::Basic::QosOk then
         @last_basic_qos_ok = method
+      when AMQ::Protocol::Basic::RecoverOk then
+        @last_basic_recover_ok = method
       when AMQ::Protocol::Channel::FlowOk then
         @last_channel_flow_ok = method
       when AMQ::Protocol::Channel::Close then
