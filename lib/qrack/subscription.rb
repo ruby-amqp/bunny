@@ -10,7 +10,7 @@ module Qrack
   # @deprecated
   class Subscription
 
-    attr_accessor :consumer_tag, :delivery_tag, :message_max, :timeout, :ack, :exclusive
+    attr_accessor :consumer_tag, :delivery_tag, :message_max, :timeout, :ack, :auto_ack, :exclusive
     attr_reader :client, :queue, :message_count
 
     def initialize(client, queue, opts = {})
@@ -32,6 +32,9 @@ module Qrack
 
       # Do we want to have to provide an acknowledgement?
       @ack = opts[:ack] || nil
+      
+      # Should the consumer automatically ack messages?
+      @auto_ack = opts[:auto_ack].nil? ? @ack : opts[:auto_ack]
 
       # Does this consumer want exclusive use of the queue?
       @exclusive = opts[:exclusive] || false
@@ -133,7 +136,7 @@ module Qrack
           end
 
           # Acknowledge receipt of the final message
-          queue.ack() if @ack
+          queue.ack() if @auto_ack
 
           # Quit the loop
           break
@@ -143,7 +146,7 @@ module Qrack
         # if you are using Client#qos prefetch and you will get extra messages sent through before
         # the unsubscribe takes effect to stop messages being sent to this consumer unless the ack is
         # deferred.
-        queue.ack() if @ack
+        queue.ack() if @auto_ack
       end
     end
 

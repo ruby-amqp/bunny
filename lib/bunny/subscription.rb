@@ -18,6 +18,11 @@ module Bunny
   #   message from the client and will re-queue the message if it does not
   #   receive one within a time specified by the server.
   #
+  # @option opts [Boolean] :auto_ack
+  #   If set to @false@, the consumer does not send automatic acknowledgements
+  #   to the server. If set to @true@, the consumer does send automatic acknowledgements
+  #   to the server.
+  #
   # @option opts [Boolean] :exclusive (false)
   #   Request exclusive consumer access, meaning only this consumer can access the queue.
   #
