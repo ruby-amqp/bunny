@@ -117,6 +117,10 @@ module Bunny
       basic_recover(true)
     end
 
+    def reject(delivery_tag, requeue = false)
+      basic_reject(delivery_tag, requeue)
+    end
+
 
     #
     # Lower-level API, exposes protocol operations as they are defined in the protocol,
@@ -141,7 +145,7 @@ module Bunny
       self
     end
 
-    def basic_get(queue, opts = {})
+    def basic_get(queue, opts = {:ack => true})
       check_that_not_closed!
 
       @connection.send_frame(AMQ::Protocol::Basic::Get.encode(@id, queue, !opts[:ack]))
@@ -172,6 +176,20 @@ module Bunny
       raise_if_continuation_resulted_in_a_channel_error!
 
       @last_basic_recover_ok
+    end
+
+    def basic_reject(delivery_tag, requeue)
+      check_that_not_closed!
+      @connection.send_frame(AMQ::Protocol::Basic::Reject.encode(@id, delivery_tag, requeue))
+
+      nil
+    end
+
+    def basic_ack(delivery_tag, multiple)
+      check_that_not_closed!
+      @connection.send_frame(AMQ::Protocol::Basic::Ack.encode(@id, delivery_tag, multiple))
+
+      nil
     end
 
 
