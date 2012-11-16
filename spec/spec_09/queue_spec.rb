@@ -145,7 +145,7 @@ describe 'Queue' do
     q = @b.queue('test1')
     5.times { @default_exchange.publish('Yet another test message', :key => 'test1') }
     message_count(q).should == 5
-    q.subscribe(:message_max => 0)
+    q.subscribe(:ack => false, :message_max => 0)
     message_count(q).should == 5
     q.purge.should == :purge_ok
   end
@@ -154,7 +154,7 @@ describe 'Queue' do
     q = @b.queue('test1')
     5.times { @default_exchange.publish('Yet another test message', :key => 'test1') }
     message_count(q).should == 5
-    q.subscribe(:message_max => 5)
+    q.subscribe(:ack => false, :message_max => 5)
   end
 
   it "should stop subscription after processing message_max messages < total in queue" do
@@ -164,6 +164,21 @@ describe 'Queue' do
     message_count(q).should == 10
     q.subscribe(:message_max => 5, :ack => true)
     message_count(q).should == 5
+    q.purge.should == :purge_ok
+  end
+  
+  it "should requeue unacked messages when acks are expected but not sent" do
+    q = @b.queue('test1')
+    @default_exchange.publish('hello', :key => 'test1')
+    @default_exchange.publish('world', :key => 'test1')
+    sleep 0.2
+    q.subscribe(:ack => true, :auto_ack => false, :timeout => 0.5)
+    @b.stop
+    sleep 0.1
+    @b.start
+    q = @b.queue('test1')
+    q.pop[:payload].should == "hello"
+    q.pop[:payload].should == "world"
     q.purge.should == :purge_ok
   end
 
