@@ -145,7 +145,7 @@ describe 'Queue' do
     q = @b.queue('test1')
     5.times { @default_exchange.publish('Yet another test message', :key => 'test1') }
     message_count(q).should == 5
-    q.subscribe(:message_max => 0)
+    q.subscribe(:ack => false, :message_max => 0)
     message_count(q).should == 5
     q.purge.should == :purge_ok
   end
@@ -154,7 +154,7 @@ describe 'Queue' do
     q = @b.queue('test1')
     5.times { @default_exchange.publish('Yet another test message', :key => 'test1') }
     message_count(q).should == 5
-    q.subscribe(:message_max => 5)
+    q.subscribe(:ack => false, :message_max => 5)
   end
 
   it "should stop subscription after processing message_max messages < total in queue" do
