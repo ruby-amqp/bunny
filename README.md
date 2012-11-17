@@ -22,7 +22,7 @@ We will make our best to keep them as backwards compatible as possible but withi
 
 See [this announcement](https://groups.google.com/forum/?fromgroups#!topic/ruby-amqp/crNVGEuHm68) to learn more.
 
-In the meantime, consider using [Hot Bunnies](http://github.com/ruby-amqp/hot_bunnies) (JRuby-only) or "amqp gem":http://rubyamqp.info instead.
+In the meantime, consider using [Hot Bunnies](http://github.com/ruby-amqp/hot_bunnies) (JRuby-only) or [amqp gem](http://rubyamqp.info) instead.
 
 
 ## Quick Start for Bunny 0.7.x and 0.8.x
