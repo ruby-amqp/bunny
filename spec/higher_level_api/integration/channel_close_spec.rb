@@ -2,7 +2,7 @@ require "spec_helper"
 
 describe Bunny::Channel, "when closed" do
   let(:connection) do
-    c = Bunny.new
+    c = Bunny.new(:user => "bunny_gem", :password => "bunny_password", :vhost => "bunny_testbed")
     c.start
     c
   end

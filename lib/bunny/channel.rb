@@ -29,8 +29,6 @@ module Bunny
 
       # synchronizes frameset delivery. MK.
       @mutex     = Mutex.new
-
-      @continuation_condition = Bunny::Concurrent::Condition.new
     end
 
 
@@ -157,8 +155,9 @@ module Bunny
     def basic_get(queue, opts = {:ack => true})
       check_that_not_closed!
 
+      @basic_get_continuation = Bunny::Concurrent::Condition.new
       @connection.send_frame(AMQ::Protocol::Basic::Get.encode(@id, queue, !opts[:ack]))
-      @continuation_condition.wait
+      @basic_get_continuation.wait
 
       raise_if_continuation_resulted_in_a_channel_error!
       @last_basic_get_response
@@ -168,9 +167,10 @@ module Bunny
       raise ArgumentError.new("prefetch count must be a positive integer, given: #{prefetch_count}") if prefetch_count < 0
       check_that_not_closed!
 
+      @basic_qos_continuation = Bunny::Concurrent::Condition.new
       @connection.send_frame(AMQ::Protocol::Basic::Qos.encode(@id, 0, prefetch_count, global))
 
-      @continuation_condition.wait
+      @basic_qos_continuation.wait
       raise_if_continuation_resulted_in_a_channel_error!
 
       @last_basic_qos_ok
@@ -179,9 +179,10 @@ module Bunny
     def basic_recover(requeue)
       check_that_not_closed!
 
+      @basic_recover_continuation = Bunny::Concurrent::Condition.new
       @connection.send_frame(AMQ::Protocol::Basic::Recover.encode(@id, requeue))
 
-      @continuation_condition.wait
+      @basic_recover_continuation.wait
       raise_if_continuation_resulted_in_a_channel_error!
 
       @last_basic_recover_ok
@@ -207,9 +208,10 @@ module Bunny
     def queue_declare(name, opts = {})
       check_that_not_closed!
 
+      @queue_declare_continuation = Bunny::Concurrent::Condition.new
       @connection.send_frame(AMQ::Protocol::Queue::Declare.encode(@id, name, opts.fetch(:passive, false), opts.fetch(:durable, false), opts.fetch(:exclusive, false), opts.fetch(:auto_delete, false), false, opts[:arguments]))
 
-      @continuation_condition.wait
+      @queue_declare_continuation.wait
       raise_if_continuation_resulted_in_a_channel_error!
 
       @last_queue_declare_ok
@@ -218,9 +220,10 @@ module Bunny
     def queue_delete(name, opts = {})
       check_that_not_closed!
 
+      @queue_delete_continuation = Bunny::Concurrent::Condition.new
       @connection.send_frame(AMQ::Protocol::Queue::Delete.encode(@id, name, opts[:if_unused], opts[:if_empty], false))
 
-      @continuation_condition.wait
+      @queue_delete_continuation.wait
       raise_if_continuation_resulted_in_a_channel_error!
 
       @last_queue_delete_ok
@@ -229,9 +232,10 @@ module Bunny
     def queue_purge(name, opts = {})
       check_that_not_closed!
 
+      @queue_purge_continuation = Bunny::Concurrent::Condition.new
       @connection.send_frame(AMQ::Protocol::Queue::Purge.encode(@id, name, false))
 
-      @continuation_condition.wait
+      @queue_purge_continuation.wait
       raise_if_continuation_resulted_in_a_channel_error!
 
       @last_queue_purge_ok
@@ -246,8 +250,9 @@ module Bunny
                         exchange
                       end
 
+      @queue_bind_continuation = Bunny::Concurrent::Condition.new
       @connection.send_frame(AMQ::Protocol::Queue::Bind.encode(@id, name, exchange_name, opts[:routing_key], false, opts[:arguments]))
-      @continuation_condition.wait
+      @queue_bind_continuation.wait
 
       raise_if_continuation_resulted_in_a_channel_error!
       @last_queue_bind_ok
@@ -262,8 +267,9 @@ module Bunny
                         exchange
                       end
 
+      @queue_unbind_continuation = Bunny::Concurrent::Condition.new
       @connection.send_frame(AMQ::Protocol::Queue::Unbind.encode(@id, name, exchange_name, opts[:routing_key], opts[:arguments]))
-      @continuation_condition.wait
+      @queue_unbind_continuation.wait
 
       raise_if_continuation_resulted_in_a_channel_error!
       @last_queue_unbind_ok
@@ -275,8 +281,9 @@ module Bunny
     def exchange_declare(name, type, opts = {})
       check_that_not_closed!
 
+      @exchange_declare_continuation = Bunny::Concurrent::Condition.new
       @connection.send_frame(AMQ::Protocol::Exchange::Declare.encode(@id, name, type.to_s, opts.fetch(:passive, false), opts.fetch(:durable, false), opts.fetch(:auto_delete, false), false, false, opts[:arguments]))
-      @continuation_condition.wait
+      @exchange_declare_continuation.wait
 
       raise_if_continuation_resulted_in_a_channel_error!
       @last_exchange_declare_ok
@@ -285,8 +292,9 @@ module Bunny
     def exchange_delete(name, opts = {})
       check_that_not_closed!
 
+      @exchange_delete_continuation = Bunny::Concurrent::Condition.new
       @connection.send_frame(AMQ::Protocol::Exchange::Delete.encode(@id, name, opts[:if_unused], false))
-      @continuation_condition.wait
+      @exchange_delete_continuation.wait
 
       raise_if_continuation_resulted_in_a_channel_error!
       @last_exchange_delete_ok
@@ -297,9 +305,10 @@ module Bunny
     def channel_flow(active)
       check_that_not_closed!
 
+      @channel_flow_continuation = Bunny::Concurrent::Condition.new
       @connection.send_frame(AMQ::Protocol::Channel::Flow.encode(@id, active))
 
-      @continuation_condition.wait
+      @channel_flow_continuation.wait
       raise_if_continuation_resulted_in_a_channel_error!
 
       @last_channel_flow_ok
@@ -311,27 +320,39 @@ module Bunny
     #
 
     def handle_method(method)
+      puts "Handling #{method.inspect} in the channel"
+
       case method
       when AMQ::Protocol::Queue::DeclareOk then
         @last_queue_declare_ok = method
+        @queue_declare_continuation.notify_all
       when AMQ::Protocol::Queue::DeleteOk then
         @last_queue_delete_ok = method
+        @queue_delete_continuation.notify_all
       when AMQ::Protocol::Queue::PurgeOk then
         @last_queue_purge_ok = method
+        @queue_purge_continuation.notify_all
       when AMQ::Protocol::Queue::BindOk then
         @last_queue_bind_ok = method
+        @queue_bind_continuation.notify_all
       when AMQ::Protocol::Queue::UnbindOk then
         @last_queue_unbind_ok = method
+        @queue_unbind_continuation.notify_all
       when AMQ::Protocol::Exchange::DeclareOk then
         @last_exchange_declare_ok = method
+        @exchange_declare_continuation.notify_all
       when AMQ::Protocol::Exchange::DeleteOk then
         @last_exchange_delete_ok = method
+        @exchange_delete_continuation.notify_all
       when AMQ::Protocol::Basic::QosOk then
         @last_basic_qos_ok = method
+        @basic_qos_continuation.notify_all
       when AMQ::Protocol::Basic::RecoverOk then
         @last_basic_recover_ok = method
+        @basic_recover_continuation.notify_all
       when AMQ::Protocol::Channel::FlowOk then
         @last_channel_flow_ok = method
+        @channel_flow_continuation.notify_all
       when AMQ::Protocol::Channel::Close then
         closed!
         @connection.send_frame(AMQ::Protocol::Channel::CloseOk.encode(@id))
@@ -342,8 +363,6 @@ module Bunny
       else
         raise "Do not know how to handle #{method.inspect} in Bunny::Channel#handle_method"
       end
-
-      @continuation_condition.notify_all
     end
 
     def handle_basic_get_ok(basic_get_ok, header, content)
@@ -353,12 +372,12 @@ module Bunny
                                       :payload          => content,
                                       :delivery_details => envelope]
 
-      @continuation_condition.notify_all
+      @basic_get_continuation.notify_all
     end
 
     def handle_basic_get_empty(basic_get_empty)
       @last_basic_get_response = {:header => nil, :payload => :queue_empty, :delivery_details => nil}
-      @continuation_condition.notify_all
+      @basic_get_continuation.notify_all
     end
 
     def read_next_frame(options = {})

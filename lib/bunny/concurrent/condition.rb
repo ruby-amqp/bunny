@@ -17,7 +17,7 @@ module Bunny
       def wait
         @mutex.synchronize do
           t = Thread.current
-          @waiting_threads.push(t) unless @waiting_threads.include?(t)
+          @waiting_threads.push(t)
         end
 
         Thread.stop
@@ -32,6 +32,7 @@ module Bunny
 
       def notify_all
         @mutex.synchronize do
+          puts "About to notify #{@waiting_threads.size} threads..."
           @waiting_threads.each do |t|
             t.run
           end

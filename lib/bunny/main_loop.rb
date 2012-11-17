@@ -20,9 +20,9 @@ module Bunny
 
     def run_loop
       loop do
-        Thread.exit if @stopped
-
         begin
+          Thread.exit if @stopping
+
           frame = @transport.read_next_frame
 
           @session.signal_activity!
@@ -61,7 +61,12 @@ module Bunny
     end
 
     def stop
-      @stopped = true
+      @stopping = true
+    end
+
+    def kill
+      @thread.kill
+      @thread.join
     end
   end
 end

@@ -2,7 +2,7 @@ require "spec_helper"
 
 describe "Publishing a message to the default exchange" do
   let(:connection) do
-    c = Bunny.new
+    c = Bunny.new(:user => "bunny_gem", :password => "bunny_password", :vhost => "bunny_testbed")
     c.start
     c
   end
@@ -56,7 +56,7 @@ describe "Publishing a message to the default exchange" do
       headers[:priority].should == 0
 
       ch.close
-    end    
+    end
   end
 
 
@@ -77,9 +77,9 @@ describe "Publishing a message to the default exchange" do
       payload  = msg[:payload]
 
       payload.bytesize.should == as.bytesize
-      
+
       ch.close
-    end    
+    end
   end
 
 
@@ -108,6 +108,6 @@ describe "Publishing a message to the default exchange" do
       headers[:priority].should == 0
 
       ch.close
-    end    
+    end
   end
 end

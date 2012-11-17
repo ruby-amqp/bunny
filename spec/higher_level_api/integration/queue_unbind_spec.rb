@@ -2,7 +2,7 @@ require "spec_helper"
 
 describe Bunny::Queue, "bound to an exchange" do
   let(:connection) do
-    c = Bunny.new
+    c = Bunny.new(:user => "bunny_gem", :password => "bunny_password", :vhost => "bunny_testbed")
     c.start
     c
   end
@@ -19,7 +19,7 @@ end
 
 describe Bunny::Queue, "NOT bound to an exchange" do
   let(:connection) do
-    c = Bunny.new
+    c = Bunny.new(:user => "bunny_gem", :password => "bunny_password", :vhost => "bunny_testbed")
     c.start
     c
   end

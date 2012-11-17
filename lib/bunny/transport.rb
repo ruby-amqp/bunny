@@ -124,35 +124,6 @@ module Bunny
     end
 
 
-    # Reads data from the socket. If read/write timeout was specified, Bunny::ClientTimeout will be raised
-    # if the operation times out.
-    #
-    # @raise [ClientTimeout]
-    def read_raw(*args)
-      begin
-        raise Bunny::ConnectionError, 'No connection - socket has not been created' if !@socket
-        if @read_write_timeout
-          Bunny::Timer.timeout(@read_write_timeout, Bunny::ClientTimeout) do
-            @socket.read(*args)
-          end
-        else
-          @socket.read(*args)
-        end
-      rescue Errno::EPIPE, Errno::EAGAIN, Bunny::ClientTimeout, IOError => e
-        close!
-        raise Bunny::ConnectionError, e.message
-      end
-    end
-
-
-    # Reads data from the socket, retries on SIGINT signals
-    def read(*args)
-      self.read_raw(*args)
-      # Got a SIGINT while waiting; give any traps a chance to run
-    rescue Errno::EINTR
-      retry
-    end
-
     protected
 
     def initialize_socket

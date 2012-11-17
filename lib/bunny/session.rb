@@ -82,9 +82,6 @@ module Bunny
 
       # Create channel 0
       @channel0           = Bunny::Channel.new(self, 0)
-
-      @continuation_condition = Bunny::Concurrent::Condition.new
-      @continuation_responses = []
     end
 
     def hostname;     self.host;  end
@@ -172,11 +169,12 @@ module Bunny
     def open_channel(ch)
       n = ch.number
 
+      @channel_open_continuation = Bunny::Concurrent::Condition.new
       Bunny::Timer.timeout(@disconnect_timeout, ClientTimeout) do
         @transport.send_frame(AMQ::Protocol::Channel::Open.encode(n, AMQ::Protocol::EMPTY_STRING))
       end
 
-      @continuation_condition.wait
+      @channel_open_continuation.wait
       raise_if_continuation_resulted_in_a_connection_error!
 
       self.register_channel(ch)
@@ -186,11 +184,9 @@ module Bunny
     def close_channel(ch)
       n = ch.number
 
-      Bunny::Timer.timeout(@disconnect_timeout, ClientTimeout) do
-        @transport.send_frame(AMQ::Protocol::Channel::Close.encode(n, 200, "Goodbye", 0, 0))
-      end
-
-      @continuation_condition.wait
+      @channel_close_continuation = Bunny::Concurrent::Condition.new
+      @transport.send_frame(AMQ::Protocol::Channel::Close.encode(n, 200, "Goodbye", 0, 0))
+      @channel_close_continuation.wait
       raise_if_continuation_resulted_in_a_connection_error!
 
       self.unregister_channel(ch)
@@ -211,21 +207,32 @@ module Bunny
       case method
       when AMQ::Protocol::Channel::OpenOk then
         @last_channel_open_ok = method
-        @continuation_condition.notify_all
+        @channel_open_continuation.notify_all
       when AMQ::Protocol::Channel::CloseOk then
         @last_channel_close_ok = method
-        @continuation_condition.notify_all
+        @channel_close_continuation.notify_all
       when AMQ::Protocol::Connection::Close then
         @last_connection_error = instantiate_connection_level_exception(method)
-        @continuation_condition.notify_all
+        @connection_close_continuation.notify_all
       when AMQ::Protocol::Connection::CloseOk then
         @last_connection_close_ok = method
-        @event_loop.stop
-        @event_loop = nil
+        begin
+          @event_loop.stop
+          @event_loop = nil
 
-        @transport.close
+          @transport.close
+        rescue Exception => e
+          puts e.class.name
+          puts e.message
+          puts e.backtrace          
+        ensure
+          @connection_close_continuation.notify_all
+        end
+      when AMQ::Protocol::Channel::Close then
+        ch = @channels[ch_number]
+        ch.handle_method(method)
 
-        @continuation_condition.notify_all
+        self.unregister_channel(ch)
       when AMQ::Protocol::Basic::GetEmpty then
         @channels[ch_number].handle_basic_get_empty(method)
       else
@@ -425,12 +432,15 @@ module Bunny
     end
 
     def close_connection
+      @connection_close_continuation = Bunny::Concurrent::Condition.new
       @transport.send_frame(AMQ::Protocol::Connection::Close.encode(200, "Goodbye", 0, 0))
 
       if @heartbeat_sender
         @heartbeat_sender.stop
       end
       @status   = :not_connected
+
+      @connection_close_continuation.wait
     end
 
 
