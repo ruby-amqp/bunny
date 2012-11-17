@@ -7,6 +7,11 @@ describe Bunny::Queue, "#delete" do
     c
   end
 
+  after :all do
+    connection.close
+  end
+
+
 
   context "with a name of an existing queue" do
     it "deletes that queue" do
