@@ -14,6 +14,11 @@ sudo rabbitmqctl add_user bunny_gem bunny_password
 sudo rabbitmqctl set_permissions -p bunny_testbed bunny_gem ".*" ".*" ".*"
 
 
+# guest:guest has full access to bunny_testbed
+
+sudo rabbitmqctl set_permissions -p bunny_testbed guest ".*" ".*" ".*"
+
+
 # bunny_reader:reader_password has read access to bunny_testbed
 
 sudo rabbitmqctl add_user bunny_reader reader_password
