@@ -1,7 +1,7 @@
 require "spec_helper"
-require "bunny/wait_notify_latch"
+require "bunny/concurrent/condition"
 
-describe Bunny::WaitNotifyLatch do
+describe Bunny::Concurrent::Condition do
   describe "#wait" do
     subject do
       described_class.new
@@ -39,7 +39,7 @@ describe Bunny::WaitNotifyLatch do
       sleep 0.25
       subject.notify
       sleep 0.5
-      xs.should == [:notified1]
+      xs.should satisfy { |ys| ys.size == 1 && (ys.include?(:notified1) || ys.include?(:notified2)) }
     end
   end
 

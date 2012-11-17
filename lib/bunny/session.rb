@@ -6,7 +6,7 @@ require "bunny/channel_id_allocator"
 require "bunny/heartbeat_sender"
 require "bunny/main_loop"
 
-require "bunny/wait_notify_latch"
+require "bunny/concurrent/condition"
 
 require "amq/protocol/client"
 require "amq/settings"
@@ -83,7 +83,7 @@ module Bunny
       # Create channel 0
       @channel0           = Bunny::Channel.new(self, 0)
 
-      @continuation_condition = WaitNotifyLatch.new
+      @continuation_condition = Bunny::Concurrent::Condition.new
       @continuation_responses = []
     end
 

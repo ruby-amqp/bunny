@@ -1,7 +1,7 @@
 require "thread"
 require "amq/int_allocator"
 
-require "bunny/wait_notify_latch"
+require "bunny/concurrent/condition"
 
 require "bunny/exchange"
 require "bunny/queue"
@@ -30,7 +30,7 @@ module Bunny
       # synchronizes frameset delivery. MK.
       @mutex     = Mutex.new
 
-      @continuation_condition = WaitNotifyLatch.new
+      @continuation_condition = Bunny::Concurrent::Condition.new
     end
 
 
