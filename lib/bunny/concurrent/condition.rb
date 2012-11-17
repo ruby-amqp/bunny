@@ -10,7 +10,6 @@ module Bunny
 
 
       def initialize
-        # Ruby's ConditionVariable requires a mutex to accompany it :/
         @mutex           = Mutex.new
         @waiting_threads = []
       end
