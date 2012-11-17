@@ -7,6 +7,10 @@ describe Bunny::Exchange do
     c
   end
 
+  after :all do
+    connection.close if connection.open?
+  end
+
 
   context "of type fanout" do
     context "with a non-predefined name" do

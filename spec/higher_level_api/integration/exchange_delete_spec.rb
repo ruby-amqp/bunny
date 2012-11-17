@@ -7,6 +7,10 @@ describe Bunny::Exchange, "#delete" do
     c
   end
 
+  after :all do
+    connection.close if connection.open?
+  end
+
 
   context "with a name of an existing exchange" do
     it "deletes that queue" do

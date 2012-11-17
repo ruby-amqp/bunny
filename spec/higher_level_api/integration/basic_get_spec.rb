@@ -7,6 +7,10 @@ describe Bunny::Queue, "#pop" do
     c
   end
 
+  after :all do
+    connection.close if connection.open?
+  end
+
   context "with all defaults" do
     it "fetches a messages which is automatically acknowledged" do
       ch = connection.create_channel

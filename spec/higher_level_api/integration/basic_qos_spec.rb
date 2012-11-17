@@ -7,6 +7,11 @@ describe Bunny::Channel, "#prefetch" do
     c
   end
 
+  after :all do
+    connection.close
+  end
+
+
   subject do
     connection.create_channel
   end

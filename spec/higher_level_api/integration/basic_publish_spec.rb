@@ -7,6 +7,11 @@ describe "Publishing a message to the default exchange" do
     c
   end
 
+  after :all do
+    connection.close if connection.open?
+  end
+
+
   context "with all default delivery and message properties" do
     it "routes messages to a queue with the same name as the routing key" do
       ch = connection.create_channel

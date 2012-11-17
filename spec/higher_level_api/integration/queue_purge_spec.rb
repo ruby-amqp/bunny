@@ -7,6 +7,11 @@ describe Bunny::Queue do
     c
   end
 
+  after :all do
+    connection.close
+  end
+
+
   it "can be purged" do
     ch = connection.create_channel
 

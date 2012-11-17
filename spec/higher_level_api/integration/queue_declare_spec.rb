@@ -7,6 +7,10 @@ describe Bunny::Queue do
     c
   end
 
+  after :all do
+    connection.close if connection.open?
+  end
+
   context "when queue name is specified" do
     let(:name) { "a queue declared at #{Time.now.to_i}" }
 

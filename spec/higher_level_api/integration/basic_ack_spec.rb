@@ -7,6 +7,10 @@ describe Bunny::Channel, "#ack" do
     c
   end
 
+  after :all do
+    connection.close if connection.open?
+  end
+
   subject do
     connection.create_channel
   end

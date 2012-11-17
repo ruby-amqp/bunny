@@ -1,10 +1,10 @@
 require "spec_helper"
 
 describe Bunny::Channel, "when opened" do
-  let(:connection) { Bunny.new }
-
-  before :all do
-    connection.start
+  let(:connection) do
+    c = Bunny.new
+    c.start
+    c
   end
 
   after :all do
