@@ -121,6 +121,15 @@ module Bunny
       basic_reject(delivery_tag, requeue)
     end
 
+    def ack(delivery_tag, multiple)
+      basic_ack(delivery_tag, multiple)
+    end
+    alias acknowledge ack
+
+    def on_error(&block)
+      @default_error_handler = block
+    end
+
 
     #
     # Lower-level API, exposes protocol operations as they are defined in the protocol,
