@@ -8,7 +8,7 @@ describe Bunny::Exchange do
   end
 
   after :all do
-    connection.close if connection.open?
+    connection.close
   end
 
 

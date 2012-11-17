@@ -209,6 +209,7 @@ module Bunny
       check_that_not_closed!
 
       @queue_declare_continuation = Bunny::Concurrent::Condition.new
+      @active_continuation        = @queue_declare_continuation
       @connection.send_frame(AMQ::Protocol::Queue::Declare.encode(@id, name, opts.fetch(:passive, false), opts.fetch(:durable, false), opts.fetch(:exclusive, false), opts.fetch(:auto_delete, false), false, opts[:arguments]))
 
       @queue_declare_continuation.wait
@@ -221,6 +222,7 @@ module Bunny
       check_that_not_closed!
 
       @queue_delete_continuation = Bunny::Concurrent::Condition.new
+      @active_continuation       = @queue_delete_continuation
       @connection.send_frame(AMQ::Protocol::Queue::Delete.encode(@id, name, opts[:if_unused], opts[:if_empty], false))
 
       @queue_delete_continuation.wait
@@ -233,6 +235,7 @@ module Bunny
       check_that_not_closed!
 
       @queue_purge_continuation = Bunny::Concurrent::Condition.new
+      @active_continuation      = @queue_purge_continuation
       @connection.send_frame(AMQ::Protocol::Queue::Purge.encode(@id, name, false))
 
       @queue_purge_continuation.wait
@@ -251,6 +254,7 @@ module Bunny
                       end
 
       @queue_bind_continuation = Bunny::Concurrent::Condition.new
+      @active_continuation     = @queue_bind_continuation
       @connection.send_frame(AMQ::Protocol::Queue::Bind.encode(@id, name, exchange_name, opts[:routing_key], false, opts[:arguments]))
       @queue_bind_continuation.wait
 
@@ -268,6 +272,7 @@ module Bunny
                       end
 
       @queue_unbind_continuation = Bunny::Concurrent::Condition.new
+      @active_continuation       = @queue_unbind_continuation
       @connection.send_frame(AMQ::Protocol::Queue::Unbind.encode(@id, name, exchange_name, opts[:routing_key], opts[:arguments]))
       @queue_unbind_continuation.wait
 
@@ -282,6 +287,7 @@ module Bunny
       check_that_not_closed!
 
       @exchange_declare_continuation = Bunny::Concurrent::Condition.new
+      @active_continuation           = @exchange_declare_continuation
       @connection.send_frame(AMQ::Protocol::Exchange::Declare.encode(@id, name, type.to_s, opts.fetch(:passive, false), opts.fetch(:durable, false), opts.fetch(:auto_delete, false), false, false, opts[:arguments]))
       @exchange_declare_continuation.wait
 
@@ -293,6 +299,7 @@ module Bunny
       check_that_not_closed!
 
       @exchange_delete_continuation = Bunny::Concurrent::Condition.new
+      @active_continuation           = @exchange_delete_continuation
       @connection.send_frame(AMQ::Protocol::Exchange::Delete.encode(@id, name, opts[:if_unused], false))
       @exchange_delete_continuation.wait
 
@@ -320,8 +327,6 @@ module Bunny
     #
 
     def handle_method(method)
-      puts "Handling #{method.inspect} in the channel"
-
       case method
       when AMQ::Protocol::Queue::DeclareOk then
         @last_queue_declare_ok = method
@@ -358,6 +363,7 @@ module Bunny
         @connection.send_frame(AMQ::Protocol::Channel::CloseOk.encode(@id))
 
         @last_channel_error = instantiate_channel_level_exception(method)
+        @active_continuation.notify_all
       when AMQ::Protocol::Channel::CloseOk then
         @last_channel_close_ok = method
       else

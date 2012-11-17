@@ -199,6 +199,17 @@ module Bunny
       end
     end
 
+    def close_connection
+      @connection_close_continuation = Bunny::Concurrent::Condition.new
+      @transport.send_frame(AMQ::Protocol::Connection::Close.encode(200, "Goodbye", 0, 0))
+
+      if @heartbeat_sender
+        @heartbeat_sender.stop
+      end
+      @status   = :not_connected
+      @connection_close_continuation.wait
+    end
+
     def send_raw(*args)
       @transport.write(*args)
     end
@@ -429,18 +440,6 @@ module Bunny
     def initialize_heartbeat_sender
       @heartbeat_sender = HeartbeatSender.new(@transport)
       @heartbeat_sender.start(@heartbeat)
-    end
-
-    def close_connection
-      @connection_close_continuation = Bunny::Concurrent::Condition.new
-      @transport.send_frame(AMQ::Protocol::Connection::Close.encode(200, "Goodbye", 0, 0))
-
-      if @heartbeat_sender
-        @heartbeat_sender.stop
-      end
-      @status   = :not_connected
-
-      @connection_close_continuation.wait
     end
 
 

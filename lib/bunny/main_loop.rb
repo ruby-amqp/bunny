@@ -21,8 +21,7 @@ module Bunny
     def run_loop
       loop do
         begin
-          Thread.exit if @stopping
-
+          break if @stopping
           frame = @transport.read_next_frame
 
           @session.signal_activity!
