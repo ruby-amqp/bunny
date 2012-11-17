@@ -3,12 +3,9 @@ require "bunny/concurrent/condition"
 
 describe Bunny::Concurrent::Condition do
   describe "#wait" do
-    subject do
-      described_class.new
-    end
-
     it "blocks current thread until notified" do
-      xs = []
+      condition = described_class.new
+      xs        = []
 
       t = Thread.new do
         xs << :notified
@@ -24,7 +21,8 @@ describe Bunny::Concurrent::Condition do
 
   describe "#notify" do
     it "notifies a single thread waiting on the latch" do
-      xs = []
+      condition = described_class.new
+      xs        = []
 
       t1 = Thread.new do
         subject.wait
@@ -45,12 +43,14 @@ describe Bunny::Concurrent::Condition do
 
   describe "#notify_all" do
     it "notifies all the threads waiting on the latch" do
-      xs = []
+      condition = described_class.new
+      xs        = []
 
       t1 = Thread.new do
         subject.wait
         xs << :notified1
       end
+      sleep 0.25
 
       t2 = Thread.new do
         subject.wait

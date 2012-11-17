@@ -6,6 +6,9 @@ module Bunny
     # threads can wait (block until notified) on a condition other threads notify them about.
     # Unlike the j.u.c. version, this one has a single waiting set.
     class Condition
+      attr_reader :waiting_threads
+
+
       def initialize
         # Ruby's ConditionVariable requires a mutex to accompany it :/
         @mutex           = Mutex.new
@@ -14,7 +17,8 @@ module Bunny
 
       def wait
         @mutex.synchronize do
-          @waiting_threads << Thread.current
+          t = Thread.current
+          @waiting_threads.push(t) unless @waiting_threads.include?(t)
         end
 
         Thread.stop
@@ -24,7 +28,7 @@ module Bunny
         @mutex.synchronize do
           t = @waiting_threads.delete_at(0)
           t.run if t
-        end      
+        end
       end
 
       def notify_all
@@ -35,6 +39,10 @@ module Bunny
 
           @waiting_threads = []
         end
+      end
+
+      def waiting_set_size
+        @mutex.synchronize { @waiting_threads.size }
       end
     end
   end
