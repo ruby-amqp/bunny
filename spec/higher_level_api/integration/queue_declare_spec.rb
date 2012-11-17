@@ -20,6 +20,7 @@ describe Bunny::Queue do
       q    = ch.queue(name)
       q.name.should == name
 
+      q.delete
       ch.close
     end
 
@@ -29,6 +30,7 @@ describe Bunny::Queue do
       q = ch.queue(name)
       ch.queue(name).object_id.should == q.object_id
 
+      q.delete
       ch.close
     end
   end
