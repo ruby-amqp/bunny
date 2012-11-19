@@ -5,13 +5,16 @@ module Bunny
     # Akin to java.util.concurrent.Condition and intrinsic object monitors (Object#wait, Object#notify, Object#notifyAll) in Java:
     # threads can wait (block until notified) on a condition other threads notify them about.
     # Unlike the j.u.c. version, this one has a single waiting set.
+    #
+    # Conditions can optionally be annotated with a description string for ease of debugging.
     class Condition
-      attr_reader :waiting_threads
+      attr_reader :waiting_threads, :description
 
 
-      def initialize
+      def initialize(description = nil)
         @mutex           = Mutex.new
         @waiting_threads = []
+        @description     = description
       end
 
       def wait
