@@ -3,7 +3,6 @@ require "thread"
 
 require "bunny/exceptions"
 require "bunny/socket"
-require "bunny/command_assembler"
 
 module Bunny
   class Transport
@@ -37,7 +36,6 @@ module Bunny
       @frames             = Hash.new { Array.new }
 
       initialize_socket
-      initialize_command_assembler
     end
 
 
@@ -74,12 +72,9 @@ module Bunny
     end
     alias send_raw write
 
-    def flush
-      @socket.flush
-    end
-
-    def read_fully(*args)
-      @socket.read_fully(*args)
+    def close(reason = nil)
+      @socket.close if @socket and not @socket.closed?
+      @socket   = nil
     end
 
     def open?
@@ -90,24 +85,36 @@ module Bunny
       !open?
     end
 
+    def flush
+      @socket.flush
+    end
+
+    def read_fully(*args)
+      @socket.read_fully(*args)
+    end
+
     def read_ready?(timeout = nil)
       io = IO.select([@socket].compact, nil, nil, timeout)
       io && io[0].include?(@socket)
     end
 
 
-    def close(reason = nil)
-      @socket.close if @socket and not @socket.closed?
-      @socket   = nil
-    end
-
-
     # Exposed primarily for Bunny::Channel
     # @private
     def read_next_frame(opts = {})
-      raise Bunny::ClientTimeout.new("I/O timeout") unless self.read_ready?(opts.fetch(:timeout, @read_write_timeout))
+      header    = @socket.read_fully(7)
+      type, channel, size = AMQ::Protocol::Frame.decode_header(header)
+      payload   = @socket.read_fully(size)
+      frame_end = @socket.read_fully(1)
 
-      @command_assembler.read_frame(@socket)
+      # 1) the size is miscalculated
+      if payload.bytesize != size
+        raise BadLengthError.new(size, payload.bytesize)
+      end
+
+      # 2) the size is OK, but the string doesn't end with FINAL_OCTET
+      raise NoFinalOctetError.new if frame_end != AMQ::Protocol::Frame::FINAL_OCTET
+      AMQ::Protocol::Frame.new(type, payload, channel)
     end
 
 
@@ -151,11 +158,6 @@ module Bunny
 
       @socket
     end
-
-    def initialize_command_assembler
-      @command_assembler = CommandAssembler.new
-    end
-
 
     def initialize_client_pair(sslctx)
       if @ssl_cert
