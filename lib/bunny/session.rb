@@ -407,7 +407,6 @@ module Bunny
                 nil
               end
       if frame.nil?
-        self.close_all_channels
         @state = :closed
         raise Bunny::PossibleAuthenticationFailureError.new(self.user, self.vhost, self.password.size)
       end
@@ -423,11 +422,10 @@ module Bunny
                  @transport.read_next_frame
                  # frame timeout means the broker has closed the TCP connection, which it
                  # does per 0.9.1 spec.
-               rescue Errno::ECONNRESET, ClientTimeout, AMQ::Protocol::EmptyResponseError => e
+               rescue Errno::ECONNRESET, ClientTimeout, AMQ::Protocol::EmptyResponseError, EOFError => e
                  nil
                end
       if frame2.nil?
-        self.close_all_channels
         @state = :closed
         raise Bunny::PossibleAuthenticationFailureError.new(self.user, self.vhost, self.password.size)
       end
