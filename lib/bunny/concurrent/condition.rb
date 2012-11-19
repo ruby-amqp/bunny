@@ -39,7 +39,7 @@ module Bunny
             t.run
           end
 
-          @waiting_threads = []
+          @waiting_threads.clear
         end
       end
 
