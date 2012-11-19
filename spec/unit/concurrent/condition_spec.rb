@@ -44,24 +44,24 @@ describe Bunny::Concurrent::Condition do
   describe "#notify_all" do
     it "notifies all the threads waiting on the latch" do
       condition = described_class.new
-      xs        = []
+      @xs        = []
 
       t1 = Thread.new do
         subject.wait
-        xs << :notified1
+        @xs << :notified1
       end
-      sleep 0.25
+      sleep 1.0
 
       t2 = Thread.new do
         subject.wait
-        xs << :notified2
+        @xs << :notified2
       end
 
       sleep 0.5
       subject.notify_all
-      sleep 0.5
-      xs.should include(:notified1)
-      xs.should include(:notified2)
+      sleep 1.5
+      @xs.should include(:notified1)
+      @xs.should include(:notified2)
     end
   end
 end
