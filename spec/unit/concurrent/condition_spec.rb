@@ -57,7 +57,7 @@ describe Bunny::Concurrent::Condition do
         xs << :notified2
       end
 
-      sleep 0.25
+      sleep 0.5
       subject.notify_all
       sleep 0.5
       xs.should include(:notified1)
