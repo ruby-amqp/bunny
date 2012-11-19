@@ -46,6 +46,14 @@ module Bunny
       def waiting_set_size
         @mutex.synchronize { @waiting_threads.size }
       end
+
+      def any_threads_waiting?
+        @mutex.synchronize { !@waiting_threads.empty? }
+      end
+
+      def none_threads_waiting?
+        @mutex.synchronize { @waiting_threads.empty? }
+      end
     end
   end
 end
