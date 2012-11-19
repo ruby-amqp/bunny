@@ -21,12 +21,16 @@ module Bunny
     end
 
     def read_fully(count, timeout = nil)
+      return nil if @eof
+
       value = ''
       begin
         loop do
           value << read_nonblock(count - value.bytesize)
           break if value.bytesize >= count
         end
+      rescue EOFError
+        @eof = true
       rescue Errno::EAGAIN, Errno::EWOULDBLOCK
         if IO.select([self], nil, nil, options.fetch(:socket_timeout, timeout))
           retry
