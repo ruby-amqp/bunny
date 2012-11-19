@@ -22,13 +22,11 @@ module Bunny
       loop do
         begin
           break if @stopping
-          frame = @transport.read_next_frame
 
+          frame = @transport.read_next_frame
           @session.signal_activity!
 
-          if frame.is_a?(AMQ::Protocol::HeartbeatFrame)
-            return
-          end
+          next if frame.is_a?(AMQ::Protocol::HeartbeatFrame)
 
           if !frame.final? || frame.method_class.has_content?
             header   = @transport.read_next_frame
@@ -48,7 +46,8 @@ module Bunny
             @session.handle_frame(frame.channel, frame.decode_payload)
           end
         rescue Timeout::Error => te
-          # TODO: rework the way we read data, add actual timeout detection/handling
+          # given that the server may be pushing data to us, timeout detection/handling
+          # should happen per operation and not in this loop
         rescue Errno::EBADF => ebadf
           # ignored, happens when we loop after the transport has already been closed
         rescue Exception => e
