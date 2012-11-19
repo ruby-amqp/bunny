@@ -325,7 +325,7 @@ describe Bunny::Session do
 
     it "fails to connect" do
       lambda do
-        subject.start
+        subject.start        
       end.should raise_error(Bunny::PossibleAuthenticationFailureError)
     end
 
