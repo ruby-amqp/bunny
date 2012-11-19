@@ -14,3 +14,4 @@ Gemfile.lock
 bin/*
 .bundle/*
 vendor/*
+playground/*
