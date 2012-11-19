@@ -137,7 +137,7 @@ module Bunny
         close_all_channels
 
         Bunny::Timer.timeout(@disconnect_timeout, ClientTimeout) do
-          self.close_connection
+          self.close_connection(false)
         end
       end
     end
@@ -170,9 +170,7 @@ module Bunny
       n = ch.number
 
       @channel_open_continuation = Bunny::Concurrent::Condition.new
-      Bunny::Timer.timeout(@disconnect_timeout, ClientTimeout) do
-        @transport.send_frame(AMQ::Protocol::Channel::Open.encode(n, AMQ::Protocol::EMPTY_STRING))
-      end
+      @transport.send_frame(AMQ::Protocol::Channel::Open.encode(n, AMQ::Protocol::EMPTY_STRING))
 
       @channel_open_continuation.wait
       raise_if_continuation_resulted_in_a_connection_error!
@@ -196,18 +194,23 @@ module Bunny
     def close_all_channels
       @channels.reject {|n, ch| n == 0 || !ch.open? }.each do |_, ch|
         Bunny::Timer.timeout(@disconnect_timeout, ClientTimeout) { ch.close }
+        ch.maybe_clear_active_continuation!
       end
     end
 
-    def close_connection
-      @connection_close_continuation = Bunny::Concurrent::Condition.new
+    def close_connection(sync = true)
       @transport.send_frame(AMQ::Protocol::Connection::Close.encode(200, "Goodbye", 0, 0))
 
       if @heartbeat_sender
         @heartbeat_sender.stop
       end
       @status   = :not_connected
-      @connection_close_continuation.wait
+
+      if sync
+        @connection_close_continuation = Bunny::Concurrent::Condition.new("connection.close-ok")
+        @active_continuation           = @connection_close_continuation
+        @connection_close_continuation.wait
+      end
     end
 
     def send_raw(*args)
@@ -215,6 +218,7 @@ module Bunny
     end
 
     def handle_frame(ch_number, method)
+      # puts "Session#handle_frame: object id: #{self.object_id}, #{method.inspect}, @active_continuation is #{@active_continuation.inspect}"
       case method
       when AMQ::Protocol::Channel::OpenOk then
         @last_channel_open_ok = method
@@ -235,9 +239,9 @@ module Bunny
         rescue Exception => e
           puts e.class.name
           puts e.message
-          puts e.backtrace          
+          puts e.backtrace
         ensure
-          @connection_close_continuation.notify_all
+          @active_continuation.notify_all if @active_continuation
         end
       when AMQ::Protocol::Channel::Close then
         ch = @channels[ch_number]
@@ -399,7 +403,7 @@ module Bunny
                 @transport.read_next_frame
                 # frame timeout means the broker has closed the TCP connection, which it
                 # does per 0.9.1 spec.
-              rescue Errno::ECONNRESET, ClientTimeout, AMQ::Protocol::EmptyResponseError => e
+              rescue Errno::ECONNRESET, ClientTimeout, AMQ::Protocol::EmptyResponseError, EOFError => e
                 nil
               end
       if frame.nil?

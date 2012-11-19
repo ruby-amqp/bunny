@@ -20,7 +20,7 @@ module Bunny
       end
     end
 
-    def read_fully(count)
+    def read_fully(count, timeout = nil)
       value = ''
       begin
         loop do
@@ -28,7 +28,7 @@ module Bunny
           break if value.bytesize >= count
         end
       rescue Errno::EAGAIN, Errno::EWOULDBLOCK
-        if IO.select([self], nil, nil, options[:socket_timeout])
+        if IO.select([self], nil, nil, options.fetch(:socket_timeout, timeout))
           retry
         else
           raise Timeout::Error, "IO timeout when reading #{count} bytes"
