@@ -11,10 +11,10 @@ describe Bunny::Concurrent::Condition do
         xs << :notified
 
         sleep 0.25
-        subject.notify
+        condition.notify
       end
 
-      subject.wait
+      condition.wait
       xs.should == [:notified]
     end
   end
@@ -25,17 +25,17 @@ describe Bunny::Concurrent::Condition do
       xs        = []
 
       t1 = Thread.new do
-        subject.wait
+        condition.wait
         xs << :notified1
       end
 
       t2 = Thread.new do
-        subject.wait
+        condition.wait
         xs << :notified2
       end
 
       sleep 0.25
-      subject.notify
+      condition.notify
       sleep 0.5
       xs.should satisfy { |ys| ys.size == 1 && (ys.include?(:notified1) || ys.include?(:notified2)) }
     end
@@ -47,19 +47,18 @@ describe Bunny::Concurrent::Condition do
       @xs        = []
 
       t1 = Thread.new do
-        subject.wait
+        condition.wait
         @xs << :notified1
       end
-      sleep 1.0
 
       t2 = Thread.new do
-        subject.wait
+        condition.wait
         @xs << :notified2
       end
 
       sleep 0.5
-      subject.notify_all
-      sleep 1.5
+      condition.notify_all
+      sleep 0.5
       @xs.should include(:notified1)
       @xs.should include(:notified2)
     end
