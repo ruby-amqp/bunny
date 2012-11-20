@@ -21,6 +21,7 @@ module Bunny
         @mutex.synchronize do
           t = Thread.current
           @waiting_threads.push(t)
+          puts "Added #{t.inspect} to the wait set"
         end
 
         Thread.stop
@@ -28,8 +29,12 @@ module Bunny
 
       def notify
         @mutex.synchronize do
-          t = @waiting_threads.delete_at(0)
-          t.run if t
+          t = @waiting_threads.shift
+          begin
+            t.run if t
+          rescue ThreadError
+            retry
+          end
         end
       end
 

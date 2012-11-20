@@ -82,6 +82,8 @@ module Bunny
 
       # Create channel 0
       @channel0           = Bunny::Channel.new(self, 0)
+
+      @continuations      = ::Queue.new
     end
 
     def hostname;     self.host;  end
@@ -168,23 +170,20 @@ module Bunny
 
     def open_channel(ch)
       n = ch.number
+      self.register_channel(ch)
 
-      @channel_open_continuation = Bunny::Concurrent::Condition.new
       @transport.send_frame(AMQ::Protocol::Channel::Open.encode(n, AMQ::Protocol::EMPTY_STRING))
-
-      @channel_open_continuation.wait
+      @last_channel_open_ok = @continuations.pop
       raise_if_continuation_resulted_in_a_connection_error!
 
-      self.register_channel(ch)
       @last_channel_open_ok
     end
 
     def close_channel(ch)
       n = ch.number
 
-      @channel_close_continuation = Bunny::Concurrent::Condition.new
       @transport.send_frame(AMQ::Protocol::Channel::Close.encode(n, 200, "Goodbye", 0, 0))
-      @channel_close_continuation.wait
+      @last_channel_close_ok = @continuations.pop
       raise_if_continuation_resulted_in_a_connection_error!
 
       self.unregister_channel(ch)
@@ -207,31 +206,25 @@ module Bunny
       @status   = :not_connected
 
       if sync
-        @connection_close_continuation = Bunny::Concurrent::Condition.new("connection.close-ok")
-        @active_continuation           = @connection_close_continuation
-        @connection_close_continuation.wait
+        @last_connection_close_ok = @continuations.pop
       end
     end
 
-    def send_raw(*args)
-      @transport.write(*args)
-    end
-
     def handle_frame(ch_number, method)
-      # puts "Session#handle_frame: object id: #{self.object_id}, #{method.inspect}, @active_continuation is #{@active_continuation.inspect}"
+      # puts "Session#handle_frame on #{ch_number}: #{method.inspect}"
       case method
       when AMQ::Protocol::Channel::OpenOk then
-        @last_channel_open_ok = method
-        @channel_open_continuation.notify_all
+        @continuations.push(method)
       when AMQ::Protocol::Channel::CloseOk then
-        @last_channel_close_ok = method
-        @channel_close_continuation.notify_all
+        @continuations.push(method)
       when AMQ::Protocol::Connection::Close then
         @last_connection_error = instantiate_connection_level_exception(method)
-        @connection_close_continuation.notify_all
+        @contunuations.push(method)
       when AMQ::Protocol::Connection::CloseOk then
         @last_connection_close_ok = method
         begin
+          @continuations.clear
+
           @event_loop.stop
           @event_loop = nil
 
@@ -242,12 +235,15 @@ module Bunny
           puts e.backtrace
         ensure
           @active_continuation.notify_all if @active_continuation
+          @active_continuation = false
         end
       when AMQ::Protocol::Channel::Close then
-        ch = @channels[ch_number]
-        ch.handle_method(method)
-
-        self.unregister_channel(ch)
+        begin
+          ch = @channels[ch_number]
+          ch.handle_method(method)
+        ensure
+          self.unregister_channel(ch)
+        end
       when AMQ::Protocol::Basic::GetEmpty then
         @channels[ch_number].handle_basic_get_empty(method)
       else
@@ -261,6 +257,7 @@ module Bunny
 
     def handle_frameset(ch_number, frames)
       method = frames.first
+      puts "Session#handle_frameset: #{method.inspect}"
 
       case method
       when AMQ::Protocol::Basic::GetOk then
@@ -270,6 +267,10 @@ module Bunny
       else
         @channels[ch_number].handle_frameset(*frames)
       end
+    end
+
+    def send_raw(*args)
+      @transport.write(*args)
     end
 
     def instantiate_connection_level_exception(frame)
