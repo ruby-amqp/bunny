@@ -139,7 +139,7 @@ module Bunny
     # basic.*
 
     def basic_publish(payload, exchange, routing_key, opts = {})
-      check_that_not_closed!
+      raise_if_no_longer_open!
 
       exchange_name = if exchange.respond_to?(:name)
                         exchange.name
@@ -155,7 +155,7 @@ module Bunny
     end
 
     def basic_get(queue, opts = {:ack => true})
-      check_that_not_closed!
+      raise_if_no_longer_open!
 
       @connection.send_frame(AMQ::Protocol::Basic::Get.encode(@id, queue, !opts[:ack]))
       @last_basic_get_response = @continuations.pop
@@ -166,7 +166,7 @@ module Bunny
 
     def basic_qos(prefetch_count, global = false)
       raise ArgumentError.new("prefetch count must be a positive integer, given: #{prefetch_count}") if prefetch_count < 0
-      check_that_not_closed!
+      raise_if_no_longer_open!
 
       @connection.send_frame(AMQ::Protocol::Basic::Qos.encode(@id, 0, prefetch_count, global))
 
@@ -179,7 +179,7 @@ module Bunny
     end
 
     def basic_recover(requeue)
-      check_that_not_closed!
+      raise_if_no_longer_open!
 
       @connection.send_frame(AMQ::Protocol::Basic::Recover.encode(@id, requeue))
       Bunny::Timer.timeout(1, ClientTimeout) do
@@ -191,21 +191,21 @@ module Bunny
     end
 
     def basic_reject(delivery_tag, requeue)
-      check_that_not_closed!
+      raise_if_no_longer_open!
       @connection.send_frame(AMQ::Protocol::Basic::Reject.encode(@id, delivery_tag, requeue))
 
       nil
     end
 
     def basic_ack(delivery_tag, multiple)
-      check_that_not_closed!
+      raise_if_no_longer_open!
       @connection.send_frame(AMQ::Protocol::Basic::Ack.encode(@id, delivery_tag, multiple))
 
       nil
     end
 
     def basic_consume(queue, consumer_tag = generate_consumer_tag, no_ack = false, exclusive = false, no_local = false, arguments = nil, &block)
-      check_that_not_closed!
+      raise_if_no_longer_open!
 
       queue_name = if queue.respond_to?(:name)
                      queue.name
@@ -235,7 +235,7 @@ module Bunny
     # queue.*
 
     def queue_declare(name, opts = {})
-      check_that_not_closed!
+      raise_if_no_longer_open!
 
       @connection.send_frame(AMQ::Protocol::Queue::Declare.encode(@id, name, opts.fetch(:passive, false), opts.fetch(:durable, false), opts.fetch(:exclusive, false), opts.fetch(:auto_delete, false), false, opts[:arguments]))
       @last_queue_declare_ok = @continuations.pop
@@ -246,7 +246,7 @@ module Bunny
     end
 
     def queue_delete(name, opts = {})
-      check_that_not_closed!
+      raise_if_no_longer_open!
 
       @connection.send_frame(AMQ::Protocol::Queue::Delete.encode(@id, name, opts[:if_unused], opts[:if_empty], false))
       Bunny::Timer.timeout(1, ClientTimeout) do
@@ -258,7 +258,7 @@ module Bunny
     end
 
     def queue_purge(name, opts = {})
-      check_that_not_closed!
+      raise_if_no_longer_open!
 
       @connection.send_frame(AMQ::Protocol::Queue::Purge.encode(@id, name, false))
 
@@ -271,7 +271,7 @@ module Bunny
     end
 
     def queue_bind(name, exchange, opts = {})
-      check_that_not_closed!
+      raise_if_no_longer_open!
 
       exchange_name = if exchange.respond_to?(:name)
                         exchange.name
@@ -289,7 +289,7 @@ module Bunny
     end
 
     def queue_unbind(name, exchange, opts = {})
-      check_that_not_closed!
+      raise_if_no_longer_open!
 
       exchange_name = if exchange.respond_to?(:name)
                         exchange.name
@@ -310,7 +310,7 @@ module Bunny
     # exchange.*
 
     def exchange_declare(name, type, opts = {})
-      check_that_not_closed!
+      raise_if_no_longer_open!
 
       @connection.send_frame(AMQ::Protocol::Exchange::Declare.encode(@id, name, type.to_s, opts.fetch(:passive, false), opts.fetch(:durable, false), opts.fetch(:auto_delete, false), false, false, opts[:arguments]))
       Bunny::Timer.timeout(1, ClientTimeout) do
@@ -322,7 +322,7 @@ module Bunny
     end
 
     def exchange_delete(name, opts = {})
-      check_that_not_closed!
+      raise_if_no_longer_open!
 
       @connection.send_frame(AMQ::Protocol::Exchange::Delete.encode(@id, name, opts[:if_unused], false))
       Bunny::Timer.timeout(1, ClientTimeout) do
@@ -336,7 +336,7 @@ module Bunny
     # channel.*
 
     def channel_flow(active)
-      check_that_not_closed!
+      raise_if_no_longer_open!
 
       @connection.send_frame(AMQ::Protocol::Channel::Flow.encode(@id, active))
       Bunny::Timer.timeout(1, ClientTimeout) do
@@ -472,7 +472,7 @@ module Bunny
       raise @last_channel_error if @last_channel_error
     end
 
-    def check_that_not_closed!
+    def raise_if_no_longer_open!
       raise ChannelAlreadyClosed.new("cannot use a channel that was already closed! Channel id: #{@id}", self) if closed?
     end
 
