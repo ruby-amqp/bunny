@@ -204,6 +204,33 @@ module Bunny
       nil
     end
 
+    def basic_consume(queue, consumer_tag = generate_consumer_tag, no_ack = false, exclusive = false, no_local = false, arguments = nil, &block)
+      check_that_not_closed!
+
+      queue_name = if queue.respond_to?(:name)
+                     queue.name
+                   else
+                     queue
+                   end
+
+      @connection.send_frame(AMQ::Protocol::Basic::Consume.encode(@id, queue_name, consumer_tag, no_local, no_ack, exclusive, false, arguments))
+      Bunny::Timer.timeout(1, ClientTimeout) do
+        @last_basic_consume_ok = @continuations.pop
+      end
+
+      @last_basic_consume_ok
+    end
+
+    def basic_cancel(consumer_tag)
+      @connection.send_frame(AMQ::Protocol::Basic::Cancel.encode(@id, consumer_tag, false))
+
+      Bunny::Timer.timeout(1, ClientTimeout) do
+        @last_basic_cancel_ok = @continuations.pop
+      end
+
+      @last_basic_cancel_ok
+    end
+
 
     # queue.*
 
@@ -348,6 +375,11 @@ module Bunny
         @continuations.push(method)
       when AMQ::Protocol::Channel::FlowOk then
         @continuations.push(method)
+      when AMQ::Protocol::Basic::ConsumeOk then
+        @continuations.push(method)
+      when AMQ::Protocol::Basic::CancelOk then
+        @continuations.push(method)
+        # TODO: cancel the consumer
       when AMQ::Protocol::Channel::Close then
         closed!
         @connection.send_frame(AMQ::Protocol::Channel::CloseOk.encode(@id))
@@ -442,6 +474,14 @@ module Bunny
 
     def check_that_not_closed!
       raise ChannelAlreadyClosed.new("cannot use a channel that was already closed! Channel id: #{@id}", self) if closed?
+    end
+
+    # Unique string supposed to be used as a consumer tag.
+    #
+    # @return [String]  Unique string.
+    # @api plugin
+    def generate_consumer_tag(name = "bunny")
+      "#{name}-#{Time.now.to_i * 1000}-#{Kernel.rand(999_999_999_999)}"
     end
   end
 end

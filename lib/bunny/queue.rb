@@ -68,6 +68,9 @@ module Bunny
       @channel.queue_unbind(@name, exchange, opts)
     end
 
+    def subscribe(opts = {:consumer_tag => "", :ack => false}, &block)
+      
+    end
 
     def pop(opts = {:ack => true}, &block)
       response = @channel.basic_get(@name, opts)
