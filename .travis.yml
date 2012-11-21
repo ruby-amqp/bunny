@@ -9,7 +9,7 @@ rvm:
   - rbx-18mode
   - rbx-19mode
 notifications:
-  email: michael@novemberain.com
+  email: michael@defprotocol.org
 branches:
   only:
     - master
