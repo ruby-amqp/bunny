@@ -14,4 +14,5 @@ branches:
   only:
     - master
     - 0.8.x-stable
-    - amqp_091_migration
+    - 0.9.x-stable
+    - migrate_to_amq_protocol
