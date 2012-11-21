@@ -251,6 +251,10 @@ module Qrack
       class DeclareOk    < Method(  11, :declare_ok     ); end
       class Delete       < Method(  20, :delete         ); end
       class DeleteOk     < Method(  21, :delete_ok      ); end
+      class Bind         < Method(  30, :bind           ); end
+      class BindOk       < Method(  31, :bind_ok        ); end
+      class Unbind       < Method(  40, :unbind         ); end
+      class UnbindOk     < Method(  51, :unbind_ok      ); end
 
 
       class Declare
@@ -276,6 +280,30 @@ module Qrack
       end
 
       class DeleteOk
+      end
+
+      class Bind
+        short            :reserved_1
+        shortstr         :destination
+        shortstr         :source
+        shortstr         :routing_key
+        bit              :nowait
+        table            :arguments
+      end
+
+      class BindOk
+      end
+
+      class Unbind
+        short            :reserved_1
+        shortstr         :destination
+        shortstr         :source
+        shortstr         :routing_key
+        bit              :nowait
+        table            :arguments
+      end
+
+      class UnbindOk
       end
 
     end

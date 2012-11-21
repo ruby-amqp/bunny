@@ -123,6 +123,43 @@ describe 'Exchange' do
     exch = @b.exchange('direct2_exchange', :nowait => true)
   end
 
+  it "should ignore the :nowait option when binding to an exchange" do
+    src = @b.exchange('src_exch')
+    dest = @b.exchange('dest_exch')
+    src.bind(dest, :nowait => true).should == :bind_ok
+  end
+
+  it "should raise an error when trying to bind to a non-existent exchange" do
+    src = @b.exchange('src_exch')
+    lambda {src.bind('bogus')}.should raise_error(Bunny::ForcedChannelCloseError)
+    @b.channel.active.should == false
+  end
+
+  it "should be able to bind to an existing exchange" do
+    dest = @b.exchange('dest_exch')
+    src = @b.exchange('src_exch')
+    src.bind(dest).should == :bind_ok
+  end
+
+  it "should ignore the :nowait option when unbinding from an existing exchange" do
+    dest = @b.exchange('dest_exch')
+    src = @b.exchange('src_exch')
+    src.unbind(dest, :nowait => true).should == :unbind_ok
+  end
+
+  it "should raise an error if unbinding from a non-existent exchange" do
+    src = @b.exchange('src_exch')
+    lambda {src.unbind('bogus')}.should raise_error(Bunny::ForcedChannelCloseError)
+    @b.channel.active.should == false
+  end
+
+  it "should be able to unbind from an exchange" do
+    dest = @b.exchange('dest_exch')
+    src = @b.exchange('src_exch')
+    src.bind(dest).should == :bind_ok
+    src.unbind(dest).should == :unbind_ok
+  end
+
   it "should be able to publish a message" do
     exch = @b.exchange('direct_exchange')
     exch.publish('This is a published message')
