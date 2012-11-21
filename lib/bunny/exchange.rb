@@ -66,6 +66,79 @@ module Bunny
       end
     end
 
+    # Binds this exchange to another exchange (this is a RabbitMQ extension).
+    # If error occurs, a {Bunny::ProtocolError} is raised.
+    #
+    # @option opts [String] :key
+    #   Specifies the routing key for the binding. The routing key is used
+    #   for routing messages depending on the exchange configuration.
+    #
+    # @option opts [Boolean] :nowait (false)
+    #   Ignored by Bunny, always @false@.
+    #
+    # @return [Symbol] @:bind_ok@ if successful.
+    def bind(destination, opts = {})
+      source = name
+      destination = destination.respond_to?(:name) ? destination.name : destination
+
+      # ignore the :nowait option if passed, otherwise program will hang waiting for a
+      # response that will not be sent by the server
+      opts.delete(:nowait)
+
+      opts = {
+          :destination => destination,
+          :source => source,
+          :routing_key => opts.delete(:key),
+          :nowait => false,
+          :reserved_1 => 0
+      }.merge(opts)
+
+      client.send_frame(Qrack::Protocol::Exchange::Bind.new(opts))
+
+      method = client.next_method
+
+      client.check_response(method, Qrack::Protocol::Exchange::BindOk, "Error binding exchange #{source} to exchange #{destination}")
+
+      # return message
+      :bind_ok
+    end
+
+    # Removes a binding from this exchange to another exchange (this is a RabbitMQ extension).
+    # If error occurs, a _Bunny_::_ProtocolError_ is raised.
+    #
+    # @option opts [String] :key
+    #   Specifies the routing key for the binding.
+    #
+    # @option opts [Boolean] :nowait (false)
+    #   Ignored by Bunny, always @false@.
+    #
+    # @return [Symbol] @:unbind_ok@ if successful.
+    def unbind(destination, opts = {})
+      source = name
+      destination = destination.respond_to?(:name) ? destination.name : destination
+
+      # ignore the :nowait option if passed, otherwise program will hang waiting for a
+      # response that will not be sent by the server
+      opts.delete(:nowait)
+
+      opts = {
+          :destination => destination,
+          :source => source,
+          :routing_key => opts.delete(:key),
+          :nowait => false,
+          :reserved_1 => 0
+      }.merge(opts)
+
+      client.send_frame(Qrack::Protocol::Exchange::Unbind.new(opts))
+
+      method = client.next_method
+
+      client.check_response(method, Qrack::Protocol::Exchange::UnbindOk, "Error unbinding exchange #{name}")
+
+      # return message
+      :unbind_ok
+    end
+
     # Requests that an exchange is deleted from broker/server. Removes reference from exchanges
     # if successful. If an error occurs raises {Bunny::ProtocolError}.
     #
