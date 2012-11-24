@@ -1,5 +1,9 @@
 bundler_args: --without development
-before_script: ./bin/ci/before_build.sh
+before_script:
+  - pwd
+  - ls bin
+  - ls bin/ci
+  - ./bin/ci/before_build.sh
 script: "bundle exec rspec -c spec"
 rvm:
   - 1.8.7
