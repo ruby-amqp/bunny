@@ -21,13 +21,13 @@ describe Bunny::Channel, "#reject" do
       x = subject.default_exchange
 
       x.publish("bunneth", :routing_key => q.name)
-      sleep(0.25)
+      sleep(0.5)
       q.message_count.should == 1
       resp = q.pop(:ack => true)
       dt   = resp[:delivery_details][:delivery_tag]
 
       subject.reject(dt, true)
-      sleep(0.25)
+      sleep(0.5)
       q.message_count.should == 1
 
       subject.close
@@ -40,13 +40,13 @@ describe Bunny::Channel, "#reject" do
       x = subject.default_exchange
 
       x.publish("bunneth", :routing_key => q.name)
-      sleep(0.25)
+      sleep(0.5)
       q.message_count.should == 1
       resp = q.pop(:ack => true)
       dt   = resp[:delivery_details][:delivery_tag]
 
       subject.reject(dt, false)
-      sleep(0.25)
+      sleep(0.5)
       q.message_count.should == 0
 
       subject.close
