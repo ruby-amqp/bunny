@@ -41,7 +41,7 @@ module Bunny
               end
             end
 
-            @session.handle_frameset(frame.channel, [frame.decode_payload, header, content])            
+            @session.handle_frameset(frame.channel, [frame.decode_payload, header.decode_payload, content])
           else
             @session.handle_frame(frame.channel, frame.decode_payload)
           end

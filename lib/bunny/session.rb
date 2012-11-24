@@ -145,6 +145,14 @@ module Bunny
     end
     alias stop close
 
+    def with_channel(n = nil)
+      ch = create_channel(n)
+      yield ch
+      ch.close
+
+      self
+    end
+
 
     def connecting?
       status == :connecting
@@ -193,7 +201,6 @@ module Bunny
     def close_all_channels
       @channels.reject {|n, ch| n == 0 || !ch.open? }.each do |_, ch|
         Bunny::Timer.timeout(@disconnect_timeout, ClientTimeout) { ch.close }
-        ch.maybe_clear_active_continuation!
       end
     end
 
@@ -257,7 +264,6 @@ module Bunny
 
     def handle_frameset(ch_number, frames)
       method = frames.first
-      puts "Session#handle_frameset: #{method.inspect}"
 
       case method
       when AMQ::Protocol::Basic::GetOk then

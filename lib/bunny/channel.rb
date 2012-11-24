@@ -1,10 +1,11 @@
 require "thread"
 require "amq/int_allocator"
 
-require "bunny/concurrent/condition"
+require "bunny/consumer_work_pool"
 
 require "bunny/exchange"
 require "bunny/queue"
+require "bunny/message_metadata"
 
 module Bunny
   class Channel
@@ -13,10 +14,10 @@ module Bunny
     # API
     #
 
-    attr_accessor :id, :connection, :status
+    attr_accessor :id, :connection, :status, :work_pool
 
 
-    def initialize(connection = nil, id = nil)
+    def initialize(connection = nil, id = nil, work_pool = ConsumerWorkPool.new(1))
       @connection = connection
       @id         = id || @connection.next_channel_id
       @status     = :opening
@@ -26,9 +27,11 @@ module Bunny
       @queues     = Hash.new
       @exchanges  = Hash.new
       @consumers  = Hash.new
+      @work_pool  = work_pool
 
       # synchronizes frameset delivery. MK.
-      @mutex         = Mutex.new
+      @mutex          = Mutex.new
+      @consumer_mutex = Mutex.new
 
       @continuations = ::Queue.new
     end
@@ -37,6 +40,8 @@ module Bunny
     def open
       @connection.open_channel(self)
       @status = :open
+
+      self
     end
 
     def close
@@ -204,8 +209,9 @@ module Bunny
       nil
     end
 
-    def basic_consume(queue, consumer_tag = generate_consumer_tag, no_ack = false, exclusive = false, no_local = false, arguments = nil, &block)
+    def basic_consume(queue, consumer_tag = generate_consumer_tag, no_ack = false, exclusive = false, arguments = nil, &block)
       raise_if_no_longer_open!
+      maybe_start_consumer_work_pool!
 
       queue_name = if queue.respond_to?(:name)
                      queue.name
@@ -213,9 +219,16 @@ module Bunny
                      queue
                    end
 
-      @connection.send_frame(AMQ::Protocol::Basic::Consume.encode(@id, queue_name, consumer_tag, no_local, no_ack, exclusive, false, arguments))
+      @connection.send_frame(AMQ::Protocol::Basic::Consume.encode(@id, queue_name, consumer_tag, false, no_ack, exclusive, false, arguments))
       Bunny::Timer.timeout(1, ClientTimeout) do
         @last_basic_consume_ok = @continuations.pop
+      end
+
+      @consumer_mutex.synchronize do
+        c = Consumer.new(self, queue, consumer_tag, no_ack, exclusive, arguments)
+        c.on_delivery(&block) if block
+
+        @consumers[@last_basic_consume_ok.consumer_tag] = c
       end
 
       @last_basic_consume_ok
@@ -387,6 +400,7 @@ module Bunny
         @last_channel_error = instantiate_channel_level_exception(method)
         @continuations.push(method)
       when AMQ::Protocol::Channel::Close then
+        # puts "Exception on channel #{@id}: #{method.reply_code} #{method.reply_text}"
         closed!
         @continuations.push(method)
         @continuations.clear
@@ -400,7 +414,7 @@ module Bunny
     def handle_basic_get_ok(basic_get_ok, header, content)
       envelope = {:delivery_tag => basic_get_ok.delivery_tag, :redelivered => basic_get_ok.redelivered, :exchange => basic_get_ok.exchange, :routing_key => basic_get_ok.routing_key, :message_count => basic_get_ok.message_count}
 
-      response = Hash[:header           => header.decode_payload,
+      response = Hash[:header           => header,
                       :payload          => content,
                       :delivery_details => envelope]
 
@@ -412,15 +426,20 @@ module Bunny
       @continuations.push(response)
     end
 
-    def maybe_notify_active_continuation!
-      @active_continuation.notify_all if @active_continuation
+    def handle_frameset(basic_deliver, properties, content)
+      consumer = @consumers[basic_deliver.consumer_tag]
+      if consumer
+        @work_pool.submit do
+          consumer.call(MessageMetadata.new(basic_deliver, properties), content)
+        end
+      end
     end
 
-    def maybe_clear_active_continuation!
-      if @active_continuation
-        @active_continuation.notify_all
-        @active_continuation = nil
-      end
+    # Starts consumer work pool. Lazily called by #basic_consume to avoid creating new threads
+    # that won't do any real work for channels that do not register consumers (e.g. only used for
+    # publishing). MK.
+    def maybe_start_consumer_work_pool!
+      @work_pool.start
     end
 
     def read_next_frame(options = {})
@@ -445,6 +464,7 @@ module Bunny
 
     def closed!
       @status = :closed
+      @work_pool.shutdown
       @connection.release_channel_id(@id)
     end
 

@@ -1,4 +1,51 @@
 module Bunny
   class Consumer
+
+    #
+    # API
+    #
+
+    attr_reader :channel
+    attr_reader :queue
+    attr_reader :consumer_tag
+    attr_reader :arguments
+
+
+    def initialize(channel, queue, consumer_tag, no_ack = false, exclusive = false, arguments = {})
+      @channel       = channel || raise(ArgumentError, "channel is nil")
+      @queue         = queue || raise(ArgumentError, "queue is nil")
+      @consumer_tag  = consumer_tag || raise(ArgumentError, "consumer tag is nil")
+      @exclusive     = exclusive
+      @arguments     = arguments
+      @no_ack        = no_ack
+    end
+
+
+    def on_delivery(&block)
+      @on_delivery = block
+      self
+    end
+
+    def call(*args)
+      @on_delivery.call(*args) if @on_delivery
+    end
+    alias handle_delivery call
+
+    def handle_cancel(&block)
+      @on_cancellation = block
+      self
+    end
+
+    def queue_name
+      if @queue.respond_to?(:name)
+        @queue.name
+      else
+        @queue
+      end
+    end
+
+    def inspect
+      "#<#{self.class.name}:#{object_id} @channel_id=#{@channel.number} @queue=#{self.queue_name}> @consumer_tag=#{@consumer_tag} @exclusive=#{@exclusive} @no_ack=#{@no_ack}>"
+    end
   end
 end
