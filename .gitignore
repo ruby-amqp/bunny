@@ -15,4 +15,4 @@ bin/*
 .bundle/*
 vendor/*
 playground/*
-.org
+*.org
