@@ -441,7 +441,7 @@ module Bunny
         @continuations.push(method)
       when AMQ::Protocol::Basic::CancelOk then
         @continuations.push(method)
-        # TODO: cancel the consumer
+        @consumers.delete(method.consumer_tag)
       when AMQ::Protocol::Tx::SelectOk, AMQ::Protocol::Tx::CommitOk, AMQ::Protocol::Tx::RollbackOk then
         @continuations.push(method)
       when AMQ::Protocol::Tx::SelectOk then
