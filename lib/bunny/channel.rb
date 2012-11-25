@@ -131,6 +131,10 @@ module Bunny
     end
     alias acknowledge ack
 
+    def nack(delivery_tag, requeue, multiple = false)
+      basic_nack(delivery_tag, requeue, multiple)
+    end
+
     def on_error(&block)
       @default_error_handler = block
     end
@@ -205,6 +209,13 @@ module Bunny
     def basic_ack(delivery_tag, multiple)
       raise_if_no_longer_open!
       @connection.send_frame(AMQ::Protocol::Basic::Ack.encode(@id, delivery_tag, multiple))
+
+      nil
+    end
+
+    def basic_nack(delivery_tag, requeue, multiple = false)
+      raise_if_no_longer_open!
+      @connection.send_frame(AMQ::Protocol::Basic::Nack.encode(@id, delivery_tag, requeue, multiple))
 
       nil
     end
