@@ -58,7 +58,7 @@ module Bunny
     end
 
     def queue(name = AMQ::Protocol::EMPTY_STRING, opts = {})
-      q = find_queue(name, opts) || Bunny::Queue.new(self, name, opts)
+      q = find_queue(name) || Bunny::Queue.new(self, name, opts)
 
       register_queue(q)
     end
