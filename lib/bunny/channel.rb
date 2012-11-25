@@ -371,6 +371,44 @@ module Bunny
       @last_channel_flow_ok
     end
 
+    # tx.*
+
+    def tx_select
+      raise_if_no_longer_open!
+
+      @connection.send_frame(AMQ::Protocol::Tx::Select.encode(@id))
+      Bunny::Timer.timeout(1, ClientTimeout) do
+        @last_tx_select_ok = @continuations.pop
+      end
+      raise_if_continuation_resulted_in_a_channel_error!
+
+      @last_tx_select_ok
+    end
+
+    def tx_commit
+      raise_if_no_longer_open!
+
+      @connection.send_frame(AMQ::Protocol::Tx::Commit.encode(@id))
+      Bunny::Timer.timeout(1, ClientTimeout) do
+        @last_tx_commit_ok = @continuations.pop
+      end
+      raise_if_continuation_resulted_in_a_channel_error!
+
+      @last_tx_commit_ok
+    end
+
+    def tx_rollback
+      raise_if_no_longer_open!
+
+      @connection.send_frame(AMQ::Protocol::Tx::Rollback.encode(@id))
+      Bunny::Timer.timeout(1, ClientTimeout) do
+        @last_tx_rollback_ok = @continuations.pop
+      end
+      raise_if_continuation_resulted_in_a_channel_error!
+
+      @last_tx_rollback_ok
+    end
+
 
     #
     # Implementation
@@ -404,6 +442,10 @@ module Bunny
       when AMQ::Protocol::Basic::CancelOk then
         @continuations.push(method)
         # TODO: cancel the consumer
+      when AMQ::Protocol::Tx::SelectOk, AMQ::Protocol::Tx::CommitOk, AMQ::Protocol::Tx::RollbackOk then
+        @continuations.push(method)
+      when AMQ::Protocol::Tx::SelectOk then
+        @continuations.push(method)
       when AMQ::Protocol::Channel::Close then
         closed!
         @connection.send_frame(AMQ::Protocol::Channel::CloseOk.encode(@id))
