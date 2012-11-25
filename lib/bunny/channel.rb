@@ -447,16 +447,12 @@ module Bunny
       when AMQ::Protocol::Tx::SelectOk then
         @continuations.push(method)
       when AMQ::Protocol::Channel::Close then
+        # puts "Exception on channel #{@id}: #{method.reply_code} #{method.reply_text}"
         closed!
         @connection.send_frame(AMQ::Protocol::Channel::CloseOk.encode(@id))
 
         @last_channel_error = instantiate_channel_level_exception(method)
         @continuations.push(method)
-      when AMQ::Protocol::Channel::Close then
-        # puts "Exception on channel #{@id}: #{method.reply_code} #{method.reply_text}"
-        closed!
-        @continuations.push(method)
-        @continuations.clear
       when AMQ::Protocol::Channel::CloseOk then
         @continuations.push(method)
       else
