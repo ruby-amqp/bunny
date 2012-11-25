@@ -381,6 +381,30 @@ module Bunny
       @last_exchange_bind_ok
     end
 
+    def exchange_unbind(source, destination, opts = {})
+      raise_if_no_longer_open!
+
+      source_name = if source.respond_to?(:name)
+                        source.name
+                      else
+                        source
+                      end
+
+      destination_name = if destination.respond_to?(:name)
+                        destination.name
+                      else
+                        destination
+                      end
+
+      @connection.send_frame(AMQ::Protocol::Exchange::Unbind.encode(@id, destination_name, source_name, opts[:routing_key], false, opts[:arguments]))
+      Bunny::Timer.timeout(1, ClientTimeout) do
+        @last_exchange_unbind_ok = @continuations.pop
+      end
+
+      raise_if_continuation_resulted_in_a_channel_error!
+      @last_exchange_unbind_ok
+    end
+
     # channel.*
 
     def channel_flow(active)
