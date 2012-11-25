@@ -55,8 +55,6 @@ module Bunny
 
 
     def initialize(channel_or_connection, type, name, opts = {})
-
-
       # old Bunny versions pass a connection here. In that case,
       # we just use default channel from it. MK.
       @channel          = channel_from(channel_or_connection)
@@ -69,6 +67,8 @@ module Bunny
       @arguments        = @options[:arguments]
 
       declare! unless opts[:no_declare] || (@name =~ /^amq\..+/) || (@name == AMQ::Protocol::EMPTY_STRING)
+
+      @channel.register_exchange(self)
     end
 
     # @return [Boolean] true if this exchange was declared as durable (will survive broker restart).
@@ -103,9 +103,24 @@ module Bunny
     end
 
 
+    def on_return(&block)
+      @on_return = block
+    end
+
+
     #
     # Implementation
     #
+
+    def handle_return(basic_return, properties, content)
+      if @on_return
+        @on_return.call(basic_return, properties, content)
+      else
+        # TODO: log a warning
+      end
+    end
+
+    protected
 
     # @private
     def declare!

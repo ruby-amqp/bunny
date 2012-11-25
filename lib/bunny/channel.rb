@@ -446,11 +446,21 @@ module Bunny
       end
     end
 
+    def handle_basic_return(basic_return, properties, content)
+      x = find_exchange(basic_return.exchange)
+
+      if x
+        x.handle_return(basic_return, properties, content)
+      else
+        # TODO: log a warning
+      end
+    end
+
     # Starts consumer work pool. Lazily called by #basic_consume to avoid creating new threads
     # that won't do any real work for channels that do not register consumers (e.g. only used for
     # publishing). MK.
     def maybe_start_consumer_work_pool!
-      @work_pool.start
+      @work_pool.start unless @work_pool.started?
     end
 
     def read_next_frame(options = {})
@@ -467,8 +477,16 @@ module Bunny
       @queues[queue.name] = queue
     end
 
-    def find_queue(name, opts = {})
+    def find_queue(name)
       @queues[name]
+    end
+
+    def register_exchange(exchange)
+      @exchanges[exchange.name] = exchange
+    end
+
+    def find_exchange(name)
+      @exchanges[name]
     end
 
     protected

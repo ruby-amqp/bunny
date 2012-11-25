@@ -270,6 +270,8 @@ module Bunny
         @channels[ch_number].handle_basic_get_ok(*frames)
       when AMQ::Protocol::Basic::GetEmpty then
         @channels[ch_number].handle_basic_get_empty(*frames)
+      when AMQ::Protocol::Basic::Return then
+        @channels[ch_number].handle_basic_return(*frames)
       else
         @channels[ch_number].handle_frameset(*frames)
       end
