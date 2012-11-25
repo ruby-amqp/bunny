@@ -29,6 +29,8 @@ module Bunny
       @default_consumer = nil
 
       declare! unless opts[:no_declare]
+
+      @channel.register_queue(self)
     end
 
     # @return [Boolean] true if this queue was declared as durable (will survive broker restart).
