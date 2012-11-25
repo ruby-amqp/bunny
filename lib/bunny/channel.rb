@@ -158,7 +158,7 @@ module Bunny
 
       meta = { :priority => 0, :delivery_mode => 2, :content_type => "application/octet-stream" }.
         merge(opts)
-      @connection.send_frameset(AMQ::Protocol::Basic::Publish.encode(@id, payload, meta, @name, routing_key, meta[:mandatory], false, (frame_size || @connection.frame_max)), self)
+      @connection.send_frameset(AMQ::Protocol::Basic::Publish.encode(@id, payload, meta, exchange_name, routing_key, meta[:mandatory], false, (frame_size || @connection.frame_max)), self)
 
       self
     end
@@ -357,6 +357,30 @@ module Bunny
       @last_exchange_delete_ok
     end
 
+    def exchange_bind(source, destination, opts = {})
+      raise_if_no_longer_open!
+
+      source_name = if source.respond_to?(:name)
+                        source.name
+                      else
+                        source
+                      end
+
+      destination_name = if destination.respond_to?(:name)
+                        destination.name
+                      else
+                        destination
+                      end
+
+      @connection.send_frame(AMQ::Protocol::Exchange::Bind.encode(@id, destination_name, source_name, opts[:routing_key], false, opts[:arguments]))
+      Bunny::Timer.timeout(1, ClientTimeout) do
+        @last_exchange_bind_ok = @continuations.pop
+      end
+
+      raise_if_continuation_resulted_in_a_channel_error!
+      @last_exchange_bind_ok
+    end
+
     # channel.*
 
     def channel_flow(active)
@@ -426,6 +450,10 @@ module Bunny
       when AMQ::Protocol::Queue::BindOk then
         @continuations.push(method)
       when AMQ::Protocol::Queue::UnbindOk then
+        @continuations.push(method)
+      when AMQ::Protocol::Exchange::BindOk then
+        @continuations.push(method)
+      when AMQ::Protocol::Exchange::UnbindOk then
         @continuations.push(method)
       when AMQ::Protocol::Exchange::DeclareOk then
         @continuations.push(method)

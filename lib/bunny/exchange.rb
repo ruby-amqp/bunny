@@ -103,6 +103,11 @@ module Bunny
     end
 
 
+    def bind(source, opts = {})
+      @channel.exchange_bind(source, self, opts)
+    end
+
+
     def on_return(&block)
       @on_return = block
     end

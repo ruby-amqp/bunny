@@ -82,6 +82,7 @@ module Bunny
 
       block ? block.call(response) : response
     end
+    alias get pop
 
 
     # Deletes the queue
