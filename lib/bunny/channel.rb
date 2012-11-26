@@ -457,6 +457,20 @@ module Bunny
       @last_tx_rollback_ok
     end
 
+    # confirm.*
+
+    def confirm_select
+      raise_if_no_longer_open!
+
+      @connection.send_frame(AMQ::Protocol::Confirm::Select.encode(@id, false))
+      Bunny::Timer.timeout(1, ClientTimeout) do
+        @last_confirm_select_ok = @continuations.pop
+      end
+      raise_if_continuation_resulted_in_a_channel_error!
+
+      @last_confirm_select_ok
+    end
+
 
     #
     # Implementation
@@ -497,6 +511,8 @@ module Bunny
       when AMQ::Protocol::Tx::SelectOk, AMQ::Protocol::Tx::CommitOk, AMQ::Protocol::Tx::RollbackOk then
         @continuations.push(method)
       when AMQ::Protocol::Tx::SelectOk then
+        @continuations.push(method)
+      when AMQ::Protocol::Confirm::SelectOk then
         @continuations.push(method)
       when AMQ::Protocol::Channel::Close then
         # puts "Exception on channel #{@id}: #{method.reply_code} #{method.reply_text}"
