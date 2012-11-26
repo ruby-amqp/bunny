@@ -7,6 +7,10 @@ describe Bunny::Exchange do
     c
   end
 
+  after :all do
+    connection.close if connection.open?
+  end
+
   it "unbinds two existing exchanges" do
     ch          = connection.create_channel
 
