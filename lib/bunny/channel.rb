@@ -528,19 +528,12 @@ module Bunny
       end
     end
 
-    def handle_basic_get_ok(basic_get_ok, header, content)
-      envelope = {:delivery_tag => basic_get_ok.delivery_tag, :redelivered => basic_get_ok.redelivered, :exchange => basic_get_ok.exchange, :routing_key => basic_get_ok.routing_key, :message_count => basic_get_ok.message_count}
-
-      response = Hash[:header           => header,
-                      :payload          => content,
-                      :delivery_details => envelope]
-
-      @continuations.push(response)
+    def handle_basic_get_ok(basic_get_ok, properties, content)
+      @continuations.push([basic_get_ok, properties, content])
     end
 
     def handle_basic_get_empty(basic_get_empty)
-      response = {:header => nil, :payload => :queue_empty, :delivery_details => nil}
-      @continuations.push(response)
+      @continuations.push([nil, nil, nil])
     end
 
     def handle_frameset(basic_deliver, properties, content)

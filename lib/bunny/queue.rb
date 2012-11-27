@@ -78,9 +78,13 @@ module Bunny
     end
 
     def pop(opts = {:ack => true}, &block)
-      response = @channel.basic_get(@name, opts)
+      delivery_info, properties, content = @channel.basic_get(@name, opts)
 
-      block ? block.call(response) : response
+      if block
+        block.call(delivery_info, properties, content)
+      else
+        [delivery_info, properties, content]
+      end
     end
     alias get pop
 

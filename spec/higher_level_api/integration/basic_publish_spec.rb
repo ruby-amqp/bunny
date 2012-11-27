@@ -44,10 +44,7 @@ describe "Publishing a message to the default exchange" do
       sleep(1)
       q.message_count.should == 1
 
-      msg      = q.pop
-      headers  = msg[:header]
-      payload  = msg[:payload]
-      envelope = msg[:delivery_details]
+      envelope, headers, payload = q.pop
 
       payload.should == "xyzzy"
 
@@ -73,9 +70,7 @@ describe "Publishing a message to the default exchange" do
       sleep(1)
       q.message_count.should == 1
 
-      msg      = q.pop
-      payload  = msg[:payload]
-
+      _, _, payload      = q.pop
       payload.bytesize.should == as.bytesize
 
       ch.close
@@ -96,10 +91,7 @@ describe "Publishing a message to the default exchange" do
       sleep(1)
       q.message_count.should == 1
 
-      msg      = q.pop
-      headers  = msg[:header]
-      payload  = msg[:payload]
-      envelope = msg[:delivery_details]
+      envelope, headers, payload = q.pop
 
       payload.should == ""
 

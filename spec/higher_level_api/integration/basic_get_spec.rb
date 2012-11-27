@@ -21,8 +21,8 @@ describe Bunny::Queue, "#pop" do
       x.publish("xyzzy", :routing_key => q.name)
 
       sleep(0.5)
-      fetched = q.pop
-      fetched[:payload].should == "xyzzy"
+      delivery_info, properties, content = q.pop
+      content.should == "xyzzy"
       q.message_count.should == 0
 
       ch.close
@@ -37,8 +37,8 @@ describe Bunny::Queue, "#pop" do
       q  = ch.queue("", :exclusive => true)
       q.purge
 
-      fetched = q.pop
-      fetched[:payload].should == :queue_empty
+      _, _, content = q.pop
+      content.should be_nil
       q.message_count.should == 0
 
       ch.close

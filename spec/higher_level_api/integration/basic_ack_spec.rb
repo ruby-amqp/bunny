@@ -23,10 +23,9 @@ describe Bunny::Channel, "#ack" do
       x.publish("bunneth", :routing_key => q.name)
       sleep(0.25)
       q.message_count.should == 1
-      resp = q.pop(:ack => true)
-      dt   = resp[:delivery_details][:delivery_tag]
+      delivery_details, properties, content = q.pop(:ack => true)
 
-      subject.ack(dt, true)
+      subject.ack(delivery_details.delivery_tag, true)
       sleep(0.25)
       q.message_count.should == 0
 
@@ -44,7 +43,7 @@ describe Bunny::Channel, "#ack" do
       x.publish("bunneth", :routing_key => q.name)
       sleep(0.25)
       q.message_count.should == 1
-      resp = q.pop(:ack => true)
+      _, _, content = q.pop(:ack => true)
 
       subject.on_error do |ch, channel_close|
         @channel_close = channel_close

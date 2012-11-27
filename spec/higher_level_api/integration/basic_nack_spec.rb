@@ -23,10 +23,9 @@ describe Bunny::Channel, "#nack" do
       x.publish("bunneth", :routing_key => q.name)
       sleep(0.5)
       q.message_count.should == 1
-      resp = q.pop(:ack => true)
-      dt   = resp[:delivery_details][:delivery_tag]
+      delivery_info, _, content = q.pop(:ack => true)
 
-      subject.nack(dt, false, false)
+      subject.nack(delivery_info.delivery_tag, false, false)
       sleep(0.5)
       q.message_count.should == 0
 
