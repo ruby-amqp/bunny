@@ -90,7 +90,7 @@ module Bunny
 
 
     def publish(payload, opts = {})
-      @channel.basic_publish(payload, self.name, opts.delete(:routing_key), opts)
+      @channel.basic_publish(payload, self.name, (opts.delete(:routing_key) || opts.delete(:key)), opts)
 
       self
     end
