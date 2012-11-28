@@ -171,6 +171,32 @@ module Bunny
       self.basic_qos(prefetch_count, true)
     end
 
+
+    #
+    # Backwards compatibility
+    #
+
+    def queue(*args)
+      @default_channel.queue(*args)
+    end
+
+    def direct(*args)
+      @default_channel.direct(*args)
+    end
+
+    def fanout(*args)
+      @default_channel.fanout(*args)
+    end
+
+    def topic(*args)
+      @default_channel.topic(*args)
+    end
+
+    def headers(*args)
+      @default_channel.headers(*args)
+    end
+
+
     #
     # Implementation
     #
