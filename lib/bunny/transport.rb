@@ -39,6 +39,10 @@ module Bunny
     end
 
 
+    def hostname
+      @host
+    end
+
     def uses_tls?
       @ssl
     end
