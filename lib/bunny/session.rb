@@ -105,11 +105,6 @@ module Bunny
       @channel0
     end
 
-    def channel
-      @default_channel
-    end
-
-
     def start
       @status = :connecting
 
@@ -133,6 +128,7 @@ module Bunny
         ch
       end
     end
+    alias channel create_channel
 
     def close
       if @transport.open?
