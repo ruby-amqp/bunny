@@ -109,6 +109,10 @@ module Bunny
       self.direct("", :no_declare => true)
     end
 
+    def exchange(name, opts = {})
+      Exchange.new(self, opts.fetch(:type, :direct), name, opts)
+    end
+
     def prefetch(prefetch_count)
       self.basic_qos(prefetch_count, false)
     end

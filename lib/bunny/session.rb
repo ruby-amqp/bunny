@@ -192,6 +192,10 @@ module Bunny
       @default_channel.headers(*args)
     end
 
+    def exchange(*args)
+      @default_channel.exchange(*args)
+    end
+
 
     #
     # Implementation
