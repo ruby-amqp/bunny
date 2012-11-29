@@ -12,7 +12,7 @@ describe "A client-named", Bunny::Queue do
     q  = ch.queue("bunny.tests.queues.client-named#{rand}", :exclusive => true)
     q.should_not be_server_named
 
-    q.bind("amq.fanout").should be_instance_of(AMQ::Protocol::Queue::BindOk)
+    q.bind("amq.fanout").should == q
 
     ch.close
   end
@@ -23,7 +23,7 @@ describe "A client-named", Bunny::Queue do
     q.should_not be_server_named
 
     q.bind("amq.fanout")
-    q.unbind("amq.fanout").should be_instance_of(AMQ::Protocol::Queue::UnbindOk)
+    q.unbind("amq.fanout").should == q
 
     ch.close
   end
@@ -33,7 +33,7 @@ describe "A client-named", Bunny::Queue do
     q  = ch.queue("bunny.tests.queues.client-named#{rand}", :exclusive => true)
 
     x  = ch.fanout("bunny.tests.exchanges.fanout#{rand}")
-    q.bind(x).should be_instance_of(AMQ::Protocol::Queue::BindOk)
+    q.bind(x).should == q
 
     x.delete
     ch.close
@@ -47,7 +47,7 @@ describe "A client-named", Bunny::Queue do
     x  = ch.fanout("bunny.tests.fanout", :auto_delete => true, :durable => false)
 
     q.bind(x)
-    q.unbind(x).should be_instance_of(AMQ::Protocol::Queue::UnbindOk)
+    q.unbind(x).should == q
 
     ch.close
   end
@@ -67,7 +67,7 @@ describe "A server-named", Bunny::Queue do
     q  = ch.queue("", :exclusive => true)
     q.should be_server_named
 
-    q.bind("amq.fanout").should be_instance_of(AMQ::Protocol::Queue::BindOk)
+    q.bind("amq.fanout").should == q
 
     ch.close
   end
@@ -78,7 +78,7 @@ describe "A server-named", Bunny::Queue do
     q.should be_server_named
 
     q.bind("amq.fanout")
-    q.unbind("amq.fanout").should be_instance_of(AMQ::Protocol::Queue::UnbindOk)
+    q.unbind("amq.fanout").should == q
 
     ch.close
   end
@@ -88,7 +88,7 @@ describe "A server-named", Bunny::Queue do
     q  = ch.queue("", :exclusive => true)
 
     x  = ch.fanout("bunny.tests.exchanges.fanout#{rand}")
-    q.bind(x).should be_instance_of(AMQ::Protocol::Queue::BindOk)
+    q.bind(x).should == q
 
     x.delete
     ch.close
@@ -101,7 +101,7 @@ describe "A server-named", Bunny::Queue do
     name = "bunny.tests.exchanges.fanout#{rand}"
     x    = ch.fanout(name)
     q.bind(x)
-    q.unbind(name).should be_instance_of(AMQ::Protocol::Queue::UnbindOk)
+    q.unbind(name).should == q
 
     x.delete
     ch.close
