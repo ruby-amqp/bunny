@@ -12,10 +12,8 @@ channel  = connection.create_channel
 exchange = channel.topic("weathr", :auto_delete => true)
 
 # Subscribers.
-channel.queue("", :exclusive => true) do |queue|
-  queue.bind(exchange, :routing_key => "americas.north.#").subscribe do |properties, payload|
-    puts "An update for North America: #{payload}, routing key is #{properties.routing_key}"
-  end
+channel.queue("", :exclusive => true).bind(exchange, :routing_key => "americas.north.#").subscribe do |properties, payload|
+  puts "An update for North America: #{payload}, routing key is #{properties.routing_key}"
 end
 channel.queue("americas.south").bind(exchange, :routing_key => "americas.south.#").subscribe do |properties, payload|
   puts "An update for South America: #{payload}, routing key is #{properties.routing_key}"
