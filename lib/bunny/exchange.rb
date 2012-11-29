@@ -105,15 +105,21 @@ module Bunny
 
     def bind(source, opts = {})
       @channel.exchange_bind(source, self, opts)
+
+      self
     end
 
     def unbind(source, opts = {})
       @channel.exchange_unbind(source, self, opts)
+
+      self
     end
 
 
     def on_return(&block)
       @on_return = block
+
+      self
     end
 
 

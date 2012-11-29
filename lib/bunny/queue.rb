@@ -64,10 +64,14 @@ module Bunny
 
     def bind(exchange, opts = {})
       @channel.queue_bind(@name, exchange, opts)
+
+      self
     end
 
     def unbind(exchange, opts = {})
       @channel.queue_unbind(@name, exchange, opts)
+
+      self
     end
 
     def subscribe(opts = {:consumer_tag => "", :ack => false, :exclusive => false, :block => false}, &block)
@@ -112,6 +116,8 @@ module Bunny
 
     def purge(opts = {})
       @channel.queue_purge(@name, opts)
+
+      self
     end
 
     def status
