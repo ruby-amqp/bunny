@@ -44,7 +44,7 @@ module Bunny
     # API
     #
 
-    attr_reader :status, :host, :port, :heartbeat, :user, :pass, :vhost, :frame_max, :default_channel
+    attr_reader :status, :host, :port, :heartbeat, :user, :pass, :vhost, :frame_max
     attr_reader :server_capabilities, :server_properties, :server_authentication_mechanisms, :server_locales
     attr_reader :default_channel
     attr_reader :channel_id_allocator
