@@ -70,11 +70,14 @@ module Bunny
       @channel.queue_unbind(@name, exchange, opts)
     end
 
-    def subscribe(opts = {:consumer_tag => "", :ack => false, :exclusive => false}, &block)
+    def subscribe(opts = {:consumer_tag => "", :ack => false, :exclusive => false, :block => false}, &block)
       @channel.basic_consume(@name, opts.fetch(:consumer_tag, ""), !opts[:ack], opts[:exclusive], opts[:arguments], &block)
 
-      # joins current thread with the consumers pool
-      @channel.work_pool.join
+      if options[:block]
+        # joins current thread with the consumers pool, will block
+        # the current thread for as long as the consumer pool is active
+        @channel.work_pool.join
+      end
     end
 
     def pop(opts = {:ack => false}, &block)
