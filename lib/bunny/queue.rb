@@ -77,7 +77,7 @@ module Bunny
       @channel.work_pool.join
     end
 
-    def pop(opts = {:ack => true}, &block)
+    def pop(opts = {:ack => false}, &block)
       delivery_info, properties, content = @channel.basic_get(@name, opts)
 
       if block
