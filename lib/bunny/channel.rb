@@ -106,7 +106,7 @@ module Bunny
     end
 
     def default_exchange
-      self.direct("", :no_declare => true)
+      self.direct(AMQ::Protocol::EMPTY_STRING, :no_declare => true)
     end
 
     def exchange(name, opts = {})
