@@ -88,6 +88,18 @@ module Bunny
     end
     alias get pop
 
+    def pop_as_hash(opts = {:ack => false}, &block)
+      delivery_info, properties, content = @channel.basic_get(@name, opts)
+
+      result = {:header => properties, :payload => content, :delivery_details => delivery_info}
+
+      if block
+        block.call(result)
+      else
+        result
+      end
+    end
+
 
     # Deletes the queue
     # @api public
