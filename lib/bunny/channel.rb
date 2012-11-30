@@ -165,7 +165,7 @@ module Bunny
 
       meta = { :priority => 0, :delivery_mode => 2, :content_type => "application/octet-stream" }.
         merge(opts)
-      @connection.send_frameset(AMQ::Protocol::Basic::Publish.encode(@id, payload, meta, exchange_name, routing_key, meta[:mandatory], false, (frame_size || @connection.frame_max)), self)
+      @connection.send_frameset(AMQ::Protocol::Basic::Publish.encode(@id, payload, meta, exchange_name, routing_key, meta[:mandatory], false, @connection.frame_max), self)
 
       self
     end
