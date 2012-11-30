@@ -413,10 +413,6 @@ module Bunny
 
     protected
 
-    def socket_open?
-      !@socket.nil? && !@socket.closed?
-    end
-
     def init_connection
       self.send_preamble
 
