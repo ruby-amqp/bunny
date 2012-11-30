@@ -1,3 +1,12 @@
+## Changes between Bunny 0.9.0.pre2 and 0.9.0.pre3
+
+### RABBITMQ_URL ENV variable support
+
+If `RABBITMQ_URL` environment variable is set, Bunny will assume
+it contains a valid amqp URI string and will use it. This is convenient
+with some PaaS technologies such as Heroku.
+
+
 ## Changes between Bunny 0.9.0.pre1 and 0.9.0.pre2
 
 ### Change Bunny::Queue#pop default for :ack to false

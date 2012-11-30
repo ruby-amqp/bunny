@@ -50,7 +50,9 @@ module Bunny
     attr_reader :channel_id_allocator
 
     def initialize(connection_string_or_opts = Hash.new, optz = Hash.new)
-      opts = case connection_string_or_opts
+      opts = case (ENV["RABBITMQ_URL"] || connection_string_or_opts)
+             when nil then
+               Hash.new
              when String then
                AMQ::Settings.parse_amqp_url(connection_string_or_opts)
              when Hash then
