@@ -42,8 +42,8 @@ describe Bunny::Channel, "#basic_consume" do
       t = Thread.new do
         ch = connection.create_channel
         q = ch.queue(queue_name, :auto_delete => true, :durable => false)
-        ch.basic_consume(q, "", true, false) do |metadata, payload|
-          delivered_keys << metadata.routing_key
+        ch.basic_consume(q, "", true, false) do |delivery_info, properties, payload|
+          delivered_keys << delivery_info.routing_key
           delivered_data << payload
         end
       end
@@ -74,8 +74,8 @@ describe Bunny::Channel, "#basic_consume" do
       t = Thread.new do
         ch = connection.create_channel
         q = ch.queue(queue_name, :auto_delete => true, :durable => false)
-        ch.basic_consume(q, "", false, false) do |metadata, payload|
-          delivered_keys << metadata.routing_key
+        ch.basic_consume(q, "", false, false) do |delivery_info, properties, payload|
+          delivered_keys << delivery_info.routing_key
           delivered_data << payload
 
           ch.close

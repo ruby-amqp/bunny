@@ -5,7 +5,10 @@ require "bunny/consumer_work_pool"
 
 require "bunny/exchange"
 require "bunny/queue"
-require "bunny/message_metadata"
+
+require "bunny/delivery_info"
+require "bunny/return_info"
+require "bunny/message_properties"
 
 module Bunny
   class Channel
@@ -544,7 +547,7 @@ module Bunny
       consumer = @consumers[basic_deliver.consumer_tag]
       if consumer
         @work_pool.submit do
-          consumer.call(MessageMetadata.new(basic_deliver, properties), content)
+          consumer.call(DeliveryInfo.new(basic_deliver), MessageProperties.new(properties), content)
         end
       end
     end
@@ -553,7 +556,7 @@ module Bunny
       x = find_exchange(basic_return.exchange)
 
       if x
-        x.handle_return(basic_return, properties, content)
+        x.handle_return(ReturnInfo.new(basic_return), MessageProperties.new(properties), content)
       else
         # TODO: log a warning
       end

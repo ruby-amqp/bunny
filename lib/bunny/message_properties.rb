@@ -1,7 +1,8 @@
 module Bunny
-  # Combines message delivery metadata and message metadata behind a single Hash-like
-  # immutable data structure that mimics AMQP::Header in amqp gem.
-  class MessageMetadata
+  # Wraps basic properties hash as returned by amq-protocol to
+  # provide access to the delivery properties as immutable hash as
+  # well as methods.
+  class MessageProperties
 
     #
     # Behaviors
@@ -13,30 +14,20 @@ module Bunny
     # API
     #
 
-    def initialize(basic_deliver, properties)
-      h = {
-        :consumer_tag => basic_deliver.consumer_tag,
-        :delivery_tag => basic_deliver.delivery_tag,
-        :redelivered  => basic_deliver.redelivered,
-        :exchange     => basic_deliver.exchange,
-        :routing_key  => basic_deliver.routing_key
-      }
-
-      @basic_deliver = basic_deliver
-      @properties    = properties
-      @combined      = properties.merge(h)
+    def initialize(properties)
+      @properties = properties
     end
 
     def each(*args, &block)
-      @combined.each(*args, &block)
+      @properties.each(*args, &block)
     end
 
     def [](k)
-      @combined[k]
+      @properties[k]
     end
 
     def to_hash
-      @combined
+      @properties
     end
 
     def to_s
@@ -45,26 +36,6 @@ module Bunny
 
     def inspect
       to_hash.inspect
-    end
-
-    def consumer_tag
-      @basic_deliver.consumer_tag
-    end
-
-    def deliver_tag
-      @basic_deliver.deliver_tag
-    end
-
-    def redelivered
-      @basic_deliver.redelivered
-    end
-
-    def exchange
-      @basic_deliver.exchange
-    end
-
-    def routing_key
-      @basic_deliver.routing_key
     end
 
     def content_type
