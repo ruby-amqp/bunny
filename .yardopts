@@ -1,9 +1,8 @@
 --no-private
 --protected
---markup="textile" lib/**/*.rb
---main README.textile
---asset examples:examples
+--markup="markdown" lib/**/*.rb
+--main README.md
 --hide-tag todo
 -
 LICENSE
-CHANGELOG
+ChangeLog.md
