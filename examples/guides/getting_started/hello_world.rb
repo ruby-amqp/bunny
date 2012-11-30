@@ -11,7 +11,7 @@ ch = conn.create_channel
 q  = ch.queue("bunny.examples.hello_world", :auto_delete => true)
 x  = ch.default_exchange
 
-q.subscribe do |metadata, payload|
+q.subscribe do |delivery_info, properties, payload|
   puts "Received #{payload}"
 end
 

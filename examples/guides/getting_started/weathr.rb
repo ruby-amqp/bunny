@@ -12,23 +12,23 @@ channel  = connection.create_channel
 exchange = channel.topic("weathr", :auto_delete => true)
 
 # Subscribers.
-channel.queue("", :exclusive => true).bind(exchange, :routing_key => "americas.north.#").subscribe do |properties, payload|
-  puts "An update for North America: #{payload}, routing key is #{properties.routing_key}"
+channel.queue("", :exclusive => true).bind(exchange, :routing_key => "americas.north.#").subscribe do |delivery_info, properties, payload|
+  puts "An update for North America: #{payload}, routing key is #{delivery_info.routing_key}"
 end
-channel.queue("americas.south").bind(exchange, :routing_key => "americas.south.#").subscribe do |properties, payload|
-  puts "An update for South America: #{payload}, routing key is #{properties.routing_key}"
+channel.queue("americas.south").bind(exchange, :routing_key => "americas.south.#").subscribe do |delivery_info, properties, payload|
+  puts "An update for South America: #{payload}, routing key is #{delivery_info.routing_key}"
 end
-channel.queue("us.california").bind(exchange, :routing_key => "americas.north.us.ca.*").subscribe do |properties, payload|
-  puts "An update for US/California: #{payload}, routing key is #{properties.routing_key}"
+channel.queue("us.california").bind(exchange, :routing_key => "americas.north.us.ca.*").subscribe do |delivery_info, properties, payload|
+  puts "An update for US/California: #{payload}, routing key is #{delivery_info.routing_key}"
 end
-channel.queue("us.tx.austin").bind(exchange, :routing_key => "#.tx.austin").subscribe do |properties, payload|
-  puts "An update for Austin, TX: #{payload}, routing key is #{properties.routing_key}"
+channel.queue("us.tx.austin").bind(exchange, :routing_key => "#.tx.austin").subscribe do |delivery_info, properties, payload|
+  puts "An update for Austin, TX: #{payload}, routing key is #{delivery_info.routing_key}"
 end
-channel.queue("it.rome").bind(exchange, :routing_key => "europe.italy.rome").subscribe do |properties, payload|
-  puts "An update for Rome, Italy: #{payload}, routing key is #{properties.routing_key}"
+channel.queue("it.rome").bind(exchange, :routing_key => "europe.italy.rome").subscribe do |delivery_info, properties, payload|
+  puts "An update for Rome, Italy: #{payload}, routing key is #{delivery_info.routing_key}"
 end
-channel.queue("asia.hk").bind(exchange, :routing_key => "asia.southeast.hk.#").subscribe do |properties, payload|
-  puts "An update for Hong Kong: #{payload}, routing key is #{properties.routing_key}"
+channel.queue("asia.hk").bind(exchange, :routing_key => "asia.southeast.hk.#").subscribe do |delivery_info, properties, payload|
+  puts "An update for Hong Kong: #{payload}, routing key is #{delivery_info.routing_key}"
 end
 
 exchange.publish("San Diego update", :routing_key => "americas.north.us.ca.sandiego").
