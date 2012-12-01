@@ -44,7 +44,7 @@ module Bunny
     def allocated_channel_id?(i)
       @channel_id_mutex.synchronize do
         @int_allocator.allocated?(i)
-      end      
+      end
     end
 
     # Resets channel allocator. This method is thread safe.
