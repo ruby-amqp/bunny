@@ -129,6 +129,16 @@ module Bunny
       end
     end
 
+    # Publishes a message to the queue via default exchange.
+    #
+    # @see Bunny::Exchange#publish
+    # @see Bunny::Channel#default_exchange
+    def publish(payload, opts = {})
+      @channel.default_exchange.publish(payload, opts.merge(:routing_key => @name))
+
+      self
+    end
+
 
     # Deletes the queue
     # @api public
