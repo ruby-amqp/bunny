@@ -5,16 +5,19 @@ module Bunny
     # API
     #
 
-    attr_reader :channel
-    attr_reader :queue
-    attr_reader :consumer_tag
-    attr_reader :arguments
+    attr_reader   :channel
+    attr_reader   :queue
+    attr_accessor :consumer_tag
+    attr_reader   :arguments
+    attr_reader   :no_ack
+    attr_reader   :exclusive
 
 
-    def initialize(channel, queue, consumer_tag, no_ack = false, exclusive = false, arguments = {})
+
+    def initialize(channel, queue, consumer_tag = "", no_ack = false, exclusive = false, arguments = {})
       @channel       = channel || raise(ArgumentError, "channel is nil")
-      @queue         = queue || raise(ArgumentError, "queue is nil")
-      @consumer_tag  = consumer_tag || raise(ArgumentError, "consumer tag is nil")
+      @queue         = queue   || raise(ArgumentError, "queue is nil")
+      @consumer_tag  = consumer_tag
       @exclusive     = exclusive
       @arguments     = arguments
       @no_ack        = no_ack
@@ -31,9 +34,13 @@ module Bunny
     end
     alias handle_delivery call
 
-    def handle_cancel(&block)
+    def on_cancellation(&block)
       @on_cancellation = block
       self
+    end
+
+    def handle_cancellation(basic_cancel)
+      @on_cancellation.call(basic_cancel) if @on_cancellation
     end
 
     def queue_name

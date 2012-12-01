@@ -30,11 +30,16 @@ module Bunny
 
     DEFAULT_CLIENT_PROPERTIES = {
       # once we support AMQP 0.9.1 extensions, this needs to be updated. MK.
-      :capabilities => {},
+      :capabilities => {
+        # :publisher_confirms         => true,
+        :consumer_cancel_notify     => true,
+        :exchange_exchange_bindings => true,
+        :"basic.nack"               => true
+      },
       :product      => "Bunny",
       :platform     => ::RUBY_DESCRIPTION,
       :version      => Bunny::VERSION,
-      :information  => "http://github.com/ruby-amqp/bunny"
+      :information  => "http://github.com/ruby-amqp/bunny",
     }
 
     DEFAULT_LOCALE = "en_GB"

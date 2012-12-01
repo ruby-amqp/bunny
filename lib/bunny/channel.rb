@@ -243,10 +243,36 @@ module Bunny
       end
 
       @consumer_mutex.synchronize do
-        c = Consumer.new(self, queue, consumer_tag, no_ack, exclusive, arguments)
+        # make sure to use consumer tag from basic.consume-ok in case it was
+        # server-generated
+        c = Consumer.new(self, queue, @last_basic_consume_ok.consumer_tag, no_ack, exclusive, arguments)
         c.on_delivery(&block) if block
-
         @consumers[@last_basic_consume_ok.consumer_tag] = c
+      end
+
+      @last_basic_consume_ok
+    end
+
+    def basic_consume_with(consumer)
+      raise_if_no_longer_open!
+      maybe_start_consumer_work_pool!
+
+      @connection.send_frame(AMQ::Protocol::Basic::Consume.encode(@id,
+                                                                  consumer.queue_name,
+                                                                  consumer.consumer_tag,
+                                                                  false,
+                                                                  consumer.no_ack,
+                                                                  consumer.exclusive,
+                                                                  false,
+                                                                  consumer.arguments))
+      Bunny::Timer.timeout(1, ClientTimeout) do
+        @last_basic_consume_ok = @continuations.pop
+      end
+
+      @consumer_mutex.synchronize do
+        # update the tag in case it was server-generated
+        consumer.consumer_tag = @last_basic_consume_ok.consumer_tag
+        @consumers[@last_basic_consume_ok.consumer_tag] = consumer
       end
 
       @last_basic_consume_ok
@@ -368,16 +394,16 @@ module Bunny
       raise_if_no_longer_open!
 
       source_name = if source.respond_to?(:name)
-                        source.name
-                      else
-                        source
-                      end
+                      source.name
+                    else
+                      source
+                    end
 
       destination_name = if destination.respond_to?(:name)
-                        destination.name
-                      else
-                        destination
-                      end
+                           destination.name
+                         else
+                           destination
+                         end
 
       @connection.send_frame(AMQ::Protocol::Exchange::Bind.encode(@id, destination_name, source_name, opts[:routing_key], false, opts[:arguments]))
       Bunny::Timer.timeout(1, ClientTimeout) do
@@ -392,16 +418,16 @@ module Bunny
       raise_if_no_longer_open!
 
       source_name = if source.respond_to?(:name)
-                        source.name
-                      else
-                        source
-                      end
+                      source.name
+                    else
+                      source
+                    end
 
       destination_name = if destination.respond_to?(:name)
-                        destination.name
-                      else
-                        destination
-                      end
+                           destination.name
+                         else
+                           destination
+                         end
 
       @connection.send_frame(AMQ::Protocol::Exchange::Unbind.encode(@id, destination_name, source_name, opts[:routing_key], false, opts[:arguments]))
       Bunny::Timer.timeout(1, ClientTimeout) do
@@ -512,6 +538,12 @@ module Bunny
         @continuations.push(method)
       when AMQ::Protocol::Basic::ConsumeOk then
         @continuations.push(method)
+      when AMQ::Protocol::Basic::Cancel then
+        if consumer = @consumers[method.consumer_tag]
+          consumer.handle_cancellation(method)
+        end
+
+        @consumers.delete(method.consumer_tag)
       when AMQ::Protocol::Basic::CancelOk then
         @continuations.push(method)
         @consumers.delete(method.consumer_tag)

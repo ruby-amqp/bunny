@@ -74,14 +74,36 @@ module Bunny
       self
     end
 
-    def subscribe(opts = {:consumer_tag => "", :ack => false, :exclusive => false, :block => false}, &block)
-      @channel.basic_consume(@name, opts.fetch(:consumer_tag, ""), !opts[:ack], opts[:exclusive], opts[:arguments], &block)
+    def subscribe(opts = {
+                    :consumer_tag    => "",
+                    :ack             => false,
+                    :exclusive       => false,
+                    :block           => false,
+                    :on_cancellation => nil
+                  }, &block)
 
+      ctag       = opts.fetch(:consumer_tag, "")
+      consumer   = Consumer.new(@channel,
+                                @name,
+                                ctag,
+                                opts[:no_ack],
+                                opts[:exclusive],
+                                opts[:arguments])
+      consumer.on_delivery(&block)
+      consumer.on_cancellation(&opts[:on_cancellation]) if opts[:on_cancellation]
+
+      @channel.basic_consume_with(consumer)
       if opts[:block]
         # joins current thread with the consumers pool, will block
         # the current thread for as long as the consumer pool is active
         @channel.work_pool.join
       end
+    end
+
+    def subscribe_with(consumer, opts = {:block => false})
+      @channel.basic_consume_with(consumer)
+
+      @channel.work_pool.join if opts[:block]
     end
 
     def pop(opts = {:ack => false}, &block)

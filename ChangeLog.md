@@ -1,5 +1,55 @@
 ## Changes between Bunny 0.9.0.pre2 and 0.9.0.pre3
 
+### Client Capabilities
+
+Bunny now correctly lists RabbitMQ extensions it currently supports in client capabilities:
+
+ * `basic.nack`
+ * exchange-to-exchange bindings
+ * consumer cancellation notifications
+
+### Consumers as Objects
+
+It is now possible to register a consumer as an object instead
+of a block. Consumers that are class instances support cancellation
+notifications (e.g. when a queue they're registered with is deleted).
+
+To support this, Bunny introduces two new methods: `Bunny::Channel#basic_consume_with`
+and `Bunny::Queue#subscribe_with`, that operate on consumer objects. Objects are
+supposed to respond to three selectors:
+
+ * `:handle_delivery` with 3 arguments
+ * `:handle_cancellation` with 1 argument
+ * `:consumer_tag=` with 1 argument
+
+An example:
+
+``` ruby
+class ExampleConsumer < Bunny::Consumer
+  def cancelled?
+    @cancelled
+  end
+
+  def handle_cancellation(_)
+    @cancelled = true
+  end
+end
+
+# "high-level" API
+ch1 = connection.create_channel
+q1  = ch1.queue("", :auto_delete => true)
+
+consumer = ExampleConsumer.new(ch1, q)
+q1.subscribe_with(consumer)
+
+# "low-level" API
+ch2 = connection.create_channel
+q1  = ch2.queue("", :auto_delete => true)
+
+consumer = ExampleConsumer.new(ch2, q)
+ch2.basic_consume_with.(consumer)
+```
+
 ### RABBITMQ_URL ENV variable support
 
 If `RABBITMQ_URL` environment variable is set, Bunny will assume
