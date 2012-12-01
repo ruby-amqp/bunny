@@ -165,7 +165,14 @@ module Bunny
 
       meta = { :priority => 0, :delivery_mode => 2, :content_type => "application/octet-stream" }.
         merge(opts)
-      @connection.send_frameset(AMQ::Protocol::Basic::Publish.encode(@id, payload, meta, exchange_name, routing_key, meta[:mandatory], false, @connection.frame_max), self)
+      @connection.send_frameset(AMQ::Protocol::Basic::Publish.encode(@id,
+                                                                     payload,
+                                                                     meta,
+                                                                     exchange_name,
+                                                                     routing_key,
+                                                                     meta[:mandatory],
+                                                                     false,
+                                                                     @connection.frame_max), self)
 
       self
     end
@@ -222,7 +229,10 @@ module Bunny
 
     def basic_nack(delivery_tag, requeue, multiple = false)
       raise_if_no_longer_open!
-      @connection.send_frame(AMQ::Protocol::Basic::Nack.encode(@id, delivery_tag, requeue, multiple))
+      @connection.send_frame(AMQ::Protocol::Basic::Nack.encode(@id,
+                                                               delivery_tag,
+                                                               requeue,
+                                                               multiple))
 
       nil
     end
@@ -237,7 +247,14 @@ module Bunny
                      queue
                    end
 
-      @connection.send_frame(AMQ::Protocol::Basic::Consume.encode(@id, queue_name, consumer_tag, false, no_ack, exclusive, false, arguments))
+      @connection.send_frame(AMQ::Protocol::Basic::Consume.encode(@id,
+                                                                  queue_name,
+                                                                  consumer_tag,
+                                                                  false,
+                                                                  no_ack,
+                                                                  exclusive,
+                                                                  false,
+                                                                  arguments))
       Bunny::Timer.timeout(1, ClientTimeout) do
         @last_basic_consume_ok = @continuations.pop
       end
@@ -294,7 +311,14 @@ module Bunny
     def queue_declare(name, opts = {})
       raise_if_no_longer_open!
 
-      @connection.send_frame(AMQ::Protocol::Queue::Declare.encode(@id, name, opts.fetch(:passive, false), opts.fetch(:durable, false), opts.fetch(:exclusive, false), opts.fetch(:auto_delete, false), false, opts[:arguments]))
+      @connection.send_frame(AMQ::Protocol::Queue::Declare.encode(@id,
+                                                                  name,
+                                                                  opts.fetch(:passive, false),
+                                                                  opts.fetch(:durable, false),
+                                                                  opts.fetch(:exclusive, false),
+                                                                  opts.fetch(:auto_delete, false),
+                                                                  false,
+                                                                  opts[:arguments]))
       @last_queue_declare_ok = @continuations.pop
 
       raise_if_continuation_resulted_in_a_channel_error!
@@ -305,7 +329,11 @@ module Bunny
     def queue_delete(name, opts = {})
       raise_if_no_longer_open!
 
-      @connection.send_frame(AMQ::Protocol::Queue::Delete.encode(@id, name, opts[:if_unused], opts[:if_empty], false))
+      @connection.send_frame(AMQ::Protocol::Queue::Delete.encode(@id,
+                                                                 name,
+                                                                 opts[:if_unused],
+                                                                 opts[:if_empty],
+                                                                 false))
       Bunny::Timer.timeout(1, ClientTimeout) do
         @last_queue_delete_ok = @continuations.pop
       end
@@ -336,7 +364,12 @@ module Bunny
                         exchange
                       end
 
-      @connection.send_frame(AMQ::Protocol::Queue::Bind.encode(@id, name, exchange_name, opts[:routing_key], false, opts[:arguments]))
+      @connection.send_frame(AMQ::Protocol::Queue::Bind.encode(@id,
+                                                               name,
+                                                               exchange_name,
+                                                               opts[:routing_key],
+                                                               false,
+                                                               opts[:arguments]))
       Bunny::Timer.timeout(1, ClientTimeout) do
         @last_queue_bind_ok = @continuations.pop
       end
@@ -354,7 +387,11 @@ module Bunny
                         exchange
                       end
 
-      @connection.send_frame(AMQ::Protocol::Queue::Unbind.encode(@id, name, exchange_name, opts[:routing_key], opts[:arguments]))
+      @connection.send_frame(AMQ::Protocol::Queue::Unbind.encode(@id,
+                                                                 name,
+                                                                 exchange_name,
+                                                                 opts[:routing_key],
+                                                                 opts[:arguments]))
       Bunny::Timer.timeout(1, ClientTimeout) do
         @last_queue_unbind_ok = @continuations.pop
       end
@@ -369,7 +406,15 @@ module Bunny
     def exchange_declare(name, type, opts = {})
       raise_if_no_longer_open!
 
-      @connection.send_frame(AMQ::Protocol::Exchange::Declare.encode(@id, name, type.to_s, opts.fetch(:passive, false), opts.fetch(:durable, false), opts.fetch(:auto_delete, false), false, false, opts[:arguments]))
+      @connection.send_frame(AMQ::Protocol::Exchange::Declare.encode(@id,
+                                                                     name,
+                                                                     type.to_s,
+                                                                     opts.fetch(:passive, false),
+                                                                     opts.fetch(:durable, false),
+                                                                     opts.fetch(:auto_delete, false),
+                                                                     false,
+                                                                     false,
+                                                                     opts[:arguments]))
       Bunny::Timer.timeout(1, ClientTimeout) do
         @last_exchange_declare_ok = @continuations.pop
       end
@@ -381,7 +426,10 @@ module Bunny
     def exchange_delete(name, opts = {})
       raise_if_no_longer_open!
 
-      @connection.send_frame(AMQ::Protocol::Exchange::Delete.encode(@id, name, opts[:if_unused], false))
+      @connection.send_frame(AMQ::Protocol::Exchange::Delete.encode(@id,
+                                                                    name,
+                                                                    opts[:if_unused],
+                                                                    false))
       Bunny::Timer.timeout(1, ClientTimeout) do
         @last_exchange_delete_ok = @continuations.pop
       end
@@ -405,7 +453,12 @@ module Bunny
                            destination
                          end
 
-      @connection.send_frame(AMQ::Protocol::Exchange::Bind.encode(@id, destination_name, source_name, opts[:routing_key], false, opts[:arguments]))
+      @connection.send_frame(AMQ::Protocol::Exchange::Bind.encode(@id,
+                                                                  destination_name,
+                                                                  source_name,
+                                                                  opts[:routing_key],
+                                                                  false,
+                                                                  opts[:arguments]))
       Bunny::Timer.timeout(1, ClientTimeout) do
         @last_exchange_bind_ok = @continuations.pop
       end
@@ -429,7 +482,12 @@ module Bunny
                            destination
                          end
 
-      @connection.send_frame(AMQ::Protocol::Exchange::Unbind.encode(@id, destination_name, source_name, opts[:routing_key], false, opts[:arguments]))
+      @connection.send_frame(AMQ::Protocol::Exchange::Unbind.encode(@id,
+                                                                    destination_name,
+                                                                    source_name,
+                                                                    opts[:routing_key],
+                                                                    false,
+                                                                    opts[:arguments]))
       Bunny::Timer.timeout(1, ClientTimeout) do
         @last_exchange_unbind_ok = @continuations.pop
       end
