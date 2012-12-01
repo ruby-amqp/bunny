@@ -70,7 +70,7 @@ e.publish("Hello, everybody!", :routing_key => 'test1')
 # fetch a message from the queue
 delivery_info, metadata, payload = q.pop
 
-puts "This is the message: #{payload}\n\n"
+puts "This is the message: #{payload}"
 
 # close the connection
 conn.stop
