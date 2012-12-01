@@ -26,6 +26,19 @@ We (the maintainers) make our best to keep the new version as backwards compatib
 See [this announcement](https://groups.google.com/forum/?fromgroups#!topic/ruby-amqp/crNVGEuHm68) to learn more.
 
 
+## Installation & Bundler Dependency
+
+To install Bunny 0.9.x with RubyGems:
+
+```
+gem install bunny --pre
+```
+
+To use Bunny 0.9.x in a project managed with Bundler:
+
+``` ruby
+gem "bunny", ">= 0.9.0.pre3" # optionally: , :git => "git://github.com/ruby-amqp/bunny.git", :branch => "master"
+```
 
 
 ## Quick Start for Bunny 0.9.x
