@@ -30,8 +30,10 @@ We will make our best efforts to keep the public API as backwards compatible as 
 
 See "the rationale":https://groups.google.com/forum/?fromgroups#!topic/ruby-amqp/crNVGEuHm68 and "0.9.0.pre1 release notes":https://groups.google.com/forum/?fromgroups#!topic/ruby-amqp/UMiexQt9Y1Y to learn more.
 
-We are also working on porting amqp gem documentation guides to Bunny at "":http://rubybunny.info. The docs
+We are also working on porting amqp gem documentation guides to Bunny at "rubybunny.info":http://rubybunny.info. The docs
 *cover Bunny 0.9.0* (including `pre` releases) only and are still in early stages.
+
+To follow Bunny 0.9 development, see the "master branch":https://github.com/ruby-amqp/bunny/commits/master.
 
 h3. Which Client to Choose Before 0.9.0 Ships
 
