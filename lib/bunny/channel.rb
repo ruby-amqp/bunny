@@ -685,7 +685,7 @@ module Bunny
 
     def handle_ack_or_nack(delivery_tag, multiple, nack)
       if multiple
-        @unconfirmed_set.delete_if { |i| i <= delivery_tag }
+        @unconfirmed_set.delete_if { |i| i < delivery_tag }
       else
         @unconfirmed_set.delete(delivery_tag)
       end
