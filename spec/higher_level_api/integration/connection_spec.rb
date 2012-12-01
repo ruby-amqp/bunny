@@ -303,9 +303,15 @@ describe Bunny::Session do
       props["product"].should_not be_nil
       props["platform"].should_not be_nil
       props["version"].should_not be_nil
+      props["capabilities"].should_not be_nil
     end
 
     it "uses provided heartbeat interval" do
+      subject.start
+      subject.should be_connected
+
+      # this is negotiated with RabbitMQ, so we need to
+      # establish the connection first
       subject.heartbeat.should == interval
     end
   end

@@ -8,8 +8,7 @@ module Bunny
     # API
     #
 
-    def initialize
-      max_channel     =  (1 << 16) - 1
+    def initialize(max_channel = ((1 << 16) - 1))
       @int_allocator ||= AMQ::IntAllocator.new(1, max_channel)
 
       @channel_id_mutex ||= Mutex.new

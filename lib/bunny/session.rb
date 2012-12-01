@@ -73,22 +73,18 @@ module Bunny
       @logfile         = opts[:logfile]
       @logging         = opts[:logging] || false
 
-      @status          = :not_connected
-      @frame_max       = opts[:frame_max] || DEFAULT_FRAME_MAX
-      # currently ignored
-      @channel_max     = opts[:channel_max] || 0
-      @heartbeat       = self.heartbeat_from(opts)
+      @status             = :not_connected
+
+      # these are negotiated with the broker during the connection tuning phase
+      @client_frame_max   = opts.fetch(:frame_max, DEFAULT_FRAME_MAX)
+      @client_channel_max = opts.fetch(:channel_max, 65536)
+      @client_heartbeat   = self.heartbeat_from(opts)
 
       @client_properties  = opts[:properties] || DEFAULT_CLIENT_PROPERTIES
       @mechanism          = "PLAIN"
       @locale             = @opts.fetch(:locale, DEFAULT_LOCALE)
-
-      @channel_id_allocator = ChannelIdAllocator.new
-      @channel_mutex        = Mutex.new
-      @channels             = Hash.new
-
-      # Create channel 0
-      @channel0           = Bunny::Channel.new(self, 0)
+      @channel_mutex      = Mutex.new
+      @channels           = Hash.new
 
       @continuations      = ::Queue.new
     end
@@ -107,10 +103,6 @@ module Bunny
       @transport.uses_ssl?
     end
     alias ssl? uses_ssl?
-
-    def channel0
-      @channel0
-    end
 
     def start
       @status = :connecting
@@ -449,9 +441,13 @@ module Bunny
         raise Bunny::PossibleAuthenticationFailureError.new(self.user, self.vhost, self.password.size)
       end
 
-      connection_tune = frame.decode_payload
-      @frame_max      = connection_tune.frame_max.freeze
-      @heartbeat      ||= connection_tune.heartbeat
+      connection_tune       = frame.decode_payload
+
+      @frame_max            = negotiate_value(@client_frame_max, connection_tune.frame_max)
+      @channel_max          = negotiate_value(@client_channel_max, connection_tune.channel_max)
+      @heartbeat            = negotiate_value(@client_heartbeat, connection_tune.heartbeat)
+
+      @channel_id_allocator = ChannelIdAllocator.new(@channel_max)
 
       @transport.send_frame(AMQ::Protocol::Connection::TuneOk.encode(@channel_max, @frame_max, @heartbeat))
       @transport.send_frame(AMQ::Protocol::Connection::Open.encode(self.vhost))
@@ -475,6 +471,14 @@ module Bunny
       end
 
       raise "could not open connection: server did not respond with connection.open-ok" unless connection_open_ok.is_a?(AMQ::Protocol::Connection::OpenOk)
+    end
+
+    def negotiate_value(client_value, server_value)
+      if client_value == 0 || server_value == 0
+        [client_value, server_value].max
+      else
+        [client_value, server_value].min
+      end
     end
 
     def initialize_heartbeat_sender
