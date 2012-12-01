@@ -1,16 +1,17 @@
-h1. About bunny
+h1. Bunny, an easy to use Ruby client for RabbitMQ
 
-Bunny is a synchronous "AMQP 0.8.0":http://bit.ly/amqp-model-explained client. It supports Ruby 1.9.2, 1.8.7, Ruby Enterprise Edition and JRuby. Protocol-wise, Bunny supports AMQP 0.9.1 and 0.8. Support for AMQP 0.8 will be dropped in the next version of Bunny (0.8) because most of popular AMQP brokers such as RabbitMQ have already stopped or are planning to stop supporting it in the near future.
+Bunny is a synchronous RabbitMQ client. It supports Ruby 1.9.3, 1.9.2, 1.8.7,
+Ruby Enterprise Edition and JRuby.
 
 h2. Limited Functionality Disclaimer
 
-Bunny is very simplistic and does not support many features
+Bunny 0.7.x and 0.8.x releases are not feature complete in respect of the AMQP spec or RabbitMQ.
 
-You can use Bunny to:
+You can use Bunny 0.8.x to:
 
 * Create and delete exchanges
 * Create and delete queues
-* Publish and synchronously consume (basic.get) messages
+* Publish and synchronously consume messages
 
 But it does not support
 
@@ -18,14 +19,27 @@ But it does not support
 * Framing of large messages
 * Many AMQP operations
 * RabbitMQ extensions
-* AMQP 0.9.1-only brokers
 
-h2. Bunny is NOT actively maintained
+The next release (0.9.0) will be feature complete, designed for concurrency,
+more efficient and properly documented.
 
-Bunny is also **not actively maintained**. Consider using Hot Bunnies (JRuby) or amqp gem instead.
+h2. Next Bunny release (0.9.0) will include a lot of internal changes
+
+Bunny is lacking some very useful functionality and as such, is about to undergo serious internal changes.
+We will make our best efforts to keep the public API as backwards compatible as possible but within reason.
+
+See "the rationale":https://groups.google.com/forum/?fromgroups#!topic/ruby-amqp/crNVGEuHm68 and "0.9.0.pre1 release notes":https://groups.google.com/forum/?fromgroups#!topic/ruby-amqp/UMiexQt9Y1Y to learn more.
+
+We are also working on porting amqp gem documentation guides to Bunny at "":http://rubybunny.info. The docs
+*cover Bunny 0.9.0* (including `pre` releases) only and are still in early stages.
+
+h3. Which Client to Choose Before 0.9.0 Ships
+
+In the meantime, consider using Hot Bunnies (JRuby) or "amqp gem":http://rubyamqp.info instead. The last release
+of Bunny that suports AMQP v0.8 is `0.7.9`. *Bunny 0.8.0 only supports AMQP v0.9.1*.
 
 
-h2. Quick Start
+h2. Quick Start for Bunny 0.7.x and 0.8.x
 
 <pre>
 require "bunny"
