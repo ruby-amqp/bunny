@@ -7,6 +7,36 @@ Bunny now correctly lists RabbitMQ extensions it currently supports in client ca
  * `basic.nack`
  * exchange-to-exchange bindings
  * consumer cancellation notifications
+ * publisher confirms
+
+### Publisher Confirms Support
+
+[Lightweight Publisher Confirms](http://www.rabbitmq.com/blog/2011/02/10/introducing-publisher-confirms/) is a
+RabbitMQ feature that lets publishers keep track of message routing without adding
+noticeable throughput degradation as it is the case with AMQP 0.9.1 transactions.
+
+Bunny `0.9.0.pre3` supports publisher confirms. Publisher confirms are enabled per channel,
+using the `Bunny::Channel#confirm_select` method. `Bunny::Channel#wait_for_confirms` is a method
+that blocks current thread until the client gets confirmations for all unconfirmed published
+messages:
+
+``` ruby
+ch = connection.create_channel
+ch.confirm_select
+
+ch.using_publisher_confirmations? # => true
+
+q  = ch.queue("", :exclusive => true)
+x  = ch.default_exchange
+
+5000.times do
+  x.publish("xyzzy", :routing_key => q.name)
+end
+
+ch.next_publish_seq_no.should == 5001
+ch.wait_for_confirms # waits until all 5000 published messages are acknowledged by RabbitMQ
+```
+
 
 ### Consumers as Objects
 

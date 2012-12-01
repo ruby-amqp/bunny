@@ -1,4 +1,5 @@
 require "thread"
+require "set"
 
 require "bunny/consumer_work_pool"
 
@@ -17,6 +18,7 @@ module Bunny
     #
 
     attr_accessor :id, :connection, :status, :work_pool
+    attr_reader :next_publish_seq_no
 
 
     def initialize(connection = nil, id = nil, work_pool = ConsumerWorkPool.new(1))
@@ -35,9 +37,13 @@ module Bunny
       @publishing_mutex = Mutex.new
       @consumer_mutex   = Mutex.new
 
-      @continuations = ::Queue.new
-    end
+      @unconfirmed_set_mutex = Mutex.new
 
+      @continuations          = ::Queue.new
+      @confirms_continuations = ::Queue.new
+
+      @next_publish_seq_no = 0
+    end
 
     def open
       @connection.open_channel(self)
@@ -145,6 +151,9 @@ module Bunny
       @default_error_handler = block
     end
 
+    def using_publisher_confirmations?
+      @next_publish_seq_no > 0
+    end
 
     #
     # Lower-level API, exposes protocol operations as they are defined in the protocol,
@@ -164,6 +173,12 @@ module Bunny
 
       meta = { :priority => 0, :delivery_mode => 2, :content_type => "application/octet-stream" }.
         merge(opts)
+
+      if @next_publish_seq_no > 0
+        @unconfirmed_set.add(@next_publish_seq_no)
+        @next_publish_seq_no += 1
+      end
+
       @connection.send_frameset(AMQ::Protocol::Basic::Publish.encode(@id,
                                                                      payload,
                                                                      meta,
@@ -552,15 +567,26 @@ module Bunny
     def confirm_select
       raise_if_no_longer_open!
 
+      if @next_publish_seq_no == 0
+        @confirms_continuations = []
+        @unconfirmed_set        = Set.new
+        @next_publish_seq_no    = 1
+      end
+
       @connection.send_frame(AMQ::Protocol::Confirm::Select.encode(@id, false))
       Bunny::Timer.timeout(1, ClientTimeout) do
         @last_confirm_select_ok = @continuations.pop
       end
       raise_if_continuation_resulted_in_a_channel_error!
-
       @last_confirm_select_ok
     end
 
+    def wait_for_confirms
+      @only_acks_received = true
+      @confirms_continuations.pop
+
+      @only_acks_received
+    end
 
     #
     # Implementation
@@ -610,6 +636,12 @@ module Bunny
         @continuations.push(method)
       when AMQ::Protocol::Confirm::SelectOk then
         @continuations.push(method)
+      when AMQ::Protocol::Basic::Ack then
+        # TODO: implement confirm listeners
+        handle_ack_or_nack(method.delivery_tag, method.multiple, false)
+      when AMQ::Protocol::Basic::Nack then
+        # TODO: implement confirm listeners
+        handle_ack_or_nack(method.delivery_tag, method.multiple, true)
       when AMQ::Protocol::Channel::Close then
         # puts "Exception on channel #{@id}: #{method.reply_code} #{method.reply_text}"
         closed!
@@ -648,6 +680,20 @@ module Bunny
         x.handle_return(ReturnInfo.new(basic_return), MessageProperties.new(properties), content)
       else
         # TODO: log a warning
+      end
+    end
+
+    def handle_ack_or_nack(delivery_tag, multiple, nack)
+      if multiple
+        @unconfirmed_set.delete_if { |i| i <= delivery_tag }
+      else
+        @unconfirmed_set.delete(delivery_tag)
+      end
+
+      @unconfirmed_set_mutex.synchronize do
+        @only_acks_received = (@only_acks_received && !nack)
+
+        @confirms_continuations.push(true) if @unconfirmed_set.empty?
       end
     end
 
