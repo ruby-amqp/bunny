@@ -76,15 +76,6 @@ puts "This is the message: #{payload}"
 conn.stop
 ```
 
-... or just:
-
-```
-require "bunny"
-
-# Create a direct queue named "my_testq"
-Bunny.run { |c| c.queue("my_testq") }
-```
-
 
 ## Community & Getting Help
 
