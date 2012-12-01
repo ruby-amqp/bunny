@@ -1,4 +1,0 @@
----
-:spec_out: '../lib/qrack/protocol/spec.rb'
-:frame_out: '../lib/qrack/transport/frame.rb'
-:spec_in: 'amqp-0.9.1.json'

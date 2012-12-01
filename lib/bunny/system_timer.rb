@@ -1,14 +1,14 @@
-# encoding: utf-8
+# -*- encoding: utf-8; mode: ruby -*-
+
+require "system_timer"
 
 module Bunny
-  # Used for ruby < 1.9.x
-  class SystemTimer < ::SystemTimer
-
-    def timeout(seconds, exception)
-      timeout_after(seconds) do
+  # Used for Ruby before 1.9
+  class SystemTimer
+    def self.timeout(seconds, exception)
+      ::SystemTimer.timeout_after(seconds) do
         yield
       end
     end
-
-  end
-end
+  end # SystemTimer
+end # Bunny

@@ -1,35 +1,58 @@
-# encoding: utf-8
-
-####################################
-# NOTE: THIS CLASS IS HERE TO MAKE #
-# TRANSITION TO AMQ CLIENT EASIER  #
-####################################
-
-require "qrack/subscription"
-
-# NOTE: This file is rather a temporary hack to fix
-# https://github.com/ruby-amqp/bunny/issues/9 then
-# some permanent solution. It's mostly copied from
-# the AMQP and AMQ Client gems. Later on we should
-# use AMQ Client directly and just inherit from
-# the AMQ::Client::Sync::Consumer class.
-
 module Bunny
+  class Consumer
 
-  # AMQP consumers are entities that handle messages delivered
-  # to them ("push API" as opposed to "pull API") by AMQP broker.
-  # Every consumer is associated with a queue. Consumers can be
-  # exclusive (no other consumers can be registered for the same
-  # queue) or not (consumers share the queue). In the case of
-  # multiple consumers per queue, messages are distributed in
-  # round robin manner with respect to channel-level prefetch
-  # setting).
-  class Consumer < Qrack::Subscription
-    def initialize(*args)
-      super(*args)
-      @consumer_tag ||= (1..32).to_a.shuffle.join
+    #
+    # API
+    #
+
+    attr_reader   :channel
+    attr_reader   :queue
+    attr_accessor :consumer_tag
+    attr_reader   :arguments
+    attr_reader   :no_ack
+    attr_reader   :exclusive
+
+
+
+    def initialize(channel, queue, consumer_tag = "", no_ack = false, exclusive = false, arguments = {})
+      @channel       = channel || raise(ArgumentError, "channel is nil")
+      @queue         = queue   || raise(ArgumentError, "queue is nil")
+      @consumer_tag  = consumer_tag
+      @exclusive     = exclusive
+      @arguments     = arguments
+      @no_ack        = no_ack
     end
 
-    alias_method :consume, :start
+
+    def on_delivery(&block)
+      @on_delivery = block
+      self
+    end
+
+    def call(*args)
+      @on_delivery.call(*args) if @on_delivery
+    end
+    alias handle_delivery call
+
+    def on_cancellation(&block)
+      @on_cancellation = block
+      self
+    end
+
+    def handle_cancellation(basic_cancel)
+      @on_cancellation.call(basic_cancel) if @on_cancellation
+    end
+
+    def queue_name
+      if @queue.respond_to?(:name)
+        @queue.name
+      else
+        @queue
+      end
+    end
+
+    def inspect
+      "#<#{self.class.name}:#{object_id} @channel_id=#{@channel.number} @queue=#{self.queue_name}> @consumer_tag=#{@consumer_tag} @exclusive=#{@exclusive} @no_ack=#{@no_ack}>"
+    end
   end
 end
