@@ -73,7 +73,7 @@ delivery_info, metadata, payload = q.pop
 puts "This is the message: #{payload}\n\n"
 
 # close the connection
-b.stop
+conn.stop
 ```
 
 ... or just:
