@@ -1,3 +1,8 @@
+## Changes between Bunny 0.9.0.pre3 and 0.9.0.pre4
+
+No changes yet.
+
+
 ## Changes between Bunny 0.9.0.pre2 and 0.9.0.pre3
 
 ### Client Capabilities
