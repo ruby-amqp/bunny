@@ -1,5 +1,4 @@
 require "thread"
-require "amq/int_allocator"
 
 require "bunny/consumer_work_pool"
 
@@ -33,8 +32,8 @@ module Bunny
       @work_pool  = work_pool
 
       # synchronizes frameset delivery. MK.
-      @mutex          = Mutex.new
-      @consumer_mutex = Mutex.new
+      @publishing_mutex = Mutex.new
+      @consumer_mutex   = Mutex.new
 
       @continuations = ::Queue.new
     end
@@ -666,7 +665,7 @@ module Bunny
     # Synchronizes given block using this channel's mutex.
     # @api public
     def synchronize(&block)
-      @mutex.synchronize(&block)
+      @publishing_mutex.synchronize(&block)
     end
 
     def register_queue(queue)

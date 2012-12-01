@@ -1,4 +1,5 @@
 require "thread"
+require "amq/int_allocator"
 
 module Bunny
   class ChannelIdAllocator
