@@ -53,7 +53,7 @@ describe Bunny::Queue, "#subscribe" do
               :timestamp      => @now.to_i,
               :reply_to       => "a.sender",
               :correlation_id => "r-1",
-              :message_id     => "m-1",)
+              :message_id     => "m-1")
 
     sleep 0.7
 
