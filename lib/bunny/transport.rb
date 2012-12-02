@@ -71,7 +71,7 @@ module Bunny
         end
       rescue Errno::EPIPE, Errno::EAGAIN, Bunny::ClientTimeout, IOError => e
         close
-        raise Bunny::ConnectionError, e.message
+        raise Bunny::ConnectionError.new(e.message, @host, @port)
       end
     end
     alias send_raw write
