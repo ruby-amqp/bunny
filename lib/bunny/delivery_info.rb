@@ -49,13 +49,14 @@ module Bunny
       @basic_deliver.consumer_tag
     end
 
-    def deliver_tag
-      @basic_deliver.deliver_tag
+    def delivery_tag
+      @basic_deliver.delivery_tag
     end
 
     def redelivered
       @basic_deliver.redelivered
     end
+    alias redelivered? redelivered
 
     def exchange
       @basic_deliver.exchange

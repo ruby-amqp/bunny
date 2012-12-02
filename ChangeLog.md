@@ -1,6 +1,14 @@
 ## Changes between Bunny 0.9.0.pre3 and 0.9.0.pre4
 
-No changes yet.
+### Bunny::DeliveryInfo#redelivered?
+
+`Bunny::DeliveryInfo#redelivered?` is a new method that is an alias
+to `Bunny::DeliveryInfo#redelivered` but follows the Ruby community convention
+about predicate method names.
+
+### Corrected Bunny::DeliveryInfo#delivery_tag Name
+
+`Bunny::DeliveryInfo#delivery_tag` had a typo which is now fixed.
 
 
 ## Changes between Bunny 0.9.0.pre2 and 0.9.0.pre3
