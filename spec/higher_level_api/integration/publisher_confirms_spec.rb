@@ -29,7 +29,8 @@ describe Bunny::Channel do
 
       ch.next_publish_seq_no.should == 5001
       ch.wait_for_confirms
-
+      sleep 0.25
+      
       q.message_count.should == 5000
       q.purge
 
