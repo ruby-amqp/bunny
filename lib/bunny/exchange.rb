@@ -66,7 +66,7 @@ module Bunny
       @auto_delete      = @options[:auto_delete]
       @arguments        = @options[:arguments]
 
-      declare! unless opts[:no_declare] || (@name =~ /^amq\..+/) || (@name == AMQ::Protocol::EMPTY_STRING)
+      declare! unless opts[:no_declare] || (@name =~ /^amq\.(direct|fanout|topic|match|headers)/) || (@name == AMQ::Protocol::EMPTY_STRING)
 
       @channel.register_exchange(self)
     end
@@ -96,10 +96,10 @@ module Bunny
     end
 
 
-    # Deletes the exchange
+    # Deletes the exchange unless it is a default exchange
     # @api public
     def delete(opts = {})
-      @channel.exchange_delete(@name, opts)
+      @channel.exchange_delete(@name, opts) unless @name =~ /^amq\.(direct|fanout|topic|match|headers)/
     end
 
 
