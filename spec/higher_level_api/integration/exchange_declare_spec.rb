@@ -17,7 +17,7 @@ describe Bunny::Exchange do
       it "is declared" do
         ch = connection.create_channel
 
-        name = "bunny.tests.exchages.fanout"
+        name = "bunny.tests.exchanges.fanout"
         x    = ch.fanout(name)
         x.name.should == name
 
@@ -37,12 +37,27 @@ describe Bunny::Exchange do
         ch.close
       end
     end
+    
+    context "with a name prefixed with 'amq.'" do
+      it "raises an exception" do
+        ch   = connection.create_channel
+        
+        expect {
+          ch.fanout("amq.test")
+        }.to raise_error(Bunny::AccessRefused)
+
+        ch.should be_closed
+        expect {
+          ch.fanout("amq.test")
+        }.to raise_error(Bunny::ChannelAlreadyClosed)
+      end
+    end
 
     context "with the durable property" do
       it "is declared as durable" do
         ch = connection.create_channel
 
-        name = "bunny.tests.exchages.durable"
+        name = "bunny.tests.exchanges.durable"
         x    = ch.fanout(name, :durable => true)
         x.name.should == name
         x.should be_durable
@@ -58,7 +73,7 @@ describe Bunny::Exchange do
       it "is declared as auto-delete" do
         ch = connection.create_channel
 
-        name = "bunny.tests.exchages.auto-delete"
+        name = "bunny.tests.exchanges.auto-delete"
         x    = ch.fanout(name, :auto_delete => true)
         x.name.should == name
         x.should_not be_durable
@@ -93,7 +108,7 @@ describe Bunny::Exchange do
       it "is declared" do
         ch = connection.create_channel
 
-        name = "bunny.tests.exchages.direct"
+        name = "bunny.tests.exchanges.direct"
         x    = ch.direct(name)
         x.name.should == name
 
@@ -120,7 +135,7 @@ describe Bunny::Exchange do
       it "is declared" do
         ch = connection.create_channel
 
-        name = "bunny.tests.exchages.topic"
+        name = "bunny.tests.exchanges.topic"
         x    = ch.topic(name)
         x.name.should == name
 
@@ -147,7 +162,7 @@ describe Bunny::Exchange do
       it "is declared" do
         ch = connection.create_channel
 
-        name = "bunny.tests.exchages.headers"
+        name = "bunny.tests.exchanges.headers"
         x    = ch.headers(name)
         x.name.should == name
 
