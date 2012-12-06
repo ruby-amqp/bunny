@@ -1,5 +1,18 @@
 ## Changes between Bunny 0.9.0.pre3 and 0.9.0.pre4
 
+### Bunny::Consumer#cancel
+
+A new high-level API method: `Bunny::Consumer#cancel`, can be used to
+cancel a consumer. `Bunny::Queue#subscribe` will now return consumer
+instances when the `:block` option is passed in as `false`.
+
+
+### Bunny::Exchange#delete Behavior Change
+
+`Bunny::Exchange#delete` will no longer delete pre-declared exchanges
+that cannot be declared by Bunny (`amq.*` and the default exchange).
+
+
 ### Bunny::DeliveryInfo#redelivered?
 
 `Bunny::DeliveryInfo#redelivered?` is a new method that is an alias
