@@ -1,26 +1,28 @@
 #!/bin/sh
 
+${RABBITMQCTL:="sudo rabbitmqctl"}
+
 # guest:guest has full access to /
 
-sudo rabbitmqctl add_vhost /
-sudo rabbitmqctl add_user guest guest
-sudo rabbitmqctl set_permissions -p / guest ".*" ".*" ".*"
+$RABBITMQCTL add_vhost /
+$RABBITMQCTL add_user guest guest
+$RABBITMQCTL set_permissions -p / guest ".*" ".*" ".*"
 
 
 # bunny_gem:bunny_password has full access to bunny_testbed
 
-sudo rabbitmqctl add_vhost bunny_testbed
-sudo rabbitmqctl add_user bunny_gem bunny_password
-sudo rabbitmqctl set_permissions -p bunny_testbed bunny_gem ".*" ".*" ".*"
+$RABBITMQCTL add_vhost bunny_testbed
+$RABBITMQCTL add_user bunny_gem bunny_password
+$RABBITMQCTL set_permissions -p bunny_testbed bunny_gem ".*" ".*" ".*"
 
 
 # guest:guest has full access to bunny_testbed
 
-sudo rabbitmqctl set_permissions -p bunny_testbed guest ".*" ".*" ".*"
+$RABBITMQCTL set_permissions -p bunny_testbed guest ".*" ".*" ".*"
 
 
 # bunny_reader:reader_password has read access to bunny_testbed
 
-sudo rabbitmqctl add_user bunny_reader reader_password
-sudo rabbitmqctl clear_permissions -p bunny_testbed guest
-sudo rabbitmqctl set_permissions -p bunny_testbed bunny_reader "^---$" "^---$" ".*"
+$RABBITMQCTL add_user bunny_reader reader_password
+$RABBITMQCTL clear_permissions -p bunny_testbed guest
+$RABBITMQCTL set_permissions -p bunny_testbed bunny_reader "^---$" "^---$" ".*"
