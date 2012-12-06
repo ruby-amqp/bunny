@@ -17,7 +17,7 @@ describe Bunny::Exchange do
       it "is declared" do
         ch = connection.create_channel
 
-        name = "bunny.tests.exchanges.fanout"
+        name = "bunny.tests.exchanges.fanout#{rand}"
         x    = ch.fanout(name)
         x.name.should == name
 
@@ -37,11 +37,11 @@ describe Bunny::Exchange do
         ch.close
       end
     end
-    
+
     context "with a name prefixed with 'amq.'" do
       it "raises an exception" do
         ch   = connection.create_channel
-        
+
         expect {
           ch.fanout("amq.test")
         }.to raise_error(Bunny::AccessRefused)
