@@ -18,7 +18,6 @@ module Bunny
 
       def self.auth_mechanism(*mechanisms)
         mechanisms.each do |m|
-          puts "Registering #{self} for #{m}"
           registry[m] = self
         end
       end
