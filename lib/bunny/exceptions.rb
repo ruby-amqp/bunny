@@ -3,7 +3,13 @@ module Bunny
     attr_reader :hostname, :port
 
     def initialize(e, hostname, port)
-      super("Could not estabilish TCP connection to #{hostname}:#{port}: #{e.message}")
+      m = case e
+          when String then
+            e
+          when Exception then
+            e.message
+          end
+      super("Could not estabilish TCP connection to #{hostname}:#{port}: #{m}")
     end
   end
 
