@@ -5,6 +5,9 @@ require "bunny/transport"
 require "bunny/channel_id_allocator"
 require "bunny/heartbeat_sender"
 require "bunny/main_loop"
+require "bunny/authentication/credentials_encoder"
+require "bunny/authentication/plain_mechanism_encoder"
+require "bunny/authentication/external_mechanism_encoder"
 
 require "bunny/concurrent/condition"
 
@@ -53,6 +56,10 @@ module Bunny
     attr_reader :server_capabilities, :server_properties, :server_authentication_mechanisms, :server_locales
     attr_reader :default_channel
     attr_reader :channel_id_allocator
+    # Authentication mechanism, e.g. "PLAIN" or "EXTERNAL"
+    # @return [String]
+    attr_reader :mechanism
+
 
     def initialize(connection_string_or_opts = Hash.new, optz = Hash.new)
       opts = case (ENV["RABBITMQ_URL"] || connection_string_or_opts)
@@ -80,13 +87,14 @@ module Bunny
       @client_channel_max = opts.fetch(:channel_max, 65536)
       @client_heartbeat   = self.heartbeat_from(opts)
 
-      @client_properties  = opts[:properties] || DEFAULT_CLIENT_PROPERTIES
-      @mechanism          = "PLAIN"
-      @locale             = @opts.fetch(:locale, DEFAULT_LOCALE)
-      @channel_mutex      = Mutex.new
-      @channels           = Hash.new
+      @client_properties   = opts[:properties] || DEFAULT_CLIENT_PROPERTIES
+      @mechanism           = opts.fetch(:auth_mechanism, "PLAIN")
+      @credentials_encoder = credentials_encoder_for(@mechanism)
+      @locale              = @opts.fetch(:locale, DEFAULT_LOCALE)
+      @channel_mutex       = Mutex.new
+      @channels            = Hash.new
 
-      @continuations      = ::Queue.new
+      @continuations       = ::Queue.new
     end
 
     def hostname;     self.host;  end
@@ -500,10 +508,13 @@ module Bunny
 
 
     # @api plugin
-    # @see http://tools.ietf.org/rfc/rfc2595.txt RFC 2595
     def encode_credentials(username, password)
-      "\0#{username}\0#{password}"
+      @credentials_encoder.encode_credentials(username, password)
     end # encode_credentials(username, password)
+
+    def credentials_encoder_for(mechanism)
+      Authentication::CredentialsEncoder.for_session(self)
+    end
   end # Session
 
   # backwards compatibility

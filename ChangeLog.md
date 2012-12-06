@@ -1,5 +1,21 @@
 ## Changes between Bunny 0.9.0.pre3 and 0.9.0.pre4
 
+### Support for Alternative Authentication Mechanisms
+
+Bunny now supports two authentication mechanisms and can be extended
+to support more. The supported methods are `"PLAIN"` (username
+and password) and `"EXTERNAL"` (typically uses TLS, UNIX sockets or
+another mechanism that does not rely on username/challenge pairs).
+
+To use the `"EXTERNAL"` method, pass `:auth_mechanism => "EXTERNAL"` to
+`Bunny.new`:
+
+``` ruby
+# uses the EXTERNAL authentication mechanism
+conn = Bunny.new(:auth_method => "EXTERNAL")
+conn.start
+```
+
 ### Bunny::Consumer#cancel
 
 A new high-level API method: `Bunny::Consumer#cancel`, can be used to
