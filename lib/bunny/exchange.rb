@@ -87,6 +87,9 @@ module Bunny
       @arguments
     end
 
+    def predeclared?
+      @name == AMQ::Protocol::EMPTY_STRING || (@name =~ /^amq\.(direct|fanout|topic|match|headers)/)
+    end
 
 
     def publish(payload, opts = {})
@@ -99,7 +102,7 @@ module Bunny
     # Deletes the exchange unless it is a default exchange
     # @api public
     def delete(opts = {})
-      @channel.exchange_delete(@name, opts) unless @name =~ /^amq\.(direct|fanout|topic|match|headers)/
+      @channel.exchange_delete(@name, opts) unless predeclared?
     end
 
 
