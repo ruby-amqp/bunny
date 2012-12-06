@@ -276,7 +276,7 @@ describe Bunny::Session do
 
 
   context "initialized with :host => 127.0.0.1 and non-default credentials (take 2)" do
-    after :each do
+    after :all do
       subject.close if subject.open?
     end
 
@@ -304,11 +304,6 @@ describe Bunny::Session do
       props["platform"].should_not be_nil
       props["version"].should_not be_nil
       props["capabilities"].should_not be_nil
-    end
-
-    it "uses provided heartbeat interval" do
-      subject.start
-      subject.should be_connected
 
       # this is negotiated with RabbitMQ, so we need to
       # establish the connection first
@@ -331,7 +326,7 @@ describe Bunny::Session do
 
     it "fails to connect" do
       lambda do
-        subject.start        
+        subject.start
       end.should raise_error(Bunny::PossibleAuthenticationFailureError)
     end
 
