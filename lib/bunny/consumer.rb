@@ -51,6 +51,10 @@ module Bunny
       end
     end
 
+    def cancel
+      @channel.basic_cancel(@consumer_tag)
+    end
+
     def inspect
       "#<#{self.class.name}:#{object_id} @channel_id=#{@channel.number} @queue=#{self.queue_name}> @consumer_tag=#{@consumer_tag} @exclusive=#{@exclusive} @no_ack=#{@no_ack}>"
     end

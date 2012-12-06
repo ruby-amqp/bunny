@@ -1,6 +1,6 @@
 require "spec_helper"
 
-describe Bunny::Channel, "#basic_cancel" do
+describe Bunny::Consumer, "#cancel" do
   let(:connection) do
     c = Bunny.new(:user => "bunny_gem", :password => "bunny_password", :vhost => "bunny_testbed")
     c.start
@@ -13,35 +13,20 @@ describe Bunny::Channel, "#basic_cancel" do
 
   let(:queue_name) { "bunny.queues.#{rand}" }
 
-  it "returns basic.cancel-ok" do
-    ch = connection.create_channel
-    q  = ch.queue("", :exclusive => true)
-
-    consume_ok = ch.basic_consume(q, "")
-    cancel_ok  = ch.basic_cancel(consume_ok.consumer_tag)
-
-    cancel_ok.should be_instance_of(AMQ::Protocol::Basic::CancelOk)
-    cancel_ok.consumer_tag.should == consume_ok.consumer_tag
-
-    ch.close
-  end
-
   context "when the given consumer tag is valid" do
-    let(:queue_name) { "bunny.basic.cancel.queue#{rand}" }
-
     it "cancels the consumer" do
       delivered_data = []
 
       t = Thread.new do
         ch         = connection.create_channel
         q          = ch.queue(queue_name, :auto_delete => true, :durable => false)
-        consume_ok = ch.basic_consume(q, "", true, false) do |_, _, payload|
+        consumer = q.subscribe(:block => false) do |_, _, payload|
           delivered_data << payload
         end
 
-        consume_ok.consumer_tag.should_not be_nil
-        cancel_ok = ch.basic_cancel(consume_ok.consumer_tag)
-        cancel_ok.consumer_tag.should == consume_ok.consumer_tag
+        consumer.consumer_tag.should_not be_nil
+        cancel_ok = consumer.cancel
+        cancel_ok.consumer_tag.should == consumer.consumer_tag
 
         ch.close
       end
@@ -54,9 +39,5 @@ describe Bunny::Channel, "#basic_cancel" do
       sleep 0.7
       delivered_data.should be_empty
     end
-  end
-
-  context "when the given consumer tag is invalid (was never registered)" do
-    it "causes a channel error"
   end
 end
