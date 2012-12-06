@@ -98,12 +98,15 @@ module Bunny
         # the current thread for as long as the consumer pool is active
         @channel.work_pool.join
       end
+
+      consumer
     end
 
     def subscribe_with(consumer, opts = {:block => false})
       @channel.basic_consume_with(consumer)
 
       @channel.work_pool.join if opts[:block]
+      consumer
     end
 
     def pop(opts = {:ack => false}, &block)
