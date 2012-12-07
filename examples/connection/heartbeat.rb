@@ -9,9 +9,9 @@ $:.unshift(File.expand_path("../../../lib", __FILE__))
 require 'bunny'
 
 
-b = Bunny.new(:heartbeat_interval => 2)
-b.start
+conn = Bunny.new(:heartbeat_interval => 2)
+conn.start
 
-c = b.create_channel
+c = conn.create_channel
 
 sleep 10

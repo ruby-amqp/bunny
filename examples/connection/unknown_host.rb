@@ -8,6 +8,6 @@ $:.unshift(File.expand_path("../../../lib", __FILE__))
 
 require 'bunny'
 
-b = Bunny.new("amqp://guest:guest@aksjhdkajshdkj.example82737.com")
-b.start
+conn = Bunny.new("amqp://guest:guest@aksjhdkajshdkj.example82737.com")
+conn.start
 
