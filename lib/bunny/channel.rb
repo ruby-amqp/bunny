@@ -138,7 +138,7 @@ module Bunny
       basic_reject(delivery_tag, requeue)
     end
 
-    def ack(delivery_tag, multiple)
+    def ack(delivery_tag, multiple = false)
       basic_ack(delivery_tag, multiple)
     end
     alias acknowledge ack
