@@ -138,7 +138,7 @@ module Bunny
       basic_reject(delivery_tag, requeue)
     end
 
-    def ack(delivery_tag, multiple)
+    def ack(delivery_tag, multiple = false)
       basic_ack(delivery_tag, multiple)
     end
     alias acknowledge ack
@@ -299,6 +299,8 @@ module Bunny
       Bunny::Timer.timeout(1, ClientTimeout) do
         @last_basic_consume_ok = @continuations.pop
       end
+      
+      raise_if_continuation_resulted_in_a_channel_error!
 
       @consumer_mutex.synchronize do
         # update the tag in case it was server-generated
