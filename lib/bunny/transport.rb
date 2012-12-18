@@ -14,12 +14,13 @@ module Bunny
     DEFAULT_CONNECTION_TIMEOUT = 5.0
 
 
-    attr_reader :host, :port, :socket, :connect_timeout
+    attr_reader :session, :host, :port, :socket, :connect_timeout
 
-    def initialize(host, port, opts)
-      @host = host
-      @port = port
-      @opts = opts
+    def initialize(session, host, port, opts)
+      @session = session
+      @host    = host
+      @port    = port
+      @opts    = opts
 
       @ssl             = opts[:ssl] || false
       @ssl_cert        = opts[:ssl_cert]
@@ -64,21 +65,15 @@ module Bunny
         raise Bunny::ConnectionError.new('No connection - socket has not been created', @host, @port) if !@socket
         if @read_write_timeout
           Bunny::Timer.timeout(@read_write_timeout, Bunny::ClientTimeout) do
-            @socket.write(*args)
+            @socket.write(*args) if open?
           end
         else
-          @socket.write(*args)
+          @socket.write(*args) if open?
         end
       rescue Errno::EPIPE, Errno::EAGAIN, Bunny::ClientTimeout, IOError => e
         close
 
-        m = case e
-            when String then
-              e
-            when Exception then
-              e.message
-            end
-        raise Bunny::ConnectionError.new(m, @host, @port)
+        @session.handle_network_issue(e)
       end
     end
     alias send_raw write
@@ -97,7 +92,7 @@ module Bunny
     end
 
     def flush
-      @socket.flush
+      @socket.flush if @socket
     end
 
     def read_fully(*args)
@@ -135,10 +130,28 @@ module Bunny
     # @private
     def send_frame(frame)
       if closed?
-        raise ConnectionClosedError.new(frame)
+        @session.handle_network_issue(ConnectionClosedError.new(frame))
       else
         send_raw(frame.encode)
       end
+    end
+
+
+    def self.reacheable?(host, port, timeout)
+      begin
+        s = Bunny::Socket.open(host, port,
+                               :socket_timeout => timeout)
+
+        true
+      rescue SocketError, Timeout::Error => e
+        false
+      ensure
+        s.close if s
+      end
+    end
+
+    def self.ping!(host, port, timeout)
+      raise ConnectionTimeout.new("#{host}:#{port} is unreachable") if !reacheable?(host, port, timeout)
     end
 
 

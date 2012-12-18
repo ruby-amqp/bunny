@@ -21,7 +21,7 @@ module Bunny
     def run_loop
       loop do
         begin
-          break if @stopping
+          break if @stopping || @network_is_down
 
           frame = @transport.read_next_frame
           @session.signal_activity!
@@ -50,6 +50,10 @@ module Bunny
           # should happen per operation and not in this loop
         rescue Errno::EBADF => ebadf
           # ignored, happens when we loop after the transport has already been closed
+        rescue AMQ::Protocol::EmptyResponseError, IOError, Errno::EPIPE, Errno::EAGAIN => e
+          puts e.class.name
+          @network_is_down = true
+          @session.handle_network_issue(e)
         rescue Exception => e
           puts e.class.name
           puts e.message

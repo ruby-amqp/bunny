@@ -704,6 +704,14 @@ module Bunny
       @work_pool.start unless @work_pool.started?
     end
 
+    def maybe_pause_consumer_work_pool!
+      @work_pool.pause if @work_pool && @work_pool.started?
+    end
+
+    def maybe_kill_consumer_work_pool!
+      @work_pool.kill if @work_pool && @work_pool.started?
+    end
+
     def read_next_frame(options = {})
       @connection.read_next_frame(options = {})
     end

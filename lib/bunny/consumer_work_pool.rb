@@ -46,6 +46,18 @@ module Bunny
       @threads.each { |t| t.join }
     end
 
+    def pause
+      @threads.each { |t| t.stop }
+    end
+
+    def resume
+      @threads.each { |t| t.run }
+    end
+
+    def kill
+      @threads.each { |t| t.kill }
+    end
+
     protected
 
     def run_loop

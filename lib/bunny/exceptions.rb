@@ -16,9 +16,9 @@ module Bunny
   class ConnectionClosedError < StandardError
     def initialize(frame)
       if frame.respond_to?(:method_class)
-        super("Trying to send frame through a closed connection. Frame is #{frame.inspect}")
-      else
         super("Trying to send frame through a closed connection. Frame is #{frame.inspect}, method class is #{frame.method_class}")
+      else
+        super("Trying to send frame through a closed connection. Frame is #{frame.inspect}")
       end
     end
   end

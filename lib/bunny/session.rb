@@ -113,7 +113,8 @@ module Bunny
     alias ssl? uses_ssl?
 
     def start
-      @status = :connecting
+      @continuations = ::Queue.new
+      @status        = :connecting
 
       self.initialize_transport
 
@@ -240,9 +241,7 @@ module Bunny
     def close_connection(sync = true)
       @transport.send_frame(AMQ::Protocol::Connection::Close.encode(200, "Goodbye", 0, 0))
 
-      if @heartbeat_sender
-        @heartbeat_sender.stop
-      end
+      maybe_shutdown_heartbeat_sender
       @status   = :not_connected
 
       if sync
@@ -307,6 +306,42 @@ module Bunny
         @channels[ch_number].handle_basic_return(*frames)
       else
         @channels[ch_number].handle_frameset(*frames)
+      end
+    end
+
+    def handle_network_issue(exception)
+      if !recovering_from_network_issue?
+        @recovering_from_network_issue = true
+        if recoverable_network_issue?(exception)
+          puts "Recovering from a network failure..."
+          @channels.each do |n, ch|
+            ch.maybe_kill_consumer_work_pool!
+          end
+          maybe_shutdown_heartbeat_sender
+
+          recover_from_network_failure
+        else
+          # TODO
+        end
+      end
+    end
+
+    def recoverable_network_issue?(exception)
+      # TODO
+      true
+    end
+
+    def recovering_from_network_issue?
+      @recovering_from_network_issue
+    end
+
+    def recover_from_network_failure
+      begin
+        start
+      rescue TCPConnectionFailed => e
+        puts "TCP connection failed, reconnecting in 5 seconds"
+        sleep 5.0
+        retry
       end
     end
 
@@ -490,13 +525,18 @@ module Bunny
     end
 
     def initialize_heartbeat_sender
+      puts "Initializing heartbeat sender..."
       @heartbeat_sender = HeartbeatSender.new(@transport)
       @heartbeat_sender.start(@heartbeat)
     end
 
+    def maybe_shutdown_heartbeat_sender
+      @heartbeat_sender.stop if @heartbeat_sender
+    end
+
 
     def initialize_transport
-      @transport = Transport.new(@host, @port, @opts)
+      @transport = Transport.new(self, @host, @port, @opts)
     end
 
     # Sends AMQ protocol header (also known as preamble).
