@@ -304,6 +304,8 @@ module Bunny
       Bunny::Timer.timeout(1, ClientTimeout) do
         @last_basic_consume_ok = @continuations.pop
       end
+      # covers server-generated consumer tags
+      register_consumer(@last_basic_consume_ok.consumer_tag, consumer)
 
       raise_if_continuation_resulted_in_a_channel_error!
 
