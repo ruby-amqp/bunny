@@ -1,5 +1,13 @@
 ## Changes between Bunny 0.9.0.pre3 and 0.9.0.pre4
 
+### Eliminate Race Conditions When Registering Consumers
+
+Fixes a potential race condition between `basic.consume-ok` handler and
+delivery handler when a consumer is registered for a queue that has
+messages in it.
+
+GH issue: #78.
+
 ### Support for Alternative Authentication Mechanisms
 
 Bunny now supports two authentication mechanisms and can be extended

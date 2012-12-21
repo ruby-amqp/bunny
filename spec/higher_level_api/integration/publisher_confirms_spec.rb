@@ -23,15 +23,15 @@ describe Bunny::Channel do
       q  = ch.queue("", :exclusive => true)
       x  = ch.default_exchange
 
-      5000.times do
+      500.times do
         x.publish("xyzzy", :routing_key => q.name)
       end
 
-      ch.next_publish_seq_no.should == 5001
+      ch.next_publish_seq_no.should == 501
       ch.wait_for_confirms
       sleep 0.25
-      
-      q.message_count.should == 5000
+
+      q.message_count.should == 500
       q.purge
 
       ch.close

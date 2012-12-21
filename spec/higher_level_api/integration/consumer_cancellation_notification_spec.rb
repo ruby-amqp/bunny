@@ -62,7 +62,7 @@ describe Bunny::Channel do
         ch2 = connection.create_channel
         q   = ch2.queue(queue_name, :auto_delete => true)
 
-        consumer = ExampleConsumer.new(ch2, q)
+        consumer = ExampleConsumer.new(ch2, q, "")
         q.subscribe_with(consumer)
       end
       t.abort_on_exception = true
