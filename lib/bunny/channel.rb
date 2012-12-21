@@ -269,16 +269,14 @@ module Bunny
                                                                   exclusive,
                                                                   false,
                                                                   arguments))
-      Bunny::Timer.timeout(1, ClientTimeout) do
-        @last_basic_consume_ok = @continuations.pop
+      # helps avoid race condition between basic.consume-ok and basic.deliver if there are messages
+      # in the queue already. MK.
+      if consumer_tag && consumer_tag.strip != AMQ::Protocol::EMPTY_STRING
+        add_consumer(queue_name, consumer_tag, no_ack, exclusive, argument, &block)
       end
 
-      @consumer_mutex.synchronize do
-        # make sure to use consumer tag from basic.consume-ok in case it was
-        # server-generated
-        c = Consumer.new(self, queue, @last_basic_consume_ok.consumer_tag, no_ack, exclusive, arguments)
-        c.on_delivery(&block) if block
-        @consumers[@last_basic_consume_ok.consumer_tag] = c
+      Bunny::Timer.timeout(1, ClientTimeout) do
+        @last_basic_consume_ok = @continuations.pop
       end
 
       @last_basic_consume_ok
@@ -296,17 +294,18 @@ module Bunny
                                                                   consumer.exclusive,
                                                                   false,
                                                                   consumer.arguments))
+
+      # helps avoid race condition between basic.consume-ok and basic.deliver if there are messages
+      # in the queue already. MK.
+      if consumer.consumer_tag && consumer.consumer_tag.strip != AMQ::Protocol::EMPTY_STRING
+        register_consumer(consumer.consumer_tag, consumer)
+      end
+
       Bunny::Timer.timeout(1, ClientTimeout) do
         @last_basic_consume_ok = @continuations.pop
       end
 
       raise_if_continuation_resulted_in_a_channel_error!
-
-      @consumer_mutex.synchronize do
-        # update the tag in case it was server-generated
-        consumer.consumer_tag = @last_basic_consume_ok.consumer_tag
-        @consumers[@last_basic_consume_ok.consumer_tag] = consumer
-      end
 
       @last_basic_consume_ok
     end
@@ -594,6 +593,20 @@ module Bunny
     # Implementation
     #
 
+    def register_consumer(consumer_tag, consumer)
+      @consumer_mutex.synchronize do
+        @consumers[consumer_tag] = consumer
+      end
+    end
+
+    def add_consumer(queue, consumer_tag, no_ack, exclusive, argument, &block)
+      @consumer_mutex.synchronize do
+        c = Consumer.new(self, queue, consumer_tag, no_ack, exclusive, arguments)
+        c.on_delivery(&block) if block
+        @consumers[consumer_tag] = c
+      end
+    end
+
     def handle_method(method)
       # puts "Channel#handle_frame on channel #{@id}: #{method.inspect}"
       case method
@@ -732,6 +745,14 @@ module Bunny
       @exchanges[name]
     end
 
+    # Unique string supposed to be used as a consumer tag.
+    #
+    # @return [String]  Unique string.
+    # @api plugin
+    def generate_consumer_tag(name = "bunny")
+      "#{name}-#{Time.now.to_i * 1000}-#{Kernel.rand(999_999_999_999)}"
+    end
+
     protected
 
     def closed!
@@ -766,14 +787,6 @@ module Bunny
 
     def raise_if_no_longer_open!
       raise ChannelAlreadyClosed.new("cannot use a channel that was already closed! Channel id: #{@id}", self) if closed?
-    end
-
-    # Unique string supposed to be used as a consumer tag.
-    #
-    # @return [String]  Unique string.
-    # @api plugin
-    def generate_consumer_tag(name = "bunny")
-      "#{name}-#{Time.now.to_i * 1000}-#{Kernel.rand(999_999_999_999)}"
     end
   end
 end

@@ -75,14 +75,14 @@ module Bunny
     end
 
     def subscribe(opts = {
-                    :consumer_tag    => "",
+                    :consumer_tag    => @channel.generate_consumer_tag,
                     :ack             => false,
                     :exclusive       => false,
                     :block           => false,
                     :on_cancellation => nil
                   }, &block)
 
-      ctag       = opts.fetch(:consumer_tag, "")
+      ctag       = opts.fetch(:consumer_tag, @channel.generate_consumer_tag)
       consumer   = Consumer.new(@channel,
                                 @name,
                                 ctag,
