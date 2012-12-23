@@ -18,7 +18,11 @@ module Bunny
 
     def start(period = 30)
       @mutex.synchronize do
-        @period = period
+        # calculate interval as half the given period plus
+        # some compensation for Ruby's implementation inaccuracy
+        # (we cannot get at the nanos level the Java client uses, and
+        # our approach is simplistic). MK.
+        @interval = [(period / 2) - 1, 0.4].max
 
         @thread = Thread.new(&method(:run))
       end
@@ -39,7 +43,7 @@ module Bunny
         loop do
           self.beat
 
-          sleep (@period / 2)
+          sleep @interval
         end
       rescue IOError => ioe
         # ignored
@@ -51,7 +55,7 @@ module Bunny
     def beat
       now = Time.now
 
-      if now > (@last_activity_time + @period)
+      if now > (@last_activity_time + @interval)
         @transport.send_raw(AMQ::Protocol::HeartbeatFrame.encode)
       end
     end
