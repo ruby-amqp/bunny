@@ -1,5 +1,15 @@
 ## Changes between Bunny 0.9.0.pre3 and 0.9.0.pre4
 
+### Heartbeats Support Fixes
+
+Heartbeats are now correctly sent at safe intervals (half of the configured
+interval). In addition, setting `:heartbeat => 0` (or `nil`) will disable
+heartbeats, just like in Bunny 0.8 and [amqp gem](http://rubyamqp.info).
+
+Default `:heartbeat` value is now `600` (seconds), the same as RabbitMQ 3.0
+default.
+
+
 ### Eliminate Race Conditions When Registering Consumers
 
 Fixes a potential race condition between `basic.consume-ok` handler and
