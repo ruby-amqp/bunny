@@ -21,9 +21,8 @@ module Bunny
     DEFAULT_VHOST     = "/"
     DEFAULT_USER      = "guest"
     DEFAULT_PASSWORD  = "guest"
-    # 0 means "no heartbeat". This is the same default RabbitMQ Java client and amqp gem
-    # use.
-    DEFAULT_HEARTBEAT = 0
+    # the same value as RabbitMQ 3.0 uses. MK.
+    DEFAULT_HEARTBEAT = 600
     # 128K
     DEFAULT_FRAME_MAX = 131072
 
@@ -32,9 +31,8 @@ module Bunny
 
 
     DEFAULT_CLIENT_PROPERTIES = {
-      # once we support AMQP 0.9.1 extensions, this needs to be updated. MK.
       :capabilities => {
-        # :publisher_confirms         => true,
+        :publisher_confirms         => true,
         :consumer_cancel_notify     => true,
         :exchange_exchange_bindings => true,
         :"basic.nack"               => true
@@ -488,7 +486,12 @@ module Bunny
 
       @frame_max            = negotiate_value(@client_frame_max, connection_tune.frame_max)
       @channel_max          = negotiate_value(@client_channel_max, connection_tune.channel_max)
-      @heartbeat            = negotiate_value(@client_heartbeat, connection_tune.heartbeat)
+      # this allows for disabled heartbeats. MK.
+      @heartbeat            = if 0 == @client_heartbeat || @client_heartbeat.nil?
+                                0
+                              else
+                                negotiate_value(@client_heartbeat, connection_tune.heartbeat)
+                              end
 
       @channel_id_allocator = ChannelIdAllocator.new(@channel_max)
 
