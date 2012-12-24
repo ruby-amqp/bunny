@@ -272,12 +272,14 @@ module Bunny
       # helps avoid race condition between basic.consume-ok and basic.deliver if there are messages
       # in the queue already. MK.
       if consumer_tag && consumer_tag.strip != AMQ::Protocol::EMPTY_STRING
-        add_consumer(queue_name, consumer_tag, no_ack, exclusive, argument, &block)
+        add_consumer(queue_name, consumer_tag, no_ack, exclusive, arguments, &block)
       end
 
       Bunny::Timer.timeout(1, ClientTimeout) do
         @last_basic_consume_ok = @continuations.pop
       end
+      # covers server-generated consumer tags
+      add_consumer(queue_name, @last_basic_consume_ok.consumer_tag, no_ack, exclusive, arguments, &block)
 
       @last_basic_consume_ok
     end
@@ -601,7 +603,7 @@ module Bunny
       end
     end
 
-    def add_consumer(queue, consumer_tag, no_ack, exclusive, argument, &block)
+    def add_consumer(queue, consumer_tag, no_ack, exclusive, arguments, &block)
       @consumer_mutex.synchronize do
         c = Consumer.new(self, queue, consumer_tag, no_ack, exclusive, arguments)
         c.on_delivery(&block) if block
@@ -687,6 +689,9 @@ module Bunny
         @work_pool.submit do
           consumer.call(DeliveryInfo.new(basic_deliver), MessageProperties.new(properties), content)
         end
+      else
+        # TODO: log it
+        puts "[warning] No consumer for tag #{basic_deliver.consumer_tag}"
       end
     end
 
