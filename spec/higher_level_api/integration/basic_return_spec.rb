@@ -21,7 +21,7 @@ describe Bunny::Exchange, "#publish" do
       x.on_return do |basic_deliver, properties, content|
         returned << content
       end
-      
+
       x.publish("xyzzy", :routing_key => rand.to_s, :mandatory => true)
       sleep 0.5
 
