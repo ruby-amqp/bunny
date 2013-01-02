@@ -4,7 +4,7 @@
 require "rubygems"
 require "bunny"
 
-puts "=> Using alternate exchanges"
+puts "=> Demonstrating alternate exchanges"
 puts
 
 conn = Bunny.new

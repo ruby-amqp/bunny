@@ -4,7 +4,7 @@
 require "rubygems"
 require "bunny"
 
-puts "=> Using per-queue message TTL"
+puts "=> Demonstrating per-queue message TTL"
 puts
 
 conn = Bunny.new

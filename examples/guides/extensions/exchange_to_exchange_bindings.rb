@@ -4,7 +4,7 @@
 require "rubygems"
 require "bunny"
 
-puts "=> Using exchange-to-exchange bindings"
+puts "=> Demonstrating exchange-to-exchange bindings"
 puts
 
 conn = Bunny.new

@@ -4,7 +4,7 @@
 require "rubygems"
 require "bunny"
 
-puts "=> Using sender-selected distribution"
+puts "=> Demonstrating sender-selected distribution"
 puts
 
 conn = Bunny.new

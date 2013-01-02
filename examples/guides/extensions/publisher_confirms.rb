@@ -4,7 +4,7 @@
 require "rubygems"
 require "bunny"
 
-puts "=> Using publisher confirms"
+puts "=> Demonstrating publisher confirms"
 puts
 
 conn = Bunny.new

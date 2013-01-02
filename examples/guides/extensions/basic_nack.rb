@@ -4,7 +4,7 @@
 require "rubygems"
 require "bunny"
 
-puts "=> Using basic.nack"
+puts "=> Demonstrating basic.nack"
 puts
 
 conn = Bunny.new
