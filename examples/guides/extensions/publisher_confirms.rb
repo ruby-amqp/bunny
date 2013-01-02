@@ -24,5 +24,5 @@ sleep 0.2
 puts "Received acks for all published messages. #{q.name} now has #{q.message_count} messages."
 
 sleep 0.7
-puts "Closing..."
+puts "Disconnecting..."
 conn.close
