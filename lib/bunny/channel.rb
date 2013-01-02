@@ -593,6 +593,7 @@ module Bunny
       @only_acks_received
     end
 
+
     #
     # Implementation
     #
