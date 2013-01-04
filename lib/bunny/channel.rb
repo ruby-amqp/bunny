@@ -18,7 +18,7 @@ module Bunny
     #
 
     attr_accessor :id, :connection, :status, :work_pool
-    attr_reader :next_publish_seq_no
+    attr_reader :next_publish_seq_no, :queues, :exchanges
 
 
     def initialize(connection = nil, id = nil, work_pool = ConsumerWorkPool.new(1))
@@ -730,6 +730,10 @@ module Bunny
     def synchronize(&block)
       @publishing_mutex.synchronize(&block)
     end
+    
+    def deregister_queue(queue)
+      @queues.delete(queue.name)
+    end
 
     def register_queue(queue)
       @queues[queue.name] = queue
@@ -737,6 +741,10 @@ module Bunny
 
     def find_queue(name)
       @queues[name]
+    end
+    
+    def deregister_exchange(exchange)
+      @exchanges.delete(exchange.name)
     end
 
     def register_exchange(exchange)
