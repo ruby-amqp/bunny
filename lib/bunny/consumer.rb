@@ -14,7 +14,7 @@ module Bunny
 
 
 
-    def initialize(channel, queue, consumer_tag = channel.generate_consumer_tag, no_ack = false, exclusive = false, arguments = {})
+    def initialize(channel, queue, consumer_tag = channel.generate_consumer_tag, no_ack = true, exclusive = false, arguments = {})
       @channel       = channel || raise(ArgumentError, "channel is nil")
       @queue         = queue   || raise(ArgumentError, "queue is nil")
       @consumer_tag  = consumer_tag
