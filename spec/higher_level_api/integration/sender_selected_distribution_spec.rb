@@ -23,6 +23,8 @@ describe "Sender-selected distribution" do
     n.times do |i|
       x.publish("Message #{i}", :routing_key => "one", :headers => {"CC" => ["two", "three"]})
     end
+    
+    sleep 0.5
 
     q1.message_count.should == n
     q2.message_count.should == n
