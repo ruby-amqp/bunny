@@ -1,6 +1,31 @@
 ## Changes between Bunny 0.9.0.pre4 and 0.9.0.pre5
 
-No changes yet.
+### Channel Errors Reset
+
+Channel error information is now properly reset when a channel is (re)opened.
+
+GH issue: #83.
+
+### Bunny::Consumer#initial Default Change
+
+the default value of `Bunny::Consumer` noack argument changed from false to true
+for consistency.
+
+### Bunny::Session#prefetch Removed
+
+Global prefetch is not implemented in RabbitMQ, so `Bunny::Session#prefetch`
+is gone from the API.
+
+### Queue Redeclaration Bug Fix
+
+Fixed a problem when a queue was not declared after being deleted and redeclared
+
+GH issue: #80
+
+### Channel Cache Invalidation
+
+Channel queue and exchange caches are now properly invalidated when queues and
+exchanges are deleted.
 
 
 ## Changes between Bunny 0.9.0.pre3 and 0.9.0.pre4
