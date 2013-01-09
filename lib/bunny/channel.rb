@@ -47,6 +47,9 @@ module Bunny
 
     def open
       @connection.open_channel(self)
+      # clear last channel error
+      @last_channel_error = nil
+
       @status = :open
 
       self
