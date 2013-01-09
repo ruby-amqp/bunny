@@ -1,3 +1,10 @@
+## Changes between Bunny 0.9.0.pre5 and 0.9.0.pre6
+
+No changes yet.
+
+
+
+
 ## Changes between Bunny 0.9.0.pre4 and 0.9.0.pre5
 
 ### Channel Errors Reset
