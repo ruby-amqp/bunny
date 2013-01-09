@@ -102,6 +102,7 @@ module Bunny
     # Deletes the exchange unless it is a default exchange
     # @api public
     def delete(opts = {})
+      @channel.deregister_exchange(self)
       @channel.exchange_delete(@name, opts) unless predeclared?
     end
 

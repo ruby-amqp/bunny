@@ -21,6 +21,8 @@ describe Bunny::Exchange, "#delete" do
       expect {
         x.delete
       }.to raise_error(Bunny::NotFound)
+      
+      ch.exchanges.size.should == 0
     end
   end
 

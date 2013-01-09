@@ -22,6 +22,8 @@ describe Bunny::Queue, "#delete" do
       expect {
         q.delete
       }.to raise_error(Bunny::NotFound)
+      
+      ch.queues.size.should == 0
     end
   end
 

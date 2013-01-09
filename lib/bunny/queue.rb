@@ -146,6 +146,7 @@ module Bunny
     # Deletes the queue
     # @api public
     def delete(opts = {})
+      @channel.deregister_queue(self)
       @channel.queue_delete(@name, opts)
     end
 
