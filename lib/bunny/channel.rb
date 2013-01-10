@@ -18,7 +18,7 @@ module Bunny
     #
 
     attr_accessor :id, :connection, :status, :work_pool
-    attr_reader :next_publish_seq_no, :queues, :exchanges
+    attr_reader :next_publish_seq_no, :queues, :exchanges, :unconfirmed_set
 
 
     def initialize(connection = nil, id = nil, work_pool = ConsumerWorkPool.new(1))
@@ -572,7 +572,7 @@ module Bunny
 
     # confirm.*
 
-    def confirm_select
+    def confirm_select(callback=nil)
       raise_if_no_longer_open!
 
       if @next_publish_seq_no == 0
@@ -580,6 +580,8 @@ module Bunny
         @unconfirmed_set        = Set.new
         @next_publish_seq_no    = 1
       end
+
+      @confirms_callback = callback
 
       @connection.send_frame(AMQ::Protocol::Confirm::Select.encode(@id, false))
       Bunny::Timer.timeout(1, ClientTimeout) do
@@ -660,10 +662,8 @@ module Bunny
       when AMQ::Protocol::Confirm::SelectOk then
         @continuations.push(method)
       when AMQ::Protocol::Basic::Ack then
-        # TODO: implement confirm listeners
         handle_ack_or_nack(method.delivery_tag, method.multiple, false)
       when AMQ::Protocol::Basic::Nack then
-        # TODO: implement confirm listeners
         handle_ack_or_nack(method.delivery_tag, method.multiple, true)
       when AMQ::Protocol::Channel::Close then
         # puts "Exception on channel #{@id}: #{method.reply_code} #{method.reply_text}"
@@ -711,7 +711,7 @@ module Bunny
 
     def handle_ack_or_nack(delivery_tag, multiple, nack)
       if multiple
-        @unconfirmed_set.delete_if { |i| i < delivery_tag }
+        @unconfirmed_set.delete_if { |i| i <= delivery_tag }
       else
         @unconfirmed_set.delete(delivery_tag)
       end
@@ -720,6 +720,8 @@ module Bunny
         @only_acks_received = (@only_acks_received && !nack)
 
         @confirms_continuations.push(true) if @unconfirmed_set.empty?
+
+        @confirms_callback.call(delivery_tag, multiple, nack) if @confirms_callback
       end
     end
 
@@ -747,7 +749,7 @@ module Bunny
     def synchronize(&block)
       @publishing_mutex.synchronize(&block)
     end
-    
+
     def deregister_queue(queue)
       @queues.delete(queue.name)
     end
@@ -759,7 +761,7 @@ module Bunny
     def find_queue(name)
       @queues[name]
     end
-    
+
     def deregister_exchange(exchange)
       @exchanges.delete(exchange.name)
     end
