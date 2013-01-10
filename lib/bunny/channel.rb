@@ -572,7 +572,7 @@ module Bunny
 
     # confirm.*
 
-    def confirm_select
+    def confirm_select(callback=nil)
       raise_if_no_longer_open!
 
       if @next_publish_seq_no == 0
@@ -580,6 +580,8 @@ module Bunny
         @unconfirmed_set        = Set.new
         @next_publish_seq_no    = 1
       end
+
+      @confirms_callback = callback
 
       @connection.send_frame(AMQ::Protocol::Confirm::Select.encode(@id, false))
       Bunny::Timer.timeout(1, ClientTimeout) do
@@ -660,10 +662,8 @@ module Bunny
       when AMQ::Protocol::Confirm::SelectOk then
         @continuations.push(method)
       when AMQ::Protocol::Basic::Ack then
-        # TODO: implement confirm listeners
         handle_ack_or_nack(method.delivery_tag, method.multiple, false)
       when AMQ::Protocol::Basic::Nack then
-        # TODO: implement confirm listeners
         handle_ack_or_nack(method.delivery_tag, method.multiple, true)
       when AMQ::Protocol::Channel::Close then
         # puts "Exception on channel #{@id}: #{method.reply_code} #{method.reply_text}"
@@ -720,6 +720,8 @@ module Bunny
         @only_acks_received = (@only_acks_received && !nack)
 
         @confirms_continuations.push(true) if @unconfirmed_set.empty?
+
+        @confirms_callback.call(delivery_tag, multiple, nack) if @confirms_callback
       end
     end
 
