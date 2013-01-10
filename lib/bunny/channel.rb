@@ -600,6 +600,15 @@ module Bunny
 
 
     #
+    # Recovery
+    #
+
+    def recover_from_network_failure
+      puts "Recovering channel #{@id} from network failure..."
+    end
+
+
+    #
     # Implementation
     #
 

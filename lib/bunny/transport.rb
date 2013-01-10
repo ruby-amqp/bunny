@@ -62,7 +62,7 @@ module Bunny
     # @raise [ClientTimeout]
     def write(*args)
       begin
-        raise Bunny::ConnectionError.new('No connection - socket has not been created', @host, @port) if !@socket
+        raise Bunny::ConnectionError.new("No connection: socket is nil. ", @host, @port) if !@socket
         if @read_write_timeout
           Bunny::Timer.timeout(@read_write_timeout, Bunny::ClientTimeout) do
             @socket.write(*args) if open?
@@ -158,6 +158,7 @@ module Bunny
     protected
 
     def initialize_socket
+      puts "Initializing socket..."
       begin
         @socket = Bunny::Timer.timeout(@connect_timeout, ConnectionTimeout) do
           Bunny::Socket.open(@host, @port,

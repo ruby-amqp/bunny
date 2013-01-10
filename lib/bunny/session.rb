@@ -119,6 +119,7 @@ module Bunny
       self.init_connection
       self.open_connection
 
+      @event_loop = nil
       self.start_main_loop
 
       @default_channel = self.create_channel
@@ -302,11 +303,11 @@ module Bunny
       end
     end
 
-    def handle_network_issue(exception)
-      if !recovering_from_network_issue?
-        @recovering_from_network_issue = true
-        if recoverable_network_issue?(exception)
-          puts "Recovering from a network failure..."
+    def handle_network_failure(exception)
+      if !recovering_from_network_failure?
+        @recovering_from_network_failure = true
+        if recoverable_network_failure?(exception)
+          # puts "Recovering from a network failure..."
           @channels.each do |n, ch|
             ch.maybe_kill_consumer_work_pool!
           end
@@ -314,27 +315,45 @@ module Bunny
 
           recover_from_network_failure
         else
-          # TODO
+          # TODO: investigate if we can be a bit smarter here. MK.
         end
       end
     end
 
-    def recoverable_network_issue?(exception)
-      # TODO
+    def recoverable_network_failure?(exception)
+      # TODO: investigate if we can be a bit smarter here. MK.
       true
     end
 
-    def recovering_from_network_issue?
-      @recovering_from_network_issue
+    def recovering_from_network_failure?
+      @recovering_from_network_failure
     end
 
     def recover_from_network_failure
       begin
+        # puts "About to start recovery..."
         start
-      rescue TCPConnectionFailed => e
-        puts "TCP connection failed, reconnecting in 5 seconds"
+
+        if open?
+          @recovering_from_network_failure = false
+
+          recover_channels
+        end
+      rescue TCPConnectionFailed, AMQ::Protocol::EmptyResponseError => e
+        # puts "TCP connection failed, reconnecting in 5 seconds"
         sleep 5.0
-        retry
+        retry if recoverable_network_failure?(e)
+      end
+    end
+
+    def recover_channels
+      # default channel is reopened right after connection
+      # negotiation is completed, so make sure we do not try to open
+      # it twice. MK.
+      @channels.reject { |n, ch| ch == @default_channel }.each do |n, ch|
+        ch.open
+
+        ch.recover_from_network_failure
       end
     end
 
@@ -346,8 +365,14 @@ module Bunny
       case frame
       when AMQ::Protocol::Connection::Close then
         klass = case frame.reply_code
+                when 503 then
+                  CommandInvalid
                 when 504 then
                   ChannelError
+                when 504 then
+                  UnexpectedFrame
+                else
+                  raise "Unknown reply code: #{frame.reply_code}, text: #{frame.reply_text}"
                 end
 
         klass.new("Connection-level error: #{frame.reply_text}", self, frame)

@@ -131,4 +131,10 @@ module Bunny
 
   class ChannelError < ConnectionLevelException
   end
+
+  class InvalidCommand < ConnectionLevelException
+  end
+
+  class UnexpectedFrame < ConnectionLevelException
+  end
 end

@@ -18,6 +18,11 @@ module Bunny
       @thread    = Thread.new(&method(:run_loop))
     end
 
+    def resume
+      start
+    end
+
+
     def run_loop
       loop do
         begin
@@ -51,9 +56,9 @@ module Bunny
         rescue Errno::EBADF => ebadf
           # ignored, happens when we loop after the transport has already been closed
         rescue AMQ::Protocol::EmptyResponseError, IOError, Errno::EPIPE, Errno::EAGAIN => e
-          puts e.class.name
+          puts "Exception in the main loop: #{e.class.name}"
           @network_is_down = true
-          @session.handle_network_issue(e)
+          @session.handle_network_failure(e)
         rescue Exception => e
           puts e.class.name
           puts e.message
