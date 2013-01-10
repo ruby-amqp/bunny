@@ -35,7 +35,8 @@ module Bunny
         :publisher_confirms         => true,
         :consumer_cancel_notify     => true,
         :exchange_exchange_bindings => true,
-        :"basic.nack"               => true
+        :"basic.nack"               => true,
+        :"connection.blocked"       => true
       },
       :product      => "Bunny",
       :platform     => ::RUBY_DESCRIPTION,
@@ -196,6 +197,14 @@ module Bunny
       @default_channel.exchange(*args)
     end
 
+    def on_blocked(&block)
+      @block_callback = block
+    end
+
+    def on_unblocked(&block)
+      @unblock_callback = block
+    end
+
 
     #
     # Implementation
@@ -270,6 +279,10 @@ module Bunny
           @active_continuation.notify_all if @active_continuation
           @active_continuation = false
         end
+      when AMQ::Protocol::Connection::Blocked then
+        @block_callback.call(method) if @block_callback
+      when AMQ::Protocol::Connection::Unblocked then
+        @unblock_callback.call(method) if @unblock_callback
       when AMQ::Protocol::Channel::Close then
         begin
           ch = @channels[ch_number]
