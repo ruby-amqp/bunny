@@ -18,7 +18,7 @@ module Bunny
     #
 
     attr_accessor :id, :connection, :status, :work_pool
-    attr_reader :next_publish_seq_no, :queues, :exchanges
+    attr_reader :next_publish_seq_no, :queues, :exchanges, :unconfirmed_set
 
 
     def initialize(connection = nil, id = nil, work_pool = ConsumerWorkPool.new(1))
