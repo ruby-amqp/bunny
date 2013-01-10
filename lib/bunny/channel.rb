@@ -739,7 +739,7 @@ module Bunny
     def synchronize(&block)
       @publishing_mutex.synchronize(&block)
     end
-    
+
     def deregister_queue(queue)
       @queues.delete(queue.name)
     end
@@ -751,7 +751,7 @@ module Bunny
     def find_queue(name)
       @queues[name]
     end
-    
+
     def deregister_exchange(exchange)
       @exchanges.delete(exchange.name)
     end
