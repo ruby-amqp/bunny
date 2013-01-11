@@ -207,6 +207,7 @@ module Bunny
         @name    = AMQ::Protocol::EMPTY_STRING
 
         @channel.deregister_queue_named(old_name)
+        # TODO: delete old queue unless it was exclusive? MK.
       end
 
       declare!
