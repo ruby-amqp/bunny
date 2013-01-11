@@ -76,7 +76,7 @@ module Bunny
 
       # store bindings for automatic recovery. We need to be very careful to
       # not cause an infinite rebinding loop here when we recover. MK.
-      binding = { :exchange => exchange_name, :routing_key => (opts[:routing_key] || opts[:key]), :arguments => arguments }
+      binding = { :exchange => exchange_name, :routing_key => (opts[:routing_key] || opts[:key]), :arguments => opts[:arguments] }
       @bindings.push(binding) unless @bindings.include?(binding)
 
       self
@@ -195,8 +195,33 @@ module Bunny
       s[:consumer_count]
     end
 
+    #
+    # Recovery
+    #
+
     def recover_from_network_failure
-      puts "Recovering queue #{@name} from network failure"
+      # puts "Recovering queue #{@name} from network failure"
+
+      if self.server_named?
+        old_name = @name.dup
+        @name    = AMQ::Protocol::EMPTY_STRING
+
+        @channel.deregister_queue_named(old_name)
+      end
+
+      declare!
+      begin
+        @channel.register_queue(self)
+      rescue Exception => e
+        puts "Caught #{e.inspect} while registering #{@name}!"
+      end
+      recover_bindings
+    end
+
+    def recover_bindings
+      @bindings.each do |b|
+        self.bind(b[:exchange], b)
+      end
     end
 
 

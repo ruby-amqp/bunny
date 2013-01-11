@@ -58,5 +58,13 @@ module Bunny
     def inspect
       "#<#{self.class.name}:#{object_id} @channel_id=#{@channel.number} @queue=#{self.queue_name}> @consumer_tag=#{@consumer_tag} @exclusive=#{@exclusive} @no_ack=#{@no_ack}>"
     end
+
+    #
+    # Recovery
+    #
+
+    def recover_from_network_failure
+      # TODO
+    end
   end
 end

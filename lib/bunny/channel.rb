@@ -610,7 +610,9 @@ module Bunny
 
       recover_prefetch_setting
       recover_exchanges
+      # this includes recovering bindings
       recover_queues
+      recover_consumers
     end
 
     def recover_prefetch_setting
@@ -618,16 +620,23 @@ module Bunny
     end
 
     def recover_exchanges
-      @exchanges.each do |_, x|
+      @exchanges.values.dup.each do |x|
         x.recover_from_network_failure
       end
     end
 
     def recover_queues
-      @queues.each do |_, q|
+      @queues.values.dup.each do |q|
         q.recover_from_network_failure
       end
     end
+
+    def recover_consumers
+      @consumers.values.dup.each do |c|
+        c.recover_from_network_failure
+      end
+    end
+
 
 
     #
@@ -783,6 +792,10 @@ module Bunny
 
     def deregister_queue(queue)
       @queues.delete(queue.name)
+    end
+
+    def deregister_queue_named(name)
+      @queues.delete(name)
     end
 
     def register_queue(queue)
