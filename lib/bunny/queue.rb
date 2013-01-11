@@ -172,6 +172,9 @@ module Bunny
       s[:consumer_count]
     end
 
+    def recover_from_network_failure
+      puts "Recovering queue #{@name} from network failure"
+    end
 
 
     #

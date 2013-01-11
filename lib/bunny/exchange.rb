@@ -126,6 +126,10 @@ module Bunny
       self
     end
 
+    def recover_from_network_failure
+      puts "Recovering exchange #{@name} from network failure"
+    end
+
 
     #
     # Implementation

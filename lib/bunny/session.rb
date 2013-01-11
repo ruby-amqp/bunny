@@ -548,7 +548,7 @@ module Bunny
     end
 
     def initialize_heartbeat_sender
-      puts "Initializing heartbeat sender..."
+      # puts "Initializing heartbeat sender..."
       @heartbeat_sender = HeartbeatSender.new(@transport)
       @heartbeat_sender.start(@heartbeat)
     end

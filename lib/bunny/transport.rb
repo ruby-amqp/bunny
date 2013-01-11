@@ -73,7 +73,7 @@ module Bunny
       rescue Errno::EPIPE, Errno::EAGAIN, Bunny::ClientTimeout, IOError => e
         close
 
-        @session.handle_network_issue(e)
+        @session.handle_network_failure(e)
       end
     end
     alias send_raw write
@@ -130,7 +130,7 @@ module Bunny
     # @private
     def send_frame(frame)
       if closed?
-        @session.handle_network_issue(ConnectionClosedError.new(frame))
+        @session.handle_network_failure(ConnectionClosedError.new(frame))
       else
         send_raw(frame.encode)
       end
@@ -158,7 +158,6 @@ module Bunny
     protected
 
     def initialize_socket
-      puts "Initializing socket..."
       begin
         @socket = Bunny::Timer.timeout(@connect_timeout, ConnectionTimeout) do
           Bunny::Socket.open(@host, @port,

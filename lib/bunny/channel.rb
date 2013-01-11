@@ -215,6 +215,8 @@ module Bunny
       end
       raise_if_continuation_resulted_in_a_channel_error!
 
+      @prefetch_count = prefetch_count
+
       @last_basic_qos_ok
     end
 
@@ -605,6 +607,26 @@ module Bunny
 
     def recover_from_network_failure
       puts "Recovering channel #{@id} from network failure..."
+
+      recover_prefetch_setting
+      recover_exchanges
+      recover_queues
+    end
+
+    def recover_prefetch_setting
+      basic_qos(@prefetch_count) if @prefetch_count
+    end
+
+    def recover_exchanges
+      @exchanges.each do |_, x|
+        x.recover_from_network_failure
+      end
+    end
+
+    def recover_queues
+      @queues.each do |_, q|
+        q.recover_from_network_failure
+      end
     end
 
 
