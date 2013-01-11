@@ -127,7 +127,8 @@ module Bunny
     end
 
     def recover_from_network_failure
-      puts "Recovering exchange #{@name} from network failure"
+      # puts "Recovering exchange #{@name} from network failure"
+      declare! unless predefined?
     end
 
 
@@ -142,6 +143,11 @@ module Bunny
         # TODO: log a warning
       end
     end
+
+    # @return [Boolean] true if this exchange is a pre-defined one (amq.direct, amq.fanout, amq.match and so on)
+    def predefined?
+      @name && ((@name == AMQ::Protocol::EMPTY_STRING) || !!(@name =~ /^amq\./i))
+    end # predefined?
 
     protected
 
