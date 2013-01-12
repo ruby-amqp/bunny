@@ -16,9 +16,9 @@ module Bunny
   class ConnectionClosedError < StandardError
     def initialize(frame)
       if frame.respond_to?(:method_class)
-        super("Trying to send frame through a closed connection. Frame is #{frame.inspect}")
-      else
         super("Trying to send frame through a closed connection. Frame is #{frame.inspect}, method class is #{frame.method_class}")
+      else
+        super("Trying to send frame through a closed connection. Frame is #{frame.inspect}")
       end
     end
   end
@@ -44,7 +44,6 @@ module Bunny
   ConnectionError = TCPConnectionFailed
   ServerDownError = TCPConnectionFailed
 
-  # TODO
   class ForcedChannelCloseError < StandardError; end
   class ForcedConnectionCloseError < StandardError; end
   class MessageError < StandardError; end
@@ -130,5 +129,11 @@ module Bunny
   end
 
   class ChannelError < ConnectionLevelException
+  end
+
+  class InvalidCommand < ConnectionLevelException
+  end
+
+  class UnexpectedFrame < ConnectionLevelException
   end
 end

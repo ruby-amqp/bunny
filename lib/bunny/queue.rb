@@ -26,6 +26,8 @@ module Bunny
       @auto_delete      = @options[:auto_delete]
       @arguments        = @options[:arguments]
 
+      @bindings         = Array.new
+
       @default_consumer = nil
 
       declare! unless opts[:no_declare]
@@ -65,11 +67,32 @@ module Bunny
     def bind(exchange, opts = {})
       @channel.queue_bind(@name, exchange, opts)
 
+      exchange_name = if exchange.respond_to?(:name)
+                        exchange.name
+                      else
+                        exchange
+                      end
+
+
+      # store bindings for automatic recovery. We need to be very careful to
+      # not cause an infinite rebinding loop here when we recover. MK.
+      binding = { :exchange => exchange_name, :routing_key => (opts[:routing_key] || opts[:key]), :arguments => opts[:arguments] }
+      @bindings.push(binding) unless @bindings.include?(binding)
+
       self
     end
 
     def unbind(exchange, opts = {})
       @channel.queue_unbind(@name, exchange, opts)
+
+      exchange_name = if exchange.respond_to?(:name)
+                        exchange.name
+                      else
+                        exchange
+                      end
+
+
+      @bindings.delete_if { |b| b[:exchange] == exchange_name && b[:routing_key] == (opts[:routing_key] || opts[:key]) && b[:arguments] == opts[:arguments] }
 
       self
     end
@@ -84,11 +107,12 @@ module Bunny
 
       ctag       = opts.fetch(:consumer_tag, @channel.generate_consumer_tag)
       consumer   = Consumer.new(@channel,
-                                @name,
+                                self,
                                 ctag,
                                 !opts[:ack],
                                 opts[:exclusive],
                                 opts[:arguments])
+      puts "Added consumer #{ctag} on queue #{@name}"
       consumer.on_delivery(&block)
       consumer.on_cancellation(&opts[:on_cancellation]) if opts[:on_cancellation]
 
@@ -172,6 +196,34 @@ module Bunny
       s[:consumer_count]
     end
 
+    #
+    # Recovery
+    #
+
+    def recover_from_network_failure
+      # puts "Recovering queue #{@name} from network failure"
+
+      if self.server_named?
+        old_name = @name.dup
+        @name    = AMQ::Protocol::EMPTY_STRING
+
+        @channel.deregister_queue_named(old_name)
+      end
+
+      declare!
+      begin
+        @channel.register_queue(self)
+      rescue Exception => e
+        puts "Caught #{e.inspect} while registering #{@name}!"
+      end
+      recover_bindings
+    end
+
+    def recover_bindings
+      @bindings.each do |b|
+        self.bind(b[:exchange], b)
+      end
+    end
 
 
     #

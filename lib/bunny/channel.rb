@@ -18,7 +18,7 @@ module Bunny
     #
 
     attr_accessor :id, :connection, :status, :work_pool
-    attr_reader :next_publish_seq_no, :queues, :exchanges, :unconfirmed_set
+    attr_reader :next_publish_seq_no, :queues, :exchanges, :unconfirmed_set, :consumers
 
 
     def initialize(connection = nil, id = nil, work_pool = ConsumerWorkPool.new(1))
@@ -214,6 +214,8 @@ module Bunny
         @last_basic_qos_ok = @continuations.pop
       end
       raise_if_continuation_resulted_in_a_channel_error!
+
+      @prefetch_count = prefetch_count
 
       @last_basic_qos_ok
     end
@@ -600,6 +602,47 @@ module Bunny
 
 
     #
+    # Recovery
+    #
+
+    def recover_from_network_failure
+      # puts "Recovering channel #{@id} from network failure..."
+      recover_prefetch_setting
+      recover_exchanges
+      # this includes recovering bindings
+      recover_queues
+      recover_consumers
+    end
+
+    def recover_prefetch_setting
+      basic_qos(@prefetch_count) if @prefetch_count
+    end
+
+    def recover_exchanges
+      @exchanges.values.dup.each do |x|
+        x.recover_from_network_failure
+      end
+    end
+
+    def recover_queues
+      @queues.values.dup.each do |q|
+        q.recover_from_network_failure
+      end
+    end
+
+    def recover_consumers
+      unless @consumers.empty?
+        @work_pool = ConsumerWorkPool.new(@work_pool.size)
+        @work_pool.start
+      end
+      @consumers.values.dup.each do |c|
+        c.recover_from_network_failure
+      end
+    end
+
+
+
+    #
     # Implementation
     #
 
@@ -688,6 +731,7 @@ module Bunny
     end
 
     def handle_frameset(basic_deliver, properties, content)
+      puts "Handling a delivery: #{content.inspect}"
       consumer = @consumers[basic_deliver.consumer_tag]
       if consumer
         @work_pool.submit do
@@ -732,6 +776,14 @@ module Bunny
       @work_pool.start unless @work_pool.started?
     end
 
+    def maybe_pause_consumer_work_pool!
+      @work_pool.pause if @work_pool && @work_pool.started?
+    end
+
+    def maybe_kill_consumer_work_pool!
+      @work_pool.kill if @work_pool && @work_pool.started?
+    end
+
     def read_next_frame(options = {})
       @connection.read_next_frame(options = {})
     end
@@ -744,6 +796,10 @@ module Bunny
 
     def deregister_queue(queue)
       @queues.delete(queue.name)
+    end
+
+    def deregister_queue_named(name)
+      @queues.delete(name)
     end
 
     def register_queue(queue)

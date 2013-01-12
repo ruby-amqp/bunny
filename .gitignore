@@ -18,3 +18,4 @@ playground/*
 *.org
 repl-*
 debug/*
+*.dump

@@ -9,6 +9,8 @@ module Bunny
     # API
     #
 
+    attr_reader :size
+
     def initialize(size = 1)
       @size  = size
       @queue = ::Queue.new
@@ -44,6 +46,18 @@ module Bunny
 
     def join
       @threads.each { |t| t.join }
+    end
+
+    def pause
+      @threads.each { |t| t.stop }
+    end
+
+    def resume
+      @threads.each { |t| t.run }
+    end
+
+    def kill
+      @threads.each { |t| t.kill }
     end
 
     protected
