@@ -107,11 +107,12 @@ module Bunny
 
       ctag       = opts.fetch(:consumer_tag, @channel.generate_consumer_tag)
       consumer   = Consumer.new(@channel,
-                                @name,
+                                self,
                                 ctag,
                                 !opts[:ack],
                                 opts[:exclusive],
                                 opts[:arguments])
+      puts "Added consumer #{ctag} on queue #{@name}"
       consumer.on_delivery(&block)
       consumer.on_cancellation(&opts[:on_cancellation]) if opts[:on_cancellation]
 
@@ -207,7 +208,6 @@ module Bunny
         @name    = AMQ::Protocol::EMPTY_STRING
 
         @channel.deregister_queue_named(old_name)
-        # TODO: delete old queue unless it was exclusive? MK.
       end
 
       declare!

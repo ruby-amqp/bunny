@@ -366,7 +366,7 @@ module Bunny
       when AMQ::Protocol::Connection::Close then
         klass = case frame.reply_code
                 when 503 then
-                  CommandInvalid
+                  InvalidCommand
                 when 504 then
                   ChannelError
                 when 504 then

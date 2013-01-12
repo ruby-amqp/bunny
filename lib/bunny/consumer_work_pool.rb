@@ -9,6 +9,8 @@ module Bunny
     # API
     #
 
+    attr_reader :size
+
     def initialize(size = 1)
       @size  = size
       @queue = ::Queue.new

@@ -44,7 +44,6 @@ module Bunny
   ConnectionError = TCPConnectionFailed
   ServerDownError = TCPConnectionFailed
 
-  # TODO
   class ForcedChannelCloseError < StandardError; end
   class ForcedConnectionCloseError < StandardError; end
   class MessageError < StandardError; end

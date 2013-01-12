@@ -606,8 +606,7 @@ module Bunny
     #
 
     def recover_from_network_failure
-      puts "Recovering channel #{@id} from network failure..."
-
+      # puts "Recovering channel #{@id} from network failure..."
       recover_prefetch_setting
       recover_exchanges
       # this includes recovering bindings
@@ -632,6 +631,10 @@ module Bunny
     end
 
     def recover_consumers
+      unless @consumers.empty?
+        @work_pool = ConsumerWorkPool.new(@work_pool.size)
+        @work_pool.start
+      end
       @consumers.values.dup.each do |c|
         c.recover_from_network_failure
       end
@@ -728,6 +731,7 @@ module Bunny
     end
 
     def handle_frameset(basic_deliver, properties, content)
+      puts "Handling a delivery: #{content.inspect}"
       consumer = @consumers[basic_deliver.consumer_tag]
       if consumer
         @work_pool.submit do

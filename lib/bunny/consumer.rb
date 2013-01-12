@@ -64,7 +64,7 @@ module Bunny
     #
 
     def recover_from_network_failure
-      # TODO
+      @channel.basic_consume_with(self)
     end
   end
 end
