@@ -1,8 +1,39 @@
 ## Changes between Bunny 0.9.0.pre5 and 0.9.0.pre6
 
-No changes yet.
+### Automatic Network Failure Recovery
 
+Automatic Network Failure Recovery is a new Bunny feature that was earlier
+impemented and vetted out in [amqp gem](http://rubyamqp.info). What it does
+is, when a network activity loop detects an issue, it will try to
+periodically recover [first TCP, then] AMQP 0.9.1 connection, reopen
+all channels, recover all exchanges, queues, bindings and consumers
+on those channels (to be clear: this only includes entities and consumers added via
+Bunny).
 
+Publishers and consumers will continue operating shortly after the network
+connection recovers.
+
+### Confirms Listeners
+
+Bunny now supports listeners (callbacks) on
+
+``` ruby
+ch.confirm_select do |delivery_tag, multiple, nack|
+  # handle confirms (e.g. perform retries) here
+end
+```
+
+Contributed by Greg Brockman.
+
+### Publisher Confirms Improvements
+
+Publisher confirms implementation now uses non-strict equality (`<=`) for
+cases when multiple messages are confirmed by RabbitMQ at once.
+
+`Bunny::Channel#unconfirmed_set` is now part of the public API that lets
+developers access unconfirmed delivery tags to perform retries and such.
+
+Contributed by Greg Brockman.
 
 
 ## Changes between Bunny 0.9.0.pre4 and 0.9.0.pre5
