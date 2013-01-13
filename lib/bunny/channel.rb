@@ -578,7 +578,7 @@ module Bunny
       raise_if_no_longer_open!
 
       if @next_publish_seq_no == 0
-        @confirms_continuations = []
+        @confirms_continuations = ::Queue.new
         @unconfirmed_set        = Set.new
         @next_publish_seq_no    = 1
       end
