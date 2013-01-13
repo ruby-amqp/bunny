@@ -35,6 +35,11 @@ developers access unconfirmed delivery tags to perform retries and such.
 
 Contributed by Greg Brockman.
 
+### Publisher Confirms Concurrency Fix
+
+`Bunny::Channel#wait_for_confirms` will now correctly block the calling
+thread until all pending confirms are received.
+
 
 ## Changes between Bunny 0.9.0.pre4 and 0.9.0.pre5
 
