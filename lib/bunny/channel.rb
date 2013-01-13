@@ -731,7 +731,6 @@ module Bunny
     end
 
     def handle_frameset(basic_deliver, properties, content)
-      puts "Handling a delivery: #{content.inspect}"
       consumer = @consumers[basic_deliver.consumer_tag]
       if consumer
         @work_pool.submit do
