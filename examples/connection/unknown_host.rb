@@ -8,6 +8,9 @@ $:.unshift(File.expand_path("../../../lib", __FILE__))
 
 require 'bunny'
 
-conn = Bunny.new("amqp://guest:guest@aksjhdkajshdkj.example82737.com")
-conn.start
-
+begin
+  conn = Bunny.new("amqp://guest:guest@aksjhdkajshdkj.example82737.com")
+  conn.start
+rescue Bunny::TCPConnectionFailed => e
+  puts "Connection to #{conn.hostname} failed"
+end
