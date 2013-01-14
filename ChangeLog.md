@@ -1,3 +1,9 @@
+## Changes between Bunny 0.9.0.pre6 and 0.9.0.pre7
+
+No changes yet.
+
+
+
 ## Changes between Bunny 0.9.0.pre5 and 0.9.0.pre6
 
 ### Automatic Network Failure Recovery
