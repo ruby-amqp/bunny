@@ -13,6 +13,9 @@ Bunny).
 Publishers and consumers will continue operating shortly after the network
 connection recovers.
 
+Learn more in the [Error Handling and Recovery](http://rubybunny.info/articles/error_handling.html)
+documentation guide.
+
 ### Confirms Listeners
 
 Bunny now supports listeners (callbacks) on
