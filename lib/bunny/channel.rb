@@ -437,6 +437,28 @@ module Bunny
 
     # @group Consumer and Message operations (basic.*)
 
+    # Publishes a message using basic.publish AMQP 0.9.1 method.
+    #
+    # @param [String] payload Message payload. It will never be modified by Bunny or RabbitMQ in any way.
+    # @param [String] exchange Exchange to publish to
+    # @param [String] routing_key Routing key
+    # @param [Hash] opts Publishing options
+    #
+    # @option opts [Boolean] :persistent Should the message be persisted to disk?
+    # @option opts [Boolean] :mandatory Should the message be returned if it cannot be routed to any queue?
+    # @option opts [Integer] :timestamp A timestamp associated with this message
+    # @option opts [Integer] :expiration Expiration time after which the message will be deleted
+    # @option opts [String] :type Message type, e.g. what type of event or command this message represents. Can be any string.
+    # @option opts [String] :reply_to Queue name other apps should send the response to
+    # @option opts [String] :content_type Message content type (e.g. application/json)
+    # @option opts [String] :content_encoding Message content encoding (e.g. gzip)
+    # @option opts [String] :correlation_id Message correlated to this one, e.g. what request this message is a reply for
+    # @option opts [Integer] :priority Message priority, 0 to 9. Not used by RabbitMQ, only applications
+    # @option opts [String] :message_id Any message identifier
+    # @option opts [String] :user_id Optional user ID. Verified by RabbitMQ against the actual connection username
+    # @option opts [String] :app_id Optional application ID
+    #
+    # @return [Bunny::Channel] Self
     def basic_publish(payload, exchange, routing_key, opts = {})
       raise_if_no_longer_open!
 
