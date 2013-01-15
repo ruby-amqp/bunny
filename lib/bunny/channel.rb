@@ -19,6 +19,7 @@ module Bunny
 
     attr_accessor :id, :connection, :status, :work_pool
     attr_reader :next_publish_seq_no, :queues, :exchanges, :unconfirmed_set, :consumers
+    attr_reader :nacked_set
 
 
     def initialize(connection = nil, id = nil, work_pool = ConsumerWorkPool.new(1))
@@ -580,6 +581,7 @@ module Bunny
       if @next_publish_seq_no == 0
         @confirms_continuations = ::Queue.new
         @unconfirmed_set        = Set.new
+        @nacked_set             = Set.new
         @next_publish_seq_no    = 1
       end
 
@@ -753,10 +755,21 @@ module Bunny
     end
 
     def handle_ack_or_nack(delivery_tag, multiple, nack)
-      if multiple
-        @unconfirmed_set.delete_if { |i| i <= delivery_tag }
+      case nack
+      when true
+        cloned_set = @unconfirmed_set.clone
+        if multiple
+          cloned_set.keep_if { |i| i <= delivery_tag }
+          @nacked_set.merge(cloned_set)
+        else
+          @nacked_set.add(delivery_tag)
+        end
       else
-        @unconfirmed_set.delete(delivery_tag)
+        if multiple
+          @unconfirmed_set.delete_if { |i| i <= delivery_tag }
+        else
+          @unconfirmed_set.delete(delivery_tag)
+        end
       end
 
       @unconfirmed_set_mutex.synchronize do
