@@ -1,4 +1,4 @@
-# About Bunny
+# Bunny, a Ruby RabbitMQ Client
 
 Bunny is a synchronous RabbitMQ client that focuses on ease of use. With the next
 0.9 release (currently in master), it is feature complete, supports all RabbitMQ 3.0
@@ -13,8 +13,7 @@ Bunny 0.9 and more recent versions support Ruby 1.9.3, 1.9.2, JRuby 1.7, Rubiniu
 ## Supported RabbitMQ Versions
 
 Bunny `0.8.x` and later versions only support RabbitMQ 2.x and 3.x.
-
-Bunny versions `0.7.x` and earlier support RabbitMQ 1.x and 2.x. 
+Bunny `0.7.x` and earlier versions support RabbitMQ 1.x and 2.x.
 
 
 ## Changes in Bunny 0.9
@@ -77,7 +76,7 @@ conn.stop
 ```
 
 
-## Community & Getting Help
+## Documentation
 
 ### Getting Started
 
@@ -89,9 +88,10 @@ Other documentation guides are available at [rubybunny.info](http://rubybunny.in
 
 ### API Reference
 
-[Bunny API Reference](http://rubydoc.info/github/ruby-amqp/bunny/master/frames) is available at rubydoc.info.
+[Bunny API Reference](http://reference.rubybunny.info/).
 
-## Getting Help
+
+## Community and Getting Help
 
 ### Mailing List
 
