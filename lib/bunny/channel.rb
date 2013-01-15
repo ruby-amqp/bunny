@@ -41,10 +41,43 @@ module Bunny
   #
   # ## Closing Channels
   #
+  # Channels are closed via {Bunny::Channel#close}. Channels that get a channel-level exception are
+  # closed, too. Closed channels can no longer be used. Attempts to use them will raise
+  # {Bunny::ChannelAlreadyClosed}.
+  #
   # @example
   #
   #   ch  = conn.create_channel
   #   ch.close
+  #
+  # ## Higher-level API
+  #
+  # Bunny offers two sets of methods on {Bunny::Channel}: known as higher-level and lower-level
+  # APIs, respectively. Higher-level API mimics {http://rubyamqp.info amqp gem} API where
+  # exchanges and queues are objects (instance of {Bunny::Exchange} and {Bunny::Queue}, respectively).
+  # Lower-level API is built around AMQP 0.9.1 methods (commands), where queues and exchanges are
+  # passed as strings (à la RabbitMQ Java client, {http://clojurerabbitmq.info Langohr} and Pika).
+  #
+  # ### Queue Operations In Higher-level API
+  #
+  # * {Bunny::Channel#queue} is used to declare queues. The rest of the API is in {Bunny::Queue}.
+  #
+  #
+  # ### Exchange Operations In Higher-level API
+  #
+  # * {Bunny::Channel#topic} declares a topic exchange. The rest of the API is in {Bunny::Exchange}.
+  # * {Bunny::Channel#direct} declares a direct exchange.
+  # * {Bunny::Channel#fanout} declares a fanout exchange.
+  # * {Bunny::Channel#headers} declares a headers exchange.
+  # * {Bunny::Channel#default_exchange}
+  # * {Bunny::Channel#exchange} is used to declare exchanges with type specified as a symbol or string.
+  #
+  #
+  # ## Channel Qos (Prefetch Level)
+  #
+  # It is possible to control how many messages at most a consumer will be given (before it acknowledges
+  # or rejects previously consumed ones). This setting is per channel and controlled via {Bunny::Channel#prefetch}.
+  #
   #
   # ## Channel IDs
   #
@@ -57,6 +90,34 @@ module Bunny
   # or even thousands of channels is not a problem.
   #
   # ## Channels and Error Handling
+  #
+  # Channel-level exceptions are more common than connection-level ones and often indicate
+  # issues applications can recover from (such as consuming from or trying to delete
+  # a queue that does not exist).
+  #
+  # With Bunny, channel-level exceptions are raised as Ruby exceptions, for example,
+  # {Bunny::NotFound}, that provide access to the underlying `channel.close` method
+  # information.
+  #
+  # @example Handling 404 NOT_FOUND
+  #   begin
+  #     ch.queue_delete("queue_that_should_not_exist#{rand}")
+  #   rescue Bunny::NotFound => e
+  #     puts "Channel-level exception! Code: #{e.channel_close.reply_code}, message: #{e.channel_close.reply_text}"
+  #   end
+  #
+  # @example Handling 406 PRECONDITION_FAILED
+  #   begin
+  #     ch2 = conn.create_channel
+  #     q   = "bunny.examples.recovery.q#{rand}"
+  #
+  #     ch2.queue_declare(q, :durable => false)
+  #     ch2.queue_declare(q, :durable => true)
+  #   rescue Bunny::PreconditionFailed => e
+  #     puts "Channel-level exception! Code: #{e.channel_close.reply_code}, message: #{e.channel_close.reply_text}"
+  #   ensure
+  #     conn.create_channel.queue_delete(q)
+  #   end
   #
   # @see http://www.rabbitmq.com/tutorials/amqp-concepts.html AMQP 0.9.1 Model Concepts Guide
   # @see http://rubybunny.info/articles/getting_started.html Getting Started with RabbitMQ Using Bunny
@@ -147,18 +208,22 @@ module Bunny
     # @group Backwards compatibility with 0.8.0
     #
 
+    # @return [Integer] Channel id
     def number
       self.id
     end
 
+    # @return [Boolean] true if this channel is open
     def active
-      @active
+      open?
     end
 
+    # @return [Bunny::Session] Connection this channel was opened on
     def client
       @connection
     end
 
+    # @private
     def frame_size
       @connection.frame_max
     end
@@ -172,26 +237,93 @@ module Bunny
 
     # @group Higher-level API for exchange operations
 
+    # Declares a fanout exchange or looks it up in the cache of previously
+    # declared exchanges.
+    #
+    # @param [String] name Exchange name
+    # @param [Hash] opts Exchange parameters
+    #
+    # @option opts [Boolean] :durable (false) Should the exchange be durable?
+    # @option opts [Boolean] :auto_delete (false) Should the exchange be automatically deleted when no longer in use?
+    # @option opts [Hash] :arguments ({}) Optional exchange arguments (used by RabbitMQ extensions)
+    #
+    # @return [Bunny::Exchange] Exchange instance
+    # @see http://rubybunny.info/articles/exchanges.html Exchanges and Publishing guide
+    # @see http://rubybunny.info/articles/extensions.html RabbitMQ Extensions to AMQP 0.9.1 guide
     def fanout(name, opts = {})
       Exchange.new(self, :fanout, name, opts)
     end
 
+    # Declares a direct exchange or looks it up in the cache of previously
+    # declared exchanges.
+    #
+    # @param [String] name Exchange name
+    # @param [Hash] opts Exchange parameters
+    #
+    # @option opts [Boolean] :durable (false) Should the exchange be durable?
+    # @option opts [Boolean] :auto_delete (false) Should the exchange be automatically deleted when no longer in use?
+    # @option opts [Hash] :arguments ({}) Optional exchange arguments (used by RabbitMQ extensions)
+    #
+    # @return [Bunny::Exchange] Exchange instance
+    # @see http://rubybunny.info/articles/exchanges.html Exchanges and Publishing guide
+    # @see http://rubybunny.info/articles/extensions.html RabbitMQ Extensions to AMQP 0.9.1 guide
     def direct(name, opts = {})
       Exchange.new(self, :direct, name, opts)
     end
 
+    # Declares a topic exchange or looks it up in the cache of previously
+    # declared exchanges.
+    #
+    # @param [String] name Exchange name
+    # @param [Hash] opts Exchange parameters
+    #
+    # @option opts [Boolean] :durable (false) Should the exchange be durable?
+    # @option opts [Boolean] :auto_delete (false) Should the exchange be automatically deleted when no longer in use?
+    # @option opts [Hash] :arguments ({}) Optional exchange arguments (used by RabbitMQ extensions)
+    #
+    # @return [Bunny::Exchange] Exchange instance
+    # @see http://rubybunny.info/articles/exchanges.html Exchanges and Publishing guide
+    # @see http://rubybunny.info/articles/extensions.html RabbitMQ Extensions to AMQP 0.9.1 guide
     def topic(name, opts = {})
       Exchange.new(self, :topic, name, opts)
     end
 
+    # Declares a headers exchange or looks it up in the cache of previously
+    # declared exchanges.
+    #
+    # @param [String] name Exchange name
+    # @param [Hash] opts Exchange parameters
+    #
+    # @option opts [Boolean] :durable (false) Should the exchange be durable?
+    # @option opts [Boolean] :auto_delete (false) Should the exchange be automatically deleted when no longer in use?
+    # @option opts [Hash] :arguments ({}) Optional exchange arguments
+    #
+    # @return [Bunny::Exchange] Exchange instance
+    # @see http://rubybunny.info/articles/exchanges.html Exchanges and Publishing guide
+    # @see http://rubybunny.info/articles/extensions.html RabbitMQ Extensions to AMQP 0.9.1 guide
     def headers(name, opts = {})
       Exchange.new(self, :headers, name, opts)
     end
 
+    # Provides access to the default exchange
+    # @see http://rubybunny.info/articles/extensions.html RabbitMQ Extensions to AMQP 0.9.1 guide
     def default_exchange
       self.direct(AMQ::Protocol::EMPTY_STRING, :no_declare => true)
     end
 
+    # Declares a headers exchange or looks it up in the cache of previously
+    # declared exchanges.
+    #
+    # @param [String] name Exchange name
+    # @param [Hash] opts Exchange parameters
+    #
+    # @option opts [Boolean] :durable (false) Should the exchange be durable?
+    # @option opts [Boolean] :auto_delete (false) Should the exchange be automatically deleted when no longer in use?
+    # @option opts [Hash] :arguments ({}) Optional exchange arguments
+    #
+    # @return [Bunny::Exchange] Exchange instance
+    # @see http://rubybunny.info/articles/exchanges.html Exchanges and Publishing guide
+    # @see http://rubybunny.info/articles/extensions.html RabbitMQ Extensions to AMQP 0.9.1 guide
     def exchange(name, opts = {})
       Exchange.new(self, opts.fetch(:type, :direct), name, opts)
     end
@@ -201,16 +333,18 @@ module Bunny
 
     # @group Higher-level API for queue operations
 
-    # Declares a queue or looks it up in the per-channel cache.
+    # Declares an exchange or looks it up in the per-channel cache.
     #
     # @param  [String] name  Queue name. Pass an empty string to declare a server-named queue (make RabbitMQ generate a unique name).
     # @param  [Hash]   opts  Queue properties and other options
     #
+    # @option options [Symbol, String] :type (:direct) Exchange type: :direct, :fanout, :topic, :headers, or a string for custom types
     # @option options [Boolean] :durable (false) Should this queue be durable?
     # @option options [Boolean] :auto-delete (false) Should this queue be automatically deleted when the last consumer disconnects?
     # @option options [Boolean] :exclusive (false) Should this queue be exclusive (only can be used by this connection, removed when the connection is closed)?
     #
     # @return [Bunny::Queue] Queue that was declared or looked up in the cache
+    # @see http://rubybunny.info/articles/queues.html Queues and Consumers guide
     def queue(name = AMQ::Protocol::EMPTY_STRING, opts = {})
       q = find_queue(name) || Bunny::Queue.new(self, name, opts)
 
@@ -222,14 +356,25 @@ module Bunny
 
     # @group QoS and Flow Control
 
+    # Sets how many messages will be given to consumers on this channel before they
+    # have to acknowledge or reject one of the previously consumed messages
+    #
+    # @param [Integer] prefetch_count Prefetch (QoS setting) for this channel
+    # @see http://rubybunny.info/articles/exchanges.html Exchanges and Publishing guide
+    # @see http://rubybunny.info/articles/queues.html Queues and Consumers guide
     def prefetch(prefetch_count)
       self.basic_qos(prefetch_count, false)
     end
 
+    # Flow control. When set to false, RabbitMQ will stop delivering messages on this
+    # channel.
+    #
+    # @param [Boolean] active Should messages to consumers on this channel be delivered?
     def flow(active)
       channel_flow(active)
     end
 
+    # Tells RabbitMQ to redeliver unacknowledged messages
     def recover(ignored = true)
       # RabbitMQ only supports basic.recover with requeue = true
       basic_recover(true)
@@ -241,15 +386,38 @@ module Bunny
 
     # @group Message acknowledgements
 
+    # Rejects a message. A rejected message can be requeued or
+    # dropped by RabbitMQ.
+    #
+    # @param [Integer] delivery_tag Delivery tag to reject
+    # @param [Boolean] requeue      Should this message be requeued instead of dropping it?
+    # @see Bunny::Channel#ack
+    # @see Bunny::Channel#nack
+    # @see http://rubybunny.info/articles/queues.html Queues and Consumers guide
     def reject(delivery_tag, requeue = false)
       basic_reject(delivery_tag, requeue)
     end
 
+    # Acknowledges a message. Acknowledged messages are completely removed from the queue.
+    #
+    # @param [Integer] delivery_tag Delivery tag to acknowledge
+    # @param [Boolean] multiple (false) Should all unacknowledged messages up to this be acknowledged as well?
+    # @see Bunny::Channel#nack
+    # @see http://rubybunny.info/articles/queues.html Queues and Consumers guide
     def ack(delivery_tag, multiple = false)
       basic_ack(delivery_tag, multiple)
     end
     alias acknowledge ack
 
+    # Rejects a message. A rejected message can be requeued or
+    # dropped by RabbitMQ. This method is similar to {Bunny::Channel#reject} but
+    # supports rejecting multiple messages at once, and is usually preferred.
+    #
+    # @param [Integer] delivery_tag Delivery tag to reject
+    # @param [Boolean] requeue      Should this message be requeued instead of dropping it?
+    # @param [Boolean] multiple (false) Should all unacknowledged messages up to this be rejected as well?
+    # @see Bunny::Channel#ack
+    # @see http://rubybunny.info/articles/queues.html Queues and Consumers guide
     def nack(delivery_tag, requeue, multiple = false)
       basic_nack(delivery_tag, requeue, multiple)
     end
