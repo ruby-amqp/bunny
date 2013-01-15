@@ -1102,8 +1102,7 @@ module Bunny
 
     # @private
     def handle_ack_or_nack(delivery_tag, multiple, nack)
-      case nack
-      when true
+      if nack
         cloned_set = @unconfirmed_set.clone
         if multiple
           cloned_set.keep_if { |i| i <= delivery_tag }
@@ -1111,12 +1110,12 @@ module Bunny
         else
           @nacked_set.add(delivery_tag)
         end
+      end
+ 
+      if multiple
+        @unconfirmed_set.delete_if { |i| i <= delivery_tag }
       else
-        if multiple
-          @unconfirmed_set.delete_if { |i| i <= delivery_tag }
-        else
-          @unconfirmed_set.delete(delivery_tag)
-        end
+        @unconfirmed_set.delete(delivery_tag)
       end
 
       @unconfirmed_set_mutex.synchronize do
