@@ -24,6 +24,11 @@ gem "SystemTimer", "1.2", :platform => :ruby_18
 gem "rake"
 gem "effin_utf8"
 
+group :development do
+  gem "yard"
+  gem "redcarpet"
+end
+
 group :test do
   gem "rspec", "~> 2.8.0"
 end
