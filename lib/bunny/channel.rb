@@ -127,7 +127,6 @@ module Bunny
     #
     # API
     #
-
     # @return [Integer] Channel id
     attr_accessor :id
     # @return [Bunny::Session] AMQP connection this channel was opened on
@@ -143,6 +142,8 @@ module Bunny
     attr_reader :exchanges
     # @return [Set<Integer>] Set of published message indexes that are currently unconfirmed
     attr_reader :unconfirmed_set
+    # @return [Set<Integer>] Set of nacked message indexes that have been nacked
+    attr_reader :nacked_set
     # @return [Hash<String, Bunny::Consumer>] Consumer instances declared on this channel
     attr_reader :consumers
 
@@ -876,6 +877,7 @@ module Bunny
       if @next_publish_seq_no == 0
         @confirms_continuations = ::Queue.new
         @unconfirmed_set        = Set.new
+        @nacked_set             = Set.new
         @next_publish_seq_no    = 1
       end
 
@@ -1100,10 +1102,21 @@ module Bunny
 
     # @private
     def handle_ack_or_nack(delivery_tag, multiple, nack)
-      if multiple
-        @unconfirmed_set.delete_if { |i| i <= delivery_tag }
+      case nack
+      when true
+        cloned_set = @unconfirmed_set.clone
+        if multiple
+          cloned_set.keep_if { |i| i <= delivery_tag }
+          @nacked_set.merge(cloned_set)
+        else
+          @nacked_set.add(delivery_tag)
+        end
       else
-        @unconfirmed_set.delete(delivery_tag)
+        if multiple
+          @unconfirmed_set.delete_if { |i| i <= delivery_tag }
+        else
+          @unconfirmed_set.delete(delivery_tag)
+        end
       end
 
       @unconfirmed_set_mutex.synchronize do
