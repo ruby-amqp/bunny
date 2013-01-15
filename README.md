@@ -128,6 +128,12 @@ First, clone the repository and run
 
     bundle install --binstubs
 
+then set up RabbitMQ vhosts with
+
+    ./bin/ci/before_build.sh
+
+(if needed, set `RABBITMQCTL` env variable to point to `rabbitmqctl` you want to use)
+
 and then run tests with
 
     ./bin/rspec -cfs spec
