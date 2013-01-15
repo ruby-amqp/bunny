@@ -27,29 +27,7 @@ module Bunny
       loop do
         begin
           break if @stopping || @network_is_down
-
-          frame = @transport.read_next_frame
-          @session.signal_activity!
-
-          next if frame.is_a?(AMQ::Protocol::HeartbeatFrame)
-
-          if !frame.final? || frame.method_class.has_content?
-            header   = @transport.read_next_frame
-            content  = ''
-
-            if header.body_size > 0
-              loop do
-                body_frame = @transport.read_next_frame
-                content << body_frame.decode_payload
-
-                break if content.bytesize >= header.body_size
-              end
-            end
-
-            @session.handle_frameset(frame.channel, [frame.decode_payload, header.decode_payload, content])
-          else
-            @session.handle_frame(frame.channel, frame.decode_payload)
-          end
+          run_once
         rescue Timeout::Error => te
           # given that the server may be pushing data to us, timeout detection/handling
           # should happen per operation and not in this loop
@@ -64,6 +42,31 @@ module Bunny
           puts e.message
           puts e.backtrace
         end
+      end
+    end
+
+    def run_once
+      frame = @transport.read_next_frame
+      @session.signal_activity!
+
+      return if frame.is_a?(AMQ::Protocol::HeartbeatFrame)
+
+      if !frame.final? || frame.method_class.has_content?
+        header   = @transport.read_next_frame
+        content  = ''
+
+        if header.body_size > 0
+          loop do
+            body_frame = @transport.read_next_frame
+            content << body_frame.decode_payload
+
+            break if content.bytesize >= header.body_size
+          end
+        end
+
+        @session.handle_frameset(frame.channel, [frame.decode_payload, header.decode_payload, content])
+      else
+        @session.handle_frame(frame.channel, frame.decode_payload)
       end
     end
 

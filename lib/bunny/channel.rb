@@ -470,7 +470,7 @@ module Bunny
       raise_if_no_longer_open!
 
       @connection.send_frame(AMQ::Protocol::Basic::Get.encode(@id, queue, !opts[:ack]))
-      @last_basic_get_response = @continuations.pop
+      @last_basic_get_response = wait_on_continuations
 
       raise_if_continuation_resulted_in_a_channel_error!
       @last_basic_get_response
@@ -483,7 +483,7 @@ module Bunny
       @connection.send_frame(AMQ::Protocol::Basic::Qos.encode(@id, 0, prefetch_count, global))
 
       Bunny::Timer.timeout(1, ClientTimeout) do
-        @last_basic_qos_ok = @continuations.pop
+        @last_basic_qos_ok = wait_on_continuations
       end
       raise_if_continuation_resulted_in_a_channel_error!
 
@@ -497,7 +497,7 @@ module Bunny
 
       @connection.send_frame(AMQ::Protocol::Basic::Recover.encode(@id, requeue))
       Bunny::Timer.timeout(1, ClientTimeout) do
-        @last_basic_recover_ok = @continuations.pop
+        @last_basic_recover_ok = wait_on_continuations
       end
       raise_if_continuation_resulted_in_a_channel_error!
 
@@ -553,7 +553,7 @@ module Bunny
       end
 
       Bunny::Timer.timeout(1, ClientTimeout) do
-        @last_basic_consume_ok = @continuations.pop
+        @last_basic_consume_ok = wait_on_continuations
       end
       # covers server-generated consumer tags
       add_consumer(queue_name, @last_basic_consume_ok.consumer_tag, no_ack, exclusive, arguments, &block)
@@ -581,7 +581,7 @@ module Bunny
       end
 
       Bunny::Timer.timeout(1, ClientTimeout) do
-        @last_basic_consume_ok = @continuations.pop
+        @last_basic_consume_ok = wait_on_continuations
       end
       # covers server-generated consumer tags
       register_consumer(@last_basic_consume_ok.consumer_tag, consumer)
@@ -595,7 +595,7 @@ module Bunny
       @connection.send_frame(AMQ::Protocol::Basic::Cancel.encode(@id, consumer_tag, false))
 
       Bunny::Timer.timeout(1, ClientTimeout) do
-        @last_basic_cancel_ok = @continuations.pop
+        @last_basic_cancel_ok = wait_on_continuations
       end
 
       @last_basic_cancel_ok
@@ -617,7 +617,7 @@ module Bunny
                                                                   opts.fetch(:auto_delete, false),
                                                                   false,
                                                                   opts[:arguments]))
-      @last_queue_declare_ok = @continuations.pop
+      @last_queue_declare_ok = wait_on_continuations
 
       raise_if_continuation_resulted_in_a_channel_error!
 
@@ -633,7 +633,7 @@ module Bunny
                                                                  opts[:if_empty],
                                                                  false))
       Bunny::Timer.timeout(1, ClientTimeout) do
-        @last_queue_delete_ok = @continuations.pop
+        @last_queue_delete_ok = wait_on_continuations
       end
       raise_if_continuation_resulted_in_a_channel_error!
 
@@ -646,7 +646,7 @@ module Bunny
       @connection.send_frame(AMQ::Protocol::Queue::Purge.encode(@id, name, false))
 
       Bunny::Timer.timeout(1, ClientTimeout) do
-        @last_queue_purge_ok = @continuations.pop
+        @last_queue_purge_ok = wait_on_continuations
       end
       raise_if_continuation_resulted_in_a_channel_error!
 
@@ -669,7 +669,7 @@ module Bunny
                                                                false,
                                                                opts[:arguments]))
       Bunny::Timer.timeout(1, ClientTimeout) do
-        @last_queue_bind_ok = @continuations.pop
+        @last_queue_bind_ok = wait_on_continuations
       end
 
       raise_if_continuation_resulted_in_a_channel_error!
@@ -691,7 +691,7 @@ module Bunny
                                                                  opts[:routing_key],
                                                                  opts[:arguments]))
       Bunny::Timer.timeout(1, ClientTimeout) do
-        @last_queue_unbind_ok = @continuations.pop
+        @last_queue_unbind_ok = wait_on_continuations
       end
 
       raise_if_continuation_resulted_in_a_channel_error!
@@ -716,7 +716,7 @@ module Bunny
                                                                      false,
                                                                      opts[:arguments]))
       Bunny::Timer.timeout(1, ClientTimeout) do
-        @last_exchange_declare_ok = @continuations.pop
+        @last_exchange_declare_ok = wait_on_continuations
       end
 
       raise_if_continuation_resulted_in_a_channel_error!
@@ -731,7 +731,7 @@ module Bunny
                                                                     opts[:if_unused],
                                                                     false))
       Bunny::Timer.timeout(1, ClientTimeout) do
-        @last_exchange_delete_ok = @continuations.pop
+        @last_exchange_delete_ok = wait_on_continuations
       end
 
       raise_if_continuation_resulted_in_a_channel_error!
@@ -760,7 +760,7 @@ module Bunny
                                                                   false,
                                                                   opts[:arguments]))
       Bunny::Timer.timeout(1, ClientTimeout) do
-        @last_exchange_bind_ok = @continuations.pop
+        @last_exchange_bind_ok = wait_on_continuations
       end
 
       raise_if_continuation_resulted_in_a_channel_error!
@@ -789,7 +789,7 @@ module Bunny
                                                                     false,
                                                                     opts[:arguments]))
       Bunny::Timer.timeout(1, ClientTimeout) do
-        @last_exchange_unbind_ok = @continuations.pop
+        @last_exchange_unbind_ok = wait_on_continuations
       end
 
       raise_if_continuation_resulted_in_a_channel_error!
@@ -807,7 +807,7 @@ module Bunny
 
       @connection.send_frame(AMQ::Protocol::Channel::Flow.encode(@id, active))
       Bunny::Timer.timeout(1, ClientTimeout) do
-        @last_channel_flow_ok = @continuations.pop
+        @last_channel_flow_ok = wait_on_continuations
       end
       raise_if_continuation_resulted_in_a_channel_error!
 
@@ -826,7 +826,7 @@ module Bunny
 
       @connection.send_frame(AMQ::Protocol::Tx::Select.encode(@id))
       Bunny::Timer.timeout(1, ClientTimeout) do
-        @last_tx_select_ok = @continuations.pop
+        @last_tx_select_ok = wait_on_continuations
       end
       raise_if_continuation_resulted_in_a_channel_error!
 
@@ -839,7 +839,7 @@ module Bunny
 
       @connection.send_frame(AMQ::Protocol::Tx::Commit.encode(@id))
       Bunny::Timer.timeout(1, ClientTimeout) do
-        @last_tx_commit_ok = @continuations.pop
+        @last_tx_commit_ok = wait_on_continuations
       end
       raise_if_continuation_resulted_in_a_channel_error!
 
@@ -852,7 +852,7 @@ module Bunny
 
       @connection.send_frame(AMQ::Protocol::Tx::Rollback.encode(@id))
       Bunny::Timer.timeout(1, ClientTimeout) do
-        @last_tx_rollback_ok = @continuations.pop
+        @last_tx_rollback_ok = wait_on_continuations
       end
       raise_if_continuation_resulted_in_a_channel_error!
 
@@ -885,17 +885,33 @@ module Bunny
 
       @connection.send_frame(AMQ::Protocol::Confirm::Select.encode(@id, false))
       Bunny::Timer.timeout(1, ClientTimeout) do
-        @last_confirm_select_ok = @continuations.pop
+        @last_confirm_select_ok = wait_on_continuations
       end
       raise_if_continuation_resulted_in_a_channel_error!
       @last_confirm_select_ok
     end
 
+    def wait_on_continuations
+      unless @connection.threaded
+        connection.event_loop.run_once until @continuations.length > 0
+      end
+
+      @continuations.pop
+    end
+
+    def wait_on_confirms_continuations
+      unless @connection.threaded
+        connection.event_loop.run_once until @confirms_continuations.length > 0
+      end
+
+      @confirms_continuations.pop
+    end
+
     # Blocks calling thread until confirms are received for all
     # currently unacknowledged published messages
     def wait_for_confirms
-      @only_acks_received = true
-      @confirms_continuations.pop
+
+      wait_on_confirms_continuations
 
       @only_acks_received
     end
@@ -980,7 +996,6 @@ module Bunny
         c.recover_from_network_failure
       end
     end
-
 
 
     #
@@ -1111,7 +1126,7 @@ module Bunny
           @nacked_set.add(delivery_tag)
         end
       end
- 
+
       if multiple
         @unconfirmed_set.delete_if { |i| i <= delivery_tag }
       else

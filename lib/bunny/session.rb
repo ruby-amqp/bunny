@@ -50,7 +50,7 @@ module Bunny
     # API
     #
 
-    attr_reader :status, :host, :port, :heartbeat, :user, :pass, :vhost, :frame_max
+    attr_reader :status, :host, :port, :heartbeat, :user, :pass, :vhost, :frame_max, :threaded
     attr_reader :server_capabilities, :server_properties, :server_authentication_mechanisms, :server_locales
     attr_reader :default_channel
     attr_reader :channel_id_allocator
@@ -77,6 +77,7 @@ module Bunny
       @vhost           = self.vhost_from(opts)
       @logfile         = opts[:logfile]
       @logging         = opts[:logging] || false
+      @threaded        = opts.fetch(:threaded, true)
 
       @status             = :not_connected
 
@@ -120,7 +121,7 @@ module Bunny
       self.open_connection
 
       @event_loop = nil
-      self.start_main_loop
+      self.start_main_loop if @threaded
 
       @default_channel = self.create_channel
     end
@@ -209,7 +210,7 @@ module Bunny
       self.register_channel(ch)
 
       @transport.send_frame(AMQ::Protocol::Channel::Open.encode(n, AMQ::Protocol::EMPTY_STRING))
-      @last_channel_open_ok = @continuations.pop
+      @last_channel_open_ok = wait_on_continuations
       raise_if_continuation_resulted_in_a_connection_error!
 
       @last_channel_open_ok
@@ -219,7 +220,7 @@ module Bunny
       n = ch.number
 
       @transport.send_frame(AMQ::Protocol::Channel::Close.encode(n, 200, "Goodbye", 0, 0))
-      @last_channel_close_ok = @continuations.pop
+      @last_channel_close_ok = wait_on_continuations
       raise_if_continuation_resulted_in_a_connection_error!
 
       self.unregister_channel(ch)
@@ -239,7 +240,7 @@ module Bunny
       @status   = :not_connected
 
       if sync
-        @last_connection_close_ok = @continuations.pop
+        @last_connection_close_ok = wait_on_continuations
       end
     end
 
@@ -258,7 +259,7 @@ module Bunny
         begin
           @continuations.clear
 
-          @event_loop.stop
+          event_loop.stop
           @event_loop = nil
 
           @transport.close
@@ -433,8 +434,11 @@ module Bunny
     end
 
     def start_main_loop
-      @event_loop = MainLoop.new(@transport, self)
-      @event_loop.start
+      event_loop.start
+    end
+
+    def event_loop
+      @event_loop ||= MainLoop.new(@transport, self)
     end
 
     def signal_activity!
@@ -577,6 +581,14 @@ module Bunny
 
     def credentials_encoder_for(mechanism)
       Authentication::CredentialsEncoder.for_session(self)
+    end
+
+    def wait_on_continuations
+      unless @threaded
+        event_loop.run_once until @continuations.length > 0
+      end
+
+      @continuations.pop
     end
   end # Session
 
