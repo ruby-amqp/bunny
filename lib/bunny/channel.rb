@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 require "thread"
 require "set"
 
@@ -11,16 +12,83 @@ require "bunny/return_info"
 require "bunny/message_properties"
 
 module Bunny
+  # ## What are AMQP channels
+  #
+  # To quote {http://www.rabbitmq.com/resources/specs/amqp0-9-1.pdf AMQP 0.9.1 specification}:
+  #
+  # AMQP 0.9.1 is a multi-channelled protocol. Channels provide a way to multiplex
+  # a heavyweight TCP/IP connection into several light weight connections.
+  # This makes the protocol more “firewall friendly” since port usage is predictable.
+  # It also means that traffic shaping and other network QoS features can be easily employed.
+  # Channels are independent of each other and can perform different functions simultaneously
+  # with other channels, the available bandwidth being shared between the concurrent activities.
+  #
+  #
+  # ## Opening Channels
+  #
+  # Channels can be opened either via `Bunny::Session#create_channel` (sufficient in the majority
+  # of cases) or by instantiating `Bunny::Channel` directly:
+  #
+  # @example Using {Bunny::Session#create_channel}:
+  #   conn = Bunny.new
+  #   conn.start
+  #
+  #   ch   = conn.create_channel
+  #
+  # This will automatically allocate channel id.
+  #
+  # @example Instantiating
+  #
+  # ## Closing Channels
+  #
+  # @example
+  #
+  #   ch  = conn.create_channel
+  #   ch.close
+  #
+  # ## Channel IDs
+  #
+  # Channels are identified by their ids which are integers. Bunny takes care of allocating and
+  # releasing them as channels are opened and closed. It is almost never necessary to specify
+  # channel ids explicitly.
+  #
+  # There is a limit on the maximum number of channels per connection, usually 65536. Note
+  # that allocating channels is very cheap on both client and server so having tens, hundreds
+  # or even thousands of channels is not a problem.
+  #
+  # ## Channels and Error Handling
+  #
+  # @see http://www.rabbitmq.com/tutorials/amqp-concepts.html AMQP 0.9.1 Model Concepts Guide
+  # @see http://rubybunny.info/articles/getting_started.html Getting Started with RabbitMQ Using Bunny
+  # @see http://rubybunny.info/articles/error_handling.html Error Handling and Recovery Guide
   class Channel
 
     #
     # API
     #
 
-    attr_accessor :id, :connection, :status, :work_pool
-    attr_reader :next_publish_seq_no, :queues, :exchanges, :unconfirmed_set, :consumers
+    # @return [Integer] Channel id
+    attr_accessor :id
+    # @return [Bunny::Session] AMQP connection this channel was opened on
+    attr_reader :connection
+    attr_reader :status
+    # @return [Bunny::ConsumerWorkPool] Thread pool delivered messages are dispatched to.
+    attr_reader :work_pool
+    # @return [Integer] Next publisher confirmations sequence index
+    attr_reader :next_publish_seq_no
+    # @return [Hash<String, Bunny::Queue>] Queue instances declared on this channel
+    attr_reader :queues
+    # @return [Hash<String, Bunny::Exchange>] Exchange instances declared on this channel
+    attr_reader :exchanges
+    # @return [Set<Integer>] Set of published message indexes that are currently unconfirmed
+    attr_reader :unconfirmed_set
+    # @return [Hash<String, Bunny::Consumer>] Consumer instances declared on this channel
+    attr_reader :consumers
 
 
+    # @param [Bunny::Session] connection AMQP 0.9.1 connection
+    # @param [Integer] id Channel id, pass nil to make Bunny automatically allocate it
+    # @param [Bunny::ConsumerWorkPool] work_pool Thread pool for delivery processing, by default of size 1
     def initialize(connection = nil, id = nil, work_pool = ConsumerWorkPool.new(1))
       @connection = connection
       @id         = id || @connection.next_channel_id
@@ -45,6 +113,8 @@ module Bunny
       @next_publish_seq_no = 0
     end
 
+    # Opens the channel and resets its internal state
+    # @return [Bunny::Channel] Self
     def open
       @connection.open_channel(self)
       # clear last channel error
@@ -55,28 +125,26 @@ module Bunny
       self
     end
 
+    # Closes the channel. Closed channels can no longer be used (this includes associated
+    # {Bunny::Queue}, {Bunny::Exchange} and {Bunny::Consumer} instances.
     def close
       @connection.close_channel(self)
       closed!
     end
 
+    # @return [Boolean] true if this channel is open, false otherwise
     def open?
       @status == :open
     end
 
+    # @return [Boolean] true if this channel is closed (manually or because of an exception), false otherwise
     def closed?
       @status == :closed
     end
 
-    def queue(name = AMQ::Protocol::EMPTY_STRING, opts = {})
-      q = find_queue(name) || Bunny::Queue.new(self, name, opts)
-
-      register_queue(q)
-    end
-
 
     #
-    # Backwards compatibility with 0.8.0
+    # @group Backwards compatibility with 0.8.0
     #
 
     def number
@@ -95,10 +163,14 @@ module Bunny
       @connection.frame_max
     end
 
+    # @endgroup
+
 
     #
     # Higher-level API, similar to amqp gem
     #
+
+    # @group Higher-level API for exchange operations
 
     def fanout(name, opts = {})
       Exchange.new(self, :fanout, name, opts)
@@ -124,6 +196,32 @@ module Bunny
       Exchange.new(self, opts.fetch(:type, :direct), name, opts)
     end
 
+    # @endgroup
+
+
+    # @group Higher-level API for queue operations
+
+    # Declares a queue or looks it up in the per-channel cache.
+    #
+    # @param  [String] name  Queue name. Pass an empty string to declare a server-named queue (make RabbitMQ generate a unique name).
+    # @param  [Hash]   opts  Queue properties and other options
+    #
+    # @option options [Boolean] :durable (false) Should this queue be durable?
+    # @option options [Boolean] :auto-delete (false) Should this queue be automatically deleted when the last consumer disconnects?
+    # @option options [Boolean] :exclusive (false) Should this queue be exclusive (only can be used by this connection, removed when the connection is closed)?
+    #
+    # @return [Bunny::Queue] Queue that was declared or looked up in the cache
+    def queue(name = AMQ::Protocol::EMPTY_STRING, opts = {})
+      q = find_queue(name) || Bunny::Queue.new(self, name, opts)
+
+      register_queue(q)
+    end
+
+    # @endgroup
+
+
+    # @group QoS and Flow Control
+
     def prefetch(prefetch_count)
       self.basic_qos(prefetch_count, false)
     end
@@ -136,6 +234,12 @@ module Bunny
       # RabbitMQ only supports basic.recover with requeue = true
       basic_recover(true)
     end
+
+    # @endgroup
+
+
+
+    # @group Message acknowledgements
 
     def reject(delivery_tag, requeue = false)
       basic_reject(delivery_tag, requeue)
@@ -150,12 +254,11 @@ module Bunny
       basic_nack(delivery_tag, requeue, multiple)
     end
 
+    # @endgroup
+
+
     def on_error(&block)
       @default_error_handler = block
-    end
-
-    def using_publisher_confirmations?
-      @next_publish_seq_no > 0
     end
 
     #
@@ -163,7 +266,7 @@ module Bunny
     # without any OO sugar on top, by design.
     #
 
-    # basic.*
+    # @group Consumer and Message operations (basic.*)
 
     def basic_publish(payload, exchange, routing_key, opts = {})
       raise_if_no_longer_open!
@@ -329,8 +432,10 @@ module Bunny
       @last_basic_cancel_ok
     end
 
+    # @endgroup
 
-    # queue.*
+
+    # @group Queue operations (queue.*)
 
     def queue_declare(name, opts = {})
       raise_if_no_longer_open!
@@ -424,8 +529,10 @@ module Bunny
       @last_queue_unbind_ok
     end
 
+    # @endgroup
 
-    # exchange.*
+
+    # @group Exchange operations (exchange.*)
 
     def exchange_declare(name, type, opts = {})
       raise_if_no_longer_open!
@@ -520,7 +627,11 @@ module Bunny
       @last_exchange_unbind_ok
     end
 
-    # channel.*
+    # @endgroup
+
+
+
+    # @group Flow control (channel.*)
 
     def channel_flow(active)
       raise_if_no_longer_open!
@@ -534,8 +645,13 @@ module Bunny
       @last_channel_flow_ok
     end
 
-    # tx.*
+    # @endgroup
 
+
+
+    # @group Transactions (tx.*)
+
+    # Puts the channel into transaction mode (starts a transaction)
     def tx_select
       raise_if_no_longer_open!
 
@@ -548,6 +664,7 @@ module Bunny
       @last_tx_select_ok
     end
 
+    # Commits current transaction
     def tx_commit
       raise_if_no_longer_open!
 
@@ -560,6 +677,7 @@ module Bunny
       @last_tx_commit_ok
     end
 
+    # Rolls back current transaction
     def tx_rollback
       raise_if_no_longer_open!
 
@@ -572,8 +690,18 @@ module Bunny
       @last_tx_rollback_ok
     end
 
-    # confirm.*
+    # @endgroup
 
+
+
+    # @group Publisher Confirms (confirm.*)
+
+    # @return [Boolean] true if this channel has Publisher Confirms enabled, false otherwise
+    def using_publisher_confirmations?
+      @next_publish_seq_no > 0
+    end
+
+    # Enables publisher confirms
     def confirm_select(callback=nil)
       raise_if_no_longer_open!
 
@@ -593,6 +721,8 @@ module Bunny
       @last_confirm_select_ok
     end
 
+    # Blocks calling thread until confirms are received for all
+    # currently unacknowledged published messages
     def wait_for_confirms
       @only_acks_received = true
       @confirms_continuations.pop
@@ -600,11 +730,36 @@ module Bunny
       @only_acks_received
     end
 
+    # @endgroup
+
+
+    # @group Misc
+
+    # Synchronizes given block using this channel's mutex.
+    # @api public
+    def synchronize(&block)
+      @publishing_mutex.synchronize(&block)
+    end
+
+    # Unique string supposed to be used as a consumer tag.
+    #
+    # @return [String]  Unique string.
+    # @api plugin
+    def generate_consumer_tag(name = "bunny")
+      "#{name}-#{Time.now.to_i * 1000}-#{Kernel.rand(999_999_999_999)}"
+    end
+
+    # @endgroup
+
 
     #
     # Recovery
     #
 
+    # Recovers basic.qos setting, exchanges, queues and consumers. Used by the Automatic Network Failure
+    # Recovery feature.
+    #
+    # @api plugin
     def recover_from_network_failure
       # puts "Recovering channel #{@id} from network failure..."
       recover_prefetch_setting
@@ -614,22 +769,38 @@ module Bunny
       recover_consumers
     end
 
+    # Recovers basic.qos setting. Used by the Automatic Network Failure
+    # Recovery feature.
+    #
+    # @api plugin
     def recover_prefetch_setting
       basic_qos(@prefetch_count) if @prefetch_count
     end
 
+    # Recovers exchanges. Used by the Automatic Network Failure
+    # Recovery feature.
+    #
+    # @api plugin
     def recover_exchanges
       @exchanges.values.dup.each do |x|
         x.recover_from_network_failure
       end
     end
 
+    # Recovers queues and bindings. Used by the Automatic Network Failure
+    # Recovery feature.
+    #
+    # @api plugin
     def recover_queues
       @queues.values.dup.each do |q|
         q.recover_from_network_failure
       end
     end
 
+    # Recovers consumers. Used by the Automatic Network Failure
+    # Recovery feature.
+    #
+    # @api plugin
     def recover_consumers
       unless @consumers.empty?
         @work_pool = ConsumerWorkPool.new(@work_pool.size)
@@ -646,12 +817,14 @@ module Bunny
     # Implementation
     #
 
+    # @private
     def register_consumer(consumer_tag, consumer)
       @consumer_mutex.synchronize do
         @consumers[consumer_tag] = consumer
       end
     end
 
+    # @private
     def add_consumer(queue, consumer_tag, no_ack, exclusive, arguments, &block)
       @consumer_mutex.synchronize do
         c = Consumer.new(self, queue, consumer_tag, no_ack, exclusive, arguments)
@@ -660,6 +833,7 @@ module Bunny
       end
     end
 
+    # @private
     def handle_method(method)
       # puts "Channel#handle_frame on channel #{@id}: #{method.inspect}"
       case method
@@ -722,14 +896,17 @@ module Bunny
       end
     end
 
+    # @private
     def handle_basic_get_ok(basic_get_ok, properties, content)
       @continuations.push([basic_get_ok, properties, content])
     end
 
+    # @private
     def handle_basic_get_empty(basic_get_empty)
       @continuations.push([nil, nil, nil])
     end
 
+    # @private
     def handle_frameset(basic_deliver, properties, content)
       consumer = @consumers[basic_deliver.consumer_tag]
       if consumer
@@ -742,6 +919,7 @@ module Bunny
       end
     end
 
+    # @private
     def handle_basic_return(basic_return, properties, content)
       x = find_exchange(basic_return.exchange)
 
@@ -752,6 +930,7 @@ module Bunny
       end
     end
 
+    # @private
     def handle_ack_or_nack(delivery_tag, multiple, nack)
       if multiple
         @unconfirmed_set.delete_if { |i| i <= delivery_tag }
@@ -771,72 +950,71 @@ module Bunny
     # Starts consumer work pool. Lazily called by #basic_consume to avoid creating new threads
     # that won't do any real work for channels that do not register consumers (e.g. only used for
     # publishing). MK.
+    # @private
     def maybe_start_consumer_work_pool!
       @work_pool.start unless @work_pool.started?
     end
 
+    # @private
     def maybe_pause_consumer_work_pool!
       @work_pool.pause if @work_pool && @work_pool.started?
     end
 
+    # @private
     def maybe_kill_consumer_work_pool!
       @work_pool.kill if @work_pool && @work_pool.started?
     end
 
+    # @private
     def read_next_frame(options = {})
       @connection.read_next_frame(options = {})
     end
 
-    # Synchronizes given block using this channel's mutex.
-    # @api public
-    def synchronize(&block)
-      @publishing_mutex.synchronize(&block)
-    end
-
+    # @private
     def deregister_queue(queue)
       @queues.delete(queue.name)
     end
 
+    # @private
     def deregister_queue_named(name)
       @queues.delete(name)
     end
 
+    # @private
     def register_queue(queue)
       @queues[queue.name] = queue
     end
 
+    # @private
     def find_queue(name)
       @queues[name]
     end
 
+    # @private
     def deregister_exchange(exchange)
       @exchanges.delete(exchange.name)
     end
 
+    # @private
     def register_exchange(exchange)
       @exchanges[exchange.name] = exchange
     end
 
+    # @private
     def find_exchange(name)
       @exchanges[name]
     end
 
-    # Unique string supposed to be used as a consumer tag.
-    #
-    # @return [String]  Unique string.
-    # @api plugin
-    def generate_consumer_tag(name = "bunny")
-      "#{name}-#{Time.now.to_i * 1000}-#{Kernel.rand(999_999_999_999)}"
-    end
-
     protected
 
+    # @private
     def closed!
       @status = :closed
       @work_pool.shutdown
       @connection.release_channel_id(@id)
     end
 
+    # @private
     def instantiate_channel_level_exception(frame)
       case frame
       when AMQ::Protocol::Channel::Close then
@@ -857,10 +1035,12 @@ module Bunny
       end
     end
 
+    # @private
     def raise_if_continuation_resulted_in_a_channel_error!
       raise @last_channel_error if @last_channel_error
     end
 
+    # @private
     def raise_if_no_longer_open!
       raise ChannelAlreadyClosed.new("cannot use a channel that was already closed! Channel id: #{@id}", self) if closed?
     end
