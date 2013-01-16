@@ -134,11 +134,7 @@ module Bunny
     end
 
     def pop(opts = {:ack => false}, &block)
-      delivery_info, properties, content = if @channel.connection.open?
-                                             @channel.basic_get(@name, opts)
-                                           else
-                                             [nil, nil, nil]
-                                           end
+      delivery_info, properties, content = @channel.basic_get(@name, opts)
 
       if block
         block.call(delivery_info, properties, content)
@@ -149,11 +145,7 @@ module Bunny
     alias get pop
 
     def pop_as_hash(opts = {:ack => false}, &block)
-      delivery_info, properties, content = if @channel.connection.open?
-                                             @channel.basic_get(@name, opts)
-                                           else
-                                             [nil, nil, nil]
-                                           end
+      delivery_info, properties, content = @channel.basic_get(@name, opts)
 
       result = {:header => properties, :payload => content, :delivery_details => delivery_info}
 

@@ -528,7 +528,18 @@ module Bunny
       raise_if_no_longer_open!
 
       @connection.send_frame(AMQ::Protocol::Basic::Get.encode(@id, queue, !opts[:ack]))
-      @last_basic_get_response = wait_on_basic_get_continuations
+      # this is a workaround for the edge case when basic_get is called in a tight loop
+      # and network goes down we need to perform recovery. The problem is, basic_get will
+      # keep blocking the thread that calls it without clear way to constantly unblock it
+      # from the network activity loop (where recovery happens) with the current continuations
+      # implementation (and even more correct and convenient ones, such as wait/notify, should
+      # we implement them). So we return a triple of nils immediately which apps should be
+      # able to handle anyway as "got no message, no need to act". MK.
+      @last_basic_get_response = if @connection.open?
+                                   wait_on_basic_get_continuations
+                                 else
+                                   [nil, nil, nil]
+                                 end
 
       raise_if_continuation_resulted_in_a_channel_error!
       @last_basic_get_response
