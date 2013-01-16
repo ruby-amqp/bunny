@@ -281,7 +281,11 @@ module Bunny
       when AMQ::Protocol::Basic::GetEmpty then
         @channels[ch_number].handle_basic_get_empty(method)
       else
-        @channels[ch_number].handle_method(method)
+        if ch = @channels[ch_number]
+          ch.handle_method(method)
+        else
+          # TODO: log a warning
+        end
       end
     end
 
