@@ -24,9 +24,7 @@ loop do
   x.publish(body, :routing_key => ["abc", "def"].sample)
 
   sleep 1.5
-  puts "Before q.pop"
   _, _, payload = q.pop
-  puts "After q.pop"
   if payload
     puts "Consumed #{payload}"
   else
