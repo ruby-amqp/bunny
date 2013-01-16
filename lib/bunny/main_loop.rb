@@ -16,6 +16,7 @@ module Bunny
 
     def start
       @thread    = Thread.new(&method(:run_loop))
+      @thread.abort_on_exception = true
     end
 
     def resume
