@@ -1,7 +1,28 @@
 ## Changes between Bunny 0.9.0.pre6 and 0.9.0.pre7
 
-No changes yet.
+### API Reference
 
+[Bunny API reference](http://reference.rubybunny.info) is now up online.
+
+
+### Bunny::Channel#basic_publish Support For :persistent
+
+`Bunny::Channel#basic_publish` now supports both
+`:delivery_mode` and `:persistent` options.
+
+### Bunny::Channel#nacked_set
+
+`Bunny::Channel#nacked_set` is a counter-part to `Bunny::Channel#unacked_set`
+that contains `basic.nack`-ed (rejected) delivery tags.
+
+
+### Single-threaded Network Activity Mode
+
+Passing `:threaded => false` to `Bunny.new` now will use the same
+thread for publisher confirmations (may be useful for retry logic
+implementation).
+
+Contributed by Greg Brockman.
 
 
 ## Changes between Bunny 0.9.0.pre5 and 0.9.0.pre6
