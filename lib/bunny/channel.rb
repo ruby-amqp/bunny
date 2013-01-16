@@ -493,6 +493,26 @@ module Bunny
       self
     end
 
+    # Synchronously fetches a message from the queue, if there are any. This method is
+    # for cases when the convenience of synchronous operations is more important than
+    # throughput.
+    #
+    # @param [String] queue Queue name
+    # @param [Hash] opts Options
+    #
+    # @option opts [Boolean] :ack (true) Will this message be acknowledged manually?
+    #
+    # @return [Array] A triple of delivery info, message properties and message content
+    #
+    # @example Using Bunny::Channel#basic_get with manual acknowledgements
+    #   conn = Bunny.new
+    #   conn.start
+    #   ch   = conn.create_channel
+    #   # here we assume the queue already exists and has messages
+    #   delivery_info, properties, payload = ch.basic_get("bunny.examples.queue1", :ack => true)
+    #   ch.acknowledge(delivery_info.delivery_tag)
+    # @see Bunny::Queue#pop
+    # @see http://rubybunny.info/articles/queues.html Queues and Consumers guide
     def basic_get(queue, opts = {:ack => true})
       raise_if_no_longer_open!
 
@@ -503,6 +523,14 @@ module Bunny
       @last_basic_get_response
     end
 
+    # Controls message delivery rate using basic.qos AMQP 0.9.1 method.
+    #
+    # @param [Integer] prefetch_count How many messages can consumers on this channel be given at a time
+    #                                 (before they have to acknowledge or reject one of the earlier received messages)
+    # @param [Boolean] global (false) Ignored, as it is not supported by RabbitMQ
+    # @param [AMQ::Protocol::Basic::QosOk] basic.qos-ok response
+    # @see Bunny::Channel#prefetch
+    # @see http://rubybunny.info/articles/queues.html Queues and Consumers guide
     def basic_qos(prefetch_count, global = false)
       raise ArgumentError.new("prefetch count must be a positive integer, given: #{prefetch_count}") if prefetch_count < 0
       raise_if_no_longer_open!
@@ -531,6 +559,8 @@ module Bunny
       @last_basic_recover_ok
     end
 
+    # Acknowledges a delivery (message).
+    # @return [NilClass] nil
     def basic_reject(delivery_tag, requeue)
       raise_if_no_longer_open!
       @connection.send_frame(AMQ::Protocol::Basic::Reject.encode(@id, delivery_tag, requeue))
@@ -538,6 +568,8 @@ module Bunny
       nil
     end
 
+    # Acknowledges a delivery (message).
+    # @return [NilClass] nil
     def basic_ack(delivery_tag, multiple)
       raise_if_no_longer_open!
       @connection.send_frame(AMQ::Protocol::Basic::Ack.encode(@id, delivery_tag, multiple))
