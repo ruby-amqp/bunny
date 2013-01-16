@@ -468,7 +468,12 @@ module Bunny
                         exchange
                       end
 
-      meta = { :priority => 0, :delivery_mode => 2, :content_type => "application/octet-stream" }.
+      mode = if opts.fetch(:persistent, true)
+               2
+             else
+               1
+             end
+      meta = { :priority => 0, :delivery_mode => mode, :content_type => "application/octet-stream" }.
         merge(opts)
 
       if @next_publish_seq_no > 0
