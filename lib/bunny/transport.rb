@@ -70,7 +70,7 @@ module Bunny
         else
           @socket.write(*args) if open?
         end
-      rescue Errno::EPIPE, Errno::EAGAIN, Bunny::ClientTimeout, IOError => e
+      rescue Errno::EPIPE, Errno::EAGAIN, Bunny::ClientTimeout, Bunny::ConnectionError, IOError => e
         close
 
         @session.handle_network_failure(e)
