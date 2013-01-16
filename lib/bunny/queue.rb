@@ -112,7 +112,7 @@ module Bunny
                                 !opts[:ack],
                                 opts[:exclusive],
                                 opts[:arguments])
-      puts "Added consumer #{ctag} on queue #{@name}"
+
       consumer.on_delivery(&block)
       consumer.on_cancellation(&opts[:on_cancellation]) if opts[:on_cancellation]
 
