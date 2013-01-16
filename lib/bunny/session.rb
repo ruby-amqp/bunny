@@ -167,7 +167,7 @@ module Bunny
     end
 
     def open?
-      status == :open || status == :connected
+      (status == :open || status == :connected) && @transport.open?
     end
     alias connected? open?
 

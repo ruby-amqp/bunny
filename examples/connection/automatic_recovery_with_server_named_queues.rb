@@ -22,7 +22,10 @@ q.subscribe do |delivery_info, metadata, payload|
 end
 
 loop do
-  sleep 3
-  puts "Tick"
-  x.publish(rand.to_s, :routing_key => ["abc", "def", "ghi", "xyz"].sample)
+  sleep 2
+  data = rand.to_s
+  rk   = ["abc", "def"].sample
+
+  puts "Published #{data}, routing key: #{rk}"
+  x.publish(data, :routing_key => rk)
 end

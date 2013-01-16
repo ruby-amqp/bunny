@@ -169,8 +169,15 @@ module Bunny
 
       @unconfirmed_set_mutex = Mutex.new
 
-      @continuations          = ::Queue.new
-      @confirms_continuations = ::Queue.new
+      @continuations           = ::Queue.new
+      @confirms_continuations  = ::Queue.new
+      @basic_get_continuations = ::Queue.new
+      # threads awaiting on continuations. Used to unblock
+      # them when network connection goes down so that busy loops
+      # that perform synchronous operations can work. MK.
+      @threads_waiting_on_continuations           = Set.new
+      @threads_waiting_on_confirms_continuations  = Set.new
+      @threads_waiting_on_basic_get_continuations = Set.new
 
       @next_publish_seq_no = 0
     end
@@ -178,6 +185,10 @@ module Bunny
     # Opens the channel and resets its internal state
     # @return [Bunny::Channel] Self
     def open
+      @threads_waiting_on_continuations           = Set.new
+      @threads_waiting_on_confirms_continuations  = Set.new
+      @threads_waiting_on_basic_get_continuations = Set.new
+
       @connection.open_channel(self)
       # clear last channel error
       @last_channel_error = nil
@@ -517,7 +528,7 @@ module Bunny
       raise_if_no_longer_open!
 
       @connection.send_frame(AMQ::Protocol::Basic::Get.encode(@id, queue, !opts[:ack]))
-      @last_basic_get_response = wait_on_continuations
+      @last_basic_get_response = wait_on_basic_get_continuations
 
       raise_if_continuation_resulted_in_a_channel_error!
       @last_basic_get_response
@@ -950,22 +961,6 @@ module Bunny
       @last_confirm_select_ok
     end
 
-    def wait_on_continuations
-      unless @connection.threaded
-        connection.event_loop.run_once until @continuations.length > 0
-      end
-
-      @continuations.pop
-    end
-
-    def wait_on_confirms_continuations
-      unless @connection.threaded
-        connection.event_loop.run_once until @confirms_continuations.length > 0
-      end
-
-      @confirms_continuations.pop
-    end
-
     # Blocks calling thread until confirms are received for all
     # currently unacknowledged published messages
     def wait_for_confirms
@@ -1006,6 +1001,7 @@ module Bunny
     #
     # @api plugin
     def recover_from_network_failure
+      # puts "Recovering channel #{@id}"
       release_all_continuations
 
       recover_prefetch_setting
@@ -1039,6 +1035,7 @@ module Bunny
     # @api plugin
     def recover_queues
       @queues.values.dup.each do |q|
+        # puts "Recovering queue #{q.name}"
         q.recover_from_network_failure
       end
     end
@@ -1143,12 +1140,12 @@ module Bunny
 
     # @private
     def handle_basic_get_ok(basic_get_ok, properties, content)
-      @continuations.push([basic_get_ok, properties, content])
+      @basic_get_continuations.push([basic_get_ok, properties, content])
     end
 
     # @private
     def handle_basic_get_empty(basic_get_empty)
-      @continuations.push([nil, nil, nil])
+      @basic_get_continuations.push([nil, nil, nil])
     end
 
     # @private
@@ -1202,11 +1199,79 @@ module Bunny
       end
     end
 
+    # @private
+    def wait_on_continuations
+      if @connection.threaded
+        t = Thread.current
+        @threads_waiting_on_continuations << t
+
+        v = @continuations.pop
+        @threads_waiting_on_continuations.delete(t)
+
+        v
+      else
+        connection.event_loop.run_once until @continuations.length > 0
+
+        @continuations.pop
+      end
+    end
+
+    # @private
+    def wait_on_basic_get_continuations
+      if @connection.threaded
+        t = Thread.current
+        @threads_waiting_on_basic_get_continuations << t
+
+        v = @basic_get_continuations.pop
+        @threads_waiting_on_basic_get_continuations.delete(t)
+
+        v
+      else
+        connection.event_loop.run_once until @continuations.length > 0
+
+        @basic_get_continuations.pop
+      end
+    end
+
+    # @private
+    def wait_on_confirms_continuations
+      if @connection.threaded
+        t = Thread.current
+        @threads_waiting_on_confirms_continuations << t
+
+        v = @confirms_continuations.pop
+        @threads_waiting_on_confirms_continuations.delete(t)
+
+        v
+      else
+        connection.event_loop.run_once until @confirms_continuations.length > 0
+
+        @confirms_continuations.pop
+      end
+    end
+
     # Releases all continuations. Used by automatic network recovery.
     # @private
     def release_all_continuations
-      @confirms_continuations.push(true)
-      @continuations.push(nil)
+      if @confirms_continuations.num_waiting > 0
+        @threads_waiting_on_confirms_continuations.each do |t|
+          t.run
+        end
+      end
+      if @continuations.num_waiting > 0
+        @threads_waiting_on_continuations.each do |t|
+          t.run
+        end
+      end
+      if @basic_get_continuations.num_waiting > 0
+        @threads_waiting_on_basic_get_continuations.each do |t|
+          t.run
+        end
+      end
+
+      @continuations           = ::Queue.new
+      @confirms_continuations  = ::Queue.new
+      @basic_get_continuations = ::Queue.new
     end
 
     # Starts consumer work pool. Lazily called by #basic_consume to avoid creating new threads
