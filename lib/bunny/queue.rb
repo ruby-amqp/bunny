@@ -134,7 +134,11 @@ module Bunny
     end
 
     def pop(opts = {:ack => false}, &block)
-      delivery_info, properties, content = @channel.basic_get(@name, opts)
+      delivery_info, properties, content = if @channel.connection.open?
+                                             @channel.basic_get(@name, opts)
+                                           else
+                                             [nil, nil, nil]
+                                           end
 
       if block
         block.call(delivery_info, properties, content)
@@ -145,7 +149,11 @@ module Bunny
     alias get pop
 
     def pop_as_hash(opts = {:ack => false}, &block)
-      delivery_info, properties, content = @channel.basic_get(@name, opts)
+      delivery_info, properties, content = if @channel.connection.open?
+                                             @channel.basic_get(@name, opts)
+                                           else
+                                             [nil, nil, nil]
+                                           end
 
       result = {:header => properties, :payload => content, :delivery_details => delivery_info}
 
@@ -208,17 +216,20 @@ module Bunny
         @channel.deregister_queue_named(old_name)
       end
 
-      declare!
+      # puts "Recovering queue #{@name}"
       begin
+        declare!
+
         @channel.register_queue(self)
       rescue Exception => e
-        puts "Caught #{e.inspect} while registering #{@name}!"
+        puts "Caught #{e.inspect} while redeclaring and registering #{@name}!"
       end
       recover_bindings
     end
 
     def recover_bindings
       @bindings.each do |b|
+        # puts "Recovering binding #{b.inspect}"
         self.bind(b[:exchange], b)
       end
     end
