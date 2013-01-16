@@ -1006,7 +1006,8 @@ module Bunny
     #
     # @api plugin
     def recover_from_network_failure
-      # puts "Recovering channel #{@id} from network failure..."
+      release_all_continuations
+
       recover_prefetch_setting
       recover_exchanges
       # this includes recovering bindings
@@ -1199,6 +1200,13 @@ module Bunny
 
         @confirms_callback.call(delivery_tag, multiple, nack) if @confirms_callback
       end
+    end
+
+    # Releases all continuations. Used by automatic network recovery.
+    # @private
+    def release_all_continuations
+      @confirms_continuations.push(true)
+      @continuations.push(nil)
     end
 
     # Starts consumer work pool. Lazily called by #basic_consume to avoid creating new threads

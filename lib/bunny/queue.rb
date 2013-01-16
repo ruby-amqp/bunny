@@ -201,8 +201,6 @@ module Bunny
     #
 
     def recover_from_network_failure
-      # puts "Recovering queue #{@name} from network failure"
-
       if self.server_named?
         old_name = @name.dup
         @name    = AMQ::Protocol::EMPTY_STRING
