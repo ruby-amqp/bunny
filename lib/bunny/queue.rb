@@ -109,7 +109,7 @@ module Bunny
       consumer   = Consumer.new(@channel,
                                 self,
                                 ctag,
-                                !opts[:ack],
+                                !(opts[:ack] || opts[:manual_ack]),
                                 opts[:exclusive],
                                 opts[:arguments])
 

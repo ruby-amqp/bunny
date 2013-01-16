@@ -21,7 +21,7 @@ describe Bunny::Queue, "#subscribe" do
       t = Thread.new do
         ch = connection.create_channel
         q = ch.queue(queue_name, :auto_delete => true, :durable => false)
-        q.subscribe(:exclusive => false, :ack => false) do |delivery_info, properties, payload|
+        q.subscribe(:exclusive => false, :manual_ack => false) do |delivery_info, properties, payload|
           delivered_keys << delivery_info.routing_key
           delivered_data << payload
         end
@@ -46,6 +46,34 @@ describe Bunny::Queue, "#subscribe" do
   context "with manual acknowledgement mode" do
     let(:queue_name) { "bunny.basic_consume#{rand}" }
 
-    it "register a consumer with manual acknowledgements mode"
+    it "register a consumer with manual acknowledgements mode" do
+      delivered_keys = []
+      delivered_data = []
+
+      t = Thread.new do
+        ch = connection.create_channel
+        q = ch.queue(queue_name, :auto_delete => true, :durable => false)
+        q.subscribe(:exclusive => false, :manual_ack => true) do |delivery_info, properties, payload|
+          delivered_keys << delivery_info.routing_key
+          delivered_data << payload
+
+          ch.ack(delivery_info.delivery_tag)
+        end
+      end
+      t.abort_on_exception = true
+      sleep 0.5
+
+      ch = connection.create_channel
+      x  = ch.default_exchange
+      x.publish("hello", :routing_key => queue_name)
+
+      sleep 0.7
+      delivered_keys.should include(queue_name)
+      delivered_data.should include("hello")
+
+      ch.queue(queue_name, :auto_delete => true, :durable => false).message_count.should == 0
+
+      ch.close
+    end
   end
 end
