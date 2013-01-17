@@ -1026,6 +1026,15 @@ module Bunny
       @last_exchange_declare_ok
     end
 
+    # Deletes a exchange using exchange.delete AMQP 0.9.1 method
+    #
+    # @param [String] name Exchange name
+    # @param [Hash] opts Options
+    #
+    # @option opts [Boolean] if_unused (false) Should this exchange be deleted only if it is no longer used
+    #
+    # @return [AMQ::Protocol::Exchange::DeleteOk] RabbitMQ response
+    # @see http://rubybunny.info/articles/exchanges.html Exchanges and Publishing guide
     def exchange_delete(name, opts = {})
       raise_if_no_longer_open!
 
