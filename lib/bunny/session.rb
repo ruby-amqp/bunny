@@ -263,7 +263,7 @@ module Bunny
           @event_loop = nil
 
           @transport.close
-        rescue Exception => e
+        rescue StandardError => e
           puts e.class.name
           puts e.message
           puts e.backtrace
@@ -309,6 +309,8 @@ module Bunny
     end
 
     def handle_network_failure(exception)
+      raise NetworkErrorWrapper.new(exception) unless @threaded
+
       if !recovering_from_network_failure?
         @recovering_from_network_failure = true
         if recoverable_network_failure?(exception)
