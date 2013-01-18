@@ -263,7 +263,7 @@ module Bunny
           @event_loop = nil
 
           @transport.close
-        rescue Exception => e
+        rescue StandardError => e
           puts e.class.name
           puts e.message
           puts e.backtrace
