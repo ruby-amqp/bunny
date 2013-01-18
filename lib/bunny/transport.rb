@@ -175,7 +175,7 @@ module Bunny
           @socket.post_connection_check(host) if @verify_ssl
           @socket
         end
-      rescue Exception => e
+      rescue StandardError, ConnectionTimeout => e
         @status = :not_connected
         raise Bunny::TCPConnectionFailed.new(e, self.hostname, self.port)
       end
