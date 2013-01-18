@@ -445,16 +445,12 @@ module Bunny
     # @param [Boolean] multiple (false) Should all unacknowledged messages up to this be rejected as well?
     # @see Bunny::Channel#ack
     # @see http://rubybunny.info/articles/queues.html Queues and Consumers guide
+    # @api public
     def nack(delivery_tag, requeue, multiple = false)
       basic_nack(delivery_tag, requeue, multiple)
     end
 
     # @endgroup
-
-
-    def on_error(&block)
-      @default_error_handler = block
-    end
 
     #
     # Lower-level API, exposes protocol operations as they are defined in the protocol,
