@@ -1561,7 +1561,7 @@ module Bunny
 
         v
       else
-        connection.event_loop.run_once until @continuations.length > 0
+        connection.event_loop.run_once until @basic_get_continuations.length > 0
 
         @basic_get_continuations.pop
       end
