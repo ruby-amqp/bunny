@@ -136,4 +136,13 @@ module Bunny
 
   class UnexpectedFrame < ConnectionLevelException
   end
+
+  class NetworkErrorWrapper < StandardError
+    attr_reader :other
+
+    def initialize(other)
+      super(other.message)
+      @other = other
+    end
+  end
 end
