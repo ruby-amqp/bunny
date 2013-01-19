@@ -16,6 +16,7 @@ require "amq/settings"
 
 module Bunny
   # Represents AMQP 0.9.1 connection (connection to RabbitMQ).
+  # @see http://rubybunny.info/articles/connecting.html Connecting to RabbitMQ guide
   class Session
 
     # Default host used for connection
