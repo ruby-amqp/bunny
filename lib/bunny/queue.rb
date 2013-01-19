@@ -14,7 +14,12 @@ module Bunny
     # API
     #
 
-    attr_reader :channel, :name, :options
+    # @return [Bunny::Channel] Channel this queue uses
+    attr_reader :channel
+    # @return [String] Queue name
+    attr_reader :name
+    # @return [Hash] Options this queue was created with
+    attr_reader :options
 
     # @param [Bunny::Channel] channel_or_connection Channel this queue will use. {Bunny::Session} instances are supported only for
     #                                               backwards compatibility with 0.8.
@@ -55,24 +60,28 @@ module Bunny
 
     # @return [Boolean] true if this queue was declared as durable (will survive broker restart).
     # @api public
+    # @see http://rubybunny.info/articles/queues.html Queues and Consumers guide
     def durable?
       @durable
     end # durable?
 
     # @return [Boolean] true if this queue was declared as exclusive (limited to just one consumer)
     # @api public
+    # @see http://rubybunny.info/articles/queues.html Queues and Consumers guide
     def exclusive?
       @exclusive
     end # exclusive?
 
     # @return [Boolean] true if this queue was declared as automatically deleted (deleted as soon as last consumer unbinds).
     # @api public
+    # @see http://rubybunny.info/articles/queues.html Queues and Consumers guide
     def auto_delete?
       @auto_delete
     end # auto_delete?
 
     # @return [Boolean] true if this queue was declared as server named.
     # @api public
+    # @see http://rubybunny.info/articles/queues.html Queues and Consumers guide
     def server_named?
       @server_named
     end # server_named?
@@ -141,6 +150,15 @@ module Bunny
 
     # Adds a consumer to the queue (subscribes for message deliveries).
     #
+    # @param [Hash] opts Options
+    #
+    # @option opts [Boolean] :manual_ack (false) Will this consumer use manual acknowledgements?
+    # @option opts [Boolean] :exclusive (false) Should this consumer be exclusive for this queue?
+    # @option opts [Boolean] :block (false) Should the call block calling thread?
+    # @option opts [#call] :on_cancellation Block to execute when this consumer is cancelled remotely (e.g. via the RabbitMQ Management plugin)
+    # @option opts [String] :consumer_tag Unique consumer identifier. It is usually recommended to let Bunny generate it for you.
+    # @option opts [Hash] :arguments ({}) Additional (optional) arguments, typically used by RabbitMQ extensions
+    #
     # @see http://rubybunny.info/articles/queues.html Queues and Consumers guide
     # @api public
     def subscribe(opts = {
@@ -172,6 +190,15 @@ module Bunny
       consumer
     end
 
+    # Adds a consumer object to the queue (subscribes for message deliveries).
+    #
+    # @param [Bunny::Consumer] consumer a {Bunny::Consumer} subclass that implements consumer interface
+    # @param [Hash] opts Options
+    #
+    # @option opts [Boolean] block (false) Should the call block calling thread?
+    #
+    # @see http://rubybunny.info/articles/queues.html Queues and Consumers guide
+    # @api public
     def subscribe_with(consumer, opts = {:block => false})
       @channel.basic_consume_with(consumer)
 
@@ -179,6 +206,29 @@ module Bunny
       consumer
     end
 
+    # @param [Hash] opts Options
+    #
+    # @option opts [Boolean] block (false) Should the call block calling thread?
+    #
+    # @return [Array] Triple of delivery info, message properties and message content.
+    #                 If the queue is empty, all three will be nils.
+    # @see http://rubybunny.info/articles/queues.html Queues and Consumers guide
+    # @see Bunny::Queue#subscribe
+    # @api public
+    #
+    # @example
+    # conn = Bunny.new
+    # conn.start
+    #
+    # ch   = conn.create_channel
+    # q = ch.queue("test1")
+    # x = ch.default_exchange
+    # x.publish("Hello, everybody!", :routing_key => 'test1')
+    #
+    # delivery_info, properties, payload = q.pop
+    #
+    # puts "This is the message: " + payload + "\n\n"
+    # conn.close
     def pop(opts = {:ack => false}, &block)
       delivery_info, properties, content = @channel.basic_get(@name, opts)
 
@@ -190,6 +240,10 @@ module Bunny
     end
     alias get pop
 
+    # Version of {Bunny::Queue#pop} that returns data in legacy format
+    # (as a hash).
+    # @return [Hash]
+    # @deprecated
     def pop_as_hash(opts = {:ack => false}, &block)
       delivery_info, properties, content = @channel.basic_get(@name, opts)
 
@@ -202,10 +256,12 @@ module Bunny
       end
     end
 
-    # Publishes a message to the queue via default exchange.
+    # Publishes a message to the queue via default exchange. Takes the same arguments
+    # as {Bunny::Exchange#publish}
     #
     # @see Bunny::Exchange#publish
     # @see Bunny::Channel#default_exchange
+    # @see http://rubybunny.info/articles/exchanges.html Exchanges and Publishing guide
     def publish(payload, opts = {})
       @channel.default_exchange.publish(payload, opts.merge(:routing_key => @name))
 
@@ -214,29 +270,44 @@ module Bunny
 
 
     # Deletes the queue
+    #
+    # @param [Hash] opts Options
+    #
+    # @option opts [Boolean] if_unused (false) Should this queue be deleted only if it has no consumers?
+    # @option opts [Boolean] if_empty (false) Should this queue be deleted only if it has no messages?
+    #
+    # @see http://rubybunny.info/articles/queues.html Queues and Consumers guide
     # @api public
     def delete(opts = {})
       @channel.deregister_queue(self)
       @channel.queue_delete(@name, opts)
     end
 
+    # Purges a queue (removes all messages from it)
+    # @see http://rubybunny.info/articles/queues.html Queues and Consumers guide
+    # @api public
     def purge(opts = {})
       @channel.queue_purge(@name, opts)
 
       self
     end
 
+    # @return [Hash] A hash with information about the number of queue messages and consumers
+    # @see #message_count
+    # @see #consumer_count
     def status
       queue_declare_ok = @channel.queue_declare(@name, @options.merge(:passive => true))
       {:message_count => queue_declare_ok.message_count,
         :consumer_count => queue_declare_ok.consumer_count}
     end
 
+    # @return [Integer] How many messages the queue has ready (e.g. not delivered but not unacknowledged)
     def message_count
       s = self.status
       s[:message_count]
     end
 
+    # @return [Integer] How many active consumers the queue has
     def consumer_count
       s = self.status
       s[:consumer_count]
@@ -246,6 +317,7 @@ module Bunny
     # Recovery
     #
 
+    # @private
     def recover_from_network_failure
       if self.server_named?
         old_name = @name.dup
@@ -265,6 +337,7 @@ module Bunny
       recover_bindings
     end
 
+    # @private
     def recover_bindings
       @bindings.each do |b|
         # puts "Recovering binding #{b.inspect}"
