@@ -57,7 +57,23 @@ module Bunny
       self.new(channel_from(channel_or_connection), :direct, AMQ::Protocol::EMPTY_STRING, :no_declare => true)
     end
 
-
+    # @param [Bunny::Channel] channel_or_connection Channel this exchange will use. {Bunny::Session} instances are supported only for
+    #                                               backwards compatibility with 0.8.
+    # @param [Symbol,String] type                   Exchange type
+    # @param [String] name                          Exchange name
+    # @param [Hash] opts                            Exchange properties
+    #
+    # @option opts [Boolean] :durable (false)      Should this exchange be durable?
+    # @option opts [Boolean] :auto_delete (false)  Should this exchange be automatically deleted when it is no longer used?
+    # @option opts [Boolean] :arguments ({})       Additional optional arguments (typically used by RabbitMQ extensions and plugins)
+    #
+    # @see Bunny::Channel#topic
+    # @see Bunny::Channel#fanout
+    # @see Bunny::Channel#direct
+    # @see Bunny::Channel#headers
+    # @see http://rubybunny.info/articles/exchanges.html Exchanges and Publishing guide
+    # @see http://rubybunny.info/articles/extensions.html RabbitMQ Extensions guide
+    # @api public
     def initialize(channel_or_connection, type, name, opts = {})
       # old Bunny versions pass a connection here. In that case,
       # we just use default channel from it. MK.
@@ -87,15 +103,36 @@ module Bunny
       @auto_delete
     end # auto_delete?
 
+    # @return [Hash] Additional optional arguments (typically used by RabbitMQ extensions and plugins)
+    # @api public
     def arguments
       @arguments
     end
 
-    def predeclared?
-      @name =~ /^amq\.(direct|fanout|topic|match|headers)/
-    end
 
-
+    # Publishes a message
+    #
+    # @param [String] payload Message payload. It will never be modified by Bunny or RabbitMQ in any way.
+    # @param [Hash] opts Message properties (metadata) and delivery settings
+    #
+    # @option opts [String] :routing_key Routing key
+    # @option opts [Boolean] :persistent Should the message be persisted to disk?
+    # @option opts [Boolean] :mandatory Should the message be returned if it cannot be routed to any queue?
+    # @option opts [Integer] :timestamp A timestamp associated with this message
+    # @option opts [Integer] :expiration Expiration time after which the message will be deleted
+    # @option opts [String] :type Message type, e.g. what type of event or command this message represents. Can be any string
+    # @option opts [String] :reply_to Queue name other apps should send the response to
+    # @option opts [String] :content_type Message content type (e.g. application/json)
+    # @option opts [String] :content_encoding Message content encoding (e.g. gzip)
+    # @option opts [String] :correlation_id Message correlated to this one, e.g. what request this message is a reply for
+    # @option opts [Integer] :priority Message priority, 0 to 9. Not used by RabbitMQ, only applications
+    # @option opts [String] :message_id Any message identifier
+    # @option opts [String] :user_id Optional user ID. Verified by RabbitMQ against the actual connection username
+    # @option opts [String] :app_id Optional application ID
+    #
+    # @return [Bunny::Exchange] Self
+    # @see http://rubybunny.info/articles/exchanges.html Exchanges and Publishing guide
+    # @api public
     def publish(payload, opts = {})
       @channel.basic_publish(payload, self.name, (opts.delete(:routing_key) || opts.delete(:key)), opts)
 
@@ -104,32 +141,68 @@ module Bunny
 
 
     # Deletes the exchange unless it is a default exchange
+    #
+    # @param [String] name Exchange name
+    # @param [Hash] opts Options
+    #
+    # @option opts [Boolean] if_unused (false) Should this exchange be deleted only if it is no longer used
+    #
+    # @see http://rubybunny.info/articles/exchanges.html Exchanges and Publishing guide
     # @api public
     def delete(opts = {})
       @channel.deregister_exchange(self)
       @channel.exchange_delete(@name, opts) unless predeclared?
     end
 
-
+    # Binds an exchange to another (source) exchange using exchange.bind AMQP 0.9.1 extension
+    # that RabbitMQ provides.
+    #
+    # @param [String] source Source exchange name
+    # @param [Hash] opts Options
+    #
+    # @option opts [String] routing_key (nil) Routing key used for binding
+    # @option opts [Hash] arguments ({}) Optional arguments
+    #
+    # @return [Bunny::Exchange] Self
+    # @see http://rubybunny.info/articles/exchanges.html Exchanges and Publishing guide
+    # @see http://rubybunny.info/articles/bindings.html Bindings guide
+    # @see http://rubybunny.info/articles/extensions.html RabbitMQ Extensions guide
+    # @api public
     def bind(source, opts = {})
       @channel.exchange_bind(source, self, opts)
 
       self
     end
 
+    # Unbinds an exchange from another (source) exchange using exchange.unbind AMQP 0.9.1 extension
+    # that RabbitMQ provides.
+    #
+    # @param [String] source Source exchange name
+    # @param [Hash] opts Options
+    #
+    # @option opts [String] routing_key (nil) Routing key used for binding
+    # @option opts [Hash] arguments ({}) Optional arguments
+    #
+    # @return [Bunny::Exchange] Self
+    # @see http://rubybunny.info/articles/exchanges.html Exchanges and Publishing guide
+    # @see http://rubybunny.info/articles/bindings.html Bindings guide
+    # @see http://rubybunny.info/articles/extensions.html RabbitMQ Extensions guide
+    # @api public
     def unbind(source, opts = {})
       @channel.exchange_unbind(source, self, opts)
 
       self
     end
 
-
+    # Defines a block that will handle returned messages
+    # @see http://rubybunny.info/articles/exchanges.html
     def on_return(&block)
       @on_return = block
 
       self
     end
 
+    # @private
     def recover_from_network_failure
       # puts "Recovering exchange #{@name} from network failure"
       declare! unless predefined?
@@ -140,6 +213,7 @@ module Bunny
     # Implementation
     #
 
+    # @private
     def handle_return(basic_return, properties, content)
       if @on_return
         @on_return.call(basic_return, properties, content)
@@ -150,8 +224,9 @@ module Bunny
 
     # @return [Boolean] true if this exchange is a pre-defined one (amq.direct, amq.fanout, amq.match and so on)
     def predefined?
-      @name && ((@name == AMQ::Protocol::EMPTY_STRING) || !!(@name =~ /^amq\./i))
+      (@name == AMQ::Protocol::EMPTY_STRING) || !!(@name =~ /^amq\.(direct|fanout|topic|headers|match)/i)
     end # predefined?
+    alias predeclared? predefined?
 
     protected
 

@@ -471,7 +471,7 @@ module Bunny
     # @option opts [Boolean] :mandatory Should the message be returned if it cannot be routed to any queue?
     # @option opts [Integer] :timestamp A timestamp associated with this message
     # @option opts [Integer] :expiration Expiration time after which the message will be deleted
-    # @option opts [String] :type Message type, e.g. what type of event or command this message represents. Can be any string.
+    # @option opts [String] :type Message type, e.g. what type of event or command this message represents. Can be any string
     # @option opts [String] :reply_to Queue name other apps should send the response to
     # @option opts [String] :content_type Message content type (e.g. application/json)
     # @option opts [String] :content_encoding Message content encoding (e.g. gzip)
