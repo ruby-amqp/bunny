@@ -1,6 +1,10 @@
 require "bunny/compatibility"
 
 module Bunny
+  # Represents AMQP 0.9.1 queue.
+  #
+  # @see http://rubybunny.info/articles/queues.html Queues and Consumers guide
+  # @see http://rubybunny.info/articles/extensions.html RabbitMQ Extensions guide
   class Queue
 
     include Bunny::Compatibility
@@ -12,6 +16,20 @@ module Bunny
 
     attr_reader :channel, :name, :options
 
+    # @param [Bunny::Channel] channel_or_connection Channel this queue will use. {Bunny::Session} instances are supported only for
+    #                                               backwards compatibility with 0.8.
+    # @param [String] name                          Queue name. Pass an empty string to make RabbitMQ generate a unique one.
+    # @param [Hash] opts                            Queue properties
+    #
+    # @option opts [Boolean] :durable (false)      Should this queue be durable?
+    # @option opts [Boolean] :auto-delete (false)  Should this queue be automatically deleted when the last consumer disconnects?
+    # @option opts [Boolean] :exclusive (false)    Should this queue be exclusive (only can be used by this connection, removed when the connection is closed)?
+    # @option opts [Boolean] :arguments ({})       Additional optional arguments (typically used by RabbitMQ extensions and plugins)
+    #
+    # @see Bunny::Channel#queue
+    # @see http://rubybunny.info/articles/queues.html Queues and Consumers guide
+    # @see http://rubybunny.info/articles/extensions.html RabbitMQ Extensions guide
+    # @api public
     def initialize(channel_or_connection, name = AMQ::Protocol::EMPTY_STRING, opts = {})
       # old Bunny versions pass a connection here. In that case,
       # we just use default channel from it. MK.
@@ -59,11 +77,24 @@ module Bunny
       @server_named
     end # server_named?
 
+    # @return [Hash] Additional optional arguments (typically used by RabbitMQ extensions and plugins)
+    # @api public
     def arguments
       @arguments
     end
 
 
+    # Binds queue to an exchange
+    #
+    # @param [Bunny::Exchange,String] exchange Exchange to bind to
+    # @param [Hash] opts                       Binding properties
+    #
+    # @option opts [String] :routing_key  Routing key
+    # @option opts [Hash] :arguments ({}) Additional optional binding arguments
+    #
+    # @see http://rubybunny.info/articles/queues.html Queues and Consumers guide
+    # @see http://rubybunny.info/articles/bindings.html Bindings guide
+    # @api public
     def bind(exchange, opts = {})
       @channel.queue_bind(@name, exchange, opts)
 
@@ -82,6 +113,17 @@ module Bunny
       self
     end
 
+    # Unbinds queue from an exchange
+    #
+    # @param [Bunny::Exchange,String] exchange Exchange to unbind from
+    # @param [Hash] opts                       Binding properties
+    #
+    # @option opts [String] :routing_key  Routing key
+    # @option opts [Hash] :arguments ({}) Additional optional binding arguments
+    #
+    # @see http://rubybunny.info/articles/queues.html Queues and Consumers guide
+    # @see http://rubybunny.info/articles/bindings.html Bindings guide
+    # @api public
     def unbind(exchange, opts = {})
       @channel.queue_unbind(@name, exchange, opts)
 
@@ -97,6 +139,10 @@ module Bunny
       self
     end
 
+    # Adds a consumer to the queue (subscribes for message deliveries).
+    #
+    # @see http://rubybunny.info/articles/queues.html Queues and Consumers guide
+    # @api public
     def subscribe(opts = {
                     :consumer_tag    => @channel.generate_consumer_tag,
                     :ack             => false,
