@@ -1,6 +1,10 @@
 require "bunny/compatibility"
 
 module Bunny
+  # Represents AMQP 0.9.1 exchanges.
+  #
+  # @see http://rubybunny.info/articles/exchanges.html Exchanges and Publishing guide
+  # @see http://rubybunny.info/articles/extensions.html RabbitMQ Extensions guide
   class Exchange
 
     include Bunny::Compatibility
@@ -43,8 +47,8 @@ module Bunny
     #   tasks_queue = channel.queue("tasks")
     #   Bunny::Exchange.default(channel).publish("make clean", routing_key => "tasks")
     #
-    # @see Exchange
-    # @see http://files.travis-ci.org/docs/amqp/0.9.1/AMQP091Specification.pdf AMQP 0.9.1 specification (Section 2.1.2.4)
+    # @see http://rubybunny.info/articles/exchanges.html Exchanges and Publishing guide
+    # @see http://www.rabbitmq.com/resources/specs/amqp0-9-1.pdf AMQP 0.9.1 specification (Section 2.1.2.4)
     # @note Do not confuse default exchange with amq.direct: amq.direct is a pre-defined direct
     #       exchange that doesn't have any special routing semantics.
     # @return [Exchange] An instance that corresponds to the default exchange (of type direct).
@@ -66,7 +70,7 @@ module Bunny
       @auto_delete      = @options[:auto_delete]
       @arguments        = @options[:arguments]
 
-      declare! unless opts[:no_declare] || (@name =~ /^amq\.(direct|fanout|topic|match|headers)/) || (@name == AMQ::Protocol::EMPTY_STRING)
+      declare! unless opts[:no_declare] || predeclared? || (@name == AMQ::Protocol::EMPTY_STRING)
 
       @channel.register_exchange(self)
     end
@@ -88,7 +92,7 @@ module Bunny
     end
 
     def predeclared?
-      @name == AMQ::Protocol::EMPTY_STRING || (@name =~ /^amq\.(direct|fanout|topic|match|headers)/)
+      @name =~ /^amq\.(direct|fanout|topic|match|headers)/
     end
 
 
