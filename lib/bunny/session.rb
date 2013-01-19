@@ -15,21 +15,27 @@ require "amq/protocol/client"
 require "amq/settings"
 
 module Bunny
+  # Represents AMQP 0.9.1 connection (connection to RabbitMQ).
   class Session
 
+    # Default host used for connection
     DEFAULT_HOST      = "127.0.0.1"
+    # Default virtual host used for connection
     DEFAULT_VHOST     = "/"
+    # Default username used for connection
     DEFAULT_USER      = "guest"
+    # Default password used for connection
     DEFAULT_PASSWORD  = "guest"
-    # the same value as RabbitMQ 3.0 uses. MK.
+    # Default heartbeat interval, the same value as RabbitMQ 3.0 uses.
     DEFAULT_HEARTBEAT = 600
-    # 128K
+    # @private
     DEFAULT_FRAME_MAX = 131072
 
     # backwards compatibility
+    # @private
     CONNECT_TIMEOUT   = Transport::DEFAULT_CONNECTION_TIMEOUT
 
-
+    # RabbitMQ client metadata
     DEFAULT_CLIENT_PROPERTIES = {
       :capabilities => {
         :publisher_confirms         => true,
@@ -40,7 +46,7 @@ module Bunny
       :product      => "Bunny",
       :platform     => ::RUBY_DESCRIPTION,
       :version      => Bunny::VERSION,
-      :information  => "http://github.com/ruby-amqp/bunny",
+      :information  => "http://rubybunny.info",
     }
 
     DEFAULT_LOCALE = "en_GB"
