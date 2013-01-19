@@ -65,6 +65,21 @@ module Bunny
     attr_reader :mechanism
 
 
+    # @param [String, Hash] connection_string_or_opts Connection string or a hash of connection options
+    # @param [Hash] optz Extra options not related to connection
+    #
+    # @option connection_string_or_opts [String] :host ("127.0.0.1") Hostname or IP address to connect to
+    # @option connection_string_or_opts [Integer] :port (5672) Port RabbitMQ listens on
+    # @option connection_string_or_opts [String] :username ("guest") Username
+    # @option connection_string_or_opts [String] :password ("guest") Password
+    # @option connection_string_or_opts [String] :vhost ("/") Virtual host to use
+    # @option connection_string_or_opts [Integer] :heartbeat (600) Heartbeat interval. 0 means no heartbeat.
+    #
+    # @option optz [String] :auth_mechanism ("PLAIN") Authentication mechanism, PLAIN or EXTERNAL
+    # @option optz [String] :locale ("PLAIN") Locale RabbitMQ should use
+    #
+    # @see http://rubybunny.info/articles/connecting.html Connecting to RabbitMQ guide
+    # @api public
     def initialize(connection_string_or_opts = Hash.new, optz = Hash.new)
       opts = case (ENV["RABBITMQ_URL"] || connection_string_or_opts)
              when nil then
@@ -102,21 +117,29 @@ module Bunny
       @continuations       = ::Queue.new
     end
 
+    # @return [String] RabbitMQ hostname (or IP address) used
     def hostname;     self.host;  end
+    # @return [String] Username used
     def username;     self.user;  end
+    # @return [String] Password used
     def password;     self.pass;  end
+    # @return [String] Virtual host used
     def virtual_host; self.vhost; end
 
+    # @return [Boolean] true if this connection uses TLS (SSL)
     def uses_tls?
       @transport.uses_tls?
     end
     alias tls? uses_tls?
 
+    # @return [Boolean] true if this connection uses TLS (SSL)
     def uses_ssl?
       @transport.uses_ssl?
     end
     alias ssl? uses_ssl?
 
+    # Starts connection process
+    # @api public
     def start
       @continuations = ::Queue.new
       @status        = :connecting
@@ -132,7 +155,11 @@ module Bunny
       @default_channel = self.create_channel
     end
 
-
+    # Opens a new channel and returns it. This method will block the calling
+    # thread until the response is received and the channel is guaranteed to be
+    # opened (this operation is very fast and inexpensive).
+    #
+    # @return [Bunny::Channel] Newly opened channel
     def create_channel(n = nil)
       if n && (ch = @channels[n])
         ch
@@ -144,6 +171,7 @@ module Bunny
     end
     alias channel create_channel
 
+    # Closes the connection. This involves closing all of its channels.
     def close
       if @transport.open?
         close_all_channels
@@ -181,26 +209,32 @@ module Bunny
     # Backwards compatibility
     #
 
+    # @private
     def queue(*args)
       @default_channel.queue(*args)
     end
 
+    # @private
     def direct(*args)
       @default_channel.direct(*args)
     end
 
+    # @private
     def fanout(*args)
       @default_channel.fanout(*args)
     end
 
+    # @private
     def topic(*args)
       @default_channel.topic(*args)
     end
 
+    # @private
     def headers(*args)
       @default_channel.headers(*args)
     end
 
+    # @private
     def exchange(*args)
       @default_channel.exchange(*args)
     end
@@ -210,7 +244,7 @@ module Bunny
     # Implementation
     #
 
-
+    # @private
     def open_channel(ch)
       n = ch.number
       self.register_channel(ch)
@@ -222,6 +256,7 @@ module Bunny
       @last_channel_open_ok
     end
 
+    # @private
     def close_channel(ch)
       n = ch.number
 
@@ -233,12 +268,14 @@ module Bunny
       @last_channel_close_ok
     end
 
+    # @private
     def close_all_channels
       @channels.reject {|n, ch| n == 0 || !ch.open? }.each do |_, ch|
         Bunny::Timer.timeout(@disconnect_timeout, ClientTimeout) { ch.close }
       end
     end
 
+    # @private
     def close_connection(sync = true)
       @transport.send_frame(AMQ::Protocol::Connection::Close.encode(200, "Goodbye", 0, 0))
 
@@ -250,6 +287,7 @@ module Bunny
       end
     end
 
+    # @private
     def handle_frame(ch_number, method)
       # puts "Session#handle_frame on #{ch_number}: #{method.inspect}"
       case method
@@ -295,6 +333,7 @@ module Bunny
       end
     end
 
+    # @private
     def raise_if_continuation_resulted_in_a_connection_error!
       raise @last_connection_error if @last_connection_error
     end
@@ -314,6 +353,7 @@ module Bunny
       end
     end
 
+    # @private
     def handle_network_failure(exception)
       raise NetworkErrorWrapper.new(exception) unless @threaded
 
@@ -333,15 +373,18 @@ module Bunny
       end
     end
 
+    # @private
     def recoverable_network_failure?(exception)
       # TODO: investigate if we can be a bit smarter here. MK.
       true
     end
 
+    # @private
     def recovering_from_network_failure?
       @recovering_from_network_failure
     end
 
+    # @private
     def recover_from_network_failure
       begin
         # puts "About to start recovery..."
@@ -359,6 +402,7 @@ module Bunny
       end
     end
 
+    # @private
     def recover_channels
       # default channel is reopened right after connection
       # negotiation is completed, so make sure we do not try to open
@@ -370,10 +414,12 @@ module Bunny
       end
     end
 
+    # @private
     def send_raw(*args)
       @transport.write(*args)
     end
 
+    # @private
     def instantiate_connection_level_exception(frame)
       case frame
       when AMQ::Protocol::Connection::Close then
@@ -392,10 +438,12 @@ module Bunny
       end
     end
 
+    # @private
     def hostname_from(options)
       options[:host] || options[:hostname] || DEFAULT_HOST
     end
 
+    # @private
     def port_from(options)
       fallback = if options[:tls] || options[:ssl]
                    AMQ::Protocol::TLS_PORT
@@ -406,36 +454,44 @@ module Bunny
       options.fetch(:port, fallback)
     end
 
+    # @private
     def vhost_from(options)
       options[:virtual_host] || options[:vhost] || DEFAULT_VHOST
     end
 
+    # @private
     def username_from(options)
       options[:username] || options[:user] || DEFAULT_USER
     end
 
+    # @private
     def password_from(options)
       options[:password] || options[:pass] || options [:pwd] || DEFAULT_PASSWORD
     end
 
+    # @private
     def heartbeat_from(options)
       options[:heartbeat] || options[:heartbeat_interval] || options[:requested_heartbeat] || DEFAULT_HEARTBEAT
     end
 
+    # @private
     def next_channel_id
       @channel_id_allocator.next_channel_id
     end
 
+    # @private
     def release_channel_id(i)
       @channel_id_allocator.release_channel_id(i)
     end
 
+    # @private
     def register_channel(ch)
       @channel_mutex.synchronize do
         @channels[ch.number] = ch
       end
     end
 
+    # @private
     def unregister_channel(ch)
       @channel_mutex.synchronize do
         n = ch.number
@@ -445,14 +501,17 @@ module Bunny
       end
     end
 
+    # @private
     def start_main_loop
       event_loop.start
     end
 
+    # @private
     def event_loop
       @event_loop ||= MainLoop.new(@transport, self)
     end
 
+    # @private
     def signal_activity!
       @heartbeat_sender.signal_activity! if @heartbeat_sender
     end
@@ -474,7 +533,7 @@ module Bunny
     # Sends multiple frames, one by one. For thread safety this method takes a channel
     # object and synchronizes on it.
     #
-    # @api public
+    # @api private
     def send_frameset(frames, channel)
       # some developers end up sharing channels between threads and when multiple
       # threads publish on the same channel aggressively, at some point frames will be
@@ -489,6 +548,7 @@ module Bunny
 
     protected
 
+    # @api private
     def init_connection
       self.send_preamble
 
@@ -503,6 +563,7 @@ module Bunny
       @status = :connected
     end
 
+    # @api private
     def open_connection
       @transport.send_frame(AMQ::Protocol::Connection::StartOk.encode(@client_properties, @mechanism, self.encode_credentials(username, password), @locale))
 
@@ -555,6 +616,7 @@ module Bunny
       raise "could not open connection: server did not respond with connection.open-ok" unless connection_open_ok.is_a?(AMQ::Protocol::Connection::OpenOk)
     end
 
+    # @api private
     def negotiate_value(client_value, server_value)
       if client_value == 0 || server_value == 0
         [client_value, server_value].max
@@ -563,38 +625,41 @@ module Bunny
       end
     end
 
+    # @api private
     def initialize_heartbeat_sender
       # puts "Initializing heartbeat sender..."
       @heartbeat_sender = HeartbeatSender.new(@transport)
       @heartbeat_sender.start(@heartbeat)
     end
 
+    # @api private
     def maybe_shutdown_heartbeat_sender
       @heartbeat_sender.stop if @heartbeat_sender
     end
 
-
+    # @api private
     def initialize_transport
       @transport = Transport.new(self, @host, @port, @opts)
     end
 
     # Sends AMQ protocol header (also known as preamble).
+    # @api private
     def send_preamble
       @transport.send_raw(AMQ::Protocol::PREAMBLE)
     end
 
 
-
-
-    # @api plugin
+    # @api private
     def encode_credentials(username, password)
       @credentials_encoder.encode_credentials(username, password)
     end # encode_credentials(username, password)
 
+    # @api private
     def credentials_encoder_for(mechanism)
       Authentication::CredentialsEncoder.for_session(self)
     end
 
+    # @api private
     def wait_on_continuations
       unless @threaded
         event_loop.run_once until @continuations.length > 0
