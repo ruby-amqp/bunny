@@ -1,4 +1,13 @@
 module Bunny
+  # Base class that represents consumer interface. Subclasses of this class implement
+  # specific logic of handling consumer life cycle events. Note that when the only event
+  # you are interested in is message deliveries, it is recommended to just use
+  # {Bunny::Queue#subscribe} instead of subclassing this class.
+  #
+  # @see Bunny::Queue#subscribe
+  # @see Bunny::Queue#subscribe_with
+  # @see http://rubybunny.info/articles/queues.html Queues and Consumers guide
+  # @api public
   class Consumer
 
     #
@@ -13,7 +22,11 @@ module Bunny
     attr_reader   :exclusive
 
 
-
+    #
+    # @param [Bunny::Channel] channel Channel this consumer will use
+    # @param [Bunny::Queue,String] queue Queue messages will be consumed from
+    # @param
+    # @api public
     def initialize(channel, queue, consumer_tag = channel.generate_consumer_tag, no_ack = true, exclusive = false, arguments = {})
       @channel       = channel || raise(ArgumentError, "channel is nil")
       @queue         = queue   || raise(ArgumentError, "queue is nil")
@@ -23,34 +36,41 @@ module Bunny
       @no_ack        = no_ack
     end
 
-
+    # Defines message delivery handler
+    # @api public
     def on_delivery(&block)
       @on_delivery = block
       self
     end
 
+    # Invokes message delivery handler
+    # @private
     def call(*args)
       @on_delivery.call(*args) if @on_delivery
     end
     alias handle_delivery call
 
+    # Defines consumer cancellation notification handler
+    #
+    # @see http://rubybunny.info/articles/queues.html Queues and Consumers guide
+    # @see http://rubybunny.info/articles/extensions.html RabbitMQ Extensions guide
+    # @api public
     def on_cancellation(&block)
       @on_cancellation = block
       self
     end
 
+    # Invokes consumer cancellation notification handler
+    # @private
     def handle_cancellation(basic_cancel)
       @on_cancellation.call(basic_cancel) if @on_cancellation
     end
 
-    def queue_name
-      if @queue.respond_to?(:name)
-        @queue.name
-      else
-        @queue
-      end
-    end
-
+    # Cancels this consumer. Messages for this consumer will no longer be delivered. If the queue
+    # it was on is auto-deleted and this consumer was the last one, the queue will be deleted.
+    #
+    # @see http://rubybunny.info/articles/queues.html Queues and Consumers guide
+    # @api public
     def cancel
       @channel.basic_cancel(@consumer_tag)
     end
@@ -63,8 +83,18 @@ module Bunny
     # Recovery
     #
 
+    # @private
     def recover_from_network_failure
       @channel.basic_consume_with(self)
+    end
+
+    # @private
+    def queue_name
+      if @queue.respond_to?(:name)
+        @queue.name
+      else
+        @queue
+      end
     end
   end
 end
