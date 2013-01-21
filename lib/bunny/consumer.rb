@@ -22,10 +22,14 @@ module Bunny
     attr_reader   :exclusive
 
 
-    #
     # @param [Bunny::Channel] channel Channel this consumer will use
     # @param [Bunny::Queue,String] queue Queue messages will be consumed from
-    # @param
+    # @param [String] consumer_tag Consumer tag (unique identifier). Generally it is better to let Bunny generate one.
+    #                              Empty string means RabbitMQ will generate consumer tag.
+    # @param [Boolean] no_ack (false) If false, delivered messages will be automatically acknowledged.
+    #                                 If true, manual acknowledgements will be necessary.
+    # @param [Boolean] exclusive (false) Should this consumer be exclusive?
+    # @param [Hash] arguments (nil) Optional arguments that may be used by RabbitMQ extensions, etc
     # @api public
     def initialize(channel, queue, consumer_tag = channel.generate_consumer_tag, no_ack = true, exclusive = false, arguments = {})
       @channel       = channel || raise(ArgumentError, "channel is nil")

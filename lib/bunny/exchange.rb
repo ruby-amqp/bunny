@@ -40,7 +40,8 @@ module Bunny
     # a routing key of "weather.usa.ca.sandiego" and there is a queue Q with this name,
     # that message will be routed to Q.
     #
-    # @param [Bunny::Channel] channel Channel to use.
+    # @param [Bunny::Channel] channel_or_connection Channel to use. {Bunny::Session} instances
+    #                                               are only supported for backwards compatibility.
     #
     # @example Publishing a messages to the tasks queue
     #   channel     = Bunny::Channel.new(connection)
@@ -142,7 +143,6 @@ module Bunny
 
     # Deletes the exchange unless it is a default exchange
     #
-    # @param [String] name Exchange name
     # @param [Hash] opts Options
     #
     # @option opts [Boolean] if_unused (false) Should this exchange be deleted only if it is no longer used

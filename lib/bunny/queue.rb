@@ -217,18 +217,18 @@ module Bunny
     # @api public
     #
     # @example
-    # conn = Bunny.new
-    # conn.start
+    #   conn = Bunny.new
+    #   conn.start
     #
-    # ch   = conn.create_channel
-    # q = ch.queue("test1")
-    # x = ch.default_exchange
-    # x.publish("Hello, everybody!", :routing_key => 'test1')
+    #   ch   = conn.create_channel
+    #   q = ch.queue("test1")
+    #   x = ch.default_exchange
+    #   x.publish("Hello, everybody!", :routing_key => 'test1')
     #
-    # delivery_info, properties, payload = q.pop
+    #   delivery_info, properties, payload = q.pop
     #
-    # puts "This is the message: " + payload + "\n\n"
-    # conn.close
+    #   puts "This is the message: " + payload + "\n\n"
+    #   conn.close
     def pop(opts = {:ack => false}, &block)
       delivery_info, properties, content = @channel.basic_get(@name, opts)
 

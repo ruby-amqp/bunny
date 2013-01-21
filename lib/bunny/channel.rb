@@ -568,7 +568,7 @@ module Bunny
     # @param [Integer] prefetch_count How many messages can consumers on this channel be given at a time
     #                                 (before they have to acknowledge or reject one of the earlier received messages)
     # @param [Boolean] global (false) Ignored, as it is not supported by RabbitMQ
-    # @param [AMQ::Protocol::Basic::QosOk] RabbitMQ response
+    # @return [AMQ::Protocol::Basic::QosOk] RabbitMQ response
     # @see Bunny::Channel#prefetch
     # @see http://rubybunny.info/articles/queues.html Queues and Consumers guide
     # @api public
