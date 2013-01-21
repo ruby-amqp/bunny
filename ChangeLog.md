@@ -1,5 +1,12 @@
 ## Changes between Bunny 0.9.0.pre6 and 0.9.0.pre7
 
+### Efficiency Improvements
+
+Publishing of large messages is now done more efficiently.
+
+Contributed by Greg Brockman.
+
+
 ### API Reference
 
 [Bunny API reference](http://reference.rubybunny.info) is now up online.
