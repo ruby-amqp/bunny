@@ -156,6 +156,10 @@ module Bunny
       @default_channel = self.create_channel
     end
 
+    def read_write_timeout
+      @transport.read_write_timeout
+    end
+
     # Opens a new channel and returns it. This method will block the calling
     # thread until the response is received and the channel is guaranteed to be
     # opened (this operation is very fast and inexpensive).
@@ -177,7 +181,7 @@ module Bunny
       if @transport.open?
         close_all_channels
 
-        Bunny::Timer.timeout(@disconnect_timeout, ClientTimeout) do
+        Bunny::Timer.timeout(@transport.disconnect_timeout, ClientTimeout) do
           self.close_connection(false)
         end
       end
@@ -272,7 +276,7 @@ module Bunny
     # @private
     def close_all_channels
       @channels.reject {|n, ch| n == 0 || !ch.open? }.each do |_, ch|
-        Bunny::Timer.timeout(@disconnect_timeout, ClientTimeout) { ch.close }
+        Bunny::Timer.timeout(@transport.disconnect_timeout, ClientTimeout) { ch.close }
       end
     end
 
