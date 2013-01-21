@@ -6,7 +6,11 @@ module Bunny
   # Used for Ruby before 1.9
   class SystemTimer
     def self.timeout(seconds, exception)
-      ::SystemTimer.timeout_after(seconds) do
+      if seconds
+        ::SystemTimer.timeout_after(seconds) do
+          yield
+        end
+      else
         yield
       end
     end
