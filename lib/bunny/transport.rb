@@ -132,7 +132,9 @@ module Bunny
       if closed?
         @session.handle_network_failure(ConnectionClosedError.new(frame))
       else
-        send_raw(frame.encode)
+        frame.encode_to_array.each do |component|
+          send_raw(component)
+        end
       end
     end
 
