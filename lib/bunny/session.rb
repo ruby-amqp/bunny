@@ -126,6 +126,9 @@ module Bunny
       @default_channel = self.create_channel
     end
 
+    def read_write_timeout
+      @transport.read_write_timeout
+    end
 
     def create_channel(n = nil)
       if n && (ch = @channels[n])
@@ -142,7 +145,7 @@ module Bunny
       if @transport.open?
         close_all_channels
 
-        Bunny::Timer.timeout(@disconnect_timeout, ClientTimeout) do
+        Bunny::Timer.timeout(@transport.disconnect_timeout, ClientTimeout) do
           self.close_connection(false)
         end
       end
@@ -229,7 +232,7 @@ module Bunny
 
     def close_all_channels
       @channels.reject {|n, ch| n == 0 || !ch.open? }.each do |_, ch|
-        Bunny::Timer.timeout(@disconnect_timeout, ClientTimeout) { ch.close }
+        Bunny::Timer.timeout(@transport.disconnect_timeout, ClientTimeout) { ch.close }
       end
     end
 

@@ -14,7 +14,7 @@ module Bunny
     DEFAULT_CONNECTION_TIMEOUT = 5.0
 
 
-    attr_reader :session, :host, :port, :socket, :connect_timeout
+    attr_reader :session, :host, :port, :socket, :connect_timeout, :read_write_timeout, :disconnect_timeout
 
     def initialize(session, host, port, opts)
       @session = session
@@ -31,8 +31,9 @@ module Bunny
 
       @read_write_timeout = opts[:socket_timeout] || 1
       @read_write_timeout = nil if @read_write_timeout == 0
-      @disconnect_timeout = @read_write_timeout || @connect_timeout
       @connect_timeout    = self.timeout_from(opts)
+      @connect_timeout    = nil if @connect_timeout == 0
+      @disconnect_timeout = @read_write_timeout || @connect_timeout
 
       @frames             = Hash.new { Array.new }
 
