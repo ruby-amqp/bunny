@@ -7,7 +7,7 @@ module Bunny
   class SystemTimer
     def self.timeout(seconds, exception)
       if seconds
-        ::SystemTimer.timeout_after(seconds) do
+        ::SystemTimer.timeout_after(seconds, exception) do
           yield
         end
       else
