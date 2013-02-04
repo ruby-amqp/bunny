@@ -302,7 +302,7 @@ module Bunny
         @continuations.push(method)
       when AMQ::Protocol::Connection::Close then
         @last_connection_error = instantiate_connection_level_exception(method)
-        @contunuations.push(method)
+        @continuations.push(method)
       when AMQ::Protocol::Connection::CloseOk then
         @last_connection_close_ok = method
         begin
