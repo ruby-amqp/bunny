@@ -97,7 +97,13 @@ module Bunny
     end
 
     def read_fully(*args)
-      @socket.read_fully(*args)
+      r = nil
+      if @ssl
+        @socket.read(*args)
+      else
+        @socket.read_fully(*args)
+      end
+      r
     end
 
     def read_ready?(timeout = nil)
@@ -109,10 +115,10 @@ module Bunny
     # Exposed primarily for Bunny::Channel
     # @private
     def read_next_frame(opts = {})
-      header    = @socket.read_fully(7)
+      header    = read_fully(7)
       type, channel, size = AMQ::Protocol::Frame.decode_header(header)
-      payload   = @socket.read_fully(size)
-      frame_end = @socket.read_fully(1)
+      payload   = read_fully(size)
+      frame_end = read_fully(1)
 
       # 1) the size is miscalculated
       if payload.bytesize != size
