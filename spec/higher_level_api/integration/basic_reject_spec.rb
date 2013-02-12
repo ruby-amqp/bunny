@@ -50,4 +50,26 @@ describe Bunny::Channel, "#reject" do
       subject.close
     end
   end
+
+
+  context "with an invalid (random) delivery tag" do
+    it "causes a channel-level error" do
+      q = subject.queue("bunny.basic.reject.unknown-delivery-tag", :exclusive => true)
+      x = subject.default_exchange
+
+      x.publish("bunneth", :routing_key => q.name)
+      sleep(0.25)
+      q.message_count.should == 1
+      _, _, content = q.pop(:ack => true)
+
+      subject.on_error do |ch, channel_close|
+        @channel_close = channel_close
+      end
+      subject.reject(82, true)
+
+      sleep 0.5
+
+      @channel_close.reply_text.should == "PRECONDITION_FAILED - unknown delivery tag 82"
+    end
+  end
 end

@@ -1299,7 +1299,6 @@ module Bunny
     # @see http://rubybunny.info/articles/extensions.html RabbitMQ Extensions guide
     # @api public
     def wait_for_confirms
-
       wait_on_confirms_continuations
 
       @only_acks_received
@@ -1325,6 +1324,19 @@ module Bunny
     end
 
     # @endgroup
+
+
+    #
+    # Error Handilng
+    #
+
+    # Defines a handler for errors that are not responses to a particular
+    # operations (e.g. basic.ack, basic.reject, basic.nack).
+    #
+    # @api public
+    def on_error(&block)
+      @on_error = block
+    end
 
 
     #
@@ -1464,17 +1476,27 @@ module Bunny
       when AMQ::Protocol::Basic::Nack then
         handle_ack_or_nack(method.delivery_tag, method.multiple, true)
       when AMQ::Protocol::Channel::Close then
-        # puts "Exception on channel #{@id}: #{method.reply_code} #{method.reply_text}"
         closed!
         @connection.send_frame(AMQ::Protocol::Channel::CloseOk.encode(@id))
 
-        @last_channel_error = instantiate_channel_level_exception(method)
-        @continuations.push(method)
+        # basic.ack, basic.reject, basic.nack. MK.
+        if channel_level_exception_after_operation_that_has_no_response?(method)
+          @on_error.call(self, method) if @on_error
+        else
+          @last_channel_error = instantiate_channel_level_exception(method)
+          @continuations.push(method)
+        end
+
       when AMQ::Protocol::Channel::CloseOk then
         @continuations.push(method)
       else
         raise "Do not know how to handle #{method.inspect} in Bunny::Channel#handle_method"
       end
+    end
+
+    # @private
+    def channel_level_exception_after_operation_that_has_no_response?(method)
+      method.reply_code == 406 && method.reply_text =~ /unknown delivery tag/
     end
 
     # @private
