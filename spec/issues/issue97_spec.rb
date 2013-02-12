@@ -15,14 +15,33 @@ describe "Message framing implementation" do
   end
 
 
-  context "with payload exceeding 128 Kb (max frame size)" do
+  context "with payload ~ 248K in size including non-ASCII characters" do
     it "successfully frames the message" do
       ch = connection.create_channel
 
       q  = ch.queue("", :exclusive => true)
       x  = ch.default_exchange
 
-      as = ("a" * (1024 * 1024 * 4 + 28237777))
+      body = IO.read("spec/issues/issue97_attachment.json")
+      x.publish(body, :routing_key => q.name, :persistent => true)
+
+      sleep(1)
+      q.message_count.should == 1
+
+      q.purge
+      ch.close
+    end
+  end
+
+
+  context "with payload of several MBs in size" do
+    it "successfully frames the message" do
+      ch = connection.create_channel
+
+      q  = ch.queue("", :exclusive => true)
+      x  = ch.default_exchange
+
+      as = ("a" * (1024 * 1024 * 4 + 2823777))
       x.publish(as, :routing_key => q.name, :persistent => true)
 
       sleep(1)
