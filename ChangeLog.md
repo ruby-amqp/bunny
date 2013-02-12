@@ -1,5 +1,28 @@
 ## Changes between Bunny 0.9.0.pre6 and 0.9.0.pre7
 
+### Bunny::Channel#on_error
+
+`Bunny::Channel#on_error` is a new method that lets you define
+handlers for channel errors that are caused by methods that have no
+responses in the protocol (`basic.ack`, `basic.reject`, and `basic.nack`).
+
+This is rarely necessary but helps make sure no error goes unnoticed.
+
+Example:
+
+``` ruby
+channel.on_error |ch, channel_close|
+  puts channel_close.inspect
+end
+```
+
+
+### Fixed Framing of Larger Messages With Unicode Characters
+
+Larger (over 128K) messages with non-ASCII characters are now always encoded
+correctly with amq-protocol `1.2.0`.
+
+
 ### Efficiency Improvements
 
 Publishing of large messages is now done more efficiently.
