@@ -16,7 +16,6 @@ channel.on_error |ch, channel_close|
 end
 ```
 
-
 ### Fixed Framing of Larger Messages With Unicode Characters
 
 Larger (over 128K) messages with non-ASCII characters are now always encoded
