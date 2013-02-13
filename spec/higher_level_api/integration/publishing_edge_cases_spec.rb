@@ -44,9 +44,9 @@ describe "Message framing implementation" do
       q  = ch.queue("", :exclusive => true)
       x  = ch.default_exchange
 
-      x.publish("", :routing_key => q.name, :persistent => true)
+      x.publish("", :routing_key => q.name, :persistent => false)
 
-      sleep(1)
+      sleep(0.5)
       q.message_count.should == 1
 
       envelope, headers, payload = q.pop
