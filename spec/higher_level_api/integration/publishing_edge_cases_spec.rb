@@ -44,7 +44,7 @@ describe "Message framing implementation" do
       q  = ch.queue("", :exclusive => true)
       x  = ch.default_exchange
 
-      x.publish("", :routing_key => q.name, :persistent => false)
+      x.publish("", :routing_key => q.name, :persistent => false, :mandatory => true)
 
       sleep(0.5)
       q.message_count.should == 1
