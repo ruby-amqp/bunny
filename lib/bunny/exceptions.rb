@@ -1,5 +1,31 @@
 module Bunny
-  class TCPConnectionFailed < StandardError
+  class Exception < Exception
+  end
+
+  class ChannelLevelException < Exception
+    attr_reader :channel, :channel_close
+
+    def initialize(message, ch, channel_close)
+      super(message)
+
+      @channel       = ch
+      @channel_close = channel_close
+    end
+  end
+
+  class ConnectionLevelException < Exception
+    attr_reader :connection, :connection_close
+
+    def initialize(message, connection, connection_close)
+      super(message)
+
+      @connection       = connection
+      @connection_close = connection_close
+    end
+  end
+
+
+  class TCPConnectionFailed < Exception
     attr_reader :hostname, :port
 
     def initialize(e, hostname, port)
@@ -13,7 +39,7 @@ module Bunny
     end
   end
 
-  class ConnectionClosedError < StandardError
+  class ConnectionClosedError < Exception
     def initialize(frame)
       if frame.respond_to?(:method_class)
         super("Trying to send frame through a closed connection. Frame is #{frame.inspect}, method class is #{frame.method_class}")
@@ -23,7 +49,7 @@ module Bunny
     end
   end
 
-  class PossibleAuthenticationFailureError < StandardError
+  class PossibleAuthenticationFailureError < Exception
 
     #
     # API
@@ -44,10 +70,10 @@ module Bunny
   ConnectionError = TCPConnectionFailed
   ServerDownError = TCPConnectionFailed
 
-  class ForcedChannelCloseError < StandardError; end
-  class ForcedConnectionCloseError < StandardError; end
-  class MessageError < StandardError; end
-  class ProtocolError < StandardError; end
+  class ForcedChannelCloseError < Exception; end
+  class ForcedConnectionCloseError < Exception; end
+  class MessageError < Exception; end
+  class ProtocolError < Exception; end
 
   # raised when read or write I/O operations time out (but only if
   # a connection is configured to use them)
@@ -57,7 +83,7 @@ module Bunny
 
 
   # Base exception class for data consistency and framing errors.
-  class InconsistentDataError < StandardError
+  class InconsistentDataError < Exception
   end
 
   # Raised by adapters when frame does not end with {final octet AMQ::Protocol::Frame::FINAL_OCTET}.
@@ -82,24 +108,13 @@ module Bunny
   end
 
 
-  class ChannelAlreadyClosed < StandardError
+  class ChannelAlreadyClosed < Exception
     attr_reader :channel
 
     def initialize(message, ch)
       super(message)
 
       @channel = ch
-    end
-  end
-
-  class ChannelLevelException < StandardError
-    attr_reader :channel, :channel_close
-
-    def initialize(message, ch, channel_close)
-      super(message)
-
-      @channel       = ch
-      @channel_close = channel_close
     end
   end
 
@@ -116,18 +131,6 @@ module Bunny
   end
 
 
-
-  class ConnectionLevelException < StandardError
-    attr_reader :connection, :connection_close
-
-    def initialize(message, connection, connection_close)
-      super(message)
-
-      @connection       = connection
-      @connection_close = connection_close
-    end
-  end
-
   class ChannelError < ConnectionLevelException
   end
 
@@ -137,7 +140,7 @@ module Bunny
   class UnexpectedFrame < ConnectionLevelException
   end
 
-  class NetworkErrorWrapper < StandardError
+  class NetworkErrorWrapper < Exception
     attr_reader :other
 
     def initialize(other)
