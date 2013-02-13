@@ -54,7 +54,7 @@ describe "Message framing implementation" do
       payload.should == ""
 
       headers[:content_type].should == "application/octet-stream"
-      headers[:delivery_mode].should == 2
+      headers[:delivery_mode].should == 1
       headers[:priority].should == 0
 
       ch.close
