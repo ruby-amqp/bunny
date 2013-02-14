@@ -509,14 +509,15 @@ module Bunny
         @next_publish_seq_no += 1
       end
 
-      @connection.send_frameset(AMQ::Protocol::Basic::Publish.encode(@id,
-                                                                     payload,
-                                                                     meta,
-                                                                     exchange_name,
-                                                                     routing_key,
-                                                                     meta[:mandatory],
-                                                                     false,
-                                                                     @connection.frame_max), self)
+      m = AMQ::Protocol::Basic::Publish.encode(@id,
+                                               payload,
+                                               meta,
+                                               exchange_name,
+                                               routing_key,
+                                               meta[:mandatory],
+                                               false,
+                                               @connection.frame_max)
+      @connection.send_frameset_without_timeout(m, self)
 
       self
     end
