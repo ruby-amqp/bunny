@@ -9,6 +9,14 @@ require "bunny/framing"
 require "bunny/exceptions"
 require "bunny/socket"
 
+begin
+  require "openssl"
+
+  require "bunny/ssl_socket"
+rescue LoadError => e
+  # no-op
+end
+
 # Core entities: connection, channel, exchange, queue, consumer
 require "bunny/session"
 require "bunny/channel"

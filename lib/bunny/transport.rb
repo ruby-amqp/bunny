@@ -1,6 +1,12 @@
 require "socket"
 require "thread"
 
+begin
+  require "openssl"
+rescue LoadError => le
+  puts "Could not load OpenSSL"
+end
+
 require "bunny/exceptions"
 require "bunny/socket"
 
@@ -12,6 +18,8 @@ module Bunny
     #
 
     DEFAULT_CONNECTION_TIMEOUT = 5.0
+    # same as in RabbitMQ Java client
+    DEFAULT_TLS_PROTOCOL       = "SSLv3"
 
 
     attr_reader :session, :host, :port, :socket, :connect_timeout, :read_write_timeout, :disconnect_timeout
@@ -22,20 +30,19 @@ module Bunny
       @port    = port
       @opts    = opts
 
-      @ssl             = opts[:ssl] || false
-      @ssl_cert        = opts[:ssl_cert]
-      @ssl_key         = opts[:ssl_key]
-      @ssl_cert_string = opts[:ssl_cert_string]
-      @ssl_key_string  = opts[:ssl_key_string]
-      @verify_ssl      = opts[:verify_ssl].nil? || opts[:verify_ssl]
+      @tls_enabled           = tls_enabled?(opts)
+      @tls_certificate_path  = tls_certificate_path_from(opts)
+      @tls_key_path          = tls_key_path_from(opts)
+      @tls_certificate       = opts[:tls_certificate] || opts[:ssl_cert_string]
+      @tls_key               = opts[:tls_key]         || opts[:ssl_key_string]
+      @tls_certificate_store = opts[:tls_certificate_store]
+      @verify_peer           = opts[:verify_ssl] || opts[:verify_peer] || opts[:verify_ssl].nil?
 
       @read_write_timeout = opts[:socket_timeout] || 1
       @read_write_timeout = nil if @read_write_timeout == 0
       @connect_timeout    = self.timeout_from(opts)
       @connect_timeout    = nil if @connect_timeout == 0
       @disconnect_timeout = @read_write_timeout || @connect_timeout
-
-      @frames             = Hash.new { Array.new }
 
       initialize_socket
     end
@@ -46,12 +53,12 @@ module Bunny
     end
 
     def uses_tls?
-      @ssl
+      @tls_enabled
     end
     alias tls? uses_tls?
 
     def uses_ssl?
-      @ssl
+      @tls_enabled
     end
     alias ssl? uses_ssl?
 
@@ -160,24 +167,31 @@ module Bunny
 
     protected
 
+    def tls_enabled?(opts)
+      opts[:tls] || opts[:ssl] || (opts[:port] == AMQ::Protocol::TLS_PORT) || false
+    end
+
+    def tls_certificate_path_from(opts)
+      opts[:tsl_cert] || opts[:ssl_cert] || opts[:tsl_cert_path] || opts[:ssl_cert_path]
+    end
+
+    def tls_key_path_from(opts)
+      opts[:tsl_key] || opts[:ssl_key] || opts[:tsl_key_path] || opts[:ssl_key_path]
+    end
+
     def initialize_socket
       begin
-        @socket = Bunny::Timer.timeout(@connect_timeout, ConnectionTimeout) do
+        s = Bunny::Timer.timeout(@connect_timeout, ConnectionTimeout) do
           Bunny::Socket.open(@host, @port,
                              :keepalive      => @opts[:keepalive],
                              :socket_timeout => @connect_timeout)
         end
 
-        if @ssl
-          require 'openssl' unless defined? OpenSSL::SSL
-          sslctx = OpenSSL::SSL::SSLContext.new
-          initialize_client_pair(sslctx)
-          @socket = OpenSSL::SSL::SSLSocket.new(@socket, sslctx)
-          @socket.sync_close = true
-          @socket.connect
-          @socket.post_connection_check(host) if @verify_ssl
-          @socket
-        end
+        @socket =  if uses_tls?
+                     wrap_in_tls_socket(s)
+                   else
+                     s
+                   end
       rescue StandardError, ConnectionTimeout => e
         @status = :not_connected
         raise Bunny::TCPConnectionFailed.new(e, self.hostname, self.port)
@@ -186,17 +200,39 @@ module Bunny
       @socket
     end
 
-    def initialize_client_pair(sslctx)
-      if @ssl_cert
-        @ssl_cert_string = File.read(@ssl_cert)
-      end
-      if @ssl_key
-        @ssl_key_string = File.read(@ssl_key)
-      end
+    def wrap_in_tls_socket(socket)
+      read_tls_keys!
 
-      sslctx.cert = OpenSSL::X509::Certificate.new(@ssl_cert_string) if @ssl_cert_string
-      sslctx.key = OpenSSL::PKey::RSA.new(@ssl_key_string) if @ssl_key_string
-      sslctx
+      ctx = initialize_tls_context(OpenSSL::SSL::SSLContext.new(@opts.fetch(:tls_protocol, DEFAULT_TLS_PROTOCOL)))
+
+      s = Bunny::SSLSocket.new(socket, ctx)
+      s.sync_close = true
+      s.connect
+      s.post_connection_check(host) if @verify_peer
+      s
+    end
+
+    def check_local_path!(s)
+      raise ArgumentError, "cannot read TLS certificate or key from #{s}" unless File.file?(s) && File.readable?(s)
+    end
+
+    def read_tls_keys!
+      if @tls_certificate_path
+        check_local_path!(@tls_certificate_path)
+        @tls_certificate = File.read(@tls_certificate_path)
+      end
+      if @tls_key_path
+        check_local_path!(@tls_key_path)
+        @tls_key         = File.read(@tls_key_path)
+      end
+    end
+
+    def initialize_tls_context(ctx)
+      ctx.cert       = OpenSSL::X509::Certificate.new(@tls_certificate) if @tls_certificate
+      ctx.key        = OpenSSL::PKey::RSA.new(@tls_key) if @tls_key
+      ctx.cert_store = @tls_certificate_store if @tls_certificate_store
+
+      ctx
     end
 
     def timeout_from(options)

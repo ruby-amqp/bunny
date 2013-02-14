@@ -4,7 +4,7 @@ module Bunny
   # TCP socket extension that uses TCP_NODELAY and supports reading
   # fully.
   #
-  # Heavily inspired by Dalli::Server::KSocket from Dalli by Mike Perham.
+  # Heavily inspired by Dalli by Mike Perham.
   class Socket < TCPSocket
     attr_accessor :options
 
@@ -32,7 +32,7 @@ module Bunny
       rescue EOFError
         @eof = true
       rescue Errno::EAGAIN, Errno::EWOULDBLOCK
-        if IO.select([self], nil, nil, options.fetch(:socket_timeout, timeout))
+        if IO.select([self], nil, nil, timeout)
           retry
         else
           raise Timeout::Error, "IO timeout when reading #{count} bytes"
