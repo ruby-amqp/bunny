@@ -11,10 +11,14 @@ describe "Rapidly opening and closing lots of channels" do
     connection.close
   end
 
-  it "works correctly" do
-    xs = Array.new(2000) { connection.create_channel }
+  let(:n) { 200 }
 
-    xs.size.should == 2000
+  it "works correctly" do
+    xs = Array.new(n) { connection.create_channel }
+
+    puts "Opened #{n} channels"
+
+    xs.size.should == n
     xs.each do |ch|
       ch.close
     end
