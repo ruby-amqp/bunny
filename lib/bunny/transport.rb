@@ -78,15 +78,21 @@ module Bunny
     # if the operation times out.
     #
     # @raise [ClientTimeout]
-    def write(*args)
+    def write(data)
       begin
         raise Bunny::ConnectionError.new("No connection: socket is nil. ", @host, @port) if !@socket
         if @read_write_timeout
           Bunny::Timer.timeout(@read_write_timeout, Bunny::ClientTimeout) do
-            @socket.write(*args) if open?
+            if open?
+              @socket.write(data)
+              @socket.flush
+            end
           end
         else
-          @socket.write(*args) if open?
+          if open?
+            @socket.write(data)
+            @socket.flush
+          end
         end
       rescue Errno::EPIPE, Errno::EAGAIN, Bunny::ClientTimeout, Bunny::ConnectionError, IOError => e
         close
@@ -97,10 +103,10 @@ module Bunny
     alias send_raw write
 
     # Writes data to the socket without timeout checks
-    def write_without_timeout(*args)
+    def write_without_timeout(data)
       begin
         raise Bunny::ConnectionError.new("No connection: socket is nil. ", @host, @port) if !@socket
-        @socket.write(*args)
+        @socket.write(data)
       rescue Errno::EPIPE, Errno::EAGAIN, Bunny::ClientTimeout, Bunny::ConnectionError, IOError => e
         close
 
