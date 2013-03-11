@@ -119,6 +119,7 @@ module Bunny
       @mechanism           = opts.fetch(:auth_mechanism, "PLAIN")
       @credentials_encoder = credentials_encoder_for(@mechanism)
       @locale              = @opts.fetch(:locale, DEFAULT_LOCALE)
+      # mutex for the channel id => channel hash
       @channel_mutex       = Mutex.new
       @channels            = Hash.new
 
@@ -431,8 +432,8 @@ module Bunny
     end
 
     # @private
-    def send_raw(*args)
-      @transport.write(*args)
+    def send_raw(data)
+      @transport.write(data)
     end
 
     # @private
@@ -543,6 +544,20 @@ module Bunny
         raise ConnectionClosedError.new(frame)
       else
         @transport.send_raw(frame.encode)
+      end
+    end
+
+    # Sends frame to the peer, checking that connection is open.
+    # Uses transport implementation that does not perform
+    # timeout control. Exposed primarily for Bunny::Channel.
+    #
+    # @raise [ConnectionClosedError]
+    # @private
+    def send_frame_without_timeout(frame)
+      if closed?
+        raise ConnectionClosedError.new(frame)
+      else
+        @transport.write_without_timeout(frame.encode)
       end
     end
 
