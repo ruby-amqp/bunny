@@ -24,7 +24,7 @@ describe "Rapidly opening and closing lots of channels" do
   end
 
   it "works correctly in a multi-threaded scenario" do
-    (5 * n).times do
+    n.times do
       t = Thread.new do
         ch = connection.create_channel
 
