@@ -26,7 +26,7 @@ gem "effin_utf8"
 
 group :development do
   gem "yard"
-  gem "redcarpet"
+  gem "redcarpet", :platform => :mri
 end
 
 group :test do
