@@ -34,7 +34,7 @@ module Bunny
           # should happen per operation and not in this loop
         rescue Errno::EBADF => ebadf
           # ignored, happens when we loop after the transport has already been closed
-        rescue AMQ::Protocol::EmptyResponseError, IOError, Errno::EPIPE, Errno::EAGAIN => e
+        rescue AMQ::Protocol::EmptyResponseError, IOError, Errno::EPIPE, Errno::EAGAIN, Errno::ECONNRESET => e
           puts "Exception in the main loop: #{e.class.name}"
           @network_is_down = true
           @session.handle_network_failure(e)
