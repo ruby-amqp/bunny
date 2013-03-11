@@ -1,5 +1,15 @@
 ## Changes between Bunny 0.9.0.pre7 and 0.9.0.pre8
 
+### Automatic Connection Recovery Can Be Disabled
+
+Automatic connection recovery now can be disabled by passing
+the `:automatically_recover => false` option to `Bunny#initialize`).
+
+When the recovery is disabled, network I/O-related exceptions will
+cause an exception to be raised in thee thread the connection was
+started on.
+
+
 ### No Timeout Control For Publishing
 
 `Bunny::Exchange#publish` and `Bunny::Channel#basic_publish` no
