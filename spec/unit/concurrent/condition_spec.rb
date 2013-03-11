@@ -13,6 +13,7 @@ describe Bunny::Concurrent::Condition do
         sleep 0.25
         condition.notify
       end
+      t.abort_on_exception = true
 
       condition.wait
       xs.should == [:notified]
@@ -28,11 +29,13 @@ describe Bunny::Concurrent::Condition do
         condition.wait
         xs << :notified1
       end
+      t1.abort_on_exception = true
 
       t2 = Thread.new do
         condition.wait
         xs << :notified2
       end
+      t2.abort_on_exception = true
 
       sleep 0.25
       condition.notify
@@ -50,11 +53,13 @@ describe Bunny::Concurrent::Condition do
         condition.wait
         @xs << :notified1
       end
+      t1.abort_on_exception = true
 
       t2 = Thread.new do
         condition.wait
         @xs << :notified2
       end
+      t2.abort_on_exception = true
 
       sleep 0.5
       condition.notify_all
