@@ -11,16 +11,26 @@ describe "Rapidly opening and closing lots of channels" do
     connection.close
   end
 
-  let(:n) { 200 }
+  let(:n) { 100 }
 
-  it "works correctly" do
+  it "works correctly in a single-threaded scenario" do
     xs = Array.new(n) { connection.create_channel }
-
     puts "Opened #{n} channels"
 
     xs.size.should == n
     xs.each do |ch|
       ch.close
+    end
+  end
+
+  it "works correctly in a multi-threaded scenario" do
+    (5 * n).times do
+      t = Thread.new do
+        ch = connection.create_channel
+
+        ch.close
+      end
+      t.abort_on_exception = true
     end
   end
 end
