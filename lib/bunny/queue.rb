@@ -208,7 +208,7 @@ module Bunny
 
     # @param [Hash] opts Options
     #
-    # @option opts [Boolean] block (false) Should the call block calling thread?
+    # @option opts [Boolean] :ack (false) Will the message be acknowledged manually?
     #
     # @return [Array] Triple of delivery info, message properties and message content.
     #                 If the queue is empty, all three will be nils.

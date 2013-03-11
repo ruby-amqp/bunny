@@ -509,14 +509,15 @@ module Bunny
         @next_publish_seq_no += 1
       end
 
-      @connection.send_frameset(AMQ::Protocol::Basic::Publish.encode(@id,
-                                                                     payload,
-                                                                     meta,
-                                                                     exchange_name,
-                                                                     routing_key,
-                                                                     meta[:mandatory],
-                                                                     false,
-                                                                     @connection.frame_max), self)
+      m = AMQ::Protocol::Basic::Publish.encode(@id,
+                                               payload,
+                                               meta,
+                                               exchange_name,
+                                               routing_key,
+                                               meta[:mandatory],
+                                               false,
+                                               @connection.frame_max)
+      @connection.send_frameset_without_timeout(m, self)
 
       self
     end
@@ -782,6 +783,12 @@ module Bunny
                      queue
                    end
 
+      # helps avoid race condition between basic.consume-ok and basic.deliver if there are messages
+      # in the queue already. MK.
+      if consumer_tag && consumer_tag.strip != AMQ::Protocol::EMPTY_STRING
+        add_consumer(queue_name, consumer_tag, no_ack, exclusive, arguments, &block)
+      end
+
       @connection.send_frame(AMQ::Protocol::Basic::Consume.encode(@id,
                                                                   queue_name,
                                                                   consumer_tag,
@@ -790,11 +797,6 @@ module Bunny
                                                                   exclusive,
                                                                   false,
                                                                   arguments))
-      # helps avoid race condition between basic.consume-ok and basic.deliver if there are messages
-      # in the queue already. MK.
-      if consumer_tag && consumer_tag.strip != AMQ::Protocol::EMPTY_STRING
-        add_consumer(queue_name, consumer_tag, no_ack, exclusive, arguments, &block)
-      end
 
       Bunny::Timer.timeout(read_write_timeout, ClientTimeout) do
         @last_basic_consume_ok = wait_on_continuations

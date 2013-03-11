@@ -86,6 +86,18 @@ module Bunny
     end
     alias send_raw write
 
+    # Writes data to the socket without timeout checks
+    def write_without_timeout(*args)
+      begin
+        raise Bunny::ConnectionError.new("No connection: socket is nil. ", @host, @port) if !@socket
+        @socket.write(*args)
+      rescue Errno::EPIPE, Errno::EAGAIN, Bunny::ClientTimeout, Bunny::ConnectionError, IOError => e
+        close
+
+        @session.handle_network_failure(e)
+      end
+    end
+
     def close(reason = nil)
       @socket.close if @socket and not @socket.closed?
       @socket   = nil
@@ -142,6 +154,20 @@ module Bunny
       else
         frame.encode_to_array.each do |component|
           send_raw(component)
+        end
+      end
+    end
+
+    # Sends frame to the peer without timeout control.
+    #
+    # @raise [ConnectionClosedError]
+    # @private
+    def send_frame_without_timeout(frame)
+      if closed?
+        @session.handle_network_failure(ConnectionClosedError.new(frame))
+      else
+        frame.encode_to_array.each do |component|
+          write_without_timeout(component)
         end
       end
     end

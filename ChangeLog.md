@@ -1,3 +1,15 @@
+## Changes between Bunny 0.9.0.pre7 and 0.9.0.pre8
+
+### No Timeout Control For Publishing
+
+`Bunny::Exchange#publish` and `Bunny::Channel#basic_publish` no
+longer perform timeout control (using the timeout module) which
+roughly increases throughput for flood publishing by 350%.
+
+Apps that need delivery guarantees should use publisher confirms.
+
+
+
 ## Changes between Bunny 0.9.0.pre6 and 0.9.0.pre7
 
 ### Bunny::Channel#on_error
