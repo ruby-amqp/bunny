@@ -107,7 +107,6 @@ module Bunny
                                else
                                  opts[:automatically_recover] || opts[:automatic_recovery]
                                end
-      puts "automatic recovery: #{@automatically_recover}"
 
       @status             = :not_connected
 
