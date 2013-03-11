@@ -36,7 +36,7 @@ module Bunny
       @tls_certificate       = opts[:tls_certificate] || opts[:ssl_cert_string]
       @tls_key               = opts[:tls_key]         || opts[:ssl_key_string]
       @tls_certificate_store = opts[:tls_certificate_store]
-      @verify_peer           = opts[:verify_ssl] || opts[:verify_peer] || opts[:verify_ssl].nil?
+      @verify_peer           = opts[:verify_ssl] || opts[:verify_peer]
 
       @read_write_timeout = opts[:socket_timeout] || 1
       @read_write_timeout = nil if @read_write_timeout == 0
@@ -45,6 +45,7 @@ module Bunny
       @disconnect_timeout = @read_write_timeout || @connect_timeout
 
       initialize_socket
+      connect
     end
 
 
@@ -62,6 +63,15 @@ module Bunny
     end
     alias ssl? uses_ssl?
 
+
+    def connect
+      if uses_ssl?
+        @socket.connect
+        @socket.post_connection_check(host) if uses_tls? && @verify_peer
+      else
+        # no-op
+      end
+    end
 
 
     # Writes data to the socket. If read/write timeout was specified, Bunny::ClientTimeout will be raised
@@ -198,11 +208,11 @@ module Bunny
     end
 
     def tls_certificate_path_from(opts)
-      opts[:tsl_cert] || opts[:ssl_cert] || opts[:tsl_cert_path] || opts[:ssl_cert_path]
+      opts[:tls_cert] || opts[:ssl_cert] || opts[:tls_cert_path] || opts[:ssl_cert_path] || opts[:tls_certificate_path] || opts[:ssl_certificate_path]
     end
 
     def tls_key_path_from(opts)
-      opts[:tsl_key] || opts[:ssl_key] || opts[:tsl_key_path] || opts[:ssl_key_path]
+      opts[:tls_key] || opts[:ssl_key] || opts[:tls_key_path] || opts[:ssl_key_path]
     end
 
     def initialize_socket
@@ -233,8 +243,6 @@ module Bunny
 
       s = Bunny::SSLSocket.new(socket, ctx)
       s.sync_close = true
-      s.connect
-      s.post_connection_check(host) if @verify_peer
       s
     end
 
@@ -257,6 +265,8 @@ module Bunny
       ctx.cert       = OpenSSL::X509::Certificate.new(@tls_certificate) if @tls_certificate
       ctx.key        = OpenSSL::PKey::RSA.new(@tls_key) if @tls_key
       ctx.cert_store = @tls_certificate_store if @tls_certificate_store
+
+      ctx.set_params(:verify_mode => OpenSSL::SSL::VERIFY_PEER|OpenSSL::SSL::VERIFY_FAIL_IF_NO_PEER_CERT) if @verify_peer
 
       ctx
     end
