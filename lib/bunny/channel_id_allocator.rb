@@ -10,8 +10,8 @@ module Bunny
 
     # @param [Integer] max_channel Max allowed channel id
     def initialize(max_channel = ((1 << 16) - 1))
-      @int_allocator    = AMQ::IntAllocator.new(1, max_channel)
-      @channel_id_mutex = Mutex.new
+      @allocator = AMQ::IntAllocator.new(1, max_channel)
+      @mutex     = Mutex.new
     end
 
 
@@ -22,8 +22,8 @@ module Bunny
     # @see ChannelManager#release_channel_id
     # @see ChannelManager#reset_channel_id_allocator
     def next_channel_id
-      @channel_id_mutex.synchronize do
-        @int_allocator.allocate
+      @mutex.synchronize do
+        @allocator.allocate
       end
     end
 
@@ -34,10 +34,10 @@ module Bunny
     # @see ChannelManager#next_channel_id
     # @see ChannelManager#reset_channel_id_allocator
     def release_channel_id(i)
-      @channel_id_mutex.synchronize do
-        @int_allocator.release(i)
+      @mutex.synchronize do
+        @allocator.release(i)
       end
-    end # self.release_channel_id(i)
+    end
 
 
     # Returns true if given channel id has been previously allocated and not yet released.
@@ -49,8 +49,8 @@ module Bunny
     # @see ChannelManager#next_channel_id
     # @see ChannelManager#release_channel_id
     def allocated_channel_id?(i)
-      @channel_id_mutex.synchronize do
-        @int_allocator.allocated?(i)
+      @mutex.synchronize do
+        @allocator.allocated?(i)
       end
     end
 
@@ -59,9 +59,13 @@ module Bunny
     # @see Channel.next_channel_id
     # @see Channel.release_channel_id
     def reset_channel_id_allocator
-      @channel_id_mutex.synchronize do
-        @int_allocator.reset
+      @mutex.synchronize do
+        @allocator.reset
       end
-    end # reset_channel_id_allocator
+    end
+
+    def synchronize(&block)
+      @mutex.synchronize(&block)
+    end
   end
 end
