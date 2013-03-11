@@ -329,8 +329,7 @@ module Bunny
           puts e.message
           puts e.backtrace
         ensure
-          @active_continuation.notify_all if @active_continuation
-          @active_continuation = false
+          @continuations.push(nil)
         end
       when AMQ::Protocol::Channel::Close then
         begin
