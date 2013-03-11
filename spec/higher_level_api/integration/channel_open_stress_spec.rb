@@ -11,7 +11,7 @@ describe "Rapidly opening and closing lots of channels" do
     connection.close
   end
 
-  let(:n) { 100 }
+  let(:n) { 50 }
 
   it "works correctly in a single-threaded scenario" do
     xs = Array.new(n) { connection.create_channel }
