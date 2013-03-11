@@ -1,5 +1,14 @@
 module Bunny
-  class Exception < Exception
+  class Exception < ::Exception
+  end
+
+  class NetworkFailure < Exception
+    attr_reader :cause
+
+    def initialize(message, cause)
+      super(message)
+      @cause = cause
+    end
   end
 
   class ChannelLevelException < Exception

@@ -8,9 +8,10 @@ module Bunny
   # This mimics the way RabbitMQ Java is designed quite closely.
   class MainLoop
 
-    def initialize(transport, session)
-      @transport = transport
-      @session   = session
+    def initialize(transport, session, session_thread)
+      @transport      = transport
+      @session        = session
+      @session_thread = session_thread
     end
 
 
@@ -29,19 +30,25 @@ module Bunny
         begin
           break if @stopping || @network_is_down
           run_once
-        rescue Timeout::Error => te
-          # given that the server may be pushing data to us, timeout detection/handling
-          # should happen per operation and not in this loop
         rescue Errno::EBADF => ebadf
           # ignored, happens when we loop after the transport has already been closed
         rescue AMQ::Protocol::EmptyResponseError, IOError, Errno::EPIPE, Errno::EAGAIN, Errno::ECONNRESET => e
-          puts "Exception in the main loop: #{e.class.name}"
+          puts "Exception in the main loop:"
+          log_exception(e)
+
           @network_is_down = true
-          @session.handle_network_failure(e)
+
+          if @session.automatically_recover?
+            @session.handle_network_failure(e)
+          else
+            @session_thread.raise(Bunny::NetworkFailure.new("detected a network failure: #{e.message}", e))
+          end
         rescue Exception => e
-          puts e.class.name
-          puts e.message
-          puts e.backtrace
+          puts "Unepxected exception in the main loop:"
+          log_exception(e)
+
+          @network_is_down = true
+          @session_thread.raise(Bunny::NetworkFailure.new("caught an unexpected exception in the network loop: #{e.message}", e))
         end
       end
     end
@@ -78,6 +85,14 @@ module Bunny
     def kill
       @thread.kill
       @thread.join
+    end
+
+    def log_exception(e)
+      puts e.class.name
+      puts e.message
+      e.backtrace.each do |line|
+        puts line
+      end
     end
   end
 end

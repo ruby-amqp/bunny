@@ -101,6 +101,14 @@ module Bunny
       @logging         = opts[:logging] || false
       @threaded        = opts.fetch(:threaded, true)
 
+      # should automatic recovery from network failures be used?
+      @automatically_recover = if opts[:automatically_recover].nil? && opts[:automatic_recovery].nil?
+                                 true
+                               else
+                                 opts[:automatically_recover] || opts[:automatic_recovery]
+                               end
+      puts "automatic recovery: #{@automatically_recover}"
+
       @status             = :not_connected
 
       # these are negotiated with the broker during the connection tuning phase
@@ -209,6 +217,10 @@ module Bunny
       (status == :open || status == :connected) && @transport.open?
     end
     alias connected? open?
+
+    def automatically_recover?
+      @automatically_recover
+    end
 
     #
     # Backwards compatibility
@@ -513,7 +525,7 @@ module Bunny
 
     # @private
     def event_loop
-      @event_loop ||= MainLoop.new(@transport, self)
+      @event_loop ||= MainLoop.new(@transport, self, Thread.current)
     end
 
     # @private
