@@ -32,7 +32,7 @@ module Bunny
           run_once
         rescue Errno::EBADF => ebadf
           # ignored, happens when we loop after the transport has already been closed
-        rescue AMQ::Protocol::EmptyResponseError, IOError, Errno::EPIPE, Errno::EAGAIN, Errno::ECONNRESET => e
+        rescue AMQ::Protocol::EmptyResponseError, IOError, SystemCallError => e
           puts "Exception in the main loop:"
           log_exception(e)
 
