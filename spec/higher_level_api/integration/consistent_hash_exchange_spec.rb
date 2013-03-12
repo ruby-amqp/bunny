@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 require "spec_helper"
 
-unless env["CI"]
+unless ENV["CI"]
   describe "x-consistent-hash exchanges" do
     let(:connection) do
       c = Bunny.new(:user => "bunny_gem", :password => "bunny_password", :vhost => "bunny_testbed")
