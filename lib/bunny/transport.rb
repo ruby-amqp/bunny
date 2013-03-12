@@ -25,7 +25,8 @@ module Bunny
     attr_reader :session, :host, :port, :socket, :connect_timeout, :read_write_timeout, :disconnect_timeout
 
     def initialize(session, host, port, opts)
-      @session = session
+      @session        = session
+      @session_thread = opts[:session_thread]
       @host    = host
       @port    = port
       @opts    = opts
@@ -38,7 +39,7 @@ module Bunny
       @tls_certificate_store = opts[:tls_certificate_store]
       @verify_peer           = opts[:verify_ssl] || opts[:verify_peer]
 
-      @read_write_timeout = opts[:socket_timeout] || 1
+      @read_write_timeout = opts[:socket_timeout] || 3
       @read_write_timeout = nil if @read_write_timeout == 0
       @connect_timeout    = self.timeout_from(opts)
       @connect_timeout    = nil if @connect_timeout == 0
@@ -80,7 +81,6 @@ module Bunny
     # @raise [ClientTimeout]
     def write(data)
       begin
-        raise Bunny::ConnectionError.new("No connection: socket is nil. ", @host, @port) if !@socket
         if @read_write_timeout
           Bunny::Timer.timeout(@read_write_timeout, Bunny::ClientTimeout) do
             if open?
@@ -94,10 +94,14 @@ module Bunny
             @socket.flush
           end
         end
-      rescue Errno::EPIPE, Errno::EAGAIN, Bunny::ClientTimeout, Bunny::ConnectionError, IOError => e
+      rescue SystemCallError, Bunny::ClientTimeout, Bunny::ConnectionError, IOError => e
         close
 
-        @session.handle_network_failure(e)
+        if @session.automatically_recover?
+          @session.handle_network_failure(e)
+        else
+          @session_thread.raise(Bunny::NetworkFailure.new("detected a network failure: #{e.message}", e))
+        end
       end
     end
     alias send_raw write
@@ -105,22 +109,24 @@ module Bunny
     # Writes data to the socket without timeout checks
     def write_without_timeout(data)
       begin
-        raise Bunny::ConnectionError.new("No connection: socket is nil. ", @host, @port) if !@socket
         @socket.write(data)
-      rescue Errno::EPIPE, Errno::EAGAIN, Bunny::ClientTimeout, Bunny::ConnectionError, IOError => e
+      rescue SystemCallError, Bunny::ConnectionError, IOError => e
         close
 
-        @session.handle_network_failure(e)
+        if @session.automatically_recover?
+          @session.handle_network_failure(e)
+        else
+          @session_thread.raise(Bunny::NetworkFailure.new("detected a network failure: #{e.message}", e))
+        end
       end
     end
 
     def close(reason = nil)
-      @socket.close if @socket and not @socket.closed?
-      @socket   = nil
+      @socket.close unless @socket.closed?
     end
 
     def open?
-      !@socket.nil? && !@socket.closed?
+      !@socket.closed?
     end
 
     def closed?
