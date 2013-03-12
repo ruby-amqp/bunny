@@ -12,23 +12,28 @@ describe "Concurrent publishers sharing a connection" do
     connection.close
   end
 
-  let(:n) { 10 }
+  let(:n) { 32 }
   let(:m) { 1000 }
 
   it "successfully finish publishing" do
     ch = connection.create_channel
 
     q    = ch.queue("", :exclusive => true)
-    body = "сообщение" * 128
+    body = "сообщение"
 
     # let the queue name be sent back by RabbitMQ
     sleep 0.25
 
+    chs  = {}
+    n.times do |i|
+      chs[i] = connection.create_channel
+    end
+
     ts = []
 
-    n.times do
+    n.times do |i|
       t = Thread.new do
-        cht = connection.create_channel
+        cht = chs[i]
         x   = ch.default_exchange
 
         5.times do |i|

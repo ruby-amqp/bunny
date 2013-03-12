@@ -19,19 +19,23 @@ describe "Concurrent consumers sharing a connection" do
   context "when publishing thousands of messages over 128K in size" do
     let(:colors) { ["red", "blue", "white"] }
 
-    let(:n) { 10 }
+    let(:n) { 32 }
     let(:m) { 1000 }
 
     it "successfully drain all queues" do
       ch   = connection.create_channel
-      body = "абвг" * (1024 * 33)
+      body = "абвг"
       x    = ch.topic("bunny.stress.concurrent.consumers.topic", :durable => true)
 
+      chs  = {}
+      n.times do |i|
+        chs[i] = connection.create_channel
+      end
       qs   = []
 
-      n.times do
+      n.times do |i|
         t = Thread.new do
-          cht = connection.create_channel
+          cht = chs[i]
 
           q = cht.queue("", :exclusive => true)
           q.bind(x.name, :routing_key => colors.sample).subscribe do |delivery_info, meta, payload|
@@ -48,7 +52,7 @@ describe "Concurrent consumers sharing a connection" do
         m.times do
           x.publish(body, :routing_key => colors.sample)
         end
-        puts "Published #{(i + 1) * m} messages...x"
+        puts "Published #{(i + 1) * m} messages..."
       end
 
       while any_not_drained?(qs)
