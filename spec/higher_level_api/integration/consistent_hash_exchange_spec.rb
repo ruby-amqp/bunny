@@ -29,15 +29,8 @@ unless ENV["CI"]
 
       qs = []
 
-      n.times do
-        t = Thread.new do
-          cht = connection.create_channel
-
-          q = cht.queue("", :exclusive => true).bind(x, :routing_key => list.sample)
-          qs << q
-        end
-        t.abort_on_exception = true
-      end
+      q1 = ch.queue("", :exclusive => true).bind(x, :routing_key => "15")
+      q2 = ch.queue("", :exclusive => true).bind(x, :routing_key => "15")
 
       sleep 1.0
 
@@ -48,8 +41,9 @@ unless ENV["CI"]
         puts "Published #{(i + 1) * m} messages..."
       end
 
-      sleep 1.0
-      qs.any? { |q| q.message_count >= 50 }.should be_true
+      sleep 4.0
+      q1.message_count.should be > 1000
+      q2.message_count.should be > 1000
 
       ch.close
     end
