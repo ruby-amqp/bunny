@@ -342,6 +342,7 @@ module Bunny
     # @param [String] name Exchange name
     # @param [Hash] opts Exchange parameters
     #
+    # @option opts [String,Symbol] :type (:direct) Exchange type, e.g. :fanout or "x-consistent-hash"
     # @option opts [Boolean] :durable (false) Should the exchange be durable?
     # @option opts [Boolean] :auto_delete (false) Should the exchange be automatically deleted when no longer in use?
     # @option opts [Hash] :arguments ({}) Optional exchange arguments
