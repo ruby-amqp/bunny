@@ -1,5 +1,11 @@
 ## Changes between Bunny 0.9.0.pre7 and 0.9.0.pre8
 
+### Stability Improvements
+
+Several stability improvements in the network
+layer, connection error handling, and concurrency hazards.
+
+
 ### Automatic Connection Recovery Can Be Disabled
 
 Automatic connection recovery now can be disabled by passing
