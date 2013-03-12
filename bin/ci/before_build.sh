@@ -1,6 +1,7 @@
 #!/bin/sh
 
 ${RABBITMQCTL:="sudo rabbitmqctl"}
+${RABBITMQ_PLUGINS:="sudo rabbitmq-plugins"}
 
 # guest:guest has full access to /
 
@@ -26,3 +27,6 @@ $RABBITMQCTL set_permissions -p bunny_testbed guest ".*" ".*" ".*"
 $RABBITMQCTL add_user bunny_reader reader_password
 $RABBITMQCTL clear_permissions -p bunny_testbed guest
 $RABBITMQCTL set_permissions -p bunny_testbed bunny_reader "^---$" "^---$" ".*"
+
+# requires RabbitMQ 3.0+
+# $RABBITMQ_PLUGINS enable rabbitmq_consistent_hash_exchange
