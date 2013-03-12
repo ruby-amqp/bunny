@@ -47,7 +47,7 @@ describe "Concurrent publishers sharing a connection" do
       t.join
     end
 
-    sleep 1.0
+    sleep 4.0
     q.message_count.should == 5 * n * m
   end
 end
