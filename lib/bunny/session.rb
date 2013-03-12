@@ -121,6 +121,7 @@ module Bunny
       @locale              = @opts.fetch(:locale, DEFAULT_LOCALE)
       # mutex for the channel id => channel hash
       @channel_mutex       = Mutex.new
+      @network_mutex       = Mutex.new
       @channels            = Hash.new
 
       @continuations       = ::Queue.new
@@ -266,7 +267,9 @@ module Bunny
       n = ch.number
       self.register_channel(ch)
 
-      @transport.send_frame(AMQ::Protocol::Channel::Open.encode(n, AMQ::Protocol::EMPTY_STRING))
+      @channel_mutex.synchronize do
+        @transport.send_frame(AMQ::Protocol::Channel::Open.encode(n, AMQ::Protocol::EMPTY_STRING))
+      end
       @last_channel_open_ok = wait_on_continuations
       raise_if_continuation_resulted_in_a_connection_error!
 
@@ -542,7 +545,7 @@ module Bunny
       if closed?
         raise ConnectionClosedError.new(frame)
       else
-        @transport.send_raw(frame.encode)
+        @network_mutex.synchronize { @transport.write(frame.encode) }
       end
     end
 
@@ -556,7 +559,7 @@ module Bunny
       if closed?
         raise ConnectionClosedError.new(frame)
       else
-        @transport.write_without_timeout(frame.encode)
+        @network_mutex.synchronize { @transport.write_without_timeout(frame.encode) }
       end
     end
 
@@ -571,7 +574,7 @@ module Bunny
       # If we synchronize on the channel, however, this is both thread safe and pretty fine-grained
       # locking. Note that "single frame" methods do not need this kind of synchronization. MK.
       channel.synchronize do
-        frames.each { |frame| @transport.send_frame(frame) }
+        frames.each { |frame| self.send_frame(frame) }
         @transport.flush
       end
     end # send_frameset(frames)
@@ -588,7 +591,7 @@ module Bunny
       # If we synchronize on the channel, however, this is both thread safe and pretty fine-grained
       # locking. Note that "single frame" methods do not need this kind of synchronization. MK.
       channel.synchronize do
-        frames.each { |frame| @transport.send_frame_without_timeout(frame) }
+        frames.each { |frame| self.send_frame_without_timeout(frame) }
       end
     end # send_frameset_without_timeout(frames)
 
@@ -685,7 +688,7 @@ module Bunny
 
     # @api private
     def initialize_transport
-      @transport = Transport.new(self, @host, @port, @opts)
+      @transport = Transport.new(self, @host, @port, @opts.merge(:session_thread => Thread.current))
     end
 
     # Sends AMQ protocol header (also known as preamble).
