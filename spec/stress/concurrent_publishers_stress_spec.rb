@@ -3,7 +3,7 @@ require "spec_helper"
 
 describe "Concurrent publishers sharing a connection" do
   let(:connection) do
-    c = Bunny.new(:user => "bunny_gem", :password => "bunny_password", :vhost => "bunny_testbed")
+    c = Bunny.new(:user => "bunny_gem", :password => "bunny_password", :vhost => "bunny_testbed", :automatically_recover => false)
     c.start
     c
   end
@@ -12,14 +12,14 @@ describe "Concurrent publishers sharing a connection" do
     connection.close
   end
 
-  let(:n) { 3 }
-  let(:m) { 50_000 }
+  let(:n) { 10 }
+  let(:m) { 1000 }
 
-  xit "successfully finish publishing" do
+  it "successfully finish publishing" do
     ch = connection.create_channel
 
     q    = ch.queue("", :exclusive => true)
-    body = "сообщение кириллицей" * 1024
+    body = "сообщение" * 128
 
     # let the queue name be sent back by RabbitMQ
     sleep 0.25
@@ -31,18 +31,23 @@ describe "Concurrent publishers sharing a connection" do
         cht = connection.create_channel
         x   = ch.default_exchange
 
-        x.publish(body, :routing_key => q.name)
+        5.times do |i|
+          m.times do
+            x.publish(body, :routing_key => q.name)
+          end
+          puts "Published #{(i + 1) * m} messages..."
+        end
       end
       t.abort_on_exception = true
 
       ts << t
     end
 
-    sleep 1.0
     ts.each do |t|
       t.join
     end
 
-    puts q.message_count
+    sleep 1.0
+    q.message_count.should == 5 * n * m
   end
 end
