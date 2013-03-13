@@ -14,7 +14,7 @@ module Bunny
         if Socket.constants.include?('TCP_NODELAY') || Socket.constants.include?(:TCP_NODELAY)
           sock.setsockopt(::Socket::IPPROTO_TCP, ::Socket::TCP_NODELAY, true)
         end
-        sock.setsockopt(::Socket::SOL_SOCKET, ::Socket::SO_KEEPALIVE, true) if options[:keepalive]
+        sock.setsockopt(::Socket::SOL_SOCKET, ::Socket::SO_KEEPALIVE, true) if options.fetch(:keepalive, true)
         sock.options = {:host => host, :port => port}.merge(options)
         sock
       end
