@@ -23,7 +23,7 @@ sleep 0.2
 delivery_info, _, _ = q.pop(:ack => true)
 puts "#{dlq.message_count} messages dead lettered so far"
 puts "Rejecting a message"
-ch.nack(delivery_info.delivery_tag, false)
+ch.nack(delivery_info.delivery_tag)
 sleep 0.2
 puts "#{dlq.message_count} messages dead lettered so far"
 
