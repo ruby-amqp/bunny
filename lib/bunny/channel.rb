@@ -447,13 +447,13 @@ module Bunny
     # supports rejecting multiple messages at once, and is usually preferred.
     #
     # @param [Integer] delivery_tag Delivery tag to reject
-    # @param [Boolean] requeue      Should this message be requeued instead of dropping it?
     # @param [Boolean] multiple (false) Should all unacknowledged messages up to this be rejected as well?
+    # @param [Boolean] requeue  (false) Should this message be requeued instead of dropping it?
     # @see Bunny::Channel#ack
     # @see http://rubybunny.info/articles/queues.html Queues and Consumers guide
     # @api public
-    def nack(delivery_tag, requeue, multiple = false)
-      basic_nack(delivery_tag, requeue, multiple)
+    def nack(delivery_tag, multiple = false, requeue = false)
+      basic_nack(delivery_tag, multiple, requeue)
     end
 
     # @endgroup
@@ -713,7 +713,7 @@ module Bunny
     #   ch    = conn.create_channel
     #   q.subscribe do |delivery_info, properties, payload|
     #     # requeue the message
-    #     ch.basic_nack(delivery_info.delivery_tag, true)
+    #     ch.basic_nack(delivery_info.delivery_tag, false, true)
     #   end
     #
     # @example Reject a message
@@ -723,7 +723,7 @@ module Bunny
     #   ch    = conn.create_channel
     #   q.subscribe do |delivery_info, properties, payload|
     #     # requeue the message
-    #     ch.basic_nack(delivery_info.delivery_tag, false)
+    #     ch.basic_nack(delivery_info.delivery_tag)
     #   end
     #
     # @example Requeue a message fetched via basic.get
@@ -733,7 +733,7 @@ module Bunny
     #   ch    = conn.create_channel
     #   # we assume the queue exists and has messages
     #   delivery_info, properties, payload = ch.basic_get("bunny.examples.queue3", :ack => true)
-    #   ch.basic_nack(delivery_info.delivery_tag, true)
+    #   ch.basic_nack(delivery_info.delivery_tag, false, true)
     #
     #
     # @example Requeue multiple messages fetched via basic.get
@@ -751,12 +751,12 @@ module Bunny
     # @see http://rubybunny.info/articles/queues.html Queues and Consumers guide
     # @see http://rubybunny.info/articles/extensions.html RabbitMQ Extensions guide
     # @api public
-    def basic_nack(delivery_tag, requeue, multiple = false)
+    def basic_nack(delivery_tag, multiple = false, requeue = false)
       raise_if_no_longer_open!
       @connection.send_frame(AMQ::Protocol::Basic::Nack.encode(@id,
                                                                delivery_tag,
-                                                               requeue,
-                                                               multiple))
+                                                               multiple,
+                                                               requeue))
 
       nil
     end

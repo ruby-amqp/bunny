@@ -51,7 +51,7 @@ describe Bunny::Channel, "#nack" do
       subject.on_error do |ch, channel_close|
         @channel_close = channel_close
       end
-      subject.nack(82, true)
+      subject.nack(82, false, true)
 
       sleep 0.5
 
