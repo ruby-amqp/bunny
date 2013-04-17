@@ -46,7 +46,8 @@ module Bunny
           sleep @interval
         end
       rescue IOError => ioe
-        # ignored
+        puts ioe.message
+        stop
       rescue Exception => e
         puts e.message
       end
