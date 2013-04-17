@@ -189,7 +189,7 @@ describe Bunny::Session do
     end
 
     it "successfully connects" do
-      subject.start
+      5.times { subject.start }
       subject.should be_connected
 
       subject.server_properties.should_not be_nil

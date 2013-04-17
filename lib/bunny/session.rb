@@ -157,8 +157,10 @@ module Bunny
     # Starts connection process
     # @api public
     def start
-      @continuations = ::Queue.new
+      return self if connected?
+
       @status        = :connecting
+      @continuations = ::Queue.new
 
       self.initialize_transport
 
@@ -169,6 +171,8 @@ module Bunny
       self.start_main_loop if @threaded
 
       @default_channel = self.create_channel
+
+      self
     end
 
     def read_write_timeout
@@ -221,7 +225,7 @@ module Bunny
     end
 
     def open?
-      (status == :open || status == :connected) && @transport.open?
+      (status == :open || status == :connected || status == :connecting) && @transport.open?
     end
     alias connected? open?
 
@@ -384,6 +388,8 @@ module Bunny
     def handle_network_failure(exception)
       raise NetworkErrorWrapper.new(exception) unless @threaded
 
+      @status = :disconnected
+
       if !recovering_from_network_failure?
         @recovering_from_network_failure = true
         if recoverable_network_failure?(exception)
@@ -539,6 +545,11 @@ module Bunny
     # @private
     def event_loop
       @event_loop ||= MainLoop.new(@transport, self, Thread.current)
+    end
+
+    # @private
+    def maybe_shutdown_main_loop
+      @event_loop.stop if @event_loop
     end
 
     # @private
