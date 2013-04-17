@@ -1,5 +1,15 @@
 ## Changes between Bunny 0.9.0.pre8 and 0.9.0.pre9
 
+### Network Recovery After Delay
+
+Network reconnection now kicks in after a delay to avoid aggressive
+reconnections in situations when we don't want to endlessly reconnect
+(e.g. when the connection was closed via the Management UI).
+
+The `:network_recovery_interval` option passed to `Bunny::Session#initialize` and `Bunny.new`
+controls the interval. Default is 5 seconds.
+
+
 ### Default Heartbeat Value Is Now Server-Defined
 
 Bunny will now use heartbeat value provided by RabbitMQ by default.
