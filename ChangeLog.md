@@ -1,6 +1,8 @@
 ## Changes between Bunny 0.9.0.pre8 and 0.9.0.pre9
 
-No changes yet.
+### Default Heartbeat Value Is Now Server-Defined
+
+Bunny will now use heartbeat value provided by RabbitMQ by default.
 
 
 

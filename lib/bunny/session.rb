@@ -28,7 +28,7 @@ module Bunny
     # Default password used for connection
     DEFAULT_PASSWORD  = "guest"
     # Default heartbeat interval, the same value as RabbitMQ 3.0 uses.
-    DEFAULT_HEARTBEAT = 600
+    DEFAULT_HEARTBEAT = :server
     # @private
     DEFAULT_FRAME_MAX = 131072
 
@@ -135,6 +135,9 @@ module Bunny
     def password;     self.pass;  end
     # @return [String] Virtual host used
     def virtual_host; self.vhost; end
+
+    # @return [Integer] Heartbeat interval used
+    def heartbeat_interval; self.heartbeat; end
 
     # @return [Boolean] true if this connection uses TLS (SSL)
     def uses_tls?
@@ -318,6 +321,8 @@ module Bunny
       when AMQ::Protocol::Connection::Close then
         @last_connection_error = instantiate_connection_level_exception(method)
         @continuations.push(method)
+
+        raise @last_connection_error
       when AMQ::Protocol::Connection::CloseOk then
         @last_connection_close_ok = method
         begin
@@ -443,11 +448,13 @@ module Bunny
       case frame
       when AMQ::Protocol::Connection::Close then
         klass = case frame.reply_code
+                when 320 then
+                  ConnectionForced
                 when 503 then
                   InvalidCommand
                 when 504 then
                   ChannelError
-                when 504 then
+                when 505 then
                   UnexpectedFrame
                 else
                   raise "Unknown reply code: #{frame.reply_code}, text: #{frame.reply_text}"
@@ -633,7 +640,7 @@ module Bunny
       @frame_max            = negotiate_value(@client_frame_max, connection_tune.frame_max)
       @channel_max          = negotiate_value(@client_channel_max, connection_tune.channel_max)
       # this allows for disabled heartbeats. MK.
-      @heartbeat            = if 0 == @client_heartbeat || @client_heartbeat.nil?
+      @heartbeat            = if heartbeat_disabled?(@client_heartbeat)
                                 0
                               else
                                 negotiate_value(@client_heartbeat, connection_tune.heartbeat)
@@ -665,8 +672,14 @@ module Bunny
       raise "could not open connection: server did not respond with connection.open-ok" unless connection_open_ok.is_a?(AMQ::Protocol::Connection::OpenOk)
     end
 
+    def heartbeat_disabled?(val)
+      0 == val || val.nil?
+    end
+
     # @api private
     def negotiate_value(client_value, server_value)
+      return server_value if client_value == :server
+
       if client_value == 0 || server_value == 0
         [client_value, server_value].max
       else

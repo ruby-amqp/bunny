@@ -157,4 +157,8 @@ module Bunny
       @other = other
     end
   end
+
+  class ConnectionForced < ConnectionLevelException
+  end
+
 end
