@@ -52,6 +52,8 @@ module Bunny
 
     DEFAULT_LOCALE = "en_GB"
 
+    DEFAULT_NETWORK_RECOVERY_INTERVAL = 5.0
+
 
     #
     # API
@@ -107,6 +109,7 @@ module Bunny
                                else
                                  opts[:automatically_recover] || opts[:automatic_recovery]
                                end
+      @network_recovery_interval = opts.fetch(:network_recovery_interval, DEFAULT_NETWORK_RECOVERY_INTERVAL)
 
       @status             = :not_connected
 
@@ -411,6 +414,7 @@ module Bunny
     # @private
     def recover_from_network_failure
       begin
+        sleep @network_recovery_interval
         # puts "About to start recovery..."
         start
 
@@ -421,7 +425,7 @@ module Bunny
         end
       rescue TCPConnectionFailed, AMQ::Protocol::EmptyResponseError => e
         # puts "TCP connection failed, reconnecting in 5 seconds"
-        sleep 5.0
+        sleep @network_recovery_interval
         retry if recoverable_network_failure?(e)
       end
     end
