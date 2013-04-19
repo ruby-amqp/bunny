@@ -154,6 +154,11 @@ module Bunny
     end
     alias ssl? uses_ssl?
 
+    # @return [Boolean] true if this connection uses a separate thread for I/O activity
+    def threaded?
+      @threaded
+    end
+
     # Starts connection process
     # @api public
     def start
