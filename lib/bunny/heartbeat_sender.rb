@@ -50,6 +50,7 @@ module Bunny
         stop
       rescue Exception => e
         puts e.message
+        stop
       end
     end
 
