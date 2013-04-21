@@ -9,7 +9,11 @@ require "bunny/authentication/credentials_encoder"
 require "bunny/authentication/plain_mechanism_encoder"
 require "bunny/authentication/external_mechanism_encoder"
 
-require "bunny/concurrent/condition"
+if defined?(JRUBY_VERSION)
+  require "bunny/concurrent/linked_continuation_queue"
+else
+  require "bunny/concurrent/continuation_queue"
+end
 
 require "amq/protocol/client"
 require "amq/settings"
@@ -127,7 +131,7 @@ module Bunny
       @network_mutex       = Mutex.new
       @channels            = Hash.new
 
-      @continuations       = ::Queue.new
+      self.reset_continuations
     end
 
     # @return [String] RabbitMQ hostname (or IP address) used
@@ -165,7 +169,7 @@ module Bunny
       return self if connected?
 
       @status        = :connecting
-      @continuations = ::Queue.new
+      self.reset_continuations
 
       self.initialize_transport
 
@@ -212,6 +216,10 @@ module Bunny
     end
     alias stop close
 
+    # Creates a temporary channel, yields it to the block given to this
+    # method and closes it.
+    #
+    # @return [Bunny::Session] self
     def with_channel(n = nil)
       ch = create_channel(n)
       yield ch
@@ -220,7 +228,7 @@ module Bunny
       self
     end
 
-
+    # @return [Boolean] true if this connection is still not fully open
     def connecting?
       status == :connecting
     end
@@ -234,6 +242,7 @@ module Bunny
     end
     alias connected? open?
 
+    # @return [Boolean] true if this connection has automatic recovery from network failure enabled
     def automatically_recover?
       @automatically_recover
     end
@@ -349,7 +358,7 @@ module Bunny
           puts e.message
           puts e.backtrace
         ensure
-          @continuations.push(nil)
+          @continuations.push(:__unblock__)
         end
       when AMQ::Protocol::Channel::Close then
         begin
@@ -739,6 +748,15 @@ module Bunny
     # @api private
     def credentials_encoder_for(mechanism)
       Authentication::CredentialsEncoder.for_session(self)
+    end
+
+    # @api private
+    def reset_continuations
+      @continuations = if defined?(JRUBY_VERSION)
+                         Concurrent::LinkedContinuationQueue.new
+                       else
+                         Concurrent::ContinuationQueue.new
+                       end
     end
 
     # @api private
