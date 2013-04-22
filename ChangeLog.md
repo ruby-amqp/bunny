@@ -1,5 +1,15 @@
 ## Changes between Bunny 0.9.0.pre8 and 0.9.0.pre9
 
+### Bunny::Session#start Now Returns a Session
+
+`Bunny::Session#start` now returns a session instead of the default channel
+(which wasn't intentional, default channel is a backwards-compatibility implementation
+detail).
+
+`Bunny::Session#start` also no longer leaves dead threads behind if called multiple
+times on the same connection.
+
+
 ### More Reliable Heartbeat Sender
 
 Heartbeat sender no longer slips into an infinite loop if it encounters an exception.
