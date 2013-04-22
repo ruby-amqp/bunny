@@ -1,3 +1,8 @@
+## Changes between Bunny 0.9.0.pre9 and 0.9.0.pre10
+
+No changes yet.
+
+
 ## Changes between Bunny 0.9.0.pre8 and 0.9.0.pre9
 
 ### Bunny::Session#start Now Returns a Session
