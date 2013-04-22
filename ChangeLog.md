@@ -1,5 +1,12 @@
 ## Changes between Bunny 0.9.0.pre8 and 0.9.0.pre9
 
+### More Reliable Heartbeat Sender
+
+Heartbeat sender no longer slips into an infinite loop if it encounters an exception.
+Instead, it will just stop (and presumably re-started when the network error recovery
+kicks in or the app reconnects manually).
+
+
 ### Network Recovery After Delay
 
 Network reconnection now kicks in after a delay to avoid aggressive
