@@ -7,7 +7,7 @@ features and is free of many limitations of earlier versions.
 
 ## Supported Ruby Versions
 
-Bunny 0.9 and more recent versions support Ruby 1.9.3, 1.9.2, JRuby 1.7, Rubinius 2.0 and 1.8.7.
+Bunny 0.9 and more recent versions support Ruby 1.9.3, 1.9.2, 2.0, JRuby 1.7, Rubinius 2.0 and 1.8.7.
 
 
 ## Supported RabbitMQ Versions
@@ -36,7 +36,7 @@ gem install bunny --pre
 To use Bunny 0.9.x in a project managed with Bundler:
 
 ``` ruby
-gem "bunny", ">= 0.9.0.pre8" # optionally: , :git => "git://github.com/ruby-amqp/bunny.git", :branch => "master"
+gem "bunny", ">= 0.9.0.pre9" # optionally: , :git => "git://github.com/ruby-amqp/bunny.git", :branch => "master"
 ```
 
 
