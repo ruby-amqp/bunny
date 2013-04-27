@@ -1,6 +1,28 @@
 ## Changes between Bunny 0.9.0.pre9 and 0.9.0.pre10
 
-No changes yet.
+This release contains a **breaking API change**.
+
+### Bunny::Exception Now Extends StandardError
+
+Make `Bunny::Exception` inherit from `StandardError`
+
+Naked rescue like this
+
+``` ruby
+begin
+  # ...
+rescue => e
+  # ...
+end
+```
+
+catches only descendents of `StandardError`. Most people don't
+know this and this is a very counter-intuitive practice, but
+apparently there is code out there that can't be changed that
+depends on this behavior.
+
+This is a **breaking API change**.
+
 
 
 ## Changes between Bunny 0.9.0.pre8 and 0.9.0.pre9
