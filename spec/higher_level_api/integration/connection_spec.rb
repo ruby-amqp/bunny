@@ -342,7 +342,7 @@ describe Bunny::Session do
 
   context "initialized with a disconnected host" do
     subject do
-      described_class.new(port: 38000)
+      described_class.new(:port => 38000)
     end
 
     it "fails to connect" do

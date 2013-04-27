@@ -183,7 +183,7 @@ module Bunny
         @default_channel = self.create_channel
       rescue Exception => e
         @status = :not_connected
-        raise
+        raise e
       end
 
       self
