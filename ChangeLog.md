@@ -4,7 +4,7 @@ This release contains a **breaking API change**.
 
 ### Bunny::Exception Now Extends StandardError
 
-Make `Bunny::Exception` inherit from `StandardError`
+`Bunny::Exception` now inherits from `StandardError` and not `Exception`.
 
 Naked rescue like this
 
