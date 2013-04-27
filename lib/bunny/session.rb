@@ -171,15 +171,20 @@ module Bunny
       @status        = :connecting
       self.reset_continuations
 
-      self.initialize_transport
+      begin
+        self.initialize_transport
 
-      self.init_connection
-      self.open_connection
+        self.init_connection
+        self.open_connection
 
-      @event_loop = nil
-      self.start_main_loop if @threaded
+        @event_loop = nil
+        self.start_main_loop if @threaded
 
-      @default_channel = self.create_channel
+        @default_channel = self.create_channel
+      rescue Exception => e
+        @status = :not_connected
+        raise e
+      end
 
       self
     end
