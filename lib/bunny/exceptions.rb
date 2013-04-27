@@ -1,5 +1,5 @@
 module Bunny
-  class Exception < ::Exception
+  class Exception < ::StandardException
   end
 
   class NetworkFailure < Exception
