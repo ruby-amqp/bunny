@@ -338,4 +338,37 @@ describe Bunny::Session do
       subject.password.should == password
     end
   end
+
+
+  context "initialized with a disconnected host" do
+    subject do
+      described_class.new(port: 38000)
+    end
+
+    it "fails to connect" do
+      lambda do
+        subject.start
+      end.should raise_error(Bunny::TCPConnectionFailed)
+    end
+
+    it "is not connected" do
+      begin
+        subject.start
+      rescue Bunny::TCPConnectionFailed => e
+        true
+      end
+
+      subject.status.should == :not_connected
+    end
+
+    it "is not open" do
+      begin
+        subject.start
+      rescue Bunny::TCPConnectionFailed => e
+        true
+      end
+
+      subject.should_not be_open
+    end
+  end
 end
