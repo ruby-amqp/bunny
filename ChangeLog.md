@@ -2,6 +2,12 @@
 
 This release contains a **breaking API change**.
 
+### Explicitly Closed Sockets
+
+Bunny now will correctly close the socket previous connection had
+when recovering from network issues.
+
+
 ### Bunny::Exception Now Extends StandardError
 
 `Bunny::Exception` now inherits from `StandardError` and not `Exception`.

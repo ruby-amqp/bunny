@@ -172,6 +172,9 @@ module Bunny
       self.reset_continuations
 
       begin
+        # close existing transport if we have one,
+        # to not leak sockets
+        self.maybe_close_transport
         self.initialize_transport
 
         self.init_connection
@@ -736,6 +739,11 @@ module Bunny
     # @api private
     def initialize_transport
       @transport = Transport.new(self, @host, @port, @opts.merge(:session_thread => Thread.current))
+    end
+
+    # @api private
+    def maybe_close_transport
+      @transport.close if @transport
     end
 
     # Sends AMQ protocol header (also known as preamble).
