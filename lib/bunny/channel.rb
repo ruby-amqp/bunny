@@ -11,6 +11,12 @@ require "bunny/delivery_info"
 require "bunny/return_info"
 require "bunny/message_properties"
 
+if defined?(JRUBY_VERSION)
+  require "bunny/concurrent/linked_continuation_queue"
+else
+  require "bunny/concurrent/continuation_queue"
+end
+
 module Bunny
   # ## What are AMQP channels
   #
@@ -169,9 +175,8 @@ module Bunny
 
       @unconfirmed_set_mutex = Mutex.new
 
-      @continuations           = ::Queue.new
-      @confirms_continuations  = ::Queue.new
-      @basic_get_continuations = ::Queue.new
+      self.reset_continuations
+
       # threads awaiting on continuations. Used to unblock
       # them when network connection goes down so that busy loops
       # that perform synchronous operations can work. MK.
@@ -1735,5 +1740,25 @@ module Bunny
     def raise_if_no_longer_open!
       raise ChannelAlreadyClosed.new("cannot use a channel that was already closed! Channel id: #{@id}", self) if closed?
     end
-  end
-end
+
+    # @api private
+    def reset_continuations
+      @continuations           = new_continuation
+      @confirms_continuations  = new_continuation
+      @basic_get_continuations = new_continuation
+    end
+
+
+    if defined?(JRUBY_VERSION)
+      # @api private
+      def new_continuation
+        Concurrent::LinkedContinuationQueue.new
+      end
+    else
+      # @api private
+      def new_continuation
+        Concurrent::ContinuationQueue.new
+      end
+    end # if defined?
+  end # Channel
+end # Bunny
