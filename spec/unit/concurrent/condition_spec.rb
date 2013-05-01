@@ -45,27 +45,29 @@ describe Bunny::Concurrent::Condition do
   end
 
   describe "#notify_all" do
+    let(:n) { 20 }
+
     it "notifies all the threads waiting on the latch" do
       condition = described_class.new
       @xs        = []
 
-      t1 = Thread.new do
-        condition.wait
-        @xs << :notified1
+      n.times do |i|
+        t = Thread.new do
+          condition.wait
+          @xs << "notified#{i + 1}".to_sym
+        end
+        t.abort_on_exception = true
       end
-      t1.abort_on_exception = true
-
-      t2 = Thread.new do
-        condition.wait
-        @xs << :notified2
-      end
-      t2.abort_on_exception = true
 
       sleep 0.5
       condition.notify_all
       sleep 0.5
-      @xs.should include(:notified1)
-      @xs.should include(:notified2)
+
+      n.times do |i|
+        item = "notified#{i + 1}".to_sym
+
+        @xs.should include(item)
+      end
     end
   end
 end
