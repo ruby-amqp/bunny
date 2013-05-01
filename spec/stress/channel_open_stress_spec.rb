@@ -34,7 +34,7 @@ unless ENV["CI"]
       #
       # But this already demonstrates that within these platform constraints,
       # Bunny is safe to use in such scenarios.
-      let(:n) { 50 }
+      let(:n) { 20 }
 
       it "works correctly" do
         n.times do
