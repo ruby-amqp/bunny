@@ -1,5 +1,26 @@
 ## Changes between Bunny 0.9.0.pre10 and 0.9.0.pre11
 
+### Time-bound continuations
+
+If a network loop exception causes "main" session thread to never
+receive a response, methods such as `Bunny::Channel#queue` will simply time out
+and raise Timeout::Error now, which can be handled.
+
+It will not start automatic recovery for two reasons:
+
+ * It will be started in the network activity loop anyway
+ * It may do more damage than good
+
+Kicking off network recovery manually is a matter of calling
+`Bunny::Session#handle_network_failure`.
+
+The main benefit of this implementation is that it will never
+block the main app/session thread forever, and it is really
+efficient on JRuby thanks to a j.u.c. blocking queue.
+
+Fixes #112.
+
+
 ### Logging Support
 
 Every Bunny connection now has a logger. By default, Bunny will use STDOUT
