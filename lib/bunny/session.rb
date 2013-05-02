@@ -72,7 +72,7 @@ module Bunny
     attr_reader :mechanism
     # @return [Logger]
     attr_reader :logger
-    # @return [Integer] Timeout for blocking protocol operations (queue.declare, queue.bind, etc), in milliseconds. Default is 1500.
+    # @return [Integer] Timeout for blocking protocol operations (queue.declare, queue.bind, etc), in milliseconds. Default is 2000.
     attr_reader :continuation_timeout
 
 
@@ -120,7 +120,7 @@ module Bunny
                                end
       @network_recovery_interval = opts.fetch(:network_recovery_interval, DEFAULT_NETWORK_RECOVERY_INTERVAL)
       # in ms
-      @continuation_timeout      = opts.fetch(:continuation_timeout, 1500)
+      @continuation_timeout      = opts.fetch(:continuation_timeout, 2000)
 
       @status             = :not_connected
 
@@ -683,7 +683,7 @@ module Bunny
               end
       if frame.nil?
         @state = :closed
-        @logger.warn "RabbitMQ closed TCP connection before AMQP 0.9.1 connection was finalized. Most likely this means authentication failure."
+        @logger.error "RabbitMQ closed TCP connection before AMQP 0.9.1 connection was finalized. Most likely this means authentication failure."
         raise Bunny::PossibleAuthenticationFailureError.new(self.user, self.vhost, self.password.size)
       end
 
