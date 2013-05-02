@@ -38,7 +38,9 @@ module Bunny
 
       def poll(timeout_in_ms = nil)
         if timeout_in_ms
-          @q.poll(timeout_in_ms, TimeUnit::MILLISECONDS)
+          v = @q.poll(timeout_in_ms, TimeUnit::MILLISECONDS)
+          raise ::Timeout::Error.new("operation did not finish in #{timeout_in_ms} ms") if v.nil?
+          v
         else
           @q.poll
         end
