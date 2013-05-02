@@ -1282,7 +1282,7 @@ module Bunny
       raise_if_no_longer_open!
 
       if @next_publish_seq_no == 0
-        @confirms_continuations = ::Queue.new
+        @confirms_continuations = new_continuation
         @unconfirmed_set        = Set.new
         @nacked_set             = Set.new
         @next_publish_seq_no    = 1
