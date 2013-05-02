@@ -22,18 +22,19 @@ describe Bunny::Concurrent::Condition do
 
   describe "#notify" do
     it "notifies a single thread waiting on the latch" do
+      mutex     = Mutex.new
       condition = described_class.new
       xs        = []
 
       t1 = Thread.new do
         condition.wait
-        xs << :notified1
+        mutex.synchronize { xs << :notified1 }
       end
       t1.abort_on_exception = true
 
       t2 = Thread.new do
         condition.wait
-        xs << :notified2
+        mutex.synchronize { xs << :notified2 }
       end
       t2.abort_on_exception = true
 
@@ -45,16 +46,17 @@ describe Bunny::Concurrent::Condition do
   end
 
   describe "#notify_all" do
-    let(:n) { 20 }
+    let(:n) { 120 }
 
     it "notifies all the threads waiting on the latch" do
+      mutex     = Mutex.new
       condition = described_class.new
-      @xs        = []
+      @xs       = []
 
       n.times do |i|
         t = Thread.new do
           condition.wait
-          @xs << "notified#{i + 1}".to_sym
+          mutex.synchronize { @xs << "notified#{i + 1}".to_sym }
         end
         t.abort_on_exception = true
       end
