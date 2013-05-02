@@ -1574,10 +1574,11 @@ module Bunny
         t = Thread.current
         @threads_waiting_on_continuations << t
 
-        v = @continuations.pop
-        @threads_waiting_on_continuations.delete(t)
-
-        v
+        begin
+          @continuations.poll(@connection.continuation_timeout)
+        ensure
+          @threads_waiting_on_continuations.delete(t)
+        end
       else
         connection.event_loop.run_once until @continuations.length > 0
 
@@ -1591,10 +1592,11 @@ module Bunny
         t = Thread.current
         @threads_waiting_on_basic_get_continuations << t
 
-        v = @basic_get_continuations.pop
-        @threads_waiting_on_basic_get_continuations.delete(t)
-
-        v
+        begin
+          @basic_get_continuations.poll(@connection.continuation_timeout)
+        ensure
+          @threads_waiting_on_basic_get_continuations.delete(t)
+        end
       else
         connection.event_loop.run_once until @basic_get_continuations.length > 0
 
@@ -1608,10 +1610,11 @@ module Bunny
         t = Thread.current
         @threads_waiting_on_confirms_continuations << t
 
-        v = @confirms_continuations.pop
-        @threads_waiting_on_confirms_continuations.delete(t)
-
-        v
+        begin
+          @confirms_continuations.poll(@connection.continuation_timeout)
+        ensure
+          @threads_waiting_on_confirms_continuations.delete(t)
+        end
       else
         connection.event_loop.run_once until @confirms_continuations.length > 0
 

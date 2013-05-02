@@ -72,6 +72,8 @@ module Bunny
     attr_reader :mechanism
     # @return [Logger]
     attr_reader :logger
+    # @return [Integer] Timeout for blocking protocol operations (queue.declare, queue.bind, etc), in milliseconds. Default is 1500.
+    attr_reader :continuation_timeout
 
 
     # @param [String, Hash] connection_string_or_opts Connection string or a hash of connection options
@@ -117,6 +119,8 @@ module Bunny
                                  opts[:automatically_recover] || opts[:automatic_recovery]
                                end
       @network_recovery_interval = opts.fetch(:network_recovery_interval, DEFAULT_NETWORK_RECOVERY_INTERVAL)
+      # in ms
+      @continuation_timeout      = opts.fetch(:continuation_timeout, 1500)
 
       @status             = :not_connected
 
@@ -797,7 +801,7 @@ module Bunny
         event_loop.run_once until @continuations.length > 0
       end
 
-      @continuations.pop
+      @continuations.poll(@continuation_timeout)
     end
 
     # @api private
