@@ -326,12 +326,14 @@ module Bunny
         @channel.deregister_queue_named(old_name)
       end
 
+      # TODO: inject and use logger
       # puts "Recovering queue #{@name}"
       begin
         declare!
 
         @channel.register_queue(self)
       rescue Exception => e
+        # TODO: inject and use logger
         puts "Caught #{e.inspect} while redeclaring and registering #{@name}!"
       end
       recover_bindings
@@ -340,6 +342,7 @@ module Bunny
     # @private
     def recover_bindings
       @bindings.each do |b|
+        # TODO: inject and use logger
         # puts "Recovering binding #{b.inspect}"
         self.bind(b[:exchange], b)
       end

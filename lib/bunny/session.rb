@@ -70,6 +70,8 @@ module Bunny
     # Authentication mechanism, e.g. "PLAIN" or "EXTERNAL"
     # @return [String]
     attr_reader :mechanism
+    # @return [Logger]
+    attr_reader :logger
 
 
     # @param [String, Hash] connection_string_or_opts Connection string or a hash of connection options
@@ -103,9 +105,10 @@ module Bunny
       @user            = self.username_from(opts)
       @pass            = self.password_from(opts)
       @vhost           = self.vhost_from(opts)
-      @logfile         = opts[:logfile]
-      @logging         = opts[:logging] || false
+      @logfile         = opts[:log_file] || opts[:logfile] || STDOUT
       @threaded        = opts.fetch(:threaded, true)
+
+      self.init_logger(opts[:log_level] || ENV["BUNNY_LOG_LEVEL"] || Logger::WARN)
 
       # should automatic recovery from network failures be used?
       @automatically_recover = if opts[:automatically_recover].nil? && opts[:automatic_recovery].nil?
@@ -341,7 +344,7 @@ module Bunny
 
     # @private
     def handle_frame(ch_number, method)
-      # puts "Session#handle_frame on #{ch_number}: #{method.inspect}"
+      @logger.debug "Session#handle_frame on #{ch_number}: #{method.inspect}"
       case method
       when AMQ::Protocol::Channel::OpenOk then
         @continuations.push(method)
@@ -362,9 +365,9 @@ module Bunny
 
           @transport.close
         rescue StandardError => e
-          puts e.class.name
-          puts e.message
-          puts e.backtrace
+          @logger.error e.class.name
+          @logger.error e.message
+          @logger.error e.backtrace
         ensure
           @continuations.push(:__unblock__)
         end
@@ -381,7 +384,7 @@ module Bunny
         if ch = @channels[ch_number]
           ch.handle_method(method)
         else
-          # TODO: log a warning
+          @logger.warn "Channel #{ch_number} is not open on this connection!"
         end
       end
     end
@@ -415,7 +418,7 @@ module Bunny
       if !recovering_from_network_failure?
         @recovering_from_network_failure = true
         if recoverable_network_failure?(exception)
-          # puts "Recovering from a network failure..."
+          @logger.warn "Recovering from a network failure..."
           @channels.each do |n, ch|
             ch.maybe_kill_consumer_work_pool!
           end
@@ -443,7 +446,7 @@ module Bunny
     def recover_from_network_failure
       begin
         sleep @network_recovery_interval
-        # puts "About to start recovery..."
+        @logger.debug "About to start connection recovery..."
         start
 
         if open?
@@ -452,7 +455,7 @@ module Bunny
           recover_channels
         end
       rescue TCPConnectionFailed, AMQ::Protocol::EmptyResponseError => e
-        # puts "TCP connection failed, reconnecting in 5 seconds"
+        @logger.warn "TCP connection failed, reconnecting in 5 seconds"
         sleep @network_recovery_interval
         retry if recoverable_network_failure?(e)
       end
@@ -639,6 +642,12 @@ module Bunny
       end
     end # send_frameset_without_timeout(frames)
 
+    # @return [String]
+    # @api public
+    def to_s
+      "Bunny::Session #{@user}@#{@host}:#{@port}, vhost=#{@vhost}"
+    end
+
     protected
 
     # @api private
@@ -659,6 +668,7 @@ module Bunny
     # @api private
     def open_connection
       @transport.send_frame(AMQ::Protocol::Connection::StartOk.encode(@client_properties, @mechanism, self.encode_credentials(username, password), @locale))
+      @logger.debug "Sent connection.start-ok"
 
       frame = begin
                 @transport.read_next_frame
@@ -669,6 +679,7 @@ module Bunny
               end
       if frame.nil?
         @state = :closed
+        @logger.warn "RabbitMQ closed TCP connection before AMQP 0.9.1 connection was finalized. Most likely this means authentication failure."
         raise Bunny::PossibleAuthenticationFailureError.new(self.user, self.vhost, self.password.size)
       end
 
@@ -682,11 +693,14 @@ module Bunny
                               else
                                 negotiate_value(@client_heartbeat, connection_tune.heartbeat)
                               end
+      @logger.debug "Heartbeat interval negotiation: client = #{@client_heartbeat}, server = #{connection_tune.heartbeat}, result = #{@heartbeat}"
 
       @channel_id_allocator = ChannelIdAllocator.new(@channel_max)
 
       @transport.send_frame(AMQ::Protocol::Connection::TuneOk.encode(@channel_max, @frame_max, @heartbeat))
+      @logger.debug "Sent connection.tune-ok with heartbeat interval = #{@heartbeat}, frame_max = #{@frame_max}, channel_max = #{@channel_max}"
       @transport.send_frame(AMQ::Protocol::Connection::Open.encode(self.vhost))
+      @logger.debug "Sent connection.open with vhost = #{self.vhost}"
 
       frame2 = begin
                  @transport.read_next_frame
@@ -697,6 +711,7 @@ module Bunny
                end
       if frame2.nil?
         @state = :closed
+        @logger.warn "RabbitMQ closed TCP connection before AMQP 0.9.1 connection was finalized. Most likely this means authentication failure."
         raise Bunny::PossibleAuthenticationFailureError.new(self.user, self.vhost, self.password.size)
       end
       connection_open_ok = frame2.decode_payload
@@ -726,8 +741,8 @@ module Bunny
 
     # @api private
     def initialize_heartbeat_sender
-      # puts "Initializing heartbeat sender..."
-      @heartbeat_sender = HeartbeatSender.new(@transport)
+      @logger.debug "Initializing heartbeat sender..."
+      @heartbeat_sender = HeartbeatSender.new(@transport, @logger)
       @heartbeat_sender.start(@heartbeat)
     end
 
@@ -750,6 +765,7 @@ module Bunny
     # @api private
     def send_preamble
       @transport.send_raw(AMQ::Protocol::PREAMBLE)
+      @logger.debug "Sent protocol preamble"
     end
 
 
@@ -763,13 +779,16 @@ module Bunny
       Authentication::CredentialsEncoder.for_session(self)
     end
 
-    # @api private
-    def reset_continuations
-      @continuations = if defined?(JRUBY_VERSION)
-                         Concurrent::LinkedContinuationQueue.new
-                       else
-                         Concurrent::ContinuationQueue.new
-                       end
+    if defined?(JRUBY_VERSION)
+      # @api private
+      def reset_continuations
+        @continuations = Concurrent::LinkedContinuationQueue.new
+      end
+    else
+      # @api private
+      def reset_continuations
+        @continuations = Concurrent::ContinuationQueue.new
+      end
     end
 
     # @api private
@@ -779,6 +798,28 @@ module Bunny
       end
 
       @continuations.pop
+    end
+
+    # @api private
+    def init_logger(level)
+      @logger          = ::Logger.new(@logfile)
+      @logger.level    = normalize_log_level(level)
+      @logger.progname = self.to_s
+
+      @logger
+    end
+
+    # @api private
+    def normalize_log_level(level)
+      case level
+      when :debug, Logger::DEBUG, "debug" then Logger::DEBUG
+      when :info,  Logger::INFO,  "info"  then Logger::INFO
+      when :warn,  Logger::WARN,  "warn"  then Logger::WARN
+      when :error, Logger::ERROR, "error" then Logger::ERROR
+      when :fatal, Logger::FATAL, "fatal" then Logger::FATAL
+      else
+        Logger::WARN
+      end
     end
   end # Session
 

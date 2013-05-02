@@ -159,6 +159,7 @@ module Bunny
     # @param [Bunny::ConsumerWorkPool] work_pool Thread pool for delivery processing, by default of size 1
     def initialize(connection = nil, id = nil, work_pool = ConsumerWorkPool.new(1))
       @connection = connection
+      @logger     = connection.logger
       @id         = id || @connection.next_channel_id
       @status     = :opening
 
@@ -1358,7 +1359,7 @@ module Bunny
     #
     # @api plugin
     def recover_from_network_failure
-      # puts "Recovering channel #{@id}"
+      @logger.debug "Recovering channel #{@id} after network failure"
       release_all_continuations
 
       recover_prefetch_setting
@@ -1392,7 +1393,7 @@ module Bunny
     # @api plugin
     def recover_queues
       @queues.values.dup.each do |q|
-        # puts "Recovering queue #{q.name}"
+        @logger.debug "Recovering queue #{q.name}"
         q.recover_from_network_failure
       end
     end
@@ -1436,7 +1437,7 @@ module Bunny
 
     # @private
     def handle_method(method)
-      # puts "Channel#handle_frame on channel #{@id}: #{method.inspect}"
+      @logger.debug "Channel#handle_frame on channel #{@id}: #{method.inspect}"
       case method
       when AMQ::Protocol::Queue::DeclareOk then
         @continuations.push(method)
@@ -1525,8 +1526,7 @@ module Bunny
           consumer.call(DeliveryInfo.new(basic_deliver), MessageProperties.new(properties), content)
         end
       else
-        # TODO: log it
-        puts "[warning] No consumer for tag #{basic_deliver.consumer_tag}"
+        @logger.warn "No consumer for tag #{basic_deliver.consumer_tag} on channel #{@id}!"
       end
     end
 
@@ -1537,7 +1537,7 @@ module Bunny
       if x
         x.handle_return(ReturnInfo.new(basic_return), MessageProperties.new(properties), content)
       else
-        # TODO: log a warning
+        @logger.warn "Exchange #{basic_return.exchange} is not in channel #{@id}'s cache! Dropping returned message!"
       end
     end
 
@@ -1638,9 +1638,7 @@ module Bunny
         end
       end
 
-      @continuations           = ::Queue.new
-      @confirms_continuations  = ::Queue.new
-      @basic_get_continuations = ::Queue.new
+      self.reset_continuations
     end
 
     # Starts consumer work pool. Lazily called by #basic_consume to avoid creating new threads

@@ -17,6 +17,8 @@ rescue LoadError => e
   # no-op
 end
 
+require "logger"
+
 # Core entities: connection, channel, exchange, queue, consumer
 require "bunny/session"
 require "bunny/channel"

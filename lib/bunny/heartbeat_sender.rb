@@ -9,8 +9,9 @@ module Bunny
     # API
     #
 
-    def initialize(transport)
+    def initialize(transport, logger)
       @transport = transport
+      @logger    = logger
       @mutex     = Mutex.new
 
       @last_activity_time = Time.now
@@ -58,6 +59,7 @@ module Bunny
       now = Time.now
 
       if now > (@last_activity_time + @interval)
+        @logger.debug "Sending a heartbeat, last activity time = #{@last_activity_time}, interval = #{@interval}"
         @transport.send_raw(AMQ::Protocol::HeartbeatFrame.encode)
       end
     end
