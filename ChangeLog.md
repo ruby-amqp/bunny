@@ -1,6 +1,30 @@
 ## Changes between Bunny 0.9.0.pre10 and 0.9.0.pre11
 
-No changes yet.
+### Logging Support
+
+Every Bunny connection now has a logger. By default, Bunny will use STDOUT
+as logging device. This is configurable using the `:log_file` option:
+
+``` ruby
+require "bunny"
+
+conn = Bunny.new(:log_level => :warn)
+```
+
+or the `BUNNY_LOG_LEVEL` environment variable that can take one of the following
+values:
+
+ * `debug` (very verbose)
+ * `info`
+ * `warn`
+ * `error`
+ * `fatal` (least verbose)
+
+Severity is set to `warn` by default. To disable logging completely, set the level
+to `fatal`.
+
+To redirect logging to a file or any other object that can act as an I/O entity,
+pass it to the `:log_file` option.
 
 
 ## Changes between Bunny 0.9.0.pre9 and 0.9.0.pre10
