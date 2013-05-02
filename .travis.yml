@@ -17,6 +17,4 @@ services:
 branches:
   only:
     - master
-    - 0.8.x-stable
     - 0.9.x-stable
-    - migrate_to_amq_protocol
