@@ -16,6 +16,16 @@ module Bunny
         @q.pop
       end
 
+      def poll(timeout_in_ms = nil)
+        if timeout_in_ms
+          Bunny::Timer.timeout(timeout_in_ms / 1000) do
+            @q.pop
+          end
+        else
+          @q.pop
+        end
+      end
+
       def clear
         @q.clear
       end
