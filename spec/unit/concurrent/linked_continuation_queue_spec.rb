@@ -1,8 +1,8 @@
 require "spec_helper"
 
-require "bunny/concurrent/linked_continuation_queue"
-
 if defined?(JRUBY_VERSION)
+  require "bunny/concurrent/linked_continuation_queue"
+
   describe Bunny::Concurrent::LinkedContinuationQueue do
     describe "#poll with a timeout that is never reached" do
       it "blocks until the value is available, then returns it" do
