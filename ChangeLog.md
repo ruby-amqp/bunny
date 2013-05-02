@@ -1,3 +1,8 @@
+## Changes between Bunny 0.9.0.pre10 and 0.9.0.pre11
+
+No changes yet.
+
+
 ## Changes between Bunny 0.9.0.pre9 and 0.9.0.pre10
 
 This release contains a **breaking API change**.
