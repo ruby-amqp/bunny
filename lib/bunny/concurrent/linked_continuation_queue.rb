@@ -25,7 +25,7 @@ module Bunny
 
       def push(el, timeout_in_ms = nil)
         if timeout_in_ms
-          @q.offer(el, timeout_in_ms, TimeUnit.MILLISECONDS)
+          @q.offer(el, timeout_in_ms, TimeUnit::MILLISECONDS)
         else
           @q.offer(el)
         end
@@ -38,7 +38,7 @@ module Bunny
 
       def poll(timeout_in_ms = nil)
         if timeout_in_ms
-          @q.poll(timeout_in_ms, TimeUnit.MILLISECONDS)
+          @q.poll(timeout_in_ms, TimeUnit::MILLISECONDS)
         else
           @q.poll
         end
