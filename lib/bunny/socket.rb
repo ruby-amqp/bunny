@@ -21,7 +21,7 @@ module Bunny
     end
 
     def read_fully(count, timeout = nil)
-      return nil if @eof
+      return nil if @__bunny_socket_eof_flag__
 
       value = ''
       begin
@@ -30,7 +30,8 @@ module Bunny
           break if value.bytesize >= count
         end
       rescue EOFError
-        @eof = true
+        # @eof will break Rubinius' TCPSocket implementation. MK.
+        @__bunny_socket_eof_flag__ = true
       rescue Errno::EAGAIN, Errno::EWOULDBLOCK
         if IO.select([self], nil, nil, timeout)
           retry
