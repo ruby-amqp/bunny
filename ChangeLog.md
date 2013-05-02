@@ -2,6 +2,15 @@
 
 This release contains a **breaking API change**.
 
+### Concurrency Improvements On JRuby
+
+On JRuby, Bunny now will use `java.util.concurrent`-backed implementations
+of some of the concurrency primitives. This both improves client stability
+(JDK concurrency primitives has been around for 9 years and have
+well-defined, documented semantics) and opens the door to solving
+some tricky failure handling problems in the future.
+
+
 ### Explicitly Closed Sockets
 
 Bunny now will correctly close the socket previous connection had
