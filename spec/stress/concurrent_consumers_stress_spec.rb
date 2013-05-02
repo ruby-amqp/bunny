@@ -4,7 +4,8 @@ require "spec_helper"
 unless ENV["CI"]
   describe "Concurrent consumers sharing a connection" do
     let(:connection) do
-      c = Bunny.new(:user => "bunny_gem", :password => "bunny_password", :vhost => "bunny_testbed", :automatic_recovery => false)
+      c = Bunny.new(:user => "bunny_gem", :password => "bunny_password", :vhost => "bunny_testbed",
+                    :automatic_recovery => false, :continuation_timeout => 6000)
       c.start
       c
     end
