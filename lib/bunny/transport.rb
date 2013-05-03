@@ -151,6 +151,14 @@ module Bunny
     # @private
     def read_next_frame(opts = {})
       header    = @socket.read_fully(7)
+      # TODO: network issues here will sometimes cause
+      #       the socket method return an empty string. We need to log
+      #       and handle this better.
+      # type, channel, size = begin
+      #                         AMQ::Protocol::Frame.decode_header(header)
+      #                       rescue AMQ::Protocol::EmptyResponseError => e
+      #                         puts "Got AMQ::Protocol::EmptyResponseError, header is #{header.inspect}"
+      #                       end
       type, channel, size = AMQ::Protocol::Frame.decode_header(header)
       payload   = @socket.read_fully(size)
       frame_end = @socket.read_fully(1)
