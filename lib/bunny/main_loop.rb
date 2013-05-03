@@ -55,8 +55,6 @@ module Bunny
 
     def run_once
       frame = @transport.read_next_frame
-      @session.signal_activity!
-
       return if frame.is_a?(AMQ::Protocol::HeartbeatFrame)
 
       if !frame.final? || frame.method_class.has_content?

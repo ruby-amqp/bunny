@@ -47,10 +47,10 @@ module Bunny
           sleep @interval
         end
       rescue IOError => ioe
-        puts ioe.message
+        @logger.error "I/O error in the hearbeat sender: #{ioe.message}"
         stop
       rescue Exception => e
-        puts e.message
+        @logger.error "I/O error in the hearbeat sender: #{ioe.message}"
         stop
       end
     end
@@ -59,7 +59,7 @@ module Bunny
       now = Time.now
 
       if now > (@last_activity_time + @interval)
-        @logger.debug "Sending a heartbeat, last activity time = #{@last_activity_time}, interval = #{@interval}"
+        @logger.debug "Sending a heartbeat, last activity time: #{@last_activity_time}, interval (s): #{@interval}"
         @transport.send_raw(AMQ::Protocol::HeartbeatFrame.encode)
       end
     end

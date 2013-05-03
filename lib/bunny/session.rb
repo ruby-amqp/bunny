@@ -110,7 +110,7 @@ module Bunny
       @logfile         = opts[:log_file] || opts[:logfile] || STDOUT
       @threaded        = opts.fetch(:threaded, true)
 
-      self.init_logger(opts[:log_level] || ENV["BUNNY_LOG_LEVEL"] || Logger::WARN)
+      self.init_logger(opts[:log_level] || ENV["BUNNY_LOG_LEVEL"] || Logger::INFO)
 
       # should automatic recovery from network failures be used?
       @automatically_recover = if opts[:automatically_recover].nil? && opts[:automatic_recovery].nil?
@@ -594,11 +594,12 @@ module Bunny
     #
     # @raise [ConnectionClosedError]
     # @private
-    def send_frame(frame)
+    def send_frame(frame, signal_activity = true)
       if closed?
         raise ConnectionClosedError.new(frame)
       else
         @network_mutex.synchronize { @transport.write(frame.encode) }
+        signal_activity! if signal_activity
       end
     end
 
@@ -608,11 +609,12 @@ module Bunny
     #
     # @raise [ConnectionClosedError]
     # @private
-    def send_frame_without_timeout(frame)
+    def send_frame_without_timeout(frame, signal_activity = true)
       if closed?
         raise ConnectionClosedError.new(frame)
       else
         @network_mutex.synchronize { @transport.write_without_timeout(frame.encode) }
+        signal_activity! if signal_activity
       end
     end
 
@@ -627,8 +629,8 @@ module Bunny
       # If we synchronize on the channel, however, this is both thread safe and pretty fine-grained
       # locking. Note that "single frame" methods do not need this kind of synchronization. MK.
       channel.synchronize do
-        frames.each { |frame| self.send_frame(frame) }
-        @transport.flush
+        frames.each { |frame| self.send_frame(frame, false) }
+        signal_activity!
       end
     end # send_frameset(frames)
 
@@ -644,7 +646,8 @@ module Bunny
       # If we synchronize on the channel, however, this is both thread safe and pretty fine-grained
       # locking. Note that "single frame" methods do not need this kind of synchronization. MK.
       channel.synchronize do
-        frames.each { |frame| self.send_frame_without_timeout(frame) }
+        frames.each { |frame| self.send_frame_without_timeout(frame, false) }
+        signal_activity!
       end
     end # send_frameset_without_timeout(frames)
 
