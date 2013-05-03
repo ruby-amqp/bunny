@@ -146,6 +146,9 @@ module Bunny
   class InvalidCommand < ConnectionLevelException
   end
 
+  class FrameError < ConnectionLevelException
+  end
+
   class UnexpectedFrame < ConnectionLevelException
   end
 

@@ -489,6 +489,8 @@ module Bunny
         klass = case frame.reply_code
                 when 320 then
                   ConnectionForced
+                when 501 then
+                  FrameError
                 when 503 then
                   InvalidCommand
                 when 504 then
