@@ -1,5 +1,14 @@
 ## Changes between Bunny 0.9.0.pre10 and 0.9.0.pre11
 
+### Heartbeat Fix For Long Running Consumers
+
+Long running consumers that don't send any data will no longer
+suffer from connections closed by RabbitMQ because of skipped
+heartbeats.
+
+Activity tracking now takes sent frames into account.
+
+
 ### Time-bound continuations
 
 If a network loop exception causes "main" session thread to never
