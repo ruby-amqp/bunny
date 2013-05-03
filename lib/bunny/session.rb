@@ -110,7 +110,7 @@ module Bunny
       @logfile         = opts[:log_file] || opts[:logfile] || STDOUT
       @threaded        = opts.fetch(:threaded, true)
 
-      self.init_logger(opts[:log_level] || ENV["BUNNY_LOG_LEVEL"] || Logger::INFO)
+      self.init_logger(opts[:log_level] || ENV["BUNNY_LOG_LEVEL"] || Logger::WARN)
 
       # should automatic recovery from network failures be used?
       @automatically_recover = if opts[:automatically_recover].nil? && opts[:automatic_recovery].nil?
