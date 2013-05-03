@@ -110,6 +110,7 @@ module Bunny
     def write_without_timeout(data)
       begin
         @socket.write(data)
+        @socket.flush
       rescue SystemCallError, Bunny::ConnectionError, IOError => e
         close
 
