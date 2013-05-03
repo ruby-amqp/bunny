@@ -109,7 +109,7 @@ module Bunny
   # to the size specified in that frame's header.
   # This suggest that there is a bug in adapter or AMQ broker implementation.
   #
-  # @see http://files.travis-ci.org/docs/amqp/0.9.1/AMQP091Specification.pdf AMQP 0.9.1 specification (Section 2.3)
+  # @see https://www.rabbitmq.com/resources/specs/amqp0-9-1.pdf AMQP 0.9.1 specification (Section 2.3)
   class BadLengthError < InconsistentDataError
     def initialize(expected_length, actual_length)
       super("Frame payload should be #{expected_length} long, but it's #{actual_length} long.")
