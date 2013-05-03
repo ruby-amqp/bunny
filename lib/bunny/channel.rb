@@ -1625,20 +1625,14 @@ module Bunny
     # Releases all continuations. Used by automatic network recovery.
     # @private
     def release_all_continuations
-      if @confirms_continuations.num_waiting > 0
-        @threads_waiting_on_confirms_continuations.each do |t|
-          t.run
-        end
+      @threads_waiting_on_confirms_continuations.each do |t|
+        t.run
       end
-      if @continuations.num_waiting > 0
-        @threads_waiting_on_continuations.each do |t|
-          t.run
-        end
+      @threads_waiting_on_continuations.each do |t|
+        t.run
       end
-      if @basic_get_continuations.num_waiting > 0
-        @threads_waiting_on_basic_get_continuations.each do |t|
-          t.run
-        end
+      @threads_waiting_on_basic_get_continuations.each do |t|
+        t.run
       end
 
       self.reset_continuations
