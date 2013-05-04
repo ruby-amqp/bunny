@@ -215,6 +215,7 @@ module Bunny
     def close
       @connection.close_channel(self)
       closed!
+      maybe_kill_consumer_work_pool!
     end
 
     # @return [Boolean] true if this channel is open, false otherwise
