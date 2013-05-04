@@ -17,7 +17,7 @@ unless ENV["CI"]
 
 
     context "when publishing thousands of messages" do
-      let(:n) { 10_000 }
+      let(:n) { 2_000 }
       let(:m) { 10 }
 
       it "successfully publishers them all" do
@@ -31,7 +31,7 @@ unless ENV["CI"]
           n.times do
             x.publish(body, :routing_key => q.name)
           end
-          puts "Published #{i * n} messages so far..."
+          puts "Published #{i * n} 1K messages..."
         end
 
         q.purge
