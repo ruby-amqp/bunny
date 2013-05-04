@@ -104,7 +104,6 @@ module Bunny
         end
       end
     end
-    alias send_raw write
 
     # Writes data to the socket without timeout checks
     def write_without_timeout(data)
@@ -184,7 +183,7 @@ module Bunny
         @session.handle_network_failure(ConnectionClosedError.new(frame))
       else
         frame.encode_to_array.each do |component|
-          send_raw(component)
+          write(component)
         end
       end
     end

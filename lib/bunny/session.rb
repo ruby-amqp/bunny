@@ -478,11 +478,6 @@ module Bunny
     end
 
     # @private
-    def send_raw(data)
-      @transport.write(data)
-    end
-
-    # @private
     def instantiate_connection_level_exception(frame)
       case frame
       when AMQ::Protocol::Connection::Close then
@@ -774,7 +769,7 @@ module Bunny
     # Sends AMQ protocol header (also known as preamble).
     # @api private
     def send_preamble
-      @transport.send_raw(AMQ::Protocol::PREAMBLE)
+      @transport.write(AMQ::Protocol::PREAMBLE)
       @logger.debug "Sent protocol preamble"
     end
 
