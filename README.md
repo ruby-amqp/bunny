@@ -62,7 +62,7 @@ ch = conn.create_channel
 # declare a queue
 q  = ch.queue("test1")
 
-# declare default direct exchange which is bound to all queues
+# default direct exchange is automatically bound to all queues
 e  = ch.default_exchange
 
 # publish a message to the exchange which then gets routed to the queue
