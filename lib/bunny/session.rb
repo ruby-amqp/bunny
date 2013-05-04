@@ -208,11 +208,11 @@ module Bunny
     # opened (this operation is very fast and inexpensive).
     #
     # @return [Bunny::Channel] Newly opened channel
-    def create_channel(n = nil)
+    def create_channel(n = nil, consumer_pool_size = 1)
       if n && (ch = @channels[n])
         ch
       else
-        ch = Bunny::Channel.new(self, n)
+        ch = Bunny::Channel.new(self, n, ConsumerWorkPool.new(consumer_pool_size || 1))
         ch.open
         ch
       end
