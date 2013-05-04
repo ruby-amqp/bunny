@@ -21,6 +21,10 @@ s  = "z" * 1024
 puts "Doing a warmup run..."
 16000.times { x.publish(s, :routing_key => "anything") }
 
+# give OS, the server and so on some time to catch
+# up
+sleep 2.0
+
 t  = Benchmark.realtime do
   n.times { x.publish(s, :routing_key => "anything") }
 end
