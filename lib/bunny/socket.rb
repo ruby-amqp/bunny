@@ -61,10 +61,6 @@ module Bunny
     # @api public
     def write_nonblock_fully(data)
       return nil if @__bunny_socket_eof_flag__
-      if data.bytesize <= 4096
-        self.write_nonblock(data)
-        return data.bytesize
-      end
 
       begin
         while !data.empty?
