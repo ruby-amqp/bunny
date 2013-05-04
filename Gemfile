@@ -40,7 +40,7 @@ gemspec
 def custom_gem(name, options = Hash.new)
   local_path = File.expand_path("../vendor/#{name}", __FILE__)
   if File.exist?(local_path)
-    puts "Using #{name} from #{local_path}..."
+    # puts "Using #{name} from #{local_path}..."
     gem name, options.merge(:path => local_path).delete_if { |key, _| [:git, :branch].include?(key) }
   else
     gem name, options
