@@ -40,7 +40,7 @@ unless ENV["CI"]
         puts "Published #{(i + 1) * m} tiny messages..."
       end
 
-      sleep 3.0
+      sleep 2.0
       q1.message_count.should be > 100
       q2.message_count.should be > 100
 
