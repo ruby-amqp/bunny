@@ -2,7 +2,7 @@
 require "spec_helper"
 
 unless ENV["CI"]
-  describe "x-consistent-hash exchanges" do
+  describe "x-consistent-hash exchange" do
     let(:connection) do
       c = Bunny.new(:user => "bunny_gem", :password => "bunny_password", :vhost => "bunny_testbed")
       c.start
@@ -13,12 +13,11 @@ unless ENV["CI"]
       connection.close
     end
 
-    let(:list) { Range.new(0, 30).to_a.map(&:to_s) }
+    let(:list) { Range.new(0, 6).to_a.map(&:to_s) }
 
-    let(:n) { 20 }
-    let(:m) { 10_000 }
+    let(:m) { 1500 }
 
-    it "can be used" do
+    it "distributes messages between queues bound with the same routing key" do
       ch   = connection.create_channel
       body = "сообщение"
       # requires the consistent hash exchange plugin,
@@ -29,8 +28,8 @@ unless ENV["CI"]
 
       qs = []
 
-      q1 = ch.queue("", :exclusive => true).bind(x, :routing_key => "15")
-      q2 = ch.queue("", :exclusive => true).bind(x, :routing_key => "15")
+      q1 = ch.queue("", :exclusive => true).bind(x, :routing_key => "5")
+      q2 = ch.queue("", :exclusive => true).bind(x, :routing_key => "5")
 
       sleep 1.0
 
@@ -38,12 +37,12 @@ unless ENV["CI"]
         m.times do
           x.publish(body, :routing_key => list.sample)
         end
-        puts "Published #{(i + 1) * m} messages..."
+        puts "Published #{(i + 1) * m} tiny messages..."
       end
 
-      sleep 4.0
-      q1.message_count.should be > 1000
-      q2.message_count.should be > 1000
+      sleep 3.0
+      q1.message_count.should be > 100
+      q2.message_count.should be > 100
 
       ch.close
     end
