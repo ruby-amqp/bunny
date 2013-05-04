@@ -1,5 +1,16 @@
 ## Changes between Bunny 0.9.0.pre10 and 0.9.0.pre11
 
+### Bunny::Session#create_channel Now Accepts Consumer Work Pool Size
+
+`Bunny::Session#create_channel` now accepts consumer work pool size as
+the second argument:
+
+``` ruby
+# nil means channel id will be allocated by Bunny.
+# 8 is the number of threads in the consumer work pool this channel will use.
+ch = conn.create_channel(nil, 8)
+```
+
 ### Heartbeat Fix For Long Running Consumers
 
 Long running consumers that don't send any data will no longer
