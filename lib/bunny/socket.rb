@@ -32,7 +32,7 @@ module Bunny
       rescue EOFError
         # @eof will break Rubinius' TCPSocket implementation. MK.
         @__bunny_socket_eof_flag__ = true
-      rescue Errno::EAGAIN, Errno::EWOULDBLOCK
+      rescue Errno::EAGAIN, Errno::EWOULDBLOCK, IO::WaitReadable
         if IO.select([self], nil, nil, timeout)
           retry
         else
