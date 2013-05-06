@@ -12,6 +12,7 @@ module Bunny
       @transport      = transport
       @session        = session
       @session_thread = session_thread
+      @logger         = @session.logger
     end
 
 
@@ -86,10 +87,10 @@ module Bunny
     end
 
     def log_exception(e)
-      puts e.class.name
-      puts e.message
+      @logger.error "Exception in the reader loop: #{e.class.name}: #{e.message}"
+      @logger.error "Backtrace: "
       e.backtrace.each do |line|
-        puts line
+        @logger.error "\t#{line}"
       end
     end
   end
