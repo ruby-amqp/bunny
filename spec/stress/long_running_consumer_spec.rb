@@ -16,7 +16,7 @@ unless ENV["CI"]
       connection.close
     end
 
-    let(:target) { 2 * 1024 * 1024 * 1024 }
+    let(:target) { 512 * 1024 * 1024 }
     let(:queue)  { "bunny.stress.long_running_consumer.#{Time.now.to_i}" }
 
     let(:rate) { 50 }
