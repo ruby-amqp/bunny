@@ -44,7 +44,6 @@ module Bunny
             @session_thread.raise(Bunny::NetworkFailure.new("detected a network failure: #{e.message}", e))
           end
         rescue Exception => e
-          puts "Unepxected exception in the main loop:"
           log_exception(e)
 
           @network_is_down = true
