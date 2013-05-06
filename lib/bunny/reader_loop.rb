@@ -34,7 +34,6 @@ module Bunny
         rescue Errno::EBADF => ebadf
           # ignored, happens when we loop after the transport has already been closed
         rescue AMQ::Protocol::EmptyResponseError, IOError, SystemCallError => e
-          puts "Exception in the main loop:"
           log_exception(e)
 
           @network_is_down = true
