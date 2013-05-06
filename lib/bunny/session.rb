@@ -135,7 +135,6 @@ module Bunny
       @locale              = @opts.fetch(:locale, DEFAULT_LOCALE)
       # mutex for the channel id => channel hash
       @channel_mutex       = Mutex.new
-      @network_mutex       = Mutex.new
       @channels            = Hash.new
 
       self.reset_continuations
@@ -593,7 +592,7 @@ module Bunny
       if closed?
         raise ConnectionClosedError.new(frame)
       else
-        @network_mutex.synchronize { @transport.write(frame.encode) }
+        @transport.write(frame.encode)
         signal_activity! if signal_activity
       end
     end
@@ -608,7 +607,7 @@ module Bunny
       if closed?
         raise ConnectionClosedError.new(frame)
       else
-        @network_mutex.synchronize { @transport.write_without_timeout(frame.encode) }
+        @transport.write_without_timeout(frame.encode)
         signal_activity! if signal_activity
       end
     end

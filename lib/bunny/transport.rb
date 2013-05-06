@@ -45,6 +45,8 @@ module Bunny
       @connect_timeout    = nil if @connect_timeout == 0
       @disconnect_timeout = @read_write_timeout || @connect_timeout
 
+      @writes_mutex       = Mutex.new
+
       initialize_socket
       connect
     end
@@ -84,13 +86,13 @@ module Bunny
         if @read_write_timeout
           Bunny::Timer.timeout(@read_write_timeout, Bunny::ClientTimeout) do
             if open?
-              @socket.write(data)
+              @writes_mutex.synchronize { @socket.write(data) }
               @socket.flush
             end
           end
         else
           if open?
-            @socket.write(data)
+            @writes_mutex.synchronize { @socket.write(data) }
             @socket.flush
           end
         end
@@ -108,7 +110,7 @@ module Bunny
     # Writes data to the socket without timeout checks
     def write_without_timeout(data)
       begin
-        @socket.write(data)
+        @writes_mutex.synchronize { @socket.write(data) }
         @socket.flush
       rescue SystemCallError, Bunny::ConnectionError, IOError => e
         close
@@ -120,6 +122,31 @@ module Bunny
         end
       end
     end
+
+    # Sends frame to the peer.
+    #
+    # @raise [ConnectionClosedError]
+    # @private
+    def send_frame(frame)
+      if closed?
+        @session.handle_network_failure(ConnectionClosedError.new(frame))
+      else
+        write(frame.encode)
+      end
+    end
+
+    # Sends frame to the peer without timeout control.
+    #
+    # @raise [ConnectionClosedError]
+    # @private
+    def send_frame_without_timeout(frame)
+      if closed?
+        @session.handle_network_failure(ConnectionClosedError.new(frame))
+      else
+        write_without_timeout(frame.encode)
+      end
+    end
+
 
     def close(reason = nil)
       @socket.close unless @socket.closed?
@@ -171,35 +198,6 @@ module Bunny
       # 2) the size is OK, but the string doesn't end with FINAL_OCTET
       raise NoFinalOctetError.new if frame_end != AMQ::Protocol::Frame::FINAL_OCTET
       AMQ::Protocol::Frame.new(type, payload, channel)
-    end
-
-
-    # Sends frame to the peer.
-    #
-    # @raise [ConnectionClosedError]
-    # @private
-    def send_frame(frame)
-      if closed?
-        @session.handle_network_failure(ConnectionClosedError.new(frame))
-      else
-        frame.encode_to_array.each do |component|
-          write(component)
-        end
-      end
-    end
-
-    # Sends frame to the peer without timeout control.
-    #
-    # @raise [ConnectionClosedError]
-    # @private
-    def send_frame_without_timeout(frame)
-      if closed?
-        @session.handle_network_failure(ConnectionClosedError.new(frame))
-      else
-        frame.encode_to_array.each do |component|
-          write_without_timeout(component)
-        end
-      end
     end
 
 
