@@ -1581,7 +1581,7 @@ module Bunny
           @threads_waiting_on_continuations.delete(t)
         end
       else
-        connection.event_loop.run_once until @continuations.length > 0
+        connection.reader_loop.run_once until @continuations.length > 0
 
         @continuations.pop
       end

@@ -4,7 +4,7 @@ require "thread"
 require "bunny/transport"
 require "bunny/channel_id_allocator"
 require "bunny/heartbeat_sender"
-require "bunny/main_loop"
+require "bunny/reader_loop"
 require "bunny/authentication/credentials_encoder"
 require "bunny/authentication/plain_mechanism_encoder"
 require "bunny/authentication/external_mechanism_encoder"
@@ -187,8 +187,8 @@ module Bunny
         self.init_connection
         self.open_connection
 
-        @event_loop = nil
-        self.start_main_loop if @threaded
+        @reader_loop = nil
+        self.start_reader_loop if @threaded
 
         @default_channel = self.create_channel
       rescue Exception => e
@@ -364,8 +364,8 @@ module Bunny
         begin
           @continuations.clear
 
-          event_loop.stop
-          @event_loop = nil
+          reader_loop.stop
+          @reader_loop = nil
 
           @transport.close
         rescue StandardError => e
@@ -564,18 +564,18 @@ module Bunny
     end
 
     # @private
-    def start_main_loop
-      event_loop.start
+    def start_reader_loop
+      reader_loop.start
     end
 
     # @private
-    def event_loop
-      @event_loop ||= MainLoop.new(@transport, self, Thread.current)
+    def reader_loop
+      @reader_loop ||= ReaderLoop.new(@transport, self, Thread.current)
     end
 
     # @private
-    def maybe_shutdown_main_loop
-      @event_loop.stop if @event_loop
+    def maybe_shutdown_reader_loop
+      @reader_loop.stop if @reader_loop
     end
 
     # @private
@@ -799,7 +799,7 @@ module Bunny
     # @api private
     def wait_on_continuations
       unless @threaded
-        event_loop.run_once until @continuations.length > 0
+        reader_loop.run_once until @continuations.length > 0
       end
 
       @continuations.poll(@continuation_timeout)
