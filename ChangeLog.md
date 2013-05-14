@@ -1,3 +1,9 @@
+## Changes between Bunny 0.9.0.pre11 and 0.9.0.pre12
+
+No changes yet.
+
+
+
 ## Changes between Bunny 0.9.0.pre10 and 0.9.0.pre11
 
 ### Bunny::Session#create_channel Now Accepts Consumer Work Pool Size
