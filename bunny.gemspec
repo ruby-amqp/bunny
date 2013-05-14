@@ -8,8 +8,8 @@ Gem::Specification.new do |s|
   s.name = "bunny"
   s.version = Bunny::VERSION.dup
   s.homepage = "http://github.com/ruby-amqp/bunny"
-  s.summary = "Easy to use synchronous Ruby client for RabbitMQ"
-  s.description = "Easy to use synchronous Ruby client for RabbitMQ"
+  s.summary = "Popular easy to use Ruby client for RabbitMQ"
+  s.description = "Popular easy to use Ruby client for RabbitMQ"
   s.license = "MIT"
 
   # Sorted alphabetically.
