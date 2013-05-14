@@ -12,7 +12,7 @@ puts
 puts "-" * 80
 puts "Benchmarking on #{RUBY_DESCRIPTION}"
 
-n  = 30_000
+n  = 50_000
 ch = conn.create_channel
 x  = ch.default_exchange
 s  = "z" * 1024
