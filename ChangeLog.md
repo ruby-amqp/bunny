@@ -1,6 +1,8 @@
 ## Changes between Bunny 0.9.0.pre11 and 0.9.0.pre12
 
-No changes yet.
+### Bunny::Channel#wait_for_confirms Return Value Regression Fix
+
+`Bunny::Channel#wait_for_confirms` returns `true` or `false` again.
 
 
 
