@@ -1309,6 +1309,7 @@ module Bunny
     # @see http://rubybunny.info/articles/extensions.html RabbitMQ Extensions guide
     # @api public
     def wait_for_confirms
+      @only_acks_received = true
       wait_on_confirms_continuations
 
       @only_acks_received
@@ -1562,6 +1563,7 @@ module Bunny
 
       @unconfirmed_set_mutex.synchronize do
         @only_acks_received = (@only_acks_received && !nack)
+        @logger.debug "Channel #{@id}: @only_acks_received = #{@only_acks_received.inspect}, nack: #{nack.inspect}"
 
         @confirms_continuations.push(true) if @unconfirmed_set.empty?
 
