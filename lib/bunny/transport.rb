@@ -257,7 +257,7 @@ module Bunny
     def wrap_in_tls_socket(socket)
       read_tls_keys!
 
-      ctx = initialize_tls_context(OpenSSL::SSL::SSLContext.new(@opts.fetch(:tls_protocol, DEFAULT_TLS_PROTOCOL)))
+      ctx = initialize_tls_context(OpenSSL::SSL::SSLContext.new)
 
       s = Bunny::SSLSocket.new(socket, ctx)
       s.sync_close = true
@@ -284,6 +284,9 @@ module Bunny
       ctx.key        = OpenSSL::PKey::RSA.new(@tls_key) if @tls_key
       ctx.cert_store = @tls_certificate_store if @tls_certificate_store
 
+      # setting TLS/SSL version only works correctly when done
+      # vis set_params. MK.
+      ctx.set_params(:ssl_version => @opts.fetch(:tls_protocol, DEFAULT_TLS_PROTOCOL))
       ctx.set_params(:verify_mode => OpenSSL::SSL::VERIFY_PEER|OpenSSL::SSL::VERIFY_FAIL_IF_NO_PEER_CERT) if @verify_peer
 
       ctx
