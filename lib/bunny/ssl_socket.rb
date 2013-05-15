@@ -4,7 +4,17 @@ module Bunny
   begin
     require "openssl"
 
+    # TLS-enabled TCP socket that implements convenience
+    # methods found in Bunny::Socket.
     class SSLSocket < OpenSSL::SSL::SSLSocket
+
+      # Reads given number of bytes with an optional timeout
+      #
+      # @param [Integer] count How many bytes to read
+      # @param [Integer] timeout Timeout
+      #
+      # @return [String] Data read from the socket
+      # @api public
       def read_fully(count, timeout = nil)
         return nil if @__bunny_socket_eof_flag__
 
