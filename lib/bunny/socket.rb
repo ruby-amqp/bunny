@@ -8,6 +8,10 @@ module Bunny
   class Socket < TCPSocket
     attr_accessor :options
 
+    # IO::WaitReadable is 1.9+ only
+    READ_RETRY_EXCEPTION_CLASSES = [Errno::EAGAIN, Errno::EWOULDBLOCK]
+    READ_RETRY_EXCEPTION_CLASSES << IO::WaitReadable if IO.const_defined?(:WaitReadable)
+
     def self.open(host, port, options = {})
       Timeout.timeout(options[:socket_timeout]) do
         sock = new(host, port)
@@ -39,7 +43,7 @@ module Bunny
       rescue EOFError
         # @eof will break Rubinius' TCPSocket implementation. MK.
         @__bunny_socket_eof_flag__ = true
-      rescue Errno::EAGAIN, Errno::EWOULDBLOCK, IO::WaitReadable
+      rescue *READ_RETRY_EXCEPTION_CLASSES
         if IO.select([self], nil, nil, timeout)
           retry
         else
