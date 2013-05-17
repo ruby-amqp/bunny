@@ -1,5 +1,10 @@
 ## Changes between Bunny 0.9.0.pre11 and 0.9.0.pre12
 
+### Ruby 1.8 Compatibility Regression Fix
+
+`Bunny::Socket` no longer uses Ruby 1.9-specific constants.
+
+
 ### Bunny::Channel#wait_for_confirms Return Value Regression Fix
 
 `Bunny::Channel#wait_for_confirms` returns `true` or `false` again.
