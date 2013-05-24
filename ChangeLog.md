@@ -1,3 +1,11 @@
+## Changes between Bunny 0.9.0.pre12 and 0.9.0.pre13
+
+### Bunny::Exchange#wait_for_confirms
+
+`Bunny::Exchange#wait_for_confirms` is a convenience method on `Bunny::Exchange` that
+delegates to the method with the same name on exchange's channel.
+
+
 ## Changes between Bunny 0.9.0.pre11 and 0.9.0.pre12
 
 ### Ruby 1.8 Compatibility Regression Fix
