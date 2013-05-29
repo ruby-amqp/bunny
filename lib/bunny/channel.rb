@@ -806,9 +806,18 @@ module Bunny
                                                                   false,
                                                                   arguments))
 
-      Bunny::Timer.timeout(read_write_timeout, ClientTimeout) do
-        @last_basic_consume_ok = wait_on_continuations
+      begin
+        Bunny::Timer.timeout(read_write_timeout, ClientTimeout) do
+          @last_basic_consume_ok = wait_on_continuations
+        end
+      rescue ClientTimeout => e
+        # if basic.consumer-ok never arrives, unregister the proactively
+        # registered consumer. MK.
+        unregister_consumer(@last_basic_consume_ok.consumer_tag)
+
+        raise e
       end
+
       # covers server-generated consumer tags
       add_consumer(queue_name, @last_basic_consume_ok.consumer_tag, no_ack, exclusive, arguments, &block)
 
@@ -827,6 +836,12 @@ module Bunny
       raise_if_no_longer_open!
       maybe_start_consumer_work_pool!
 
+      # helps avoid race condition between basic.consume-ok and basic.deliver if there are messages
+      # in the queue already. MK.
+      if consumer.consumer_tag && consumer.consumer_tag.strip != AMQ::Protocol::EMPTY_STRING
+        register_consumer(consumer.consumer_tag, consumer)
+      end
+
       @connection.send_frame(AMQ::Protocol::Basic::Consume.encode(@id,
                                                                   consumer.queue_name,
                                                                   consumer.consumer_tag,
@@ -836,15 +851,18 @@ module Bunny
                                                                   false,
                                                                   consumer.arguments))
 
-      # helps avoid race condition between basic.consume-ok and basic.deliver if there are messages
-      # in the queue already. MK.
-      if consumer.consumer_tag && consumer.consumer_tag.strip != AMQ::Protocol::EMPTY_STRING
-        register_consumer(consumer.consumer_tag, consumer)
+      begin
+        Bunny::Timer.timeout(read_write_timeout, ClientTimeout) do
+          @last_basic_consume_ok = wait_on_continuations
+        end
+      rescue ClientTimeout => e
+        # if basic.consumer-ok never arrives, unregister the proactively
+        # registered consumer. MK.
+        unregister_consumer(@last_basic_consume_ok.consumer_tag)
+
+        raise e
       end
 
-      Bunny::Timer.timeout(read_write_timeout, ClientTimeout) do
-        @last_basic_consume_ok = wait_on_continuations
-      end
       # covers server-generated consumer tags
       register_consumer(@last_basic_consume_ok.consumer_tag, consumer)
 
@@ -1425,6 +1443,13 @@ module Bunny
     def register_consumer(consumer_tag, consumer)
       @consumer_mutex.synchronize do
         @consumers[consumer_tag] = consumer
+      end
+    end
+
+    # @private
+    def unregister_consumer(consumer_tag)
+      @consumer_mutex.synchronize do
+        @consumers.delete(consumer_tag)
       end
     end
 
