@@ -811,7 +811,7 @@ module Bunny
           @last_basic_consume_ok = wait_on_continuations
         end
       rescue ClientTimeout => e
-        # if basic.consumer-ok never arrives, unregister the proactively
+        # if basic.consume-ok never arrives, unregister the proactively
         # registered consumer. MK.
         unregister_consumer(@last_basic_consume_ok.consumer_tag)
 
@@ -856,7 +856,7 @@ module Bunny
           @last_basic_consume_ok = wait_on_continuations
         end
       rescue ClientTimeout => e
-        # if basic.consumer-ok never arrives, unregister the proactively
+        # if basic.consume-ok never arrives, unregister the proactively
         # registered consumer. MK.
         unregister_consumer(@last_basic_consume_ok.consumer_tag)
 
