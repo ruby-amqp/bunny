@@ -18,7 +18,7 @@ else
 end
 
 module Bunny
-  # ## What are AMQP channels
+  # ## Channels in RabbitMQ
   #
   # To quote {http://www.rabbitmq.com/resources/specs/amqp0-9-1.pdf AMQP 0.9.1 specification}:
   #
