@@ -41,7 +41,7 @@ module Bunny
   #
   #   ch   = conn.create_channel
   #
-  # This will automatically allocate channel id.
+  # This will automatically allocate a channel id.
   #
   # @example Instantiating
   #
