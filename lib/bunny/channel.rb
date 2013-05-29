@@ -810,7 +810,7 @@ module Bunny
         Bunny::Timer.timeout(read_write_timeout, ClientTimeout) do
           @last_basic_consume_ok = wait_on_continuations
         end
-      rescue ClientTimeout => e
+      rescue Exception => e
         # if basic.consume-ok never arrives, unregister the proactively
         # registered consumer. MK.
         unregister_consumer(@last_basic_consume_ok.consumer_tag)
@@ -855,7 +855,7 @@ module Bunny
         Bunny::Timer.timeout(read_write_timeout, ClientTimeout) do
           @last_basic_consume_ok = wait_on_continuations
         end
-      rescue ClientTimeout => e
+      rescue Exception => e
         # if basic.consume-ok never arrives, unregister the proactively
         # registered consumer. MK.
         unregister_consumer(@last_basic_consume_ok.consumer_tag)
