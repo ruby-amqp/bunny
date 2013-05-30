@@ -1435,6 +1435,11 @@ module Bunny
     # @endgroup
 
 
+    def to_s
+      "#<#{self.class.name}:#{object_id} @id=#{self.number} @connection=#{@connection.to_s}>"
+    end
+
+
     #
     # Implementation
     #
@@ -1550,7 +1555,7 @@ module Bunny
       consumer = @consumers[basic_deliver.consumer_tag]
       if consumer
         @work_pool.submit do
-          consumer.call(DeliveryInfo.new(basic_deliver), MessageProperties.new(properties), content)
+          consumer.call(DeliveryInfo.new(basic_deliver, consumer, self), MessageProperties.new(properties), content)
         end
       else
         @logger.warn "No consumer for tag #{basic_deliver.consumer_tag} on channel #{@id}!"

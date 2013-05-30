@@ -14,15 +14,21 @@ module Bunny
     # API
     #
 
-    def initialize(basic_deliver)
+    attr_reader :consumer, :channel
+
+    def initialize(basic_deliver, consumer, channel)
       @basic_deliver = basic_deliver
       @hash          = {
         :consumer_tag => basic_deliver.consumer_tag,
         :delivery_tag => basic_deliver.delivery_tag,
         :redelivered  => basic_deliver.redelivered,
         :exchange     => basic_deliver.exchange,
-        :routing_key  => basic_deliver.routing_key
+        :routing_key  => basic_deliver.routing_key,
+        :consumer     => consumer,
+        :channel      => channel
       }
+      @consumer      = consumer
+      @channel       = channel
     end
 
     def each(*args, &block)
