@@ -1,5 +1,13 @@
 ## Changes between Bunny 0.9.0.pre12 and 0.9.0.pre13
 
+### Channels Without Consumers Now Tear Down Consumer Pools
+
+Channels without consumers left (when all consumers were cancelled)
+will now tear down their consumer work thread pools, thus making
+`HotBunnies::Queue#subscribe(:block => true)` calls unblock.
+
+This is typically the desired behavior.
+
 ### Consumer and Channel Available In Delivery Handlers
 
 Delivery handlers registered via `Bunny::Queue#subscribe` now will have

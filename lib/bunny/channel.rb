@@ -886,7 +886,15 @@ module Bunny
         @last_basic_cancel_ok = wait_on_continuations
       end
 
+      maybe_kill_consumer_work_pool! unless any_consumers?
+
       @last_basic_cancel_ok
+    end
+
+    # @return [Boolean] true if there are consumers on this channel
+    # @api public
+    def any_consumers?
+      @consumer_mutex.synchronize { @consumers.any? }
     end
 
     # @endgroup
@@ -1505,7 +1513,7 @@ module Bunny
         @consumers.delete(method.consumer_tag)
       when AMQ::Protocol::Basic::CancelOk then
         @continuations.push(method)
-        @consumers.delete(method.consumer_tag)
+        unregister_consumer(method.consumer_tag)
       when AMQ::Protocol::Tx::SelectOk, AMQ::Protocol::Tx::CommitOk, AMQ::Protocol::Tx::RollbackOk then
         @continuations.push(method)
       when AMQ::Protocol::Tx::SelectOk then
