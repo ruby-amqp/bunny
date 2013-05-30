@@ -1,5 +1,21 @@
 ## Changes between Bunny 0.9.0.pre12 and 0.9.0.pre13
 
+### Consumer and Channel Available In Delivery Handlers
+
+Delivery handlers registered via `Bunny::Queue#subscribe` now will have
+access to the consumer and channel they are associated with via the
+`delivery_info` argument:
+
+``` ruby
+q.subscribe do |delivery_info, properties, payload|
+  delivery_info.consumer # => the consumer this delivery is for
+  delivery_info.consumer # => the channel this delivery is on
+end
+```
+
+This allows using `Bunny::Queue#subscribe` for one-off consumers
+much easier, including when used with the `:block` option.
+
 ### Bunny::Exchange#wait_for_confirms
 
 `Bunny::Exchange#wait_for_confirms` is a convenience method on `Bunny::Exchange` that
