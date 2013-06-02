@@ -34,7 +34,25 @@ describe Bunny::Channel, "#nack" do
   end
 
   context "with multiple = true" do
-    it "rejects multiple messages"
+    it "rejects multiple messages" do
+q = subject.queue("bunny.basic.nack.with-requeue-true-multi-true", :exclusive => true)
+      x = subject.default_exchange
+
+      3.times do
+        x.publish("bunneth", :routing_key => q.name)
+      end
+      sleep(0.5)
+      q.message_count.should == 3
+      _, _, _ = q.pop(:ack => true)
+      _, _, _ = q.pop(:ack => true)
+      delivery_info, _, content = q.pop(:ack => true)
+
+      subject.nack(delivery_info.delivery_tag, true, true)
+      sleep(0.5)
+      q.message_count.should == 3
+
+      subject.close
+    end
   end
 
 
