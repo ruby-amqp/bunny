@@ -648,7 +648,7 @@ module Bunny
     # @return [String]
     # @api public
     def to_s
-      "Bunny::Session #{@user}@#{@host}:#{@port}, vhost=#{@vhost}"
+      "#<#{self.class.name}:#{object_id} #{@user}@#{@host}:#{@port}, vhost=#{@vhost}>"
     end
 
     protected

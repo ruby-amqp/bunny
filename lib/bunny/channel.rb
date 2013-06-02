@@ -18,7 +18,7 @@ else
 end
 
 module Bunny
-  # ## What are AMQP channels
+  # ## Channels in RabbitMQ
   #
   # To quote {http://www.rabbitmq.com/resources/specs/amqp0-9-1.pdf AMQP 0.9.1 specification}:
   #
@@ -41,7 +41,7 @@ module Bunny
   #
   #   ch   = conn.create_channel
   #
-  # This will automatically allocate channel id.
+  # This will automatically allocate a channel id.
   #
   # @example Instantiating
   #
@@ -806,9 +806,18 @@ module Bunny
                                                                   false,
                                                                   arguments))
 
-      Bunny::Timer.timeout(read_write_timeout, ClientTimeout) do
-        @last_basic_consume_ok = wait_on_continuations
+      begin
+        Bunny::Timer.timeout(read_write_timeout, ClientTimeout) do
+          @last_basic_consume_ok = wait_on_continuations
+        end
+      rescue Exception => e
+        # if basic.consume-ok never arrives, unregister the proactively
+        # registered consumer. MK.
+        unregister_consumer(@last_basic_consume_ok.consumer_tag)
+
+        raise e
       end
+
       # covers server-generated consumer tags
       add_consumer(queue_name, @last_basic_consume_ok.consumer_tag, no_ack, exclusive, arguments, &block)
 
@@ -827,6 +836,12 @@ module Bunny
       raise_if_no_longer_open!
       maybe_start_consumer_work_pool!
 
+      # helps avoid race condition between basic.consume-ok and basic.deliver if there are messages
+      # in the queue already. MK.
+      if consumer.consumer_tag && consumer.consumer_tag.strip != AMQ::Protocol::EMPTY_STRING
+        register_consumer(consumer.consumer_tag, consumer)
+      end
+
       @connection.send_frame(AMQ::Protocol::Basic::Consume.encode(@id,
                                                                   consumer.queue_name,
                                                                   consumer.consumer_tag,
@@ -836,15 +851,18 @@ module Bunny
                                                                   false,
                                                                   consumer.arguments))
 
-      # helps avoid race condition between basic.consume-ok and basic.deliver if there are messages
-      # in the queue already. MK.
-      if consumer.consumer_tag && consumer.consumer_tag.strip != AMQ::Protocol::EMPTY_STRING
-        register_consumer(consumer.consumer_tag, consumer)
+      begin
+        Bunny::Timer.timeout(read_write_timeout, ClientTimeout) do
+          @last_basic_consume_ok = wait_on_continuations
+        end
+      rescue Exception => e
+        # if basic.consume-ok never arrives, unregister the proactively
+        # registered consumer. MK.
+        unregister_consumer(@last_basic_consume_ok.consumer_tag)
+
+        raise e
       end
 
-      Bunny::Timer.timeout(read_write_timeout, ClientTimeout) do
-        @last_basic_consume_ok = wait_on_continuations
-      end
       # covers server-generated consumer tags
       register_consumer(@last_basic_consume_ok.consumer_tag, consumer)
 
@@ -868,7 +886,15 @@ module Bunny
         @last_basic_cancel_ok = wait_on_continuations
       end
 
+      maybe_kill_consumer_work_pool! unless any_consumers?
+
       @last_basic_cancel_ok
+    end
+
+    # @return [Boolean] true if there are consumers on this channel
+    # @api public
+    def any_consumers?
+      @consumer_mutex.synchronize { @consumers.any? }
     end
 
     # @endgroup
@@ -1417,6 +1443,11 @@ module Bunny
     # @endgroup
 
 
+    def to_s
+      "#<#{self.class.name}:#{object_id} @id=#{self.number} @connection=#{@connection.to_s}>"
+    end
+
+
     #
     # Implementation
     #
@@ -1425,6 +1456,13 @@ module Bunny
     def register_consumer(consumer_tag, consumer)
       @consumer_mutex.synchronize do
         @consumers[consumer_tag] = consumer
+      end
+    end
+
+    # @private
+    def unregister_consumer(consumer_tag)
+      @consumer_mutex.synchronize do
+        @consumers.delete(consumer_tag)
       end
     end
 
@@ -1475,7 +1513,7 @@ module Bunny
         @consumers.delete(method.consumer_tag)
       when AMQ::Protocol::Basic::CancelOk then
         @continuations.push(method)
-        @consumers.delete(method.consumer_tag)
+        unregister_consumer(method.consumer_tag)
       when AMQ::Protocol::Tx::SelectOk, AMQ::Protocol::Tx::CommitOk, AMQ::Protocol::Tx::RollbackOk then
         @continuations.push(method)
       when AMQ::Protocol::Tx::SelectOk then
@@ -1525,7 +1563,7 @@ module Bunny
       consumer = @consumers[basic_deliver.consumer_tag]
       if consumer
         @work_pool.submit do
-          consumer.call(DeliveryInfo.new(basic_deliver), MessageProperties.new(properties), content)
+          consumer.call(DeliveryInfo.new(basic_deliver, consumer, self), MessageProperties.new(properties), content)
         end
       else
         @logger.warn "No consumer for tag #{basic_deliver.consumer_tag} on channel #{@id}!"

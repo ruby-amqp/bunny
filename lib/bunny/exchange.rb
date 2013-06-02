@@ -196,10 +196,21 @@ module Bunny
 
     # Defines a block that will handle returned messages
     # @see http://rubybunny.info/articles/exchanges.html
+    # @api public
     def on_return(&block)
       @on_return = block
 
       self
+    end
+
+    # Waits until all outstanding publisher confirms on the channel
+    # arrive.
+    #
+    # This is a convenience method that delegates to {Bunny::Channel#wait_for_confirms}
+    #
+    # @api public
+    def wait_for_confirms
+      @channel.wait_for_confirms
     end
 
     # @private
