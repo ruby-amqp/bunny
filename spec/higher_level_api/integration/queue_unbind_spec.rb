@@ -12,7 +12,20 @@ describe Bunny::Queue, "bound to an exchange" do
   end
 
 
-  it "can be unbound from an exchange it was bound to"
+  it "can be unbound from an exchange it was bound to" do
+    ch = connection.create_channel
+    x  = ch.fanout("amq.fanout")
+    q  = ch.queue("", :exclusive => true).bind(x)
+
+    x.publish("")
+    sleep 0.3
+    q.message_count.should == 1
+
+    q.unbind(x)
+
+    x.publish("")
+    q.message_count.should == 1
+  end
 end
 
 
@@ -29,5 +42,13 @@ describe Bunny::Queue, "NOT bound to an exchange" do
   end
 
 
-  it "cannot be unbound (raises a channel error)"
+  it "cannot be unbound (raises a channel error)" do
+    ch = connection.create_channel
+    x  = ch.fanout("amq.fanout")
+    q  = ch.queue("", :exclusive => true)
+
+    lambda {
+      q.unbind(x)
+    }.should raise_error(Bunny::NotFound, /no binding/)
+  end
 end
