@@ -81,8 +81,9 @@ module Bunny
 
   class ForcedChannelCloseError < Exception; end
   class ForcedConnectionCloseError < Exception; end
-  class MessageError < Exception; end
+  class MessageError  < Exception; end
   class ProtocolError < Exception; end
+  class InternalError < Exception; end
 
   # raised when read or write I/O operations time out (but only if
   # a connection is configured to use them)
