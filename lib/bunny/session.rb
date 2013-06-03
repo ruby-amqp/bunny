@@ -491,6 +491,8 @@ module Bunny
                   ChannelError
                 when 505 then
                   UnexpectedFrame
+                when 541 then
+                  InternalError
                 else
                   raise "Unknown reply code: #{frame.reply_code}, text: #{frame.reply_text}"
                 end
