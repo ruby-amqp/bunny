@@ -27,6 +27,7 @@ require "bunny/queue"
 require "bunny/consumer"
 
 module Bunny
+  # AMQP protocol version Bunny implements
   PROTOCOL_VERSION = AMQ::Protocol::PROTOCOL_VERSION
 
   # unifies Ruby standard library's Timeout (which is not accurate on
@@ -47,10 +48,12 @@ module Bunny
   # API
   #
 
+  # @return [String] Bunny version
   def self.version
     VERSION
   end
 
+  # @return [String] AMQP protocol version Bunny implements
   def self.protocol_version
     AMQ::Protocol::PROTOCOL_VERSION
   end
