@@ -188,6 +188,7 @@ module Bunny
       @next_publish_seq_no = 0
     end
 
+    # @private
     def read_write_timeout
       @connection.read_write_timeout
     end
@@ -1443,6 +1444,7 @@ module Bunny
     # @endgroup
 
 
+    # @return [String] Brief human-readable representation of the channel
     def to_s
       "#<#{self.class.name}:#{object_id} @id=#{self.number} @connection=#{@connection.to_s}>"
     end
@@ -1777,7 +1779,7 @@ module Bunny
       raise ChannelAlreadyClosed.new("cannot use a channel that was already closed! Channel id: #{@id}", self) if closed?
     end
 
-    # @api private
+    # @private
     def reset_continuations
       @continuations           = new_continuation
       @confirms_continuations  = new_continuation
@@ -1786,12 +1788,12 @@ module Bunny
 
 
     if defined?(JRUBY_VERSION)
-      # @api private
+      # @private
       def new_continuation
         Concurrent::LinkedContinuationQueue.new
       end
     else
-      # @api private
+      # @private
       def new_continuation
         Concurrent::ContinuationQueue.new
       end

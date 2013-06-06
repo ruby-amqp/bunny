@@ -7,6 +7,7 @@ module Bunny
     # Unlike the j.u.c. version, this one has a single waiting set.
     #
     # Conditions can optionally be annotated with a description string for ease of debugging.
+    # @private
     class Condition
       attr_reader :waiting_threads, :description
 

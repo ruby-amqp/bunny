@@ -1,4 +1,6 @@
 module Bunny
+  # Contains credentials encoding implementations for various
+  # authentication strategies.
   module Authentication
     # Base credentials encoder. Subclasses implement credentials encoding for
     # a particular authentication mechanism (PLAIN, EXTERNAL, etc).
@@ -22,7 +24,7 @@ module Bunny
         registry[session.mechanism].new(session)
       end
 
-      # @api private
+      # @private
       def self.registry
         @@registry ||= Hash.new { raise NotImplementedError }
       end

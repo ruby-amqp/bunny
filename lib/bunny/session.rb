@@ -617,7 +617,7 @@ module Bunny
     # Sends multiple frames, one by one. For thread safety this method takes a channel
     # object and synchronizes on it.
     #
-    # @api private
+    # @private
     def send_frameset(frames, channel)
       # some developers end up sharing channels between threads and when multiple
       # threads publish on the same channel aggressively, at some point frames will be
@@ -634,7 +634,7 @@ module Bunny
     # object and synchronizes on it. Uses transport implementation that does not perform
     # timeout control.
     #
-    # @api private
+    # @private
     def send_frameset_without_timeout(frames, channel)
       # some developers end up sharing channels between threads and when multiple
       # threads publish on the same channel aggressively, at some point frames will be
@@ -655,7 +655,7 @@ module Bunny
 
     protected
 
-    # @api private
+    # @private
     def init_connection
       self.send_preamble
 
@@ -670,7 +670,7 @@ module Bunny
       @status = :connected
     end
 
-    # @api private
+    # @private
     def open_connection
       @transport.send_frame(AMQ::Protocol::Connection::StartOk.encode(@client_properties, @mechanism, self.encode_credentials(username, password), @locale))
       @logger.debug "Sent connection.start-ok"
@@ -734,7 +734,7 @@ module Bunny
       0 == val || val.nil?
     end
 
-    # @api private
+    # @private
     def negotiate_value(client_value, server_value)
       return server_value if client_value == :server
 
@@ -745,59 +745,59 @@ module Bunny
       end
     end
 
-    # @api private
+    # @private
     def initialize_heartbeat_sender
       @logger.debug "Initializing heartbeat sender..."
       @heartbeat_sender = HeartbeatSender.new(@transport, @logger)
       @heartbeat_sender.start(@heartbeat)
     end
 
-    # @api private
+    # @private
     def maybe_shutdown_heartbeat_sender
       @heartbeat_sender.stop if @heartbeat_sender
     end
 
-    # @api private
+    # @private
     def initialize_transport
       @transport = Transport.new(self, @host, @port, @opts.merge(:session_thread => Thread.current))
     end
 
-    # @api private
+    # @private
     def maybe_close_transport
       @transport.close if @transport
     end
 
     # Sends AMQ protocol header (also known as preamble).
-    # @api private
+    # @private
     def send_preamble
       @transport.write(AMQ::Protocol::PREAMBLE)
       @logger.debug "Sent protocol preamble"
     end
 
 
-    # @api private
+    # @private
     def encode_credentials(username, password)
       @credentials_encoder.encode_credentials(username, password)
     end # encode_credentials(username, password)
 
-    # @api private
+    # @private
     def credentials_encoder_for(mechanism)
       Authentication::CredentialsEncoder.for_session(self)
     end
 
     if defined?(JRUBY_VERSION)
-      # @api private
+      # @private
       def reset_continuations
         @continuations = Concurrent::LinkedContinuationQueue.new
       end
     else
-      # @api private
+      # @private
       def reset_continuations
         @continuations = Concurrent::ContinuationQueue.new
       end
     end
 
-    # @api private
+    # @private
     def wait_on_continuations
       unless @threaded
         reader_loop.run_once until @continuations.length > 0
@@ -806,7 +806,7 @@ module Bunny
       @continuations.poll(@continuation_timeout)
     end
 
-    # @api private
+    # @private
     def init_logger(level)
       @logger          = ::Logger.new(@logfile)
       @logger.level    = normalize_log_level(level)
@@ -815,7 +815,7 @@ module Bunny
       @logger
     end
 
-    # @api private
+    # @private
     def normalize_log_level(level)
       case level
       when :debug, Logger::DEBUG, "debug" then Logger::DEBUG

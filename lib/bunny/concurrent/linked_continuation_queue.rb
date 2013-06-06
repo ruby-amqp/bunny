@@ -9,6 +9,8 @@ java_import java.util.concurrent.TimeUnit
 
 module Bunny
   module Concurrent
+    # Continuation queue implementation for JRuby.
+    #
     # On JRuby, we'd rather use reliable and heavily battle tested j.u.c.
     # primitives with well described semantics than informally specified, clumsy
     # and limited Ruby standard library parts.
@@ -18,6 +20,7 @@ module Bunny
     #
     # Compared to the Ruby standard library Queue, there is one limitation: you cannot
     # push a nil on the queue, it will fail with a null pointer exception.
+    # @private
     class LinkedContinuationQueue
       def initialize(*args, &block)
         @q = LinkedBlockingQueue.new

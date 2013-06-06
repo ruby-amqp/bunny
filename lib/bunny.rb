@@ -58,7 +58,12 @@ module Bunny
     AMQ::Protocol::PROTOCOL_VERSION
   end
 
-
+  # Instantiates a new connection. The actual connection network
+  # connection is started with {Bunny::Session#start}
+  #
+  # @return [Bunny::Session]
+  # @see Bunny::Session#start
+  # @api public
   def self.new(connection_string_or_opts = {}, opts = {}, &block)
     if connection_string_or_opts.respond_to?(:keys) && opts.empty?
       opts = connection_string_or_opts
@@ -74,7 +79,7 @@ module Bunny
   def self.run(connection_string_or_opts = {}, opts = {}, &block)
     raise ArgumentError, 'Bunny#run requires a block' unless block
 
-    client = Client.new(connection_string_or_opts, opts)
+    client = Session.new(connection_string_or_opts, opts)
 
     begin
       client.start
@@ -83,6 +88,7 @@ module Bunny
       client.stop
     end
 
+    # backwards compatibility
     :run_ok
   end
 end
