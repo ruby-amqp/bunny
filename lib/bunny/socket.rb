@@ -5,6 +5,7 @@ module Bunny
   # fully.
   #
   # Heavily inspired by Dalli by Mike Perham.
+  # @private
   class Socket < TCPSocket
     attr_accessor :options
 
