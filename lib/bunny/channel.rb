@@ -127,16 +127,20 @@ module Bunny
   #
   # @see http://www.rabbitmq.com/tutorials/amqp-concepts.html AMQP 0.9.1 Model Concepts Guide
   # @see http://rubybunny.info/articles/getting_started.html Getting Started with RabbitMQ Using Bunny
+  # @see http://rubybunny.info/articles/queues.html Queues and Consumers
+  # @see http://rubybunny.info/articles/exchanges.html Exchanges and Publishing
   # @see http://rubybunny.info/articles/error_handling.html Error Handling and Recovery Guide
   class Channel
 
     #
     # API
     #
+
     # @return [Integer] Channel id
     attr_accessor :id
     # @return [Bunny::Session] AMQP connection this channel was opened on
     attr_reader :connection
+    # @return [Symbol] Channel status (:opening, :open, :closed)
     attr_reader :status
     # @return [Bunny::ConsumerWorkPool] Thread pool delivered messages are dispatched to.
     attr_reader :work_pool
