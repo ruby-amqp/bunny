@@ -26,6 +26,8 @@ require "bunny/exchange"
 require "bunny/queue"
 require "bunny/consumer"
 
+# Bunny is a RabbitMQ client that focuses on ease of use.
+# @see http://rubybunny.info
 module Bunny
   # AMQP protocol version Bunny implements
   PROTOCOL_VERSION = AMQ::Protocol::PROTOCOL_VERSION
