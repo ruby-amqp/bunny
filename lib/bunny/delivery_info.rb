@@ -41,7 +41,7 @@ module Bunny
       @hash.each(*args, &block)
     end
 
-    # Accesses delivery properties
+    # Accesses delivery properties by key
     # @see Hash#[]
     def [](k)
       @hash[k]
