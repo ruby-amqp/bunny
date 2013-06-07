@@ -3,6 +3,9 @@ require "amq/protocol/client"
 require "amq/protocol/frame"
 
 module Bunny
+  # Periodically sends heartbeats, keeping track of the last publishing activity.
+  #
+  # @private
   class HeartbeatSender
 
     #
