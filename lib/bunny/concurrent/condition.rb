@@ -1,6 +1,7 @@
 require "thread"
 
 module Bunny
+  # @private
   module Concurrent
     # Akin to java.util.concurrent.Condition and intrinsic object monitors (Object#wait, Object#notify, Object#notifyAll) in Java:
     # threads can wait (block until notified) on a condition other threads notify them about.
