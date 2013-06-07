@@ -6,6 +6,7 @@ module Bunny
   # This loop uses a separate thread internally.
   #
   # This mimics the way RabbitMQ Java is designed quite closely.
+  # @private
   class ReaderLoop
 
     def initialize(transport, session, session_thread)
