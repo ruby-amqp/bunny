@@ -65,6 +65,8 @@ module Bunny
   #
   # @return [Bunny::Session]
   # @see Bunny::Session#start
+  # @see http://rubybunny.info/articles/getting_started.html
+  # @see http://rubybunny.info/articles/connecting.html
   # @api public
   def self.new(connection_string_or_opts = {}, opts = {}, &block)
     if connection_string_or_opts.respond_to?(:keys) && opts.empty?

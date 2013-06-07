@@ -54,8 +54,10 @@ module Bunny
       :information  => "http://rubybunny.info",
     }
 
+    # @private
     DEFAULT_LOCALE = "en_GB"
 
+    # Default reconnection interval for TCP connection failures
     DEFAULT_NETWORK_RECOVERY_INTERVAL = 5.0
 
 
@@ -169,7 +171,10 @@ module Bunny
       @threaded
     end
 
-    # Starts connection process
+    # Starts the connection process.
+    #
+    # @see http://rubybunny.info/articles/getting_started.html
+    # @see http://rubybunny.info/articles/connecting.html
     # @api public
     def start
       return self if connected?
@@ -198,6 +203,9 @@ module Bunny
       self
     end
 
+    # Socket operation timeout used by this connection
+    # @return [Integer]
+    # @private
     def read_write_timeout
       @transport.read_write_timeout
     end
@@ -397,6 +405,7 @@ module Bunny
       raise @last_connection_error if @last_connection_error
     end
 
+    # @private
     def handle_frameset(ch_number, frames)
       method = frames.first
 
