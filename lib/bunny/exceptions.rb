@@ -1,7 +1,14 @@
 module Bunny
+  # Base class for all Bunny exceptions
+  # @api public
   class Exception < ::StandardError
   end
 
+  # Indicates a network failure. If automatic network
+  # recovery mode is enabled, these will be typically handled
+  # by the client itself.
+  #
+  # @api public
   class NetworkFailure < Exception
     attr_reader :cause
 
@@ -11,6 +18,7 @@ module Bunny
     end
   end
 
+  # Base class for all channel level exceptions
   class ChannelLevelException < Exception
     attr_reader :channel, :channel_close
 
@@ -22,6 +30,7 @@ module Bunny
     end
   end
 
+  # Base class for all connection level exceptions
   class ConnectionLevelException < Exception
     attr_reader :connection, :connection_close
 
@@ -34,6 +43,8 @@ module Bunny
   end
 
 
+  # Raised when TCP connection to RabbitMQ fails because of an unresolved
+  # hostname, connectivity problem, etc
   class TCPConnectionFailed < Exception
     attr_reader :hostname, :port
 
@@ -48,6 +59,7 @@ module Bunny
     end
   end
 
+  # Raised when a frame is sent over an already closed connection
   class ConnectionClosedError < Exception
     def initialize(frame)
       if frame.respond_to?(:method_class)
@@ -58,6 +70,8 @@ module Bunny
     end
   end
 
+  # Raised when RabbitMQ closes TCP connection before finishing connection
+  # sequence properly. This typically indicates an authentication issue.
   class PossibleAuthenticationFailureError < Exception
 
     #
@@ -76,19 +90,28 @@ module Bunny
 
 
   # backwards compatibility
+  # @private
   ConnectionError = TCPConnectionFailed
+  # @private
   ServerDownError = TCPConnectionFailed
 
+  # Raised when a channel is closed forcefully using rabbitmqctl
+  # or the management UI plugin
   class ForcedChannelCloseError < Exception; end
+  # Raised when a connection is closed forcefully using rabbitmqctl
+  # or the management UI plugin
   class ForcedConnectionCloseError < Exception; end
+  # @private
   class MessageError  < Exception; end
+  # @private
   class ProtocolError < Exception; end
+  # Raised when RabbitMQ reports and internal error
   class InternalError < Exception; end
 
-  # raised when read or write I/O operations time out (but only if
+  # Raised when read or write I/O operations time out (but only if
   # a connection is configured to use them)
   class ClientTimeout     < Timeout::Error; end
-  # raised on initial connection timeout
+  # Raised on initial TCP connection timeout
   class ConnectionTimeout < Timeout::Error; end
 
 
@@ -117,7 +140,7 @@ module Bunny
     end
   end
 
-
+  # Raised when a closed channel is used
   class ChannelAlreadyClosed < Exception
     attr_reader :channel
 
@@ -153,6 +176,7 @@ module Bunny
   class UnexpectedFrame < ConnectionLevelException
   end
 
+  # @private
   class NetworkErrorWrapper < Exception
     attr_reader :other
 
