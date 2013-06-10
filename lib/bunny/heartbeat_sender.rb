@@ -53,7 +53,7 @@ module Bunny
         @logger.error "I/O error in the hearbeat sender: #{ioe.message}"
         stop
       rescue Exception => e
-        @logger.error "I/O error in the hearbeat sender: #{ioe.message}"
+        @logger.error "Error in the hearbeat sender: #{e.message}"
         stop
       end
     end
