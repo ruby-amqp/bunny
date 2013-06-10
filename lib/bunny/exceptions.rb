@@ -151,28 +151,35 @@ module Bunny
     end
   end
 
+  # Raised when RabbitMQ responds with 406 PRECONDITION_FAILED
   class PreconditionFailed < ChannelLevelException
   end
 
+  # Raised when RabbitMQ responds with 404 NOT_FOUND
   class NotFound < ChannelLevelException
   end
 
+  # Raised when RabbitMQ responds with 405 RESOUCE_LOCKED
   class ResourceLocked < ChannelLevelException
   end
 
+  # Raised when RabbitMQ responds with 403 ACCESS_REFUSED
   class AccessRefused < ChannelLevelException
   end
 
-
+  # Raised when RabbitMQ responds with 504 CHANNEL_ERROR
   class ChannelError < ConnectionLevelException
   end
 
-  class InvalidCommand < ConnectionLevelException
+  # Raised when RabbitMQ responds with 503 COMMAND_INVALID
+  class CommandInvalid < ConnectionLevelException
   end
 
+  # Raised when RabbitMQ responds with 501 FRAME_ERROR
   class FrameError < ConnectionLevelException
   end
 
+  # Raised when RabbitMQ responds with 505 UNEXPECTED_FRAME
   class UnexpectedFrame < ConnectionLevelException
   end
 
