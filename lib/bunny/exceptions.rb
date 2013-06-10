@@ -197,6 +197,9 @@ module Bunny
     end
   end
 
+  # Raised when RabbitMQ responds with 302 CONNECTION_FORCED
+  # (which means the connection was closed using rabbitmqctl or
+  # RabbitMQ management UI)
   class ConnectionForced < ConnectionLevelException
   end
 
