@@ -2,6 +2,13 @@ require "thread"
 require "amq/int_allocator"
 
 module Bunny
+  # Bitset-based channel id allocator. When channels are closed,
+  # ids are released back to the pool.
+  #
+  # Every connection has its own allocator.
+  #
+  # Allocating and releasing ids is synchronized and can be performed
+  # from multiple threads.
   class ChannelIdAllocator
 
     #
@@ -64,6 +71,7 @@ module Bunny
       end
     end
 
+    # @private
     def synchronize(&block)
       @mutex.synchronize(&block)
     end

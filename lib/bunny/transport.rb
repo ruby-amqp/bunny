@@ -11,6 +11,7 @@ require "bunny/exceptions"
 require "bunny/socket"
 
 module Bunny
+  # @private
   class Transport
 
     #

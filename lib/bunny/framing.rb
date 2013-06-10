@@ -1,10 +1,12 @@
 module Bunny
+  # @private
   module Framing
     ENCODINGS_SUPPORTED = defined? Encoding
     HEADER_SLICE = (0..6).freeze
     DATA_SLICE = (7..-1).freeze
     PAYLOAD_SLICE = (0..-2).freeze
 
+    # @private
     module String
       class Frame < AMQ::Protocol::Frame
         def self.decode(string)
@@ -30,6 +32,7 @@ module Bunny
     end # String
 
 
+    # @private
     module IO
       class Frame < AMQ::Protocol::Frame
         def self.decode(io)

@@ -10,10 +10,11 @@ module Bunny
         Range.new(a, b).to_a.sample
       end
 
-      # @param  [Integer] Lower bound of message size, in KB
-      # @param  [Integer] Upper bound of message size, in KB
-      # @param  [Integer] Random number to use in message generation
+      # @param  [Integer] a Lower bound of message size, in KB
+      # @param  [Integer] b Upper bound of message size, in KB
+      # @param  [Integer] i Random number to use in message generation
       # @return [String] Message payload of length in the given range, with non-ASCII characters
+      # @api public
       def message_in_kb(a, b, i)
         s = "Ю#{i}"
         n = random_in_range(a, b) / s.bytesize

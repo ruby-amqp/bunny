@@ -79,10 +79,12 @@ module Bunny
       @channel.basic_cancel(@consumer_tag)
     end
 
+    # @return [String] More detailed human-readable string representation of this consumer
     def inspect
       "#<#{self.class.name}:#{object_id} @channel_id=#{@channel.number} @queue=#{self.queue_name}> @consumer_tag=#{@consumer_tag} @exclusive=#{@exclusive} @no_ack=#{@no_ack}>"
     end
 
+    # @return [String] Brief human-readable string representation of this consumer
     def to_s
       "#<#{self.class.name}:#{object_id} @channel_id=#{@channel.number} @queue=#{self.queue_name}> @consumer_tag=#{@consumer_tag}>"
     end

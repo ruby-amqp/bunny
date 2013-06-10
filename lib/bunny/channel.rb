@@ -127,16 +127,20 @@ module Bunny
   #
   # @see http://www.rabbitmq.com/tutorials/amqp-concepts.html AMQP 0.9.1 Model Concepts Guide
   # @see http://rubybunny.info/articles/getting_started.html Getting Started with RabbitMQ Using Bunny
+  # @see http://rubybunny.info/articles/queues.html Queues and Consumers
+  # @see http://rubybunny.info/articles/exchanges.html Exchanges and Publishing
   # @see http://rubybunny.info/articles/error_handling.html Error Handling and Recovery Guide
   class Channel
 
     #
     # API
     #
+
     # @return [Integer] Channel id
     attr_accessor :id
     # @return [Bunny::Session] AMQP connection this channel was opened on
     attr_reader :connection
+    # @return [Symbol] Channel status (:opening, :open, :closed)
     attr_reader :status
     # @return [Bunny::ConsumerWorkPool] Thread pool delivered messages are dispatched to.
     attr_reader :work_pool
@@ -188,6 +192,7 @@ module Bunny
       @next_publish_seq_no = 0
     end
 
+    # @private
     def read_write_timeout
       @connection.read_write_timeout
     end
@@ -1443,6 +1448,7 @@ module Bunny
     # @endgroup
 
 
+    # @return [String] Brief human-readable representation of the channel
     def to_s
       "#<#{self.class.name}:#{object_id} @id=#{self.number} @connection=#{@connection.to_s}>"
     end
@@ -1777,7 +1783,7 @@ module Bunny
       raise ChannelAlreadyClosed.new("cannot use a channel that was already closed! Channel id: #{@id}", self) if closed?
     end
 
-    # @api private
+    # @private
     def reset_continuations
       @continuations           = new_continuation
       @confirms_continuations  = new_continuation
@@ -1786,12 +1792,12 @@ module Bunny
 
 
     if defined?(JRUBY_VERSION)
-      # @api private
+      # @private
       def new_continuation
         Concurrent::LinkedContinuationQueue.new
       end
     else
-      # @api private
+      # @private
       def new_continuation
         Concurrent::ContinuationQueue.new
       end

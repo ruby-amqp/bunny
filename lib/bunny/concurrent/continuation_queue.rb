@@ -2,6 +2,9 @@ require "thread"
 
 module Bunny
   module Concurrent
+    # Continuation queue implementation for MRI and Rubinius
+    #
+    # @private
     class ContinuationQueue
       def initialize(*args, &block)
         @q = ::Queue.new(*args)
