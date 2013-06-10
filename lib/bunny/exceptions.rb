@@ -183,6 +183,10 @@ module Bunny
   class UnexpectedFrame < ConnectionLevelException
   end
 
+  # Raised when RabbitMQ responds with 506 RESOURCE_ERROR
+  class ResourceError < ConnectionLevelException
+  end
+
   # @private
   class NetworkErrorWrapper < Exception
     attr_reader :other

@@ -495,11 +495,13 @@ module Bunny
                 when 501 then
                   FrameError
                 when 503 then
-                  InvalidCommand
+                  CommandInvalid
                 when 504 then
                   ChannelError
                 when 505 then
                   UnexpectedFrame
+                when 506 then
+                  ResourceError
                 when 541 then
                   InternalError
                 else
