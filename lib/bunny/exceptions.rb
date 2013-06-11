@@ -97,16 +97,16 @@ module Bunny
 
   # Raised when a channel is closed forcefully using rabbitmqctl
   # or the management UI plugin
-  class ForcedChannelCloseError < Exception; end
+  class ForcedChannelCloseError < ChannelLevelException; end
   # Raised when a connection is closed forcefully using rabbitmqctl
   # or the management UI plugin
-  class ForcedConnectionCloseError < Exception; end
+  class ForcedConnectionCloseError < ConnectionLevelException; end
   # @private
-  class MessageError  < Exception; end
+  class MessageError  < ConnectionLevelException; end
   # @private
-  class ProtocolError < Exception; end
+  class ProtocolError < ConnectionLevelException; end
   # Raised when RabbitMQ reports and internal error
-  class InternalError < Exception; end
+  class InternalError < ConnectionLevelException; end
 
   # Raised when read or write I/O operations time out (but only if
   # a connection is configured to use them)
