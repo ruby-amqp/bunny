@@ -1,6 +1,23 @@
 ## Changes between Bunny 0.9.0.pre13 and 0.9.0.pre14
 
-No changes yet.
+### Bunny::Queue#pop_waiting
+
+`Bunny::Queue#pop_waiting` is a new function that mimics `Bunny::Queue#pop`
+but will wait until a message is available. It uses a `:timeout` option and will
+raise an exception if the timeout is hit:
+
+``` ruby
+# given 1 message in the queue,
+# works exactly as Bunny::Queue#get
+q.pop_waiting
+
+# given no messages in the queue, will wait for up to 0.5 seconds
+# for a message to become available. Raises an exception if the timeout
+# is hit
+q.pop_waiting(:timeout => 0.5)
+```
+
+This method only makes sense for collecting Request/Reply ("RPC") replies.
 
 
 
