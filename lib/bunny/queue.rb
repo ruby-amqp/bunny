@@ -256,6 +256,55 @@ module Bunny
       end
     end
 
+    # @param [Hash] opts Options
+    #
+    # @option opts [Boolean] :ack (false) Will the message be acknowledged manually?
+    # @option opts [Float] :timeout (1.0) Max amount of time, in seconds, to wait before raising an exception
+    #
+    # @return [Array] Triple of delivery info, message properties and message content.
+    #                 If the queue is empty, all three will be nils.
+    #
+    # @raises [Bunny::ClientException] When no message is available in the amount of time provided via the :timeout option
+    #
+    # @see http://rubybunny.info/articles/queues.html Queues and Consumers guide
+    # @see Bunny::Queue#subscribe
+    # @api public
+    #
+    # @example
+    #   conn = Bunny.new
+    #   conn.start
+    #
+    #   ch   = conn.create_channel
+    #   q = ch.queue("test1")
+    #   x = ch.default_exchange
+    #   x.publish("Hello, everybody!", :routing_key => 'test1')
+    #
+    #   delivery_info, properties, payload = q.pop_waiting(:timeout => 0.5)
+    #
+    #   puts "This is the message: " + payload + "\n\n"
+    #   conn.close
+    def pop_waiting(opts = {:ack => false, :timeout => 1.0}, &block)
+      delivery_info, properties, content = nil, nil, nil
+
+      Bunny::Timer.timeout(opts[:timeout], ClientTimeout) do
+        loop do
+          delivery_info, properties, content = @channel.basic_get(@name, opts)
+
+          if !content.nil?
+            break
+          end
+        end
+      end
+
+      if block
+        block.call(delivery_info, properties, content)
+      else
+        [delivery_info, properties, content]
+      end
+    end
+    alias get_waiting pop_waiting
+
+
     # Publishes a message to the queue via default exchange. Takes the same arguments
     # as {Bunny::Exchange#publish}
     #
