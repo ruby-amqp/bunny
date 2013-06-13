@@ -77,6 +77,10 @@ module Bunny
       end
     end
 
+    def configure_socket(&block)
+      block.call(@socket)
+    end
+
 
     # Writes data to the socket. If read/write timeout was specified, Bunny::ClientTimeout will be raised
     # if the operation times out.

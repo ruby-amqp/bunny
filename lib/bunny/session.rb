@@ -171,6 +171,16 @@ module Bunny
       @threaded
     end
 
+    def configure_socket(&block)
+      raise ArgumentError, "No block provided!" if block.nil?
+
+      if @transport
+        @transport.configure_socket(&block)
+      else
+        @socket_configurator = block
+      end
+    end
+
     # Starts the connection process.
     #
     # @see http://rubybunny.info/articles/getting_started.html
@@ -187,6 +197,10 @@ module Bunny
         # to not leak sockets
         self.maybe_close_transport
         self.initialize_transport
+
+        if @socket_configurator
+          @transport.configure_socket(&@socket_configurator)
+        end
 
         self.init_connection
         self.open_connection
