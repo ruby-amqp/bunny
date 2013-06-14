@@ -8,6 +8,11 @@ module Bunny
     # methods found in Bunny::Socket.
     class SSLSocket < OpenSSL::SSL::SSLSocket
 
+    # IO::WaitReadable is 1.9+ only
+    READ_RETRY_EXCEPTION_CLASSES = [Errno::EAGAIN, Errno::EWOULDBLOCK, OpenSSL::SSL::SSLError]
+    READ_RETRY_EXCEPTION_CLASSES << IO::WaitReadable if IO.const_defined?(:WaitReadable)
+
+
       # Reads given number of bytes with an optional timeout
       #
       # @param [Integer] count How many bytes to read
@@ -27,7 +32,7 @@ module Bunny
         rescue EOFError => e
           puts e.inspect
           @__bunny_socket_eof_flag__ = true
-        rescue Errno::EAGAIN, Errno::EWOULDBLOCK, OpenSSL::SSL::SSLError => e
+        rescue *READ_RETRY_EXCEPTION_CLASSES => e
           puts e.inspect
           if IO.select([self], nil, nil, timeout)
             retry
