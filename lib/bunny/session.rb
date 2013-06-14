@@ -65,6 +65,8 @@ module Bunny
     # API
     #
 
+    # @return [Bunny::Transport]
+    attr_reader :transport
     attr_reader :status, :host, :port, :heartbeat, :user, :pass, :vhost, :frame_max, :threaded
     attr_reader :server_capabilities, :server_properties, :server_authentication_mechanisms, :server_locales
     attr_reader :default_channel
@@ -140,6 +142,8 @@ module Bunny
       @channels            = Hash.new
 
       self.reset_continuations
+
+      self.initialize_transport
     end
 
     # @return [String] RabbitMQ hostname (or IP address) used
@@ -197,6 +201,9 @@ module Bunny
         # to not leak sockets
         self.maybe_close_transport
         self.initialize_transport
+
+        @transport.initialize_socket
+        @transport.connect
 
         if @socket_configurator
           @transport.configure_socket(&@socket_configurator)

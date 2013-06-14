@@ -24,6 +24,7 @@ module Bunny
 
 
     attr_reader :session, :host, :port, :socket, :connect_timeout, :read_write_timeout, :disconnect_timeout
+    attr_reader :tls_context
 
     def initialize(session, host, port, opts)
       @session        = session
@@ -38,6 +39,7 @@ module Bunny
       @tls_certificate       = opts[:tls_certificate] || opts[:ssl_cert_string]
       @tls_key               = opts[:tls_key]         || opts[:ssl_key_string]
       @tls_certificate_store = opts[:tls_certificate_store]
+      @tls_ca_certificates   = opts.fetch(:tls_ca_certificates, [])
       @verify_peer           = opts[:verify_ssl] || opts[:verify_peer]
 
       @read_write_timeout = opts[:socket_timeout] || 3
@@ -47,9 +49,6 @@ module Bunny
       @disconnect_timeout = @read_write_timeout || @connect_timeout
 
       @writes_mutex       = Mutex.new
-
-      initialize_socket
-      connect
     end
 
 
@@ -154,7 +153,7 @@ module Bunny
 
 
     def close(reason = nil)
-      @socket.close unless @socket.closed?
+      @socket.close if @socket && !@socket.closed?
     end
 
     def open?
@@ -223,21 +222,6 @@ module Bunny
       raise ConnectionTimeout.new("#{host}:#{port} is unreachable") if !reacheable?(host, port, timeout)
     end
 
-
-    protected
-
-    def tls_enabled?(opts)
-      opts[:tls] || opts[:ssl] || (opts[:port] == AMQ::Protocol::TLS_PORT) || false
-    end
-
-    def tls_certificate_path_from(opts)
-      opts[:tls_cert] || opts[:ssl_cert] || opts[:tls_cert_path] || opts[:ssl_cert_path] || opts[:tls_certificate_path] || opts[:ssl_certificate_path]
-    end
-
-    def tls_key_path_from(opts)
-      opts[:tls_key] || opts[:ssl_key] || opts[:tls_key_path] || opts[:ssl_key_path]
-    end
-
     def initialize_socket
       begin
         s = Bunny::Timer.timeout(@connect_timeout, ConnectionTimeout) do
@@ -259,12 +243,26 @@ module Bunny
       @socket
     end
 
+    protected
+
+    def tls_enabled?(opts)
+      opts[:tls] || opts[:ssl] || (opts[:port] == AMQ::Protocol::TLS_PORT) || false
+    end
+
+    def tls_certificate_path_from(opts)
+      opts[:tls_cert] || opts[:ssl_cert] || opts[:tls_cert_path] || opts[:ssl_cert_path] || opts[:tls_certificate_path] || opts[:ssl_certificate_path]
+    end
+
+    def tls_key_path_from(opts)
+      opts[:tls_key] || opts[:ssl_key] || opts[:tls_key_path] || opts[:ssl_key_path]
+    end
+
     def wrap_in_tls_socket(socket)
       read_tls_keys!
 
-      ctx = initialize_tls_context(OpenSSL::SSL::SSLContext.new(@opts.fetch(:tls_protocol, DEFAULT_TLS_PROTOCOL)))
+      @tls_context = initialize_tls_context(OpenSSL::SSL::SSLContext.new)
 
-      s = Bunny::SSLSocket.new(socket, ctx)
+      s = Bunny::SSLSocket.new(socket, @tls_context)
       s.sync_close = true
       s
     end
@@ -285,13 +283,26 @@ module Bunny
     end
 
     def initialize_tls_context(ctx)
-      ctx.cert       = OpenSSL::X509::Certificate.new(@tls_certificate) if @tls_certificate
-      ctx.key        = OpenSSL::PKey::RSA.new(@tls_key) if @tls_key
-      ctx.cert_store = @tls_certificate_store if @tls_certificate_store
+      ctx.cert       = OpenSSL::X509::Certificate.new(@tls_certificate)
+      ctx.key        = OpenSSL::PKey::RSA.new(@tls_key)
+      ctx.cert_store = if @tls_certificate_store
+                         @tls_certificate_store
+                       else
+                         initialize_tls_certificate_store(@tls_ca_certificates)
+                       end
 
+      # setting TLS/SSL version only works correctly when done
+      # vis set_params. MK.
+      ctx.set_params(:ssl_version => @opts.fetch(:tls_protocol, DEFAULT_TLS_PROTOCOL))
       ctx.set_params(:verify_mode => OpenSSL::SSL::VERIFY_PEER|OpenSSL::SSL::VERIFY_FAIL_IF_NO_PEER_CERT) if @verify_peer
 
       ctx
+    end
+
+    def initialize_tls_certificate_store(certs)
+      OpenSSL::X509::Store.new.tap do |store|
+        certs.each { |path| store.add_file(path) }
+      end
     end
 
     def timeout_from(options)
