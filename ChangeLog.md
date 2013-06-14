@@ -1,3 +1,8 @@
+## Changes between Bunny 0.9.0.rc1 and 0.9.0.rc2
+
+No changes yet.
+
+
 ## Changes between Bunny 0.9.0.pre13 and 0.9.0.rc1
 
 ### TLS Support
