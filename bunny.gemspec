@@ -7,9 +7,9 @@ require File.expand_path("../lib/bunny/version", __FILE__)
 Gem::Specification.new do |s|
   s.name = "bunny"
   s.version = Bunny::VERSION.dup
-  s.homepage = "http://github.com/ruby-amqp/bunny"
+  s.homepage = "http://rubybunny.info"
   s.summary = "Popular easy to use Ruby client for RabbitMQ"
-  s.description = "Popular easy to use Ruby client for RabbitMQ"
+  s.description = "Easy to use, feature complete Ruby client for RabbitMQ 2.0."
   s.license = "MIT"
 
   # Sorted alphabetically.
