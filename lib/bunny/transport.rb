@@ -49,9 +49,6 @@ module Bunny
       @disconnect_timeout = @read_write_timeout || @connect_timeout
 
       @writes_mutex       = Mutex.new
-
-      initialize_socket
-      connect
     end
 
 
@@ -156,7 +153,7 @@ module Bunny
 
 
     def close(reason = nil)
-      @socket.close unless @socket.closed?
+      @socket.close if @socket && !@socket.closed?
     end
 
     def open?
@@ -225,21 +222,6 @@ module Bunny
       raise ConnectionTimeout.new("#{host}:#{port} is unreachable") if !reacheable?(host, port, timeout)
     end
 
-
-    protected
-
-    def tls_enabled?(opts)
-      opts[:tls] || opts[:ssl] || (opts[:port] == AMQ::Protocol::TLS_PORT) || false
-    end
-
-    def tls_certificate_path_from(opts)
-      opts[:tls_cert] || opts[:ssl_cert] || opts[:tls_cert_path] || opts[:ssl_cert_path] || opts[:tls_certificate_path] || opts[:ssl_certificate_path]
-    end
-
-    def tls_key_path_from(opts)
-      opts[:tls_key] || opts[:ssl_key] || opts[:tls_key_path] || opts[:ssl_key_path]
-    end
-
     def initialize_socket
       begin
         s = Bunny::Timer.timeout(@connect_timeout, ConnectionTimeout) do
@@ -259,6 +241,20 @@ module Bunny
       end
 
       @socket
+    end
+
+    protected
+
+    def tls_enabled?(opts)
+      opts[:tls] || opts[:ssl] || (opts[:port] == AMQ::Protocol::TLS_PORT) || false
+    end
+
+    def tls_certificate_path_from(opts)
+      opts[:tls_cert] || opts[:ssl_cert] || opts[:tls_cert_path] || opts[:ssl_cert_path] || opts[:tls_certificate_path] || opts[:ssl_certificate_path]
+    end
+
+    def tls_key_path_from(opts)
+      opts[:tls_key] || opts[:ssl_key] || opts[:tls_key_path] || opts[:ssl_key_path]
     end
 
     def wrap_in_tls_socket(socket)

@@ -63,14 +63,8 @@ describe Bunny::Session do
     end
 
     it "provides a way to fine tune socket options" do
-      subject.configure_socket do |sock|
-        sock.should respond_to(:setsockopt)
-      end
-
       subject.start
-      subject.configure_socket do |sock|
-        sock.should respond_to(:setsockopt)
-      end
+      subject.transport.socket.should respond_to(:setsockopt)
     end
 
     it "successfully negotiates the connection" do
