@@ -33,12 +33,12 @@ To install Bunny 0.9.x with RubyGems:
 gem install bunny --pre
 ```
 
-the most recent 0.9.x version is `0.9.0.pre13`.
+the most recent 0.9.x version is `0.9.0.rc1`.
 
 To use Bunny 0.9.x in a project managed with Bundler:
 
 ``` ruby
-gem "bunny", ">= 0.9.0.pre13" # optionally: , :git => "git://github.com/ruby-amqp/bunny.git", :branch => "master"
+gem "bunny", ">= 0.9.0.rc1" # optionally: , :git => "git://github.com/ruby-amqp/bunny.git", :branch => "master"
 ```
 
 
