@@ -8,9 +8,9 @@ module Bunny
     # methods found in Bunny::Socket.
     class SSLSocket < OpenSSL::SSL::SSLSocket
 
-    # IO::WaitReadable is 1.9+ only
-    READ_RETRY_EXCEPTION_CLASSES = [Errno::EAGAIN, Errno::EWOULDBLOCK, OpenSSL::SSL::SSLError]
-    READ_RETRY_EXCEPTION_CLASSES << IO::WaitReadable if IO.const_defined?(:WaitReadable)
+      # IO::WaitReadable is 1.9+ only
+      READ_RETRY_EXCEPTION_CLASSES = [Errno::EAGAIN, Errno::EWOULDBLOCK]
+      READ_RETRY_EXCEPTION_CLASSES << IO::WaitReadable if IO.const_defined?(:WaitReadable)
 
 
       # Reads given number of bytes with an optional timeout
@@ -30,10 +30,19 @@ module Bunny
             break if value.bytesize >= count
           end
         rescue EOFError => e
-          puts e.inspect
           @__bunny_socket_eof_flag__ = true
+        rescue OpenSSL::SSL::SSLError => e
+          if e.message == "read would block"
+            if IO.select([self], nil, nil, timeout)
+              retry
+            else
+              raise Timeout::Error, "IO timeout when reading #{count} bytes"
+            end
+          else
+            raise e
+          end
         rescue *READ_RETRY_EXCEPTION_CLASSES => e
-          puts e.inspect
+          $stderr.puts e.inspect
           if IO.select([self], nil, nil, timeout)
             retry
           else
