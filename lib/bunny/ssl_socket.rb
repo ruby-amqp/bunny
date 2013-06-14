@@ -42,7 +42,6 @@ module Bunny
             raise e
           end
         rescue *READ_RETRY_EXCEPTION_CLASSES => e
-          $stderr.puts e.inspect
           if IO.select([self], nil, nil, timeout)
             retry
           else
