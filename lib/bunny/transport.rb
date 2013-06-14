@@ -24,6 +24,7 @@ module Bunny
 
 
     attr_reader :session, :host, :port, :socket, :connect_timeout, :read_write_timeout, :disconnect_timeout
+    attr_reader :tls_context
 
     def initialize(session, host, port, opts)
       @session        = session
@@ -38,6 +39,7 @@ module Bunny
       @tls_certificate       = opts[:tls_certificate] || opts[:ssl_cert_string]
       @tls_key               = opts[:tls_key]         || opts[:ssl_key_string]
       @tls_certificate_store = opts[:tls_certificate_store]
+      @tls_ca_certificates   = opts.fetch(:tls_ca_certificates, [])
       @verify_peer           = opts[:verify_ssl] || opts[:verify_peer]
 
       @read_write_timeout = opts[:socket_timeout] || 3
@@ -262,9 +264,9 @@ module Bunny
     def wrap_in_tls_socket(socket)
       read_tls_keys!
 
-      ctx = initialize_tls_context(OpenSSL::SSL::SSLContext.new)
+      @tls_context = initialize_tls_context(OpenSSL::SSL::SSLContext.new)
 
-      s = Bunny::SSLSocket.new(socket, ctx)
+      s = Bunny::SSLSocket.new(socket, @tls_context)
       s.sync_close = true
       s
     end
@@ -285,9 +287,13 @@ module Bunny
     end
 
     def initialize_tls_context(ctx)
-      ctx.cert       = OpenSSL::X509::Certificate.new(@tls_certificate) if @tls_certificate
-      ctx.key        = OpenSSL::PKey::RSA.new(@tls_key) if @tls_key
-      ctx.cert_store = @tls_certificate_store if @tls_certificate_store
+      ctx.cert       = OpenSSL::X509::Certificate.new(@tls_certificate)
+      ctx.key        = OpenSSL::PKey::RSA.new(@tls_key)
+      ctx.cert_store = if @tls_certificate_store
+                         @tls_certificate_store
+                       else
+                         initialize_tls_certificate_store(@tls_ca_certificates)
+                       end
 
       # setting TLS/SSL version only works correctly when done
       # vis set_params. MK.
@@ -295,6 +301,12 @@ module Bunny
       ctx.set_params(:verify_mode => OpenSSL::SSL::VERIFY_PEER|OpenSSL::SSL::VERIFY_FAIL_IF_NO_PEER_CERT) if @verify_peer
 
       ctx
+    end
+
+    def initialize_tls_certificate_store(certs)
+      OpenSSL::X509::Store.new.tap do |store|
+        certs.each { |path| store.add_file(path) }
+      end
     end
 
     def timeout_from(options)
