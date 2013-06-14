@@ -74,7 +74,7 @@ describe Bunny::Queue, "#pop" do
 
       lambda {
         _, _, content = q.pop_waiting(:timeout => 0.5)
-      }.should raise_error(Bunny::ClientTimeout)
+      }.should raise_error(Timeout::Error)
 
       ch.close
     end
