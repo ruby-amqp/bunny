@@ -46,7 +46,11 @@ Specific examples:
 
 ## Supported Ruby Versions
 
-Bunny 0.9 and more recent versions support Ruby 1.9.3, 1.9.2, 2.0.0, JRuby 1.7, Rubinius 2.0 and 1.8.7.
+Bunny 0.9 and more recent versions support
+
+ * CRuby 1.9.3, 1.9.2, 2.0.0, and 1.8.7
+ * JRuby 1.7+
+ * Rubinius 2.0+
 
 
 ## Supported RabbitMQ Versions
@@ -108,11 +112,8 @@ ch = conn.create_channel
 # declare a queue
 q  = ch.queue("test1")
 
-# default direct exchange is automatically bound to all queues
-e  = ch.default_exchange
-
-# publish a message to the exchange which then gets routed to the queue
-e.publish("Hello, everybody!", :routing_key => 'test1')
+# publish a message to the default exchange which then gets routed to this queue
+q.publish("Hello, everybody!")
 
 # fetch a message from the queue
 delivery_info, metadata, payload = q.pop
