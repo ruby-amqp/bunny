@@ -325,10 +325,22 @@ module Bunny
       @default_channel.exchange(*args)
     end
 
+    # Defines a callback that will be executed when RabbitMQ blocks the connection
+    # because it is running low on memory or disk space (as configured via config file
+    # and/or rabbitmqctl).
+    #
+    # @yield [AMQ::Protocol::Connection::Blocked] connection.blocked method which provides a reason for blocking
+    #
+    # @api public
     def on_blocked(&block)
       @block_callback = block
     end
 
+    # Defines a callback that will be executed when RabbitMQ unblocks the connection
+    # that was previously blocked, e.g. because the memory or disk space alarm has cleared.
+    #
+    # @see #on_blocked
+    # @api public
     def on_unblocked(&block)
       @unblock_callback = block
     end
