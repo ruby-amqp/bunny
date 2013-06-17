@@ -62,6 +62,11 @@ describe Bunny::Session do
       Bunny.new
     end
 
+    it "provides a way to fine tune socket options" do
+      subject.start
+      subject.transport.socket.should respond_to(:setsockopt)
+    end
+
     it "successfully negotiates the connection" do
       subject.start
       subject.should be_connected
@@ -189,7 +194,7 @@ describe Bunny::Session do
     end
 
     it "successfully connects" do
-      subject.start
+      5.times { subject.start }
       subject.should be_connected
 
       subject.server_properties.should_not be_nil
@@ -336,6 +341,39 @@ describe Bunny::Session do
 
     it "uses provided password" do
       subject.password.should == password
+    end
+  end
+
+
+  context "initialized with a disconnected host" do
+    subject do
+      described_class.new(:port => 38000)
+    end
+
+    it "fails to connect" do
+      lambda do
+        subject.start
+      end.should raise_error(Bunny::TCPConnectionFailed)
+    end
+
+    it "is not connected" do
+      begin
+        subject.start
+      rescue Bunny::TCPConnectionFailed => e
+        true
+      end
+
+      subject.status.should == :not_connected
+    end
+
+    it "is not open" do
+      begin
+        subject.start
+      rescue Bunny::TCPConnectionFailed => e
+        true
+      end
+
+      subject.should_not be_open
     end
   end
 end

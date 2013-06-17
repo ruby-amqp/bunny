@@ -24,7 +24,7 @@ describe "A message" do
 
     delivery_info, _, _ = q.pop(:ack => true)
     dlq.message_count.should be_zero
-    ch.nack(delivery_info.delivery_tag, false)
+    ch.nack(delivery_info.delivery_tag)
 
     sleep 0.2
     q.message_count.should be_zero

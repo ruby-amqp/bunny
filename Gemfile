@@ -1,6 +1,6 @@
 # encoding: utf-8
 
-source :rubygems
+source "https://rubygems.org"
 
 # Use local clones if possible.
 # If you want to use your local copy, just symlink it to vendor.
@@ -21,11 +21,18 @@ extend Module.new {
 
 gem "SystemTimer", "1.2", :platform => :ruby_18
 
-gem "rake"
+gem "rake", ">= 10.0.4"
 gem "effin_utf8"
 
+group :development do
+  gem "yard"
+
+  gem "redcarpet", :platform => :mri
+  gem "ruby-prof", :platform => :mri
+end
+
 group :test do
-  gem "rspec", "~> 2.8.0"
+  gem "rspec", ">= 2.13.0"
 end
 
 gemspec
@@ -35,7 +42,7 @@ gemspec
 def custom_gem(name, options = Hash.new)
   local_path = File.expand_path("../vendor/#{name}", __FILE__)
   if File.exist?(local_path)
-    puts "Using #{name} from #{local_path}..."
+    # puts "Using #{name} from #{local_path}..."
     gem name, options.merge(:path => local_path).delete_if { |key, _| [:git, :branch].include?(key) }
   else
     gem name, options

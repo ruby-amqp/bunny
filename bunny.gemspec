@@ -7,9 +7,9 @@ require File.expand_path("../lib/bunny/version", __FILE__)
 Gem::Specification.new do |s|
   s.name = "bunny"
   s.version = Bunny::VERSION.dup
-  s.homepage = "http://github.com/ruby-amqp/bunny"
-  s.summary = "Easy to use synchronous Ruby client for RabbitMQ"
-  s.description = "Easy to use synchronous Ruby client for RabbitMQ"
+  s.homepage = "http://rubybunny.info"
+  s.summary = "Popular easy to use Ruby client for RabbitMQ"
+  s.description = "Easy to use, feature complete Ruby client for RabbitMQ 2.0."
   s.license = "MIT"
 
   # Sorted alphabetically.
@@ -29,7 +29,7 @@ Gem::Specification.new do |s|
     map { |mail| Base64.decode64(mail) }
 
   # Dependencies
-  s.add_dependency "amq-protocol", ">= 1.0.1"
+  s.add_dependency "amq-protocol", ">= 1.6.0"
 
   # Files.
   s.has_rdoc = true

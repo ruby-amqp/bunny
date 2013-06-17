@@ -57,6 +57,13 @@ describe Bunny::Channel, "#basic_cancel" do
   end
 
   context "when the given consumer tag is invalid (was never registered)" do
-    it "causes a channel error"
+    it "DOES NOT cause a channel error" do
+      ch = connection.create_channel
+
+      # RabbitMQ 3.1 does not raise an exception w/ unknown consumer tag. MK.
+      ch.basic_cancel("878798s7df89#{rand}#{Time.now.to_i}")
+
+      ch.close
+    end
   end
 end

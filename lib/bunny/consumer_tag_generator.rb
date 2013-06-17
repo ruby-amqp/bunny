@@ -1,4 +1,5 @@
 module Bunny
+  # Used to generate consumer tags in the client
   class ConsumerTagGenerator
 
     #

@@ -2,6 +2,7 @@ require "bunny/authentication/credentials_encoder"
 
 module Bunny
   module Authentication
+    # Encodes credentials using the EXTERNAL mechanism
     class ExternalMechanismEncoder < CredentialsEncoder
 
       auth_mechanism "EXTERNAL", "external"

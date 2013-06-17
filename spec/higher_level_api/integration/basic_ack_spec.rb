@@ -35,8 +35,6 @@ describe Bunny::Channel, "#ack" do
 
   context "with an invalid (random) delivery tag" do
     it "causes a channel-level error" do
-      pending "We need to design async channel error handling for cases when there is no reply methods (e.g. basic.ack)"
-
       q = subject.queue("bunny.basic.ack.unknown-delivery-tag", :exclusive => true)
       x = subject.default_exchange
 
@@ -48,7 +46,11 @@ describe Bunny::Channel, "#ack" do
       subject.on_error do |ch, channel_close|
         @channel_close = channel_close
       end
-      # subject.ack(82, true)
+      subject.ack(82, true)
+
+      sleep 0.5
+
+      @channel_close.reply_text.should == "PRECONDITION_FAILED - unknown delivery tag 82"
     end
   end
 end

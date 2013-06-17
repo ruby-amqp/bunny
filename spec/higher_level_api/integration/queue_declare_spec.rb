@@ -96,22 +96,6 @@ describe Bunny::Queue do
   end
 
 
-  context "when queue is declared with additional arguments (e.g. message TTL)" do
-    let(:args) do
-      {"x-message-ttl" => 1000}
-    end
-
-    it "declares it with all the arguments provided" do
-      ch   = connection.create_channel
-
-      q = ch.queue("bunny.tests.queues.with-arguments", :arguments => args)
-      q.arguments.should == args
-      q.delete
-
-      ch.close
-    end
-  end
-
 
   context "when queue is declared with a different set of attributes" do
     it "raises an exception" do
@@ -124,6 +108,64 @@ describe Bunny::Queue do
       }.to raise_error(Bunny::PreconditionFailed)
 
       ch.should be_closed
+    end
+  end
+
+
+  context "when queue is declared with message TTL" do
+    let(:args) do
+      # in ms
+      {"x-message-ttl" => 1000}
+    end
+
+    it "causes all messages in it to have a TTL" do
+      ch   = connection.create_channel
+
+      q = ch.queue("bunny.tests.queues.with-arguments.ttl", :arguments => args, :exclusive => true)
+      q.arguments.should == args
+
+      q.publish("xyzzy")
+      sleep 0.1
+
+      q.message_count.should == 1
+      sleep 1.5
+      q.message_count.should == 0
+
+      ch.close
+    end
+  end
+
+
+  unless ENV["CI"]
+    # requires RabbitMQ 3.1+
+    context "when queue is declared with bounded length" do
+      let(:n) { 10 }
+      let(:args) do
+        # in ms
+        {"x-max-length" => n}
+      end
+
+      # see http://www.rabbitmq.com/maxlength.html for more info
+      it "causes the queue to be bounded" do
+        ch   = connection.create_channel
+
+        q = ch.queue("bunny.tests.queues.with-arguments.max-length", :arguments => args, :exclusive => true)
+        q.arguments.should == args
+
+        (n * 10).times do
+          q.publish("xyzzy")
+        end
+
+        q.message_count.should == n
+        (n * 5).times do
+          q.publish("xyzzy")
+        end
+
+        q.message_count.should == n
+        q.delete
+
+        ch.close
+      end
     end
   end
 end

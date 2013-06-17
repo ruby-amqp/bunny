@@ -1,5 +1,6 @@
 # encoding: utf-8
 
 module Bunny
-  VERSION = "0.9.0.pre6"
+  # @return [String] Version of the library
+  VERSION = "0.9.0.rc2wip"
 end

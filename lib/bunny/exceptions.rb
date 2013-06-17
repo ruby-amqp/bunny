@@ -1,5 +1,51 @@
 module Bunny
-  class TCPConnectionFailed < StandardError
+  # Base class for all Bunny exceptions
+  # @api public
+  class Exception < ::StandardError
+  end
+
+  # Indicates a network failure. If automatic network
+  # recovery mode is enabled, these will be typically handled
+  # by the client itself.
+  #
+  # @api public
+  class NetworkFailure < Exception
+    attr_reader :cause
+
+    def initialize(message, cause)
+      super(message)
+      @cause = cause
+    end
+  end
+
+  # Base class for all channel level exceptions
+  class ChannelLevelException < Exception
+    attr_reader :channel, :channel_close
+
+    def initialize(message, ch, channel_close)
+      super(message)
+
+      @channel       = ch
+      @channel_close = channel_close
+    end
+  end
+
+  # Base class for all connection level exceptions
+  class ConnectionLevelException < Exception
+    attr_reader :connection, :connection_close
+
+    def initialize(message, connection, connection_close)
+      super(message)
+
+      @connection       = connection
+      @connection_close = connection_close
+    end
+  end
+
+
+  # Raised when TCP connection to RabbitMQ fails because of an unresolved
+  # hostname, connectivity problem, etc
+  class TCPConnectionFailed < Exception
     attr_reader :hostname, :port
 
     def initialize(e, hostname, port)
@@ -13,17 +59,20 @@ module Bunny
     end
   end
 
-  class ConnectionClosedError < StandardError
+  # Raised when a frame is sent over an already closed connection
+  class ConnectionClosedError < Exception
     def initialize(frame)
       if frame.respond_to?(:method_class)
-        super("Trying to send frame through a closed connection. Frame is #{frame.inspect}")
-      else
         super("Trying to send frame through a closed connection. Frame is #{frame.inspect}, method class is #{frame.method_class}")
+      else
+        super("Trying to send frame through a closed connection. Frame is #{frame.inspect}")
       end
     end
   end
 
-  class PossibleAuthenticationFailureError < StandardError
+  # Raised when RabbitMQ closes TCP connection before finishing connection
+  # sequence properly. This typically indicates an authentication issue.
+  class PossibleAuthenticationFailureError < Exception
 
     #
     # API
@@ -35,36 +84,45 @@ module Bunny
       @username = username
       @vhost    = vhost
 
-      super("AMQP broker closed TCP connection before authentication succeeded: this usually means authentication failure due to misconfiguration or that RabbitMQ version does not support AMQP 0.9.1. Please check your configuration. Username: #{username}, vhost: #{vhost}, password length: #{password_length}")
+      super("RabbitMQ closed TCP connection before authentication succeeded: this usually means authentication failure due to misconfiguration or that RabbitMQ version does not support AMQP 0.9.1. Please check your configuration. Username: #{username}, vhost: #{vhost}, password length: #{password_length}")
     end # initialize(settings)
   end # PossibleAuthenticationFailureError
 
 
   # backwards compatibility
+  # @private
   ConnectionError = TCPConnectionFailed
+  # @private
   ServerDownError = TCPConnectionFailed
 
-  # TODO
-  class ForcedChannelCloseError < StandardError; end
-  class ForcedConnectionCloseError < StandardError; end
-  class MessageError < StandardError; end
-  class ProtocolError < StandardError; end
+  # Raised when a channel is closed forcefully using rabbitmqctl
+  # or the management UI plugin
+  class ForcedChannelCloseError < ChannelLevelException; end
+  # Raised when a connection is closed forcefully using rabbitmqctl
+  # or the management UI plugin
+  class ForcedConnectionCloseError < ConnectionLevelException; end
+  # @private
+  class MessageError  < ConnectionLevelException; end
+  # @private
+  class ProtocolError < ConnectionLevelException; end
+  # Raised when RabbitMQ reports and internal error
+  class InternalError < ConnectionLevelException; end
 
-  # raised when read or write I/O operations time out (but only if
+  # Raised when read or write I/O operations time out (but only if
   # a connection is configured to use them)
   class ClientTimeout     < Timeout::Error; end
-  # raised on initial connection timeout
+  # Raised on initial TCP connection timeout
   class ConnectionTimeout < Timeout::Error; end
 
 
   # Base exception class for data consistency and framing errors.
-  class InconsistentDataError < StandardError
+  class InconsistentDataError < Exception
   end
 
   # Raised by adapters when frame does not end with {final octet AMQ::Protocol::Frame::FINAL_OCTET}.
   # This suggest that there is a bug in adapter or AMQ broker implementation.
   #
-  # @see http://files.travis-ci.org/docs/amqp/0.9.1/AMQP091Specification.pdf AMQP 0.9.1 specification (Section 2.3)
+  # @see https://www.rabbitmq.com/resources/specs/amqp0-9-1.pdf AMQP 0.9.1 specification (Section 2.3)
   class NoFinalOctetError < InconsistentDataError
     def initialize
       super("Frame doesn't end with #{AMQ::Protocol::Frame::FINAL_OCTET} as it must, which means the size is miscalculated.")
@@ -75,15 +133,15 @@ module Bunny
   # to the size specified in that frame's header.
   # This suggest that there is a bug in adapter or AMQ broker implementation.
   #
-  # @see http://files.travis-ci.org/docs/amqp/0.9.1/AMQP091Specification.pdf AMQP 0.9.1 specification (Section 2.3)
+  # @see https://www.rabbitmq.com/resources/specs/amqp0-9-1.pdf AMQP 0.9.1 specification (Section 2.3)
   class BadLengthError < InconsistentDataError
     def initialize(expected_length, actual_length)
       super("Frame payload should be #{expected_length} long, but it's #{actual_length} long.")
     end
   end
 
-
-  class ChannelAlreadyClosed < StandardError
+  # Raised when a closed channel is used
+  class ChannelAlreadyClosed < Exception
     attr_reader :channel
 
     def initialize(message, ch)
@@ -93,42 +151,56 @@ module Bunny
     end
   end
 
-  class ChannelLevelException < StandardError
-    attr_reader :channel, :channel_close
-
-    def initialize(message, ch, channel_close)
-      super(message)
-
-      @channel       = ch
-      @channel_close = channel_close
-    end
-  end
-
+  # Raised when RabbitMQ responds with 406 PRECONDITION_FAILED
   class PreconditionFailed < ChannelLevelException
   end
 
+  # Raised when RabbitMQ responds with 404 NOT_FOUND
   class NotFound < ChannelLevelException
   end
 
+  # Raised when RabbitMQ responds with 405 RESOUCE_LOCKED
   class ResourceLocked < ChannelLevelException
   end
 
+  # Raised when RabbitMQ responds with 403 ACCESS_REFUSED
   class AccessRefused < ChannelLevelException
   end
 
+  # Raised when RabbitMQ responds with 504 CHANNEL_ERROR
+  class ChannelError < ConnectionLevelException
+  end
 
+  # Raised when RabbitMQ responds with 503 COMMAND_INVALID
+  class CommandInvalid < ConnectionLevelException
+  end
 
-  class ConnectionLevelException < StandardError
-    attr_reader :connection, :connection_close
+  # Raised when RabbitMQ responds with 501 FRAME_ERROR
+  class FrameError < ConnectionLevelException
+  end
 
-    def initialize(message, connection, connection_close)
-      super(message)
+  # Raised when RabbitMQ responds with 505 UNEXPECTED_FRAME
+  class UnexpectedFrame < ConnectionLevelException
+  end
 
-      @connection       = connection
-      @connection_close = connection_close
+  # Raised when RabbitMQ responds with 506 RESOURCE_ERROR
+  class ResourceError < ConnectionLevelException
+  end
+
+  # @private
+  class NetworkErrorWrapper < Exception
+    attr_reader :other
+
+    def initialize(other)
+      super(other.message)
+      @other = other
     end
   end
 
-  class ChannelError < ConnectionLevelException
+  # Raised when RabbitMQ responds with 302 CONNECTION_FORCED
+  # (which means the connection was closed using rabbitmqctl or
+  # RabbitMQ management UI)
+  class ConnectionForced < ConnectionLevelException
   end
+
 end

@@ -18,3 +18,5 @@ playground/*
 *.org
 repl-*
 debug/*
+*.dump
+deploy.docs.sh

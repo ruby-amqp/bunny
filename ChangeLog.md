@@ -1,8 +1,377 @@
-## Changes between Bunny 0.9.0.pre5 and 0.9.0.pre6
+## Changes between Bunny 0.9.0.rc1 and 0.9.0.rc2
 
 No changes yet.
 
 
+## Changes between Bunny 0.9.0.pre13 and 0.9.0.rc1
+
+### TLS Support
+
+Bunny 0.9 finally supports TLS. There are 3 new options `Bunny.new` takes:
+
+ * `:tls` which, when set to `true`, will set SSL context up and switch to TLS port (5671)
+ * `:tls_cert` which is a string path to the client certificate (public key) in PEM format
+ * `:tls_key` which is a string path to the client key (private key) in PEM format
+ * `:tls_ca_certificates` which is an array of string paths to CA certificates in PEM format
+
+An example:
+
+``` ruby
+conn = Bunny.new(:tls                   => true,
+                 :tls_cert              => "examples/tls/client_cert.pem",
+                 :tls_key               => "examples/tls/client_key.pem",
+                 :tls_ca_certificates   => ["./examples/tls/cacert.pem"])
+```
+
+
+### Bunny::Queue#pop_waiting
+
+`Bunny::Queue#pop_waiting` is a new function that mimics `Bunny::Queue#pop`
+but will wait until a message is available. It uses a `:timeout` option and will
+raise an exception if the timeout is hit:
+
+``` ruby
+# given 1 message in the queue,
+# works exactly as Bunny::Queue#get
+q.pop_waiting
+
+# given no messages in the queue, will wait for up to 0.5 seconds
+# for a message to become available. Raises an exception if the timeout
+# is hit
+q.pop_waiting(:timeout => 0.5)
+```
+
+This method only makes sense for collecting Request/Reply ("RPC") replies.
+
+
+### Bunny::InvalidCommand is now Bunny::CommandInvalid
+
+`Bunny::InvalidCommand` is now `Bunny::CommandInvalid` (follows
+the exception class naming convention based on response status
+name).
+
+
+
+## Changes between Bunny 0.9.0.pre12 and 0.9.0.pre13
+
+### Channels Without Consumers Now Tear Down Consumer Pools
+
+Channels without consumers left (when all consumers were cancelled)
+will now tear down their consumer work thread pools, thus making
+`HotBunnies::Queue#subscribe(:block => true)` calls unblock.
+
+This is typically the desired behavior.
+
+### Consumer and Channel Available In Delivery Handlers
+
+Delivery handlers registered via `Bunny::Queue#subscribe` now will have
+access to the consumer and channel they are associated with via the
+`delivery_info` argument:
+
+``` ruby
+q.subscribe do |delivery_info, properties, payload|
+  delivery_info.consumer # => the consumer this delivery is for
+  delivery_info.consumer # => the channel this delivery is on
+end
+```
+
+This allows using `Bunny::Queue#subscribe` for one-off consumers
+much easier, including when used with the `:block` option.
+
+### Bunny::Exchange#wait_for_confirms
+
+`Bunny::Exchange#wait_for_confirms` is a convenience method on `Bunny::Exchange` that
+delegates to the method with the same name on exchange's channel.
+
+
+## Changes between Bunny 0.9.0.pre11 and 0.9.0.pre12
+
+### Ruby 1.8 Compatibility Regression Fix
+
+`Bunny::Socket` no longer uses Ruby 1.9-specific constants.
+
+
+### Bunny::Channel#wait_for_confirms Return Value Regression Fix
+
+`Bunny::Channel#wait_for_confirms` returns `true` or `false` again.
+
+
+
+## Changes between Bunny 0.9.0.pre10 and 0.9.0.pre11
+
+### Bunny::Session#create_channel Now Accepts Consumer Work Pool Size
+
+`Bunny::Session#create_channel` now accepts consumer work pool size as
+the second argument:
+
+``` ruby
+# nil means channel id will be allocated by Bunny.
+# 8 is the number of threads in the consumer work pool this channel will use.
+ch = conn.create_channel(nil, 8)
+```
+
+### Heartbeat Fix For Long Running Consumers
+
+Long running consumers that don't send any data will no longer
+suffer from connections closed by RabbitMQ because of skipped
+heartbeats.
+
+Activity tracking now takes sent frames into account.
+
+
+### Time-bound continuations
+
+If a network loop exception causes "main" session thread to never
+receive a response, methods such as `Bunny::Channel#queue` will simply time out
+and raise Timeout::Error now, which can be handled.
+
+It will not start automatic recovery for two reasons:
+
+ * It will be started in the network activity loop anyway
+ * It may do more damage than good
+
+Kicking off network recovery manually is a matter of calling
+`Bunny::Session#handle_network_failure`.
+
+The main benefit of this implementation is that it will never
+block the main app/session thread forever, and it is really
+efficient on JRuby thanks to a j.u.c. blocking queue.
+
+Fixes #112.
+
+
+### Logging Support
+
+Every Bunny connection now has a logger. By default, Bunny will use STDOUT
+as logging device. This is configurable using the `:log_file` option:
+
+``` ruby
+require "bunny"
+
+conn = Bunny.new(:log_level => :warn)
+```
+
+or the `BUNNY_LOG_LEVEL` environment variable that can take one of the following
+values:
+
+ * `debug` (very verbose)
+ * `info`
+ * `warn`
+ * `error`
+ * `fatal` (least verbose)
+
+Severity is set to `warn` by default. To disable logging completely, set the level
+to `fatal`.
+
+To redirect logging to a file or any other object that can act as an I/O entity,
+pass it to the `:log_file` option.
+
+
+## Changes between Bunny 0.9.0.pre9 and 0.9.0.pre10
+
+This release contains a **breaking API change**.
+
+### Concurrency Improvements On JRuby
+
+On JRuby, Bunny now will use `java.util.concurrent`-backed implementations
+of some of the concurrency primitives. This both improves client stability
+(JDK concurrency primitives has been around for 9 years and have
+well-defined, documented semantics) and opens the door to solving
+some tricky failure handling problems in the future.
+
+
+### Explicitly Closed Sockets
+
+Bunny now will correctly close the socket previous connection had
+when recovering from network issues.
+
+
+### Bunny::Exception Now Extends StandardError
+
+`Bunny::Exception` now inherits from `StandardError` and not `Exception`.
+
+Naked rescue like this
+
+``` ruby
+begin
+  # ...
+rescue => e
+  # ...
+end
+```
+
+catches only descendents of `StandardError`. Most people don't
+know this and this is a very counter-intuitive practice, but
+apparently there is code out there that can't be changed that
+depends on this behavior.
+
+This is a **breaking API change**.
+
+
+
+## Changes between Bunny 0.9.0.pre8 and 0.9.0.pre9
+
+### Bunny::Session#start Now Returns a Session
+
+`Bunny::Session#start` now returns a session instead of the default channel
+(which wasn't intentional, default channel is a backwards-compatibility implementation
+detail).
+
+`Bunny::Session#start` also no longer leaves dead threads behind if called multiple
+times on the same connection.
+
+
+### More Reliable Heartbeat Sender
+
+Heartbeat sender no longer slips into an infinite loop if it encounters an exception.
+Instead, it will just stop (and presumably re-started when the network error recovery
+kicks in or the app reconnects manually).
+
+
+### Network Recovery After Delay
+
+Network reconnection now kicks in after a delay to avoid aggressive
+reconnections in situations when we don't want to endlessly reconnect
+(e.g. when the connection was closed via the Management UI).
+
+The `:network_recovery_interval` option passed to `Bunny::Session#initialize` and `Bunny.new`
+controls the interval. Default is 5 seconds.
+
+
+### Default Heartbeat Value Is Now Server-Defined
+
+Bunny will now use heartbeat value provided by RabbitMQ by default.
+
+
+
+## Changes between Bunny 0.9.0.pre7 and 0.9.0.pre8
+
+### Stability Improvements
+
+Several stability improvements in the network
+layer, connection error handling, and concurrency hazards.
+
+
+### Automatic Connection Recovery Can Be Disabled
+
+Automatic connection recovery now can be disabled by passing
+the `:automatically_recover => false` option to `Bunny#initialize`).
+
+When the recovery is disabled, network I/O-related exceptions will
+cause an exception to be raised in thee thread the connection was
+started on.
+
+
+### No Timeout Control For Publishing
+
+`Bunny::Exchange#publish` and `Bunny::Channel#basic_publish` no
+longer perform timeout control (using the timeout module) which
+roughly increases throughput for flood publishing by 350%.
+
+Apps that need delivery guarantees should use publisher confirms.
+
+
+
+## Changes between Bunny 0.9.0.pre6 and 0.9.0.pre7
+
+### Bunny::Channel#on_error
+
+`Bunny::Channel#on_error` is a new method that lets you define
+handlers for channel errors that are caused by methods that have no
+responses in the protocol (`basic.ack`, `basic.reject`, and `basic.nack`).
+
+This is rarely necessary but helps make sure no error goes unnoticed.
+
+Example:
+
+``` ruby
+channel.on_error |ch, channel_close|
+  puts channel_close.inspect
+end
+```
+
+### Fixed Framing of Larger Messages With Unicode Characters
+
+Larger (over 128K) messages with non-ASCII characters are now always encoded
+correctly with amq-protocol `1.2.0`.
+
+
+### Efficiency Improvements
+
+Publishing of large messages is now done more efficiently.
+
+Contributed by Greg Brockman.
+
+
+### API Reference
+
+[Bunny API reference](http://reference.rubybunny.info) is now up online.
+
+
+### Bunny::Channel#basic_publish Support For :persistent
+
+`Bunny::Channel#basic_publish` now supports both
+`:delivery_mode` and `:persistent` options.
+
+### Bunny::Channel#nacked_set
+
+`Bunny::Channel#nacked_set` is a counter-part to `Bunny::Channel#unacked_set`
+that contains `basic.nack`-ed (rejected) delivery tags.
+
+
+### Single-threaded Network Activity Mode
+
+Passing `:threaded => false` to `Bunny.new` now will use the same
+thread for publisher confirmations (may be useful for retry logic
+implementation).
+
+Contributed by Greg Brockman.
+
+
+## Changes between Bunny 0.9.0.pre5 and 0.9.0.pre6
+
+### Automatic Network Failure Recovery
+
+Automatic Network Failure Recovery is a new Bunny feature that was earlier
+impemented and vetted out in [amqp gem](http://rubyamqp.info). What it does
+is, when a network activity loop detects an issue, it will try to
+periodically recover [first TCP, then] AMQP 0.9.1 connection, reopen
+all channels, recover all exchanges, queues, bindings and consumers
+on those channels (to be clear: this only includes entities and consumers added via
+Bunny).
+
+Publishers and consumers will continue operating shortly after the network
+connection recovers.
+
+Learn more in the [Error Handling and Recovery](http://rubybunny.info/articles/error_handling.html)
+documentation guide.
+
+### Confirms Listeners
+
+Bunny now supports listeners (callbacks) on
+
+``` ruby
+ch.confirm_select do |delivery_tag, multiple, nack|
+  # handle confirms (e.g. perform retries) here
+end
+```
+
+Contributed by Greg Brockman.
+
+### Publisher Confirms Improvements
+
+Publisher confirms implementation now uses non-strict equality (`<=`) for
+cases when multiple messages are confirmed by RabbitMQ at once.
+
+`Bunny::Channel#unconfirmed_set` is now part of the public API that lets
+developers access unconfirmed delivery tags to perform retries and such.
+
+Contributed by Greg Brockman.
+
+### Publisher Confirms Concurrency Fix
+
+`Bunny::Channel#wait_for_confirms` will now correctly block the calling
+thread until all pending confirms are received.
 
 
 ## Changes between Bunny 0.9.0.pre4 and 0.9.0.pre5

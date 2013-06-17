@@ -3,14 +3,18 @@ require "amq/protocol/client"
 require "amq/protocol/frame"
 
 module Bunny
+  # Periodically sends heartbeats, keeping track of the last publishing activity.
+  #
+  # @private
   class HeartbeatSender
 
     #
     # API
     #
 
-    def initialize(transport)
+    def initialize(transport, logger)
       @transport = transport
+      @logger    = logger
       @mutex     = Mutex.new
 
       @last_activity_time = Time.now
@@ -46,9 +50,11 @@ module Bunny
           sleep @interval
         end
       rescue IOError => ioe
-        # ignored
+        @logger.error "I/O error in the hearbeat sender: #{ioe.message}"
+        stop
       rescue Exception => e
-        puts e.message
+        @logger.error "Error in the hearbeat sender: #{e.message}"
+        stop
       end
     end
 
@@ -56,7 +62,8 @@ module Bunny
       now = Time.now
 
       if now > (@last_activity_time + @interval)
-        @transport.send_raw(AMQ::Protocol::HeartbeatFrame.encode)
+        @logger.debug "Sending a heartbeat, last activity time: #{@last_activity_time}, interval (s): #{@interval}"
+        @transport.write_without_timeout(AMQ::Protocol::HeartbeatFrame.encode)
       end
     end
   end
