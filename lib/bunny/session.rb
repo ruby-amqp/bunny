@@ -128,6 +128,7 @@ module Bunny
       @continuation_timeout      = opts.fetch(:continuation_timeout, 4000)
 
       @status             = :not_connected
+      @blocked            = false
 
       # these are negotiated with the broker during the connection tuning phase
       @client_frame_max   = opts.fetch(:frame_max, DEFAULT_FRAME_MAX)
@@ -195,6 +196,9 @@ module Bunny
       return self if connected?
 
       @status        = :connecting
+      # reset here for cases when automatic network recovery kicks in
+      # when we were blocked. MK.
+      @blocked       = false
       self.reset_continuations
 
       begin
@@ -345,6 +349,14 @@ module Bunny
       @unblock_callback = block
     end
 
+    # @return [Boolean] true if the connection is currently blocked by RabbitMQ because it's running low on
+    #                   RAM, disk space, or other resource; false otherwise
+    # @see #on_blocked
+    # @see #on_unblocked
+    def blocked?
+      @blocked
+    end
+
 
     #
     # Implementation
@@ -425,8 +437,10 @@ module Bunny
           @continuations.push(:__unblock__)
         end
       when AMQ::Protocol::Connection::Blocked then
+        @blocked = true
         @block_callback.call(method) if @block_callback
       when AMQ::Protocol::Connection::Unblocked then
+        @blocked = false
         @unblock_callback.call(method) if @unblock_callback
       when AMQ::Protocol::Channel::Close then
         begin
