@@ -49,6 +49,9 @@ module Bunny
       @disconnect_timeout = @read_write_timeout || @connect_timeout
 
       @writes_mutex       = Mutex.new
+
+      maybe_initialize_socket
+      prepare_tls_context if @tls_enabled
     end
 
 
@@ -71,15 +74,26 @@ module Bunny
       if uses_ssl?
         @socket.connect
         @socket.post_connection_check(host) if uses_tls? && @verify_peer
+
+        @status = :connected
+
+        @socket
       else
         # no-op
       end
     end
 
-    def configure_socket(&block)
-      block.call(@socket)
+    def connected?
+      :not_connected == @status && open?
     end
 
+    def configure_socket(&block)
+      block.call(@socket) if @socket
+    end
+
+    def configure_tls_context(&block)
+      block.call(@tls_context) if @tls_context
+    end
 
     # Writes data to the socket. If read/write timeout was specified, Bunny::ClientTimeout will be raised
     # if the operation times out.
@@ -102,6 +116,7 @@ module Bunny
         end
       rescue SystemCallError, Bunny::ClientTimeout, Bunny::ConnectionError, IOError => e
         close
+        @status = :not_connected
 
         if @session.automatically_recover?
           @session.handle_network_failure(e)
@@ -153,11 +168,11 @@ module Bunny
 
 
     def close(reason = nil)
-      @socket.close if @socket && !@socket.closed?
+      @socket.close if open?
     end
 
     def open?
-      !@socket.closed?
+      @socket && !@socket.closed?
     end
 
     def closed?
@@ -224,23 +239,29 @@ module Bunny
 
     def initialize_socket
       begin
-        s = Bunny::Timer.timeout(@connect_timeout, ConnectionTimeout) do
+        @socket = Bunny::Timer.timeout(@connect_timeout, ConnectionTimeout) do
           Bunny::Socket.open(@host, @port,
                              :keepalive      => @opts[:keepalive],
                              :socket_timeout => @connect_timeout)
         end
-
-        @socket =  if uses_tls?
-                     wrap_in_tls_socket(s)
-                   else
-                     s
-                   end
       rescue StandardError, ConnectionTimeout => e
         @status = :not_connected
         raise Bunny::TCPConnectionFailed.new(e, self.hostname, self.port)
       end
 
       @socket
+    end
+
+    def maybe_initialize_socket
+      initialize_socket if !@socket || closed?
+    end
+
+    def post_initialize_socket
+      @socket = if uses_tls?
+                  wrap_in_tls_socket(@socket)
+                else
+                  @socket
+                end
     end
 
     protected
@@ -257,10 +278,15 @@ module Bunny
       opts[:tls_key] || opts[:ssl_key] || opts[:tls_key_path] || opts[:ssl_key_path]
     end
 
-    def wrap_in_tls_socket(socket)
+    def prepare_tls_context
       read_tls_keys!
 
       @tls_context = initialize_tls_context(OpenSSL::SSL::SSLContext.new)
+    end
+
+    def wrap_in_tls_socket(socket)
+      raise ArgumentError, "cannot wrap nil into TLS socket, @tls_context is nil. This is a Bunny bug." unless socket
+      raise "cannot wrap a socket into TLS socket, @tls_context is nil. This is a Bunny bug." unless @tls_context
 
       s = Bunny::SSLSocket.new(socket, @tls_context)
       s.sync_close = true

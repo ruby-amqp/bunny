@@ -178,11 +178,7 @@ module Bunny
     def configure_socket(&block)
       raise ArgumentError, "No block provided!" if block.nil?
 
-      if @transport
-        @transport.configure_socket(&block)
-      else
-        @socket_configurator = block
-      end
+      @transport.configure_socket(&block)
     end
 
     # Starts the connection process.
@@ -199,10 +195,9 @@ module Bunny
       begin
         # close existing transport if we have one,
         # to not leak sockets
-        self.maybe_close_transport
-        self.initialize_transport
+        @transport.maybe_initialize_socket
 
-        @transport.initialize_socket
+        @transport.post_initialize_socket
         @transport.connect
 
         if @socket_configurator
