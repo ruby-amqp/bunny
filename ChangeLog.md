@@ -1,6 +1,25 @@
 ## Changes between Bunny 0.9.0.rc1 and 0.9.0.rc2
 
-No changes yet.
+### More Flexible SSLContext Configuration
+
+Bunny will now upgrade connection to SSL in `Bunny::Session#start`,
+so it is possible to fine tune SSLContext and socket settings
+before that:
+
+``` ruby
+require "bunny"
+
+conn = Bunny.new(:tls                   => true,
+                 :tls_cert              => "examples/tls/client_cert.pem",
+                 :tls_key               => "examples/tls/client_key.pem",
+                 :tls_ca_certificates   => ["./examples/tls/cacert.pem"])
+
+puts conn.transport.socket.inspect
+puts conn.transport.tls_context.inspect
+```
+
+This also means that `Bunny.new` will now open the socket. Previously
+it was only done when `Bunny::Session#start` was invoked.
 
 
 ## Changes between Bunny 0.9.0.pre13 and 0.9.0.rc1
@@ -564,7 +583,7 @@ It makes more sense for beginners that way.
 
 `Bunny::Queue#subscribe` support the new `:block` option
 (a boolean).
-    
+
 It controls whether the current thread will be blocked
 by `Bunny::Queue#subscribe`.
 
