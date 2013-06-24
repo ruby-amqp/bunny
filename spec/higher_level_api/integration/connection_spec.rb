@@ -154,11 +154,15 @@ describe Bunny::Session do
   end
 
   context "initialized with :ssl => true" do
-    after :each do
-      subject.close if subject.open?
+    let(:subject) do
+      described_class.new(:user     => "bunny_gem",
+                          :password => "bunny_password",
+                          :vhost    => "bunny_testbed",
+                          :ssl                   => true,
+                          :ssl_cert              => "spec/tls/client_cert.pem",
+                          :ssl_key               => "spec/tls/client_key.pem",
+                          :ssl_ca_certificates   => ["./spec/tls/cacert.pem"])
     end
-
-    let(:subject) { described_class.new(:ssl => true) }
 
     it "uses TLS port" do
       subject.port.should == tls_port
@@ -166,11 +170,15 @@ describe Bunny::Session do
   end
 
   context "initialized with :tls => true" do
-    after :each do
-      subject.close if subject.open?
+    let(:subject) do
+      described_class.new(:user     => "bunny_gem",
+                          :password => "bunny_password",
+                          :vhost    => "bunny_testbed",
+                          :tls                   => true,
+                          :tls_cert              => "spec/tls/client_cert.pem",
+                          :tls_key               => "spec/tls/client_key.pem",
+                          :tls_ca_certificates   => ["./spec/tls/cacert.pem"])
     end
-
-    let(:subject) { described_class.new(:tls => true) }
 
     it "uses TLS port" do
       subject.port.should == tls_port
@@ -346,19 +354,17 @@ describe Bunny::Session do
 
 
   context "initialized with a disconnected host" do
-    subject do
-      described_class.new(:port => 38000)
-    end
-
     it "fails to connect" do
       lambda do
-        subject.start
+        c = described_class.new(:port => 38000)
+        c.start
       end.should raise_error(Bunny::TCPConnectionFailed)
     end
 
     it "is not connected" do
       begin
-        subject.start
+        c = described_class.new(:port => 38000)
+        c.start
       rescue Bunny::TCPConnectionFailed => e
         true
       end
@@ -368,7 +374,8 @@ describe Bunny::Session do
 
     it "is not open" do
       begin
-        subject.start
+        c = described_class.new(:port => 38000)
+        c.start
       rescue Bunny::TCPConnectionFailed => e
         true
       end
