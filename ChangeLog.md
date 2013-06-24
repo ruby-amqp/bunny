@@ -15,6 +15,10 @@ This is not a problem on JRuby because there we don't use Ruby's
 Timeout and Queue and instead rely on a JDK concurrency primitive
 which provides "poll with a timeout".
 
+[The issue with `Thread#kill` and `Thread#raise`](http://blog.headius.com/2008/02/ruby-threadraise-threadkill-timeoutrb.html)
+has been first investigated and blogged about by Ruby implementers
+in 2008.
+
 Finding a workaround will probably take a bit of time and may involve
 reimplementing standard library and core classes.
 
