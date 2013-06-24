@@ -1,5 +1,31 @@
 ## Changes between Bunny 0.9.0.rc1 and 0.9.0.rc2
 
+### Bunny::Queue#pop_waiting is Removed
+
+A little bit of background: on MRI, the method raised `ThreadErrors`
+reliably. On JRuby, we used a different [internal] queue implementation
+from JDK so it wasn't an issue.
+
+`Timeout.timeout` uses `Thread#kill` and `Thread#join`, both of which
+eventually attempt to acquire a mutex used by Queue#pop, which Bunny
+currently uses for continuations. The mutex is already has an owner
+and so a ThreadError is raised.
+
+This is not a problem on JRuby because there we don't use Ruby's
+Timeout and Queue and instead rely on a JDK concurrency primitive
+which provides "poll with a timeout".
+
+Finding a workaround will probably take a bit of time and may involve
+reimplementing standard library and core classes.
+
+We don't want this issue to block Bunny 0.9 release. Neither we want
+to ship a broken feature.  So as a result, we will drop
+Bunny::Queue#pop_waiting since it cannot be reliably implemented in a
+reasonable amount of time on MRI.
+
+Per issue #131.
+
+
 ### More Flexible SSLContext Configuration
 
 Bunny will now upgrade connection to SSL in `Bunny::Session#start`,
