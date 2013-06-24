@@ -153,35 +153,37 @@ describe Bunny::Session do
     end
   end
 
-  context "initialized with :ssl => true" do
-    let(:subject) do
-      described_class.new(:user     => "bunny_gem",
-                          :password => "bunny_password",
-                          :vhost    => "bunny_testbed",
-                          :ssl                   => true,
-                          :ssl_cert              => "spec/tls/client_cert.pem",
-                          :ssl_key               => "spec/tls/client_key.pem",
-                          :ssl_ca_certificates   => ["./spec/tls/cacert.pem"])
+  unless ENV["CI"]
+    context "initialized with :ssl => true" do
+      let(:subject) do
+        described_class.new(:user     => "bunny_gem",
+                            :password => "bunny_password",
+                            :vhost    => "bunny_testbed",
+                            :ssl                   => true,
+                            :ssl_cert              => "spec/tls/client_cert.pem",
+                            :ssl_key               => "spec/tls/client_key.pem",
+                            :ssl_ca_certificates   => ["./spec/tls/cacert.pem"])
+      end
+
+      it "uses TLS port" do
+        subject.port.should == tls_port
+      end
     end
 
-    it "uses TLS port" do
-      subject.port.should == tls_port
-    end
-  end
+    context "initialized with :tls => true" do
+      let(:subject) do
+        described_class.new(:user     => "bunny_gem",
+                            :password => "bunny_password",
+                            :vhost    => "bunny_testbed",
+                            :tls                   => true,
+                            :tls_cert              => "spec/tls/client_cert.pem",
+                            :tls_key               => "spec/tls/client_key.pem",
+                            :tls_ca_certificates   => ["./spec/tls/cacert.pem"])
+      end
 
-  context "initialized with :tls => true" do
-    let(:subject) do
-      described_class.new(:user     => "bunny_gem",
-                          :password => "bunny_password",
-                          :vhost    => "bunny_testbed",
-                          :tls                   => true,
-                          :tls_cert              => "spec/tls/client_cert.pem",
-                          :tls_key               => "spec/tls/client_key.pem",
-                          :tls_ca_certificates   => ["./spec/tls/cacert.pem"])
-    end
-
-    it "uses TLS port" do
-      subject.port.should == tls_port
+      it "uses TLS port" do
+        subject.port.should == tls_port
+      end
     end
   end
 
