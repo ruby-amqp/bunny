@@ -71,6 +71,8 @@ conn = Bunny.new(:tls                   => true,
 
 ### Bunny::Queue#pop_waiting
 
+**This function was removed in v0.9.0.rc2**
+
 `Bunny::Queue#pop_waiting` is a new function that mimics `Bunny::Queue#pop`
 but will wait until a message is available. It uses a `:timeout` option and will
 raise an exception if the timeout is hit:
