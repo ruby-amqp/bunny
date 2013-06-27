@@ -1,5 +1,16 @@
 ## Changes between Bunny 0.9.0.rc1 and 0.9.0.rc2
 
+### Channel Now Properly Restarts Consumer Pool
+
+In a case when all consumers are cancelled, `Bunny::Channel`
+will shut down its consumer delivery thread pool.
+
+It will also now mark the pool as not running so that it can be
+started again successfully if new consumers are registered later.
+
+GH issue: #133.
+
+
 ### Bunny::Queue#pop_waiting is Removed
 
 A little bit of background: on MRI, the method raised `ThreadErrors`
