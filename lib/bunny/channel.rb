@@ -1690,17 +1690,21 @@ module Bunny
     # publishing). MK.
     # @private
     def maybe_start_consumer_work_pool!
-      @work_pool.start unless @work_pool.started?
+      if @work_pool && !@work_pool.running?
+        @work_pool.start
+      end
     end
 
     # @private
     def maybe_pause_consumer_work_pool!
-      @work_pool.pause if @work_pool && @work_pool.started?
+      @work_pool.pause if @work_pool && @work_pool.running?
     end
 
     # @private
     def maybe_kill_consumer_work_pool!
-      @work_pool.kill if @work_pool && @work_pool.started?
+      if @work_pool && @work_pool.running?
+        @work_pool.kill
+      end
     end
 
     # @private
