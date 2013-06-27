@@ -114,5 +114,54 @@ describe Bunny::Queue, "#subscribe" do
         ch.close
       end
     end
+  end # 20.times
+
+
+  context "after consumer pool has already been shut down" do
+    let(:queue_name) { "bunny.basic_consume#{rand}" }
+
+    it "registers the consumer" do
+      delivered_keys = []
+      delivered_data = []
+
+      t = Thread.new do
+        ch = connection.create_channel
+        q  = ch.queue(queue_name)
+
+
+
+        c1  = q.subscribe(:exclusive => false, :manual_ack => false, :block => false) do |delivery_info, properties, payload|
+        end
+        c1.cancel
+        puts "Cancelled #{c1.consumer_tag}"
+
+        c2  = q.subscribe(:exclusive => false, :manual_ack => false, :block => false) do |delivery_info, properties, payload|
+          delivered_keys << delivery_info.routing_key
+          delivered_data << payload
+        end
+        c2.cancel
+        puts "Cancelled #{c2.consumer_tag}"
+
+        q.subscribe(:exclusive => false, :manual_ack => false, :block => true) do |delivery_info, properties, payload|
+          delivered_keys << delivery_info.routing_key
+          delivered_data << payload
+        end
+      end
+      t.abort_on_exception = true
+      sleep 0.5
+
+      ch = connection.create_channel
+      x  = ch.default_exchange
+      x.publish("hello", :routing_key => queue_name)
+
+      sleep 0.7
+      delivered_keys.should include(queue_name)
+      delivered_data.should include("hello")
+
+      ch.queue(queue_name).message_count.should == 0
+
+      ch.close
+    end
   end
-end
+
+end # describe

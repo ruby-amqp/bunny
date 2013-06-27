@@ -31,14 +31,16 @@ module Bunny
         @threads << t
       end
 
-      @started = true
+      @running = true
     end
 
-    def started?
-      @started
+    def running?
+      @running
     end
 
     def shutdown
+      @running = false
+
       @size.times do
         submit do |*args|
           throw :terminate
@@ -51,14 +53,20 @@ module Bunny
     end
 
     def pause
+      @running = false
+
       @threads.each { |t| t.stop }
     end
 
     def resume
+      @running = true
+
       @threads.each { |t| t.run }
     end
 
     def kill
+      @running = false
+
       @threads.each { |t| t.kill }
     end
 
