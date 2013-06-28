@@ -133,14 +133,12 @@ describe Bunny::Queue, "#subscribe" do
         c1  = q.subscribe(:exclusive => false, :manual_ack => false, :block => false) do |delivery_info, properties, payload|
         end
         c1.cancel
-        puts "Cancelled #{c1.consumer_tag}"
 
         c2  = q.subscribe(:exclusive => false, :manual_ack => false, :block => false) do |delivery_info, properties, payload|
           delivered_keys << delivery_info.routing_key
           delivered_data << payload
         end
         c2.cancel
-        puts "Cancelled #{c2.consumer_tag}"
 
         q.subscribe(:exclusive => false, :manual_ack => false, :block => true) do |delivery_info, properties, payload|
           delivered_keys << delivery_info.routing_key
