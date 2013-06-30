@@ -79,6 +79,8 @@ describe Bunny::Exchange do
         x.should_not be_durable
         x.should be_auto_delete
 
+        ch.exchange(name, :type => :fanout, :auto_delete => true)
+
         x.delete
         ch.close
       end
@@ -112,6 +114,8 @@ describe Bunny::Exchange do
         x    = ch.direct(name)
         x.name.should == name
 
+        ch.exchange(name, :type => :direct)
+
         x.delete
         ch.close
       end
@@ -138,6 +142,8 @@ describe Bunny::Exchange do
         name = "bunny.tests.exchanges.topic"
         x    = ch.topic(name)
         x.name.should == name
+
+        ch.exchange(name, :type => :topic)
 
         x.delete
         ch.close
