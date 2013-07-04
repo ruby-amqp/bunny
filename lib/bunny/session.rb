@@ -40,6 +40,13 @@ module Bunny
     # @private
     CONNECT_TIMEOUT   = Transport::DEFAULT_CONNECTION_TIMEOUT
 
+    # @private
+    DEFAULT_CONTINUATION_TIMEOUT = if RUBY_VERSION.to_f < 1.9
+                                     8000
+                                   else
+                                     4000
+                                   end
+
     # RabbitMQ client metadata
     DEFAULT_CLIENT_PROPERTIES = {
       :capabilities => {
@@ -124,7 +131,7 @@ module Bunny
                                end
       @network_recovery_interval = opts.fetch(:network_recovery_interval, DEFAULT_NETWORK_RECOVERY_INTERVAL)
       # in ms
-      @continuation_timeout      = opts.fetch(:continuation_timeout, 4000)
+      @continuation_timeout      = opts.fetch(:continuation_timeout, DEFAULT_CONTINUATION_TIMEOUT)
 
       @status             = :not_connected
 
