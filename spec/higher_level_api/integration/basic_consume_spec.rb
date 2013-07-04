@@ -128,8 +128,6 @@ describe Bunny::Queue, "#subscribe" do
         ch = connection.create_channel
         q  = ch.queue(queue_name)
 
-
-
         c1  = q.subscribe(:exclusive => false, :manual_ack => false, :block => false) do |delivery_info, properties, payload|
         end
         c1.cancel
@@ -158,6 +156,7 @@ describe Bunny::Queue, "#subscribe" do
 
       ch.queue(queue_name).message_count.should == 0
 
+      ch.queue_delete(queue_name)
       ch.close
     end
   end
