@@ -4,12 +4,11 @@ script: "bundle exec rspec -c spec"
 rvm:
   - "2.0"
   - "1.9.3"
-  - rbx-19mode
-  - jruby-19mode
+  - "rbx-19mode"
+  - "jruby-19mode"
   - "1.9.2"
-  - "1.8.7"
 notifications:
-  email: michael@defprotocol.org
+  email: michael@rabbitmq.com
 services:
   - rabbitmq
 branches:
