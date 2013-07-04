@@ -1,6 +1,6 @@
 require "spec_helper"
 
-if RUBY_VERSION.to_f <= 1.8.7
+if RUBY_VERSION <= "1.9"
   describe "Publishing a message to the default exchange" do
     let(:connection) do
       c = Bunny.new(:user => "bunny_gem", :password => "bunny_password", :vhost => "bunny_testbed")
