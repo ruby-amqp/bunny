@@ -43,8 +43,6 @@ module Bunny
   #
   # This will automatically allocate a channel id.
   #
-  # @example Instantiating
-  #
   # ## Closing Channels
   #
   # Channels are closed via {Bunny::Channel#close}. Channels that get a channel-level exception are
