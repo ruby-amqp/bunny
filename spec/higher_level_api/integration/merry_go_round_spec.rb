@@ -75,7 +75,7 @@ describe "A message that is proxied by multiple intermediate consumers" do
       x.publish("msg #{i}", :routing_key => q4.name)
     end
 
-    t = n / 1000 * 2.0
+    t = n / 1000 * 3.0
     puts "About to sleep for #{t} seconds..."
     sleep(t)
 
