@@ -369,15 +369,15 @@ module Bunny
 
     # @group Higher-level API for queue operations
 
-    # Declares an exchange or looks it up in the per-channel cache.
+    # Declares a queue or looks it up in the per-channel cache.
     #
     # @param  [String] name  Queue name. Pass an empty string to declare a server-named queue (make RabbitMQ generate a unique name).
     # @param  [Hash]   opts  Queue properties and other options
     #
-    # @option options [Boolean] :durable (false) Should this queue be durable?
-    # @option options [Boolean] :auto-delete (false) Should this queue be automatically deleted when the last consumer disconnects?
-    # @option options [Boolean] :exclusive (false) Should this queue be exclusive (only can be used by this connection, removed when the connection is closed)?
-    # @option options [Boolean] :arguments ({}) Additional optional arguments (typically used by RabbitMQ extensions and plugins)
+    # @option opts [Boolean] :durable (false) Should this queue be durable?
+    # @option opts [Boolean] :auto-delete (false) Should this queue be automatically deleted when the last consumer disconnects?
+    # @option opts [Boolean] :exclusive (false) Should this queue be exclusive (only can be used by this connection, removed when the connection is closed)?
+    # @option opts [Boolean] :arguments ({}) Additional optional arguments (typically used by RabbitMQ extensions and plugins)
     #
     # @return [Bunny::Queue] Queue that was declared or looked up in the cache
     # @see http://rubybunny.info/articles/queues.html Queues and Consumers guide
