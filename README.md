@@ -80,15 +80,15 @@ backwards compatible as possible but within reason.
 To install Bunny 0.9.x with RubyGems:
 
 ```
-gem install bunny --pre
+gem install bunny
 ```
 
-the most recent 0.9.x version is `0.9.0.rc2`.
+the most recent 0.9.x version is `0.9.0`.
 
 To use Bunny 0.9.x in a project managed with Bundler:
 
 ``` ruby
-gem "bunny", ">= 0.9.0.rc2" # optionally: , :git => "git://github.com/ruby-amqp/bunny.git", :branch => "master"
+gem "bunny", ">= 0.9.0" # optionally: , :git => "git://github.com/ruby-amqp/bunny.git", :branch => "master"
 ```
 
 
