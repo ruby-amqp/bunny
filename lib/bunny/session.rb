@@ -146,6 +146,9 @@ module Bunny
       @locale              = @opts.fetch(:locale, DEFAULT_LOCALE)
       # mutex for the channel id => channel hash
       @channel_mutex       = Mutex.new
+      # transport operations/continuations mutex. A workaround for
+      # the non-reentrant Ruby mutexes. MK.
+      @transport_mutex     = Mutex.new
       @channels            = Hash.new
 
       self.reset_continuations
@@ -336,7 +339,7 @@ module Bunny
       n = ch.number
       self.register_channel(ch)
 
-      @channel_mutex.synchronize do
+      @transport_mutex.synchronize do
         @transport.send_frame(AMQ::Protocol::Channel::Open.encode(n, AMQ::Protocol::EMPTY_STRING))
       end
       @last_channel_open_ok = wait_on_continuations
