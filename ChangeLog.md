@@ -1,3 +1,12 @@
+## Changes between Bunny 0.9.1 and 0.9.2
+
+### Reliability Improvement in Automatic Network Failure Recovery
+
+Bunny now ensures a new connection transport (socket) is initialized
+before any recovery is attempted.
+
+
+
 ## Changes between Bunny 0.9.0 and 0.9.1
 
 ### Reliability Improvement in Bunny::Session#create_channel
