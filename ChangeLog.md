@@ -1,3 +1,12 @@
+## Changes between Bunny 0.9.0 and 0.9.1
+
+### Reliability Improvement in Bunny::Session#create_channel
+
+`Bunny::Session#create_channel` now uses two separate mutexes to avoid
+a (very rare) issue when the previous implementation would try to
+re-acquire the same mutex and fail (Ruby mutexes are non-reentrant).
+
+
 ## Changes between Bunny 0.9.0.rc1 and 0.9.0.rc2
 
 ### Channel Now Properly Restarts Consumer Pool
