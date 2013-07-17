@@ -61,10 +61,10 @@ describe Bunny::Consumer, "#cancel" do
         q.subscribe_with(consumer, :block => false)
       end
       t.abort_on_exception = true
-      sleep 0.5
+      sleep 1.0
 
       consumer.cancel
-      sleep 0.5
+      sleep 1.0
 
       ch = connection.create_channel
       ch.default_exchange.publish("", :routing_key => queue_name)
