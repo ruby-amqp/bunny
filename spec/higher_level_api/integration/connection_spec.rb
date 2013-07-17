@@ -54,55 +54,48 @@ describe Bunny::Session do
 
 
   context "initialized with all defaults" do
-    after :each do
-      subject.close if subject.open?
-    end
-
-    subject do
-      Bunny.new
-    end
-
     it "provides a way to fine tune socket options" do
-      subject.start
-      subject.transport.socket.should respond_to(:setsockopt)
+      conn = Bunny.new
+      conn.start
+      conn.transport.socket.should respond_to(:setsockopt)
+
+      conn.close
     end
 
     it "successfully negotiates the connection" do
-      subject.start
-      subject.should be_connected
+      conn = Bunny.new
+      conn.start
+      conn.should be_connected
 
-      subject.server_properties.should_not be_nil
-      subject.server_capabilities.should_not be_nil
+      conn.server_properties.should_not be_nil
+      conn.server_capabilities.should_not be_nil
 
-      props = subject.server_properties
+      props = conn.server_properties
 
       props["product"].should_not be_nil
       props["platform"].should_not be_nil
       props["version"].should_not be_nil
+
+      conn.close
     end
   end
 
   context "initialized with TCP connection timeout = 5" do
-    after :each do
-      subject.close if subject.open?
-    end
-
-    subject do
-      described_class.new(:connection_timeout => 5)
-    end
-
     it "successfully connects" do
-      subject.start
-      subject.should be_connected
+      conn = described_class.new(:connection_timeout => 5)
+      conn.start
+      conn.should be_connected
 
-      subject.server_properties.should_not be_nil
-      subject.server_capabilities.should_not be_nil
+      conn.server_properties.should_not be_nil
+      conn.server_capabilities.should_not be_nil
 
-      props = subject.server_properties
+      props = conn.server_properties
 
       props["product"].should_not be_nil
       props["platform"].should_not be_nil
       props["version"].should_not be_nil
+
+      conn.close
     end
   end
 
