@@ -1,3 +1,19 @@
+## Changes between Bunny 0.9.0 and 1.0.0.pre1
+
+### Reliability Improvement in Automatic Network Failure Recovery
+
+Bunny now ensures a new connection transport (socket) is initialized
+before any recovery is attempted.
+
+
+### Reliability Improvement in Bunny::Session#create_channel
+
+`Bunny::Session#create_channel` now uses two separate mutexes to avoid
+a (very rare) issue when the previous implementation would try to
+re-acquire the same mutex and fail (Ruby mutexes are non-reentrant).
+
+
+
 ## Changes between Bunny 0.9.0.rc1 and 0.9.0.rc2
 
 ### Channel Now Properly Restarts Consumer Pool
