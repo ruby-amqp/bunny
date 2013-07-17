@@ -151,8 +151,9 @@ module Bunny
       @transport_mutex     = Mutex.new
       @channels            = Hash.new
 
-      self.reset_continuations
+      @origin_thread       = Thread.current
 
+      self.reset_continuations
       self.initialize_transport
     end
 
@@ -485,7 +486,8 @@ module Bunny
       begin
         sleep @network_recovery_interval
         @logger.debug "About to start connection recovery..."
-        start
+        self.initialize_transport
+        self.start
 
         if open?
           @recovering_from_network_failure = false
@@ -796,7 +798,7 @@ module Bunny
 
     # @private
     def initialize_transport
-      @transport = Transport.new(self, @host, @port, @opts.merge(:session_thread => Thread.current))
+      @transport = Transport.new(self, @host, @port, @opts.merge(:session_thread => @origin_thread))
     end
 
     # @private
