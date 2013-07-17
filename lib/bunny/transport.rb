@@ -33,6 +33,7 @@ module Bunny
       @port    = port
       @opts    = opts
 
+      @logger                = session.logger
       @tls_enabled           = tls_enabled?(opts)
       @tls_certificate_path  = tls_certificate_path_from(opts)
       @tls_key_path          = tls_key_path_from(opts)
@@ -115,6 +116,7 @@ module Bunny
           end
         end
       rescue SystemCallError, Bunny::ClientTimeout, Bunny::ConnectionError, IOError => e
+        @logger.error "Got an exception when sending data: #{e.message} (#{e.class.name})"
         close
         @status = :not_connected
 
