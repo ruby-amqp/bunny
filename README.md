@@ -73,13 +73,19 @@ backwards compatible as possible but within reason.
 
 ## Installation & Bundler Dependency
 
+### Most Recent Release
+
+[![Gem Version](https://badge.fury.io/rb/bunny.png)](http://badge.fury.io/rb/bunny)
+
+### With Rubygems
+
 To install Bunny 0.9.x with RubyGems:
 
 ```
 gem install bunny
 ```
 
-the most recent 0.9.x version is `0.9.2`.
+### Bundler Dependency
 
 To use Bunny 0.9.x in a project managed with Bundler:
 
