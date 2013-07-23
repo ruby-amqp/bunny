@@ -630,11 +630,11 @@ module Bunny
     # @raise [ConnectionClosedError]
     # @private
     def send_frame(frame, signal_activity = true)
-      if closed?
-        raise ConnectionClosedError.new(frame)
-      else
+      if open?
         @transport.write(frame.encode)
         signal_activity! if signal_activity
+      else
+        raise ConnectionClosedError.new(frame)
       end
     end
 
@@ -645,11 +645,11 @@ module Bunny
     # @raise [ConnectionClosedError]
     # @private
     def send_frame_without_timeout(frame, signal_activity = true)
-      if closed?
-        raise ConnectionClosedError.new(frame)
-      else
+      if open?
         @transport.write_without_timeout(frame.encode)
         signal_activity! if signal_activity
+      else
+        raise ConnectionClosedError.new(frame)
       end
     end
 
