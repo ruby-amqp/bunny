@@ -19,10 +19,16 @@ q.purge
 q.bind(x, :routing_key => "abc").bind(x, :routing_key => "def")
 
 loop do
-  sleep 1.5
+  sleep 8
   body = rand.to_s
-  puts "Published #{body}"
-  x.publish(body, :routing_key => ["abc", "def"].sample)
+
+  begin
+    x.publish(body, :routing_key => ["abc", "def"].sample)
+    puts "Published #{body}"
+  # happens when a message is published before the connection
+  # is recovered
+  rescue Exception => e
+  end
 
   sleep 1.5
   _, _, payload = q.pop
