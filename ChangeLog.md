@@ -1,5 +1,13 @@
 ## Changes between Bunny 0.9.0 and 1.0.0.pre1
 
+### Publishing Over Closed Connections
+
+Publishing a message over a closed connection (during a network outage, before the connection
+is open) will now correctly result in an exception.
+
+Contributed by Matt Campbell.
+
+
 ### Reliability Improvement in Automatic Network Failure Recovery
 
 Bunny now ensures a new connection transport (socket) is initialized
