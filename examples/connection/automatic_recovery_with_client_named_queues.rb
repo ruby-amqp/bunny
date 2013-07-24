@@ -26,6 +26,11 @@ loop do
   data = rand.to_s
   rk   = ["abc", "def"].sample
 
-  puts "Published #{data}, routing key: #{rk}"
-  x.publish(data, :routing_key => rk)
+  begin
+    x.publish(rand.to_s, :routing_key => rk)
+    puts "Published #{data}, routing key: #{rk}"
+  # happens when a message is published before the connection
+  # is recovered
+  rescue Exception => e
+  end
 end
