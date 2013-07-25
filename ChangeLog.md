@@ -1,3 +1,12 @@
+## Changes between Bunny 0.9.5 and 0.9.6
+
+### Eliminated Race Condition in Bunny::Session#close
+
+`Bunny::Session#close` had a race condition that caused (non-deterministic)
+exceptions when connection transport was closed before connection
+reader loop was guaranteed to have stopped.
+
+
 ## Changes between Bunny 0.9.4 and 0.9.5
 
 ### connection.close Raises Exceptions on Connection Thread
