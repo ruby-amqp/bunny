@@ -83,7 +83,7 @@ module Bunny
     end
 
     def stopped?
-      @stopped = true
+      @stopped
     end
 
     def kill
