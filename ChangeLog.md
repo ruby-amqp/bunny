@@ -1,5 +1,14 @@
 ## Changes between Bunny 0.9.0 and 1.0.0.pre1
 
+### connection.close Raises Exceptions on Connection Thread
+
+Connection-level exceptions (including when a connection is closed via
+management UI or `rabbitmqctl`) will now be raised on the connection
+thread so they
+
+ * can be handled by applications
+ * do not start connection recovery, which may be uncalled for
+
 ### Client TLS Certificates are Optional
 
 Bunny will no longer require client TLS certificates. Note that CA certificate
