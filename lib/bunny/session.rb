@@ -259,8 +259,13 @@ module Bunny
         close_all_channels
 
         Bunny::Timer.timeout(@transport.disconnect_timeout, ClientTimeout) do
-          self.close_connection(false)
+          self.close_connection(true)
         end
+
+        maybe_shutdown_reader_loop
+        close_transport
+
+        @status = :closed
       end
     end
     alias stop close
@@ -399,11 +404,6 @@ module Bunny
         @last_connection_close_ok = method
         begin
           @continuations.clear
-
-          reader_loop.stop
-          @reader_loop = nil
-
-          @transport.close
         rescue StandardError => e
           @logger.error e.class.name
           @logger.error e.message
@@ -617,7 +617,27 @@ module Bunny
 
     # @private
     def maybe_shutdown_reader_loop
-      @reader_loop.stop if @reader_loop
+      if @reader_loop
+        @reader_loop.stop
+        # We don't need to kill the loop but
+        # this is the easiest way to wait until the loop
+        # is guaranteed to have terminated
+        @reader_loop.kill
+      end
+
+      @reader_loop = nil
+    end
+
+    # @private
+    def close_transport
+      begin
+        @transport.close
+      rescue StandardError => e
+        @logger.error "Exception when closing transport:"
+        @logger.error e.class.name
+        @logger.error e.message
+        @logger.error e.backtrace
+      end
     end
 
     # @private

@@ -51,6 +51,8 @@ module Bunny
           @session_thread.raise(Bunny::NetworkFailure.new("caught an unexpected exception in the network loop: #{e.message}", e))
         end
       end
+
+      @stopped = true
     end
 
     def run_once
@@ -78,6 +80,10 @@ module Bunny
 
     def stop
       @stopping = true
+    end
+
+    def stopped?
+      @stopped = true
     end
 
     def kill
