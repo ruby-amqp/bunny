@@ -1,6 +1,17 @@
+## Changes between Bunny 0.9.4 and 0.9.5
+
+No changes.
+
+
 ## Changes between Bunny 0.9.3 and 0.9.4
 
-No changes yet.
+### Client TLS Certificates are Optional
+
+Bunny will no longer require client TLS certificates. Note that CA certificate
+list is still necessary.
+
+If RabbitMQ TLS configuration requires peer verification, client certificate
+and private key are mandatory.
 
 
 ## Changes between Bunny 0.9.2 and 0.9.3
