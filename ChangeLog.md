@@ -1,5 +1,14 @@
 ## Changes between Bunny 0.9.0 and 1.0.0.pre1
 
+### Client TLS Certificates are Optional
+
+Bunny will no longer require client TLS certificates. Note that CA certificate
+list is still necessary.
+
+If RabbitMQ TLS configuration requires peer verification, client certificate
+and private key are mandatory.
+
+
 ### Publishing Over Closed Connections
 
 Publishing a message over a closed connection (during a network outage, before the connection
