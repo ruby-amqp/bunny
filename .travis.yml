@@ -7,10 +7,10 @@ rvm:
   - "rbx-19mode"
   - "jruby-19mode"
   - "1.9.2"
-notifications:
-  email: michael@rabbitmq.com
 services:
   - rabbitmq
+notifications:
+  email: michael@rabbitmq.com
 branches:
   only:
     - master
