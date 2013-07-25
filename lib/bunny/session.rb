@@ -370,13 +370,15 @@ module Bunny
 
     # @private
     def close_connection(sync = true)
-      @transport.send_frame(AMQ::Protocol::Connection::Close.encode(200, "Goodbye", 0, 0))
+      if @transport.open?
+        @transport.send_frame(AMQ::Protocol::Connection::Close.encode(200, "Goodbye", 0, 0))
 
-      maybe_shutdown_heartbeat_sender
-      @status   = :not_connected
+        maybe_shutdown_heartbeat_sender
+        @status   = :not_connected
 
-      if sync
-        @last_connection_close_ok = wait_on_continuations
+        if sync
+          @last_connection_close_ok = wait_on_continuations
+        end
       end
     end
 
