@@ -1,6 +1,13 @@
 ## Changes between Bunny 0.9.4 and 0.9.5
 
-No changes.
+### connection.close Raises Exceptions on Connection Thread
+
+Connection-level exceptions (including when a connection is closed via
+management UI or `rabbitmqctl`) will now be raised on the connection
+thread so they
+
+ * can be handled by applications
+ * do not start connection recovery, which may be uncalled for
 
 
 ## Changes between Bunny 0.9.3 and 0.9.4
