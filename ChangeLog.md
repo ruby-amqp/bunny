@@ -1,3 +1,21 @@
+## Changes between Bunny 0.9.6 and 0.9.7
+
+### Reentrant Mutex Implementation
+
+Bunny now allows mutex impl to be configurable, uses reentrant Monitor
+by default.
+
+Non-reentrant mutexes is a major PITA and may affect code that
+uses Bunny.
+
+Avg. publishing throughput with Monitor drops slightly from
+5.73 Khz to 5.49 Khz (about 4% decrease), which is reasonable
+for Bunny.
+
+Apps that need these 4% can configure what mutex implementation
+is used on per-connection basis.
+
+
 ## Changes between Bunny 0.9.5 and 0.9.6
 
 ### Eliminated Race Condition in Bunny::Session#close
