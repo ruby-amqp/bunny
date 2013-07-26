@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 require "thread"
+require "monitor"
 require "set"
 
 require "bunny/consumer_work_pool"
@@ -173,10 +174,10 @@ module Bunny
       @work_pool  = work_pool
 
       # synchronizes frameset delivery. MK.
-      @publishing_mutex = Mutex.new
-      @consumer_mutex   = Mutex.new
+      @publishing_mutex = @connection.mutex_impl.new
+      @consumer_mutex   = @connection.mutex_impl.new
 
-      @unconfirmed_set_mutex = Mutex.new
+      @unconfirmed_set_mutex = @connection.mutex_impl.new
 
       self.reset_continuations
 

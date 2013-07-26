@@ -1,4 +1,5 @@
 require "thread"
+require "monitor"
 require "amq/int_allocator"
 
 module Bunny
@@ -18,7 +19,7 @@ module Bunny
     # @param [Integer] max_channel Max allowed channel id
     def initialize(max_channel = ((1 << 16) - 1))
       @allocator = AMQ::IntAllocator.new(1, max_channel)
-      @mutex     = Mutex.new
+      @mutex     = Monitor.new
     end
 
 

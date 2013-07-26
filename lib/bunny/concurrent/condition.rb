@@ -1,4 +1,5 @@
 require "thread"
+require "monitor"
 
 module Bunny
   # @private
@@ -14,7 +15,7 @@ module Bunny
 
 
       def initialize(description = nil)
-        @mutex           = Mutex.new
+        @mutex           = Monitor.new
         @waiting_threads = []
         @description     = description
       end
