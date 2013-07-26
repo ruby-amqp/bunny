@@ -1,5 +1,6 @@
 require "socket"
 require "thread"
+require "monitor"
 
 begin
   require "openssl"
@@ -49,7 +50,7 @@ module Bunny
       @connect_timeout    = nil if @connect_timeout == 0
       @disconnect_timeout = @read_write_timeout || @connect_timeout
 
-      @writes_mutex       = Mutex.new
+      @writes_mutex       = @session.mutex_impl.new
 
       maybe_initialize_socket
       prepare_tls_context if @tls_enabled

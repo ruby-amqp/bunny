@@ -1,5 +1,6 @@
 require "socket"
 require "thread"
+require "monitor"
 
 require "bunny/transport"
 require "bunny/channel_id_allocator"
@@ -144,11 +145,14 @@ module Bunny
       @mechanism           = opts.fetch(:auth_mechanism, "PLAIN")
       @credentials_encoder = credentials_encoder_for(@mechanism)
       @locale              = @opts.fetch(:locale, DEFAULT_LOCALE)
+
+      @mutex_impl          = @opts.fetch(:mutex_impl, Monitor)
+
       # mutex for the channel id => channel hash
-      @channel_mutex       = Mutex.new
+      @channel_mutex       = @mutex_impl.new
       # transport operations/continuations mutex. A workaround for
       # the non-reentrant Ruby mutexes. MK.
-      @transport_mutex     = Mutex.new
+      @transport_mutex     = @mutex_impl.new
       @channels            = Hash.new
 
       @origin_thread       = Thread.current
@@ -185,6 +189,9 @@ module Bunny
     def threaded?
       @threaded
     end
+
+    # @private
+    attr_reader :mutex_impl
 
     def configure_socket(&block)
       raise ArgumentError, "No block provided!" if block.nil?
