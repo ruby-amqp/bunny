@@ -1,7 +1,13 @@
 require "spec_helper"
 
 describe Bunny::Session do
-  4000.times do |i|
+  n = if RUBY_ENGINE == "jruby"
+        100
+      else
+        4000
+      end
+
+  n.times do |i|
     it "can be closed (take #{i})" do
       c  = Bunny.new(:automatically_recover => false)
       c.start
