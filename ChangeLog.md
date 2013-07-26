@@ -1,4 +1,19 @@
-## Changes between Bunny 0.9.0 and 1.0.0.pre1
+## Changes between Bunny 1.0.0.pre1 and 1.0.0.pre2
+
+### Reentrant Mutex Implementation
+
+Bunny now allows mutex impl to be configurable, uses reentrant Monitor
+by default.
+
+Non-reentrant mutexes is a major PITA and may affect code that
+uses Bunny.
+
+Avg. publishing throughput with Monitor drops slightly from
+5.73 Khz to 5.49 Khz (about 4% decrease), which is reasonable
+for Bunny.
+
+Apps that need these 4% can configure what mutex implementation
+is used on per-connection basis.
 
 ### Eliminated Race Condition in Bunny::Session#close
 
@@ -23,6 +38,8 @@ list is still necessary.
 If RabbitMQ TLS configuration requires peer verification, client certificate
 and private key are mandatory.
 
+
+## Changes between Bunny 0.9.0 and 1.0.0.pre1
 
 ### Publishing Over Closed Connections
 
