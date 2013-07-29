@@ -1,3 +1,11 @@
+## Changes between Bunny 0.9.7 and 0.9.8
+
+### Exclusivity Violation for Consumers Now Raises a Reasonable Exception
+
+When a second consumer is registered for the same queue on different channels,
+a reasonable exception (`Bunny::AccessRefused`) will be raised.
+
+
 ## Changes between Bunny 0.9.6 and 0.9.7
 
 ### Reentrant Mutex Implementation
