@@ -1614,10 +1614,8 @@ module Bunny
 
       @unconfirmed_set_mutex.synchronize do
         @only_acks_received = (@only_acks_received && !nack)
-        @logger.debug "Channel #{@id}: @only_acks_received = #{@only_acks_received.inspect}, nack: #{nack.inspect}"
 
         @confirms_continuations.push(true) if @unconfirmed_set.empty?
-
         @confirms_callback.call(delivery_tag, multiple, nack) if @confirms_callback
       end
     end
