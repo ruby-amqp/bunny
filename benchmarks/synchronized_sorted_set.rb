@@ -6,6 +6,8 @@ require "set"
 require "thread"
 require "benchmark"
 
+require "bunny/concurrent/synchronized_sorted_set"
+
 puts
 puts "-" * 80
 puts "Benchmarking on #{RUBY_DESCRIPTION}"
@@ -28,18 +30,19 @@ t1  = Benchmark.realtime do
     s << i
     s.delete i
     s << i
+    s.length
   end
 end
 r1  = (n.to_f/t1.to_f)
 
-s2 = SortedSet.new
-m  = Mutex.new
+s2 = SynchronizedSortedSet.new
 t2  = Benchmark.realtime do
   n.times do |i|
-    m.synchronize { s2 << 1 }
-    m.synchronize { s2 << i }
-    m.synchronize { s2.delete i }
-    m.synchronize { s2 << i }
+    s2 << 1
+    s2 << i
+    s2.delete i
+    s2 << i
+    s2.length
   end
 end
 r2  = (n.to_f/t2.to_f)
