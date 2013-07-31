@@ -63,8 +63,7 @@ describe Bunny::Channel, "#ack" do
       ch.ack(82, true)
       sleep 0.25
 
-      @channel_close.reply_code.should == 406
-      @channel_close.reply_text.should == "PRECONDITION_FAILED - unknown delivery tag 82"
+      @channel_close.reply_code.should == AMQ::Protocol::PreconditionFailed::VALUE
     end
   end
 end
