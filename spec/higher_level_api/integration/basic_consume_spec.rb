@@ -1,4 +1,5 @@
 require "spec_helper"
+require "set"
 
 describe Bunny::Queue, "#subscribe" do
   let(:connection) do
@@ -41,6 +42,69 @@ describe Bunny::Queue, "#subscribe" do
 
       ch.close
     end
+
+    context "with a single consumer" do
+      let(:queue_name) { "bunny.basic_consume#{rand}" }
+
+      it "provides delivery tag access" do
+        delivery_tags = SortedSet.new
+
+        t = Thread.new do
+          ch = connection.create_channel
+          q = ch.queue(queue_name, :auto_delete => true, :durable => false)
+          q.subscribe(:exclusive => false, :manual_ack => false) do |delivery_info, properties, payload|
+            delivery_tags << delivery_info.delivery_tag
+          end
+        end
+        t.abort_on_exception = true
+        sleep 0.5
+
+        ch = connection.create_channel
+        x  = ch.default_exchange
+        100.times do
+          x.publish("hello", :routing_key => queue_name)
+        end
+
+        sleep 1.0
+        delivery_tags.should == SortedSet.new(Range.new(1, 100).to_a)
+
+        ch.queue(queue_name, :auto_delete => true, :durable => false).message_count.should == 0
+
+        ch.close
+      end
+    end
+
+
+    context "with multiple consumers on the same channel" do
+      let(:queue_name) { "bunny.basic_consume#{rand}" }
+
+      it "provides delivery tag access" do
+        delivery_tags = SortedSet.new
+
+        cch = connection.create_channel
+        q   = cch.queue(queue_name, :auto_delete => true, :durable => false)
+
+        7.times do
+          q.subscribe(:exclusive => false, :manual_ack => false) do |delivery_info, properties, payload|
+            delivery_tags << delivery_info.delivery_tag
+          end
+        end
+        sleep 1.0
+
+        ch = connection.create_channel
+        x  = ch.default_exchange
+        100.times do
+          x.publish("hello", :routing_key => queue_name)
+        end
+
+        sleep 1.5
+        delivery_tags.should == SortedSet.new(Range.new(1, 100).to_a)
+
+        ch.queue(queue_name, :auto_delete => true, :durable => false).message_count.should == 0
+
+        ch.close
+      end
+    end
   end
 
   context "with manual acknowledgement mode" do
@@ -77,7 +141,7 @@ describe Bunny::Queue, "#subscribe" do
     end
   end
 
-  20.times do |i|
+  ENV.fetch("RUNS", 20).to_i.times do |i|
     context "with a queue that already has messages (take #{i})" do
       let(:queue_name) { "bunny.basic_consume#{rand}" }
 
