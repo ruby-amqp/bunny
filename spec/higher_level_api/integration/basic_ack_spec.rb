@@ -18,12 +18,10 @@ describe Bunny::Channel, "#ack" do
       x  = ch.default_exchange
 
       x.publish("bunneth", :routing_key => q.name)
-      sleep(0.25)
       q.message_count.should == 1
       delivery_details, properties, content = q.pop(:ack => true)
 
       ch.ack(delivery_details.delivery_tag, true)
-      sleep(0.25)
       q.message_count.should == 0
 
       ch.close
@@ -32,21 +30,20 @@ describe Bunny::Channel, "#ack" do
 
 
   context "with a valid (known) delivery tag and automatic ack mode" do
-    it "acknowleges a message" do
+    it "results in a channel exception" do
       ch = connection.create_channel
       q  = ch.queue("bunny.basic.ack.manual-acks", :exclusive => true)
       x  = ch.default_exchange
 
       q.subscribe(:manual_ack => false) do |delivery_info, properties, payload|
-        ch.ack(delivery_details.delivery_tag, false)
+        ch.ack(delivery_info.delivery_tag, false)
       end
-      sleep(0.25)
 
       x.publish("bunneth", :routing_key => q.name)
       sleep(0.5)
-      q.message_count.should == 0
-
-      ch.close
+      lambda do
+        q.message_count
+      end.should raise_error(Bunny::ChannelAlreadyClosed)
     end
   end
 
@@ -57,7 +54,6 @@ describe Bunny::Channel, "#ack" do
       x  = ch.default_exchange
 
       x.publish("bunneth", :routing_key => q.name)
-      sleep(0.25)
       q.message_count.should == 1
       _, _, content = q.pop(:ack => true)
 
@@ -65,9 +61,9 @@ describe Bunny::Channel, "#ack" do
         @channel_close = channel_close
       end
       ch.ack(82, true)
+      sleep 0.25
 
-      sleep 0.5
-
+      @channel_close.reply_code.should == 406
       @channel_close.reply_text.should == "PRECONDITION_FAILED - unknown delivery tag 82"
     end
   end
