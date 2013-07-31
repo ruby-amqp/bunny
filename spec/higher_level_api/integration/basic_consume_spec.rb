@@ -49,14 +49,11 @@ describe Bunny::Queue, "#subscribe" do
       it "provides delivery tag access" do
         delivery_tags = SortedSet.new
 
-        t = Thread.new do
-          ch = connection.create_channel
-          q = ch.queue(queue_name, :auto_delete => true, :durable => false)
-          q.subscribe(:exclusive => false, :manual_ack => false) do |delivery_info, properties, payload|
-            delivery_tags << delivery_info.delivery_tag
-          end
+        cch = connection.create_channel
+        q = cch.queue(queue_name, :auto_delete => true, :durable => false)
+        q.subscribe(:exclusive => false, :manual_ack => false) do |delivery_info, properties, payload|
+          delivery_tags << delivery_info.delivery_tag
         end
-        t.abort_on_exception = true
         sleep 0.5
 
         ch = connection.create_channel
