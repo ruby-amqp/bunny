@@ -3,30 +3,32 @@ require "bunny/concurrent/synchronized_sorted_set"
 
 describe Bunny::Concurrent::SynchronizedSortedSet do
   it "synchronizes common operations needed by Bunny" do
-    subject.length.should == 0
+    s = described_class.new
+    s.length.should == 0
 
     10.times do
       Thread.new do
-        subject << 1
-        subject << 1
-        subject << 2
-        subject << 3
-        subject << 4
-        subject << 4
-        subject << 4
-        subject << 4
-        subject << 5
-        subject << 5
-        subject << 5
-        subject << 5
-        subject << 6
-        subject << 7
-        subject << 8
-        subject.delete 8
-        subject.delete_if { |i| i == 1 }
+        s << 1
+        s << 1
+        s << 2
+        s << 3
+        s << 4
+        s << 4
+        s << 4
+        s << 4
+        s << 5
+        s << 5
+        s << 5
+        s << 5
+        s << 6
+        s << 7
+        s << 8
+        s.delete 8
+        s.delete_if { |i| i == 1 }
       end
     end
+    sleep 2.0
 
-    subject.length.should == 6
+    s.length.should == 6
   end
 end
