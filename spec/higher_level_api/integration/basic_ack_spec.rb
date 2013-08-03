@@ -55,6 +55,7 @@ describe Bunny::Channel, "#ack" do
       x  = ch.default_exchange
 
       x.publish("bunneth", :routing_key => q.name)
+      sleep 0.5
       q.message_count.should == 1
       _, _, content = q.pop(:ack => true)
 

@@ -3,6 +3,7 @@ require "thread"
 require "monitor"
 require "set"
 
+require "bunny/concurrent/atomic_fixnum"
 require "bunny/consumer_work_pool"
 
 require "bunny/exchange"
@@ -189,7 +190,11 @@ module Bunny
       @threads_waiting_on_basic_get_continuations = Set.new
 
       @next_publish_seq_no = 0
+
+      @recoveries_counter = Bunny::Concurrent::AtomicFixnum.new(0)
     end
+
+    attr_reader :recoveries_counter
 
     # @private
     def read_write_timeout
@@ -438,7 +443,9 @@ module Bunny
     # @see http://rubybunny.info/articles/queues.html Queues and Consumers guide
     # @api public
     def reject(delivery_tag, requeue = false)
-      basic_reject(delivery_tag, requeue)
+      guarding_against_stale_delivery_tags(delivery_tag) do
+        basic_reject(delivery_tag.to_i, requeue)
+      end
     end
 
     # Acknowledges a message. Acknowledged messages are completely removed from the queue.
@@ -449,7 +456,9 @@ module Bunny
     # @see http://rubybunny.info/articles/queues.html Queues and Consumers guide
     # @api public
     def ack(delivery_tag, multiple = false)
-      basic_ack(delivery_tag, multiple)
+      guarding_against_stale_delivery_tags(delivery_tag) do
+        basic_ack(delivery_tag.to_i, multiple)
+      end
     end
     alias acknowledge ack
 
@@ -464,7 +473,9 @@ module Bunny
     # @see http://rubybunny.info/articles/queues.html Queues and Consumers guide
     # @api public
     def nack(delivery_tag, multiple = false, requeue = false)
-      basic_nack(delivery_tag, multiple, requeue)
+      guarding_against_stale_delivery_tags(delivery_tag) do
+        basic_nack(delivery_tag.to_i, multiple, requeue)
+      end
     end
 
     # @endgroup
@@ -701,6 +712,7 @@ module Bunny
     #   ch.basic_ack(delivery_info.delivery_tag, true)
     #
     # @see http://rubybunny.info/articles/queues.html Queues and Consumers guide
+    # @see #basic_ack_known_delivery_tag
     # @api public
     def basic_ack(delivery_tag, multiple)
       raise_if_no_longer_open!
@@ -1407,6 +1419,7 @@ module Bunny
       # this includes recovering bindings
       recover_queues
       recover_consumers
+      increment_recoveries_counter
     end
 
     # Recovers basic.qos setting. Used by the Automatic Network Failure
@@ -1450,6 +1463,11 @@ module Bunny
       @consumers.values.dup.each do |c|
         c.recover_from_network_failure
       end
+    end
+
+    # @private
+    def increment_recoveries_counter
+      @recoveries_counter.increment
     end
 
     # @endgroup
@@ -1563,6 +1581,7 @@ module Bunny
 
     # @private
     def handle_basic_get_ok(basic_get_ok, properties, content)
+      basic_get_ok.delivery_tag = VersionedDeliveryTag.new(basic_get_ok.delivery_tag, @recoveries_counter.get)
       @basic_get_continuations.push([basic_get_ok, properties, content])
     end
 
@@ -1824,5 +1843,21 @@ module Bunny
         Concurrent::ContinuationQueue.new
       end
     end # if defined?
+
+    # @private
+    def guarding_against_stale_delivery_tags(tag, &block)
+      case tag
+      # if a fixnum was passed, execute unconditionally. MK.
+      when Fixnum then
+        block.call
+      # versioned delivery tags should be checked to avoid
+      # sending out stale (invalid) tags after channel was reopened
+      # during network failure recovery. MK.
+      when VersionedDeliveryTag then
+        if !tag.stale?(@recoveries_counter.get)
+          block.call
+        end
+      end
+    end
   end # Channel
 end # Bunny

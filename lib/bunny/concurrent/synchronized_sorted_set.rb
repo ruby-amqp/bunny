@@ -3,6 +3,10 @@ require "thread"
 
 module Bunny
   module Concurrent
+    # A SortedSet variation that synchronizes key mutation operations.
+    #
+    # @note This is NOT a complete SortedSet replacement. It only synchronizes operations needed by Bunny.
+    # @api public
     class SynchronizedSortedSet < SortedSet
       def initialize(enum = nil)
         @mutex = Mutex.new
