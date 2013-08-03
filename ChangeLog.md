@@ -1,6 +1,6 @@
-## Changes between Bunny 1.0.0.pre2 and 1.0.0.pre3
+## Changes between Bunny 0.9.0 and 0.10.0
 
-This release has **breaking API changes**.
+This release has one minor **breaking API change**.
 
 ### Safe[r] basic.ack, basic.nack and basic.reject implementation
 
@@ -21,8 +21,6 @@ by `Bunny::Channel#ack` and related methods.
 
 Integers are still accepted by the same methods.
 
-
-## Changes between Bunny 1.0.0.pre1 and 1.0.0.pre2
 
 ### Exclusivity Violation for Consumers Now Raises a Reasonable Exception
 
@@ -68,8 +66,6 @@ list is still necessary.
 If RabbitMQ TLS configuration requires peer verification, client certificate
 and private key are mandatory.
 
-
-## Changes between Bunny 0.9.0 and 1.0.0.pre1
 
 ### Publishing Over Closed Connections
 
