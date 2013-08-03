@@ -7,18 +7,15 @@ describe Bunny::Channel, "#flow" do
     c
   end
 
-  after :all do
+  after :each do
     connection.close
   end
 
-
-  subject do
-    connection.create_channel
-  end
-
   it "is supported" do
-    subject.flow(true).should be_instance_of(AMQ::Protocol::Channel::FlowOk)
-    subject.flow(false).should be_instance_of(AMQ::Protocol::Channel::FlowOk)
-    subject.flow(true).should be_instance_of(AMQ::Protocol::Channel::FlowOk)
+    ch = connection.create_channel
+
+    ch.flow(true).should be_instance_of(AMQ::Protocol::Channel::FlowOk)
+    ch.flow(false).should be_instance_of(AMQ::Protocol::Channel::FlowOk)
+    ch.flow(true).should be_instance_of(AMQ::Protocol::Channel::FlowOk)
   end
 end

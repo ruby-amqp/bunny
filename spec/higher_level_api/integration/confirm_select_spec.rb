@@ -7,7 +7,7 @@ describe Bunny::Channel, "#confirm_select" do
     c
   end
 
-  after :all do
+  after :each do
     connection.close if connection.open?
   end
 

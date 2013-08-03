@@ -7,7 +7,7 @@ describe Bunny::Queue, "#delete" do
     c
   end
 
-  after :all do
+  after :each do
     connection.close
   end
 
@@ -22,7 +22,7 @@ describe Bunny::Queue, "#delete" do
       expect {
         q.delete
       }.to raise_error(Bunny::NotFound)
-      
+
       ch.queues.size.should == 0
     end
   end

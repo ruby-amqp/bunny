@@ -8,7 +8,7 @@ if RUBY_VERSION <= "1.9"
       c
     end
 
-    after :all do
+    after :each do
       connection.close if connection.open?
     end
 

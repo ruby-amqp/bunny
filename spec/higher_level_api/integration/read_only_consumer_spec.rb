@@ -13,7 +13,7 @@ describe Bunny::Queue, "#subscribe" do
     c
   end
 
-  after :all do
+  after :each do
     publisher_connection.close if publisher_connection.open?
     consumer_connection.close  if consumer_connection.open?
   end

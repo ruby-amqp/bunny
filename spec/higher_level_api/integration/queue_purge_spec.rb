@@ -7,7 +7,7 @@ describe Bunny::Queue do
     c
   end
 
-  after :all do
+  after :each do
     connection.close
   end
 
