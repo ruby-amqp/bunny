@@ -79,7 +79,7 @@ backwards compatible as possible but within reason.
 
 ### With Rubygems
 
-To install Bunny 0.9.x with RubyGems:
+To install Bunny with RubyGems:
 
 ```
 gem install bunny
@@ -87,17 +87,17 @@ gem install bunny
 
 ### Bundler Dependency
 
-To use Bunny 0.9.x in a project managed with Bundler:
+To use Bunny in a project managed with Bundler:
 
 ``` ruby
-gem "bunny", ">= 0.9.3"
+gem "bunny", ">= 0.10.0"
 ```
 
 
-## Quick Start for Bunny 0.9.x
+## Quick Start
 
 Below is a small snippet that demonstrates how to publish
-and synchronously consume ("pull API") messages with Bunny 0.9.
+and synchronously consume ("pull API") messages with Bunny.
 
 For a 15 minute tutorial using more practical examples, see [Getting Started with RabbitMQ and Ruby using Bunny](http://rubybunny.info/articles/getting_started.html).
 
