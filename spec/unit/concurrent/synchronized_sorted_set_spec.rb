@@ -27,7 +27,7 @@ describe Bunny::Concurrent::SynchronizedSortedSet do
         s.delete_if { |i| i == 1 }
       end
     end
-    sleep 2.0
+    sleep 3.0
 
     s.length.should == 6
   end
