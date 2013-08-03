@@ -1,3 +1,27 @@
+## Changes between Bunny 1.0.0.pre2 and 1.0.0.pre3
+
+This release has **breaking API changes**.
+
+### Safe[r] basic.ack, basic.nack and basic.reject implementation
+
+Previously if a channel was recovered (reopened) by automatic connection
+recovery before a message was acknowledged or rejected, it would cause
+any operation on the channel that uses delivery tags to fail and
+cause the channel to be closed.
+
+To avoid this issue, every channel keeps a counter of how many times
+it has been reopened and marks delivery tags with them. Using a stale
+tag to ack or reject a message will produce no method sent to RabbitMQ.
+Note that unacknowledged messages will be requeued by RabbitMQ when connection
+goes down anyway.
+
+This involves an API change: `Bunny::DeliveryMetadata#delivery_tag` is now
+and instance of a class that responds to `#tag` and `#to_i` and is accepted
+by `Bunny::Channel#ack` and related methods.
+
+Integers are still accepted by the same methods.
+
+
 ## Changes between Bunny 1.0.0.pre1 and 1.0.0.pre2
 
 ### Exclusivity Violation for Consumers Now Raises a Reasonable Exception
