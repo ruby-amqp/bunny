@@ -54,115 +54,108 @@ describe Bunny::Session do
 
 
   context "initialized with all defaults" do
-    after :each do
-      subject.close if subject.open?
-    end
-
-    subject do
-      Bunny.new
-    end
-
     it "provides a way to fine tune socket options" do
-      subject.start
-      subject.transport.socket.should respond_to(:setsockopt)
+      conn = Bunny.new
+      conn.start
+      conn.transport.socket.should respond_to(:setsockopt)
+
+      conn.close
     end
 
     it "successfully negotiates the connection" do
-      subject.start
-      subject.should be_connected
+      conn = Bunny.new
+      conn.start
+      conn.should be_connected
 
-      subject.server_properties.should_not be_nil
-      subject.server_capabilities.should_not be_nil
+      conn.server_properties.should_not be_nil
+      conn.server_capabilities.should_not be_nil
 
-      props = subject.server_properties
-
-      props["product"].should_not be_nil
-      props["platform"].should_not be_nil
-      props["version"].should_not be_nil
-    end
-  end
-
-  context "initialized with TCP connection timeout = 5" do
-    after :each do
-      subject.close if subject.open?
-    end
-
-    subject do
-      described_class.new(:connection_timeout => 5)
-    end
-
-    it "successfully connects" do
-      subject.start
-      subject.should be_connected
-
-      subject.server_properties.should_not be_nil
-      subject.server_capabilities.should_not be_nil
-
-      props = subject.server_properties
+      props = conn.server_properties
 
       props["product"].should_not be_nil
       props["platform"].should_not be_nil
       props["version"].should_not be_nil
-    end
-  end
 
-  context "initialized with :host => 127.0.0.1" do
-    after :each do
-      subject.close if subject.open?
-    end
-
-    let(:host)  { "127.0.0.1" }
-    subject do
-      described_class.new(:host => host)
-    end
-
-    it "uses hostname = 127.0.0.1" do
-      subject.host.should == host
-      subject.hostname.should == host
-    end
-
-    it "uses port 5672" do
-      subject.port.should == port
-    end
-
-    it "uses username = guest" do
-      subject.username.should == username
-    end
-  end
-
-  context "initialized with :hostname => localhost" do
-    after :each do
-      subject.close if subject.open?
-    end
-
-    let(:host)    { "localhost" }
-    let(:subject) { described_class.new(:hostname => host) }
-
-    it "uses hostname = localhost" do
-      subject.host.should == host
-      subject.hostname.should == host
-    end
-
-    it "uses port 5672" do
-      subject.port.should == port
-    end
-
-    it "uses username = guest" do
-      subject.username.should == username
-      subject.user.should == username
+      conn.close
     end
   end
 
   unless ENV["CI"]
+    context "initialized with TCP connection timeout = 5" do
+      it "successfully connects" do
+        conn = described_class.new(:connection_timeout => 5)
+        conn.start
+        conn.should be_connected
+
+        conn.server_properties.should_not be_nil
+        conn.server_capabilities.should_not be_nil
+
+        props = conn.server_properties
+
+        props["product"].should_not be_nil
+        props["platform"].should_not be_nil
+        props["version"].should_not be_nil
+
+        conn.close
+      end
+    end
+
+    context "initialized with :host => 127.0.0.1" do
+      after :each do
+        subject.close if subject.open?
+      end
+
+      let(:host)  { "127.0.0.1" }
+      subject do
+        described_class.new(:host => host)
+      end
+
+      it "uses hostname = 127.0.0.1" do
+        subject.host.should == host
+        subject.hostname.should == host
+      end
+
+      it "uses port 5672" do
+        subject.port.should == port
+      end
+
+      it "uses username = guest" do
+        subject.username.should == username
+      end
+    end
+
+    context "initialized with :hostname => localhost" do
+      after :each do
+        subject.close if subject.open?
+      end
+
+      let(:host)    { "localhost" }
+      let(:subject) { described_class.new(:hostname => host) }
+
+      it "uses hostname = localhost" do
+        subject.host.should == host
+        subject.hostname.should == host
+      end
+
+      it "uses port 5672" do
+        subject.port.should == port
+      end
+
+      it "uses username = guest" do
+        subject.username.should == username
+        subject.user.should == username
+      end
+    end
+
     context "initialized with :ssl => true" do
       let(:subject) do
         described_class.new(:user     => "bunny_gem",
-                            :password => "bunny_password",
-                            :vhost    => "bunny_testbed",
-                            :ssl                   => true,
-                            :ssl_cert              => "spec/tls/client_cert.pem",
-                            :ssl_key               => "spec/tls/client_key.pem",
-                            :ssl_ca_certificates   => ["./spec/tls/cacert.pem"])
+          :password => "bunny_password",
+          :vhost    => "bunny_testbed",
+          :ssl                   => true,
+          :ssl_cert              => "spec/tls/client_cert.pem",
+          :ssl_key               => "spec/tls/client_key.pem",
+          :ssl_ca_certificates   => ["./spec/tls/cacert.pem"])
       end
 
       it "uses TLS port" do
@@ -173,12 +166,12 @@ describe Bunny::Session do
     context "initialized with :tls => true" do
       let(:subject) do
         described_class.new(:user     => "bunny_gem",
-                            :password => "bunny_password",
-                            :vhost    => "bunny_testbed",
-                            :tls                   => true,
-                            :tls_cert              => "spec/tls/client_cert.pem",
-                            :tls_key               => "spec/tls/client_key.pem",
-                            :tls_ca_certificates   => ["./spec/tls/cacert.pem"])
+          :password => "bunny_password",
+          :vhost    => "bunny_testbed",
+          :tls                   => true,
+          :tls_cert              => "spec/tls/client_cert.pem",
+          :tls_key               => "spec/tls/client_key.pem",
+          :tls_ca_certificates   => ["./spec/tls/cacert.pem"])
       end
 
       it "uses TLS port" do

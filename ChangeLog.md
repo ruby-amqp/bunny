@@ -1,3 +1,74 @@
+## Changes between Bunny 1.0.0.pre1 and 1.0.0.pre2
+
+### Exclusivity Violation for Consumers Now Raises a Reasonable Exception
+
+When a second consumer is registered for the same queue on different channels,
+a reasonable exception (`Bunny::AccessRefused`) will be raised.
+
+
+### Reentrant Mutex Implementation
+
+Bunny now allows mutex impl to be configurable, uses reentrant Monitor
+by default.
+
+Non-reentrant mutexes is a major PITA and may affect code that
+uses Bunny.
+
+Avg. publishing throughput with Monitor drops slightly from
+5.73 Khz to 5.49 Khz (about 4% decrease), which is reasonable
+for Bunny.
+
+Apps that need these 4% can configure what mutex implementation
+is used on per-connection basis.
+
+### Eliminated Race Condition in Bunny::Session#close
+
+`Bunny::Session#close` had a race condition that caused (non-deterministic)
+exceptions when connection transport was closed before connection
+reader loop was guaranteed to have stopped.
+
+### connection.close Raises Exceptions on Connection Thread
+
+Connection-level exceptions (including when a connection is closed via
+management UI or `rabbitmqctl`) will now be raised on the connection
+thread so they
+
+ * can be handled by applications
+ * do not start connection recovery, which may be uncalled for
+
+### Client TLS Certificates are Optional
+
+Bunny will no longer require client TLS certificates. Note that CA certificate
+list is still necessary.
+
+If RabbitMQ TLS configuration requires peer verification, client certificate
+and private key are mandatory.
+
+
+## Changes between Bunny 0.9.0 and 1.0.0.pre1
+
+### Publishing Over Closed Connections
+
+Publishing a message over a closed connection (during a network outage, before the connection
+is open) will now correctly result in an exception.
+
+Contributed by Matt Campbell.
+
+
+### Reliability Improvement in Automatic Network Failure Recovery
+
+Bunny now ensures a new connection transport (socket) is initialized
+before any recovery is attempted.
+
+
+### Reliability Improvement in Bunny::Session#create_channel
+
+`Bunny::Session#create_channel` now uses two separate mutexes to avoid
+a (very rare) issue when the previous implementation would try to
+re-acquire the same mutex and fail (Ruby mutexes are non-reentrant).
+
+
+
 ## Changes between Bunny 0.9.0.rc1 and 0.9.0.rc2
 
 ### Channel Now Properly Restarts Consumer Pool

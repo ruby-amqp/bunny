@@ -4,6 +4,7 @@ require "timeout"
 
 require "bunny/version"
 require "amq/protocol/client"
+require "amq/protocol/extensions"
 
 require "bunny/framing"
 require "bunny/exceptions"

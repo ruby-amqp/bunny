@@ -61,34 +61,36 @@ Bunny `0.7.x` and earlier versions support RabbitMQ 1.x and 2.x.
 
 ## Project Maturity
 
-Bunny is a pretty old (started circa late 2008) library that, before version 0.9, **a lot** of missing functionality. Version 0.9
-can be considered to be "second birthday" for Bunny as it was rewritten from scratch. Key objectives
-for 0.9 are
+Bunny is a pretty old (started circa late 2008) library that, before
+version 0.9, **a lot** of missing functionality. Version 0.9 can be
+considered to be "second birthday" for Bunny as it was rewritten from
+scratch with over a dozen of preview releases over the course of about
+a year.
 
- * Be feature complete, support all RabbitMQ 3.x features
- * Eliminate limitations Bunny used to have with earlier versions
- * Be [well documented](http://rubybunny.info)
- * Make use of concurrency and, if the runtime provides it, parallelism
- * Reuse code with amqp gem and possibly other clients where it makes sense
-
-We (the maintainers) make our best to keep the new version as
+We (the maintainers) made our best effort to keep the new version as
 backwards compatible as possible but within reason.
 
 
 ## Installation & Bundler Dependency
 
+### Most Recent Release
+
+[![Gem Version](https://badge.fury.io/rb/bunny.png)](http://badge.fury.io/rb/bunny)
+
+### With Rubygems
+
 To install Bunny 0.9.x with RubyGems:
 
 ```
-gem install bunny --pre
+gem install bunny
 ```
 
-the most recent 0.9.x version is `0.9.0.rc2`.
+### Bundler Dependency
 
 To use Bunny 0.9.x in a project managed with Bundler:
 
 ``` ruby
-gem "bunny", ">= 0.9.0.rc2" # optionally: , :git => "git://github.com/ruby-amqp/bunny.git", :branch => "master"
+gem "bunny", ">= 0.9.3"
 ```
 
 
@@ -154,7 +156,7 @@ Other documentation guides are available at [rubybunny.info](http://rubybunny.in
 
 ### Mailing List
 
-[Bunny a mailing list](http://groups.google.com/group/ruby-amqp). We encourage you
+[Bunny has a mailing list](http://groups.google.com/group/ruby-amqp). We encourage you
 to also join the [rabbitmq-discuss](https://lists.rabbitmq.com/cgi-bin/mailman/listinfo/rabbitmq-discuss) mailing list. Feel free to ask any questions that you may have.
 
 

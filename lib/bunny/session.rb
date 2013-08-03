@@ -1,5 +1,6 @@
 require "socket"
 require "thread"
+require "monitor"
 
 require "bunny/transport"
 require "bunny/channel_id_allocator"
@@ -39,6 +40,13 @@ module Bunny
     # backwards compatibility
     # @private
     CONNECT_TIMEOUT   = Transport::DEFAULT_CONNECTION_TIMEOUT
+
+    # @private
+    DEFAULT_CONTINUATION_TIMEOUT = if RUBY_VERSION.to_f < 1.9
+                                     8000
+                                   else
+                                     4000
+                                   end
 
     # RabbitMQ client metadata
     DEFAULT_CLIENT_PROPERTIES = {
@@ -125,7 +133,7 @@ module Bunny
                                end
       @network_recovery_interval = opts.fetch(:network_recovery_interval, DEFAULT_NETWORK_RECOVERY_INTERVAL)
       # in ms
-      @continuation_timeout      = opts.fetch(:continuation_timeout, 4000)
+      @continuation_timeout      = opts.fetch(:continuation_timeout, DEFAULT_CONTINUATION_TIMEOUT)
 
       @status             = :not_connected
       @blocked            = false
@@ -139,12 +147,19 @@ module Bunny
       @mechanism           = opts.fetch(:auth_mechanism, "PLAIN")
       @credentials_encoder = credentials_encoder_for(@mechanism)
       @locale              = @opts.fetch(:locale, DEFAULT_LOCALE)
+
+      @mutex_impl          = @opts.fetch(:mutex_impl, Monitor)
+
       # mutex for the channel id => channel hash
-      @channel_mutex       = Mutex.new
+      @channel_mutex       = @mutex_impl.new
+      # transport operations/continuations mutex. A workaround for
+      # the non-reentrant Ruby mutexes. MK.
+      @transport_mutex     = @mutex_impl.new
       @channels            = Hash.new
 
-      self.reset_continuations
+      @origin_thread       = Thread.current
 
+      self.reset_continuations
       self.initialize_transport
     end
 
@@ -176,6 +191,9 @@ module Bunny
     def threaded?
       @threaded
     end
+
+    # @private
+    attr_reader :mutex_impl
 
     def configure_socket(&block)
       raise ArgumentError, "No block provided!" if block.nil?
@@ -253,8 +271,13 @@ module Bunny
         close_all_channels
 
         Bunny::Timer.timeout(@transport.disconnect_timeout, ClientTimeout) do
-          self.close_connection(false)
+          self.close_connection(true)
         end
+
+        maybe_shutdown_reader_loop
+        close_transport
+
+        @status = :closed
       end
     end
     alias stop close
@@ -362,7 +385,7 @@ module Bunny
       n = ch.number
       self.register_channel(ch)
 
-      @channel_mutex.synchronize do
+      @transport_mutex.synchronize do
         @transport.send_frame(AMQ::Protocol::Channel::Open.encode(n, AMQ::Protocol::EMPTY_STRING))
       end
       @last_channel_open_ok = wait_on_continuations
@@ -392,13 +415,15 @@ module Bunny
 
     # @private
     def close_connection(sync = true)
-      @transport.send_frame(AMQ::Protocol::Connection::Close.encode(200, "Goodbye", 0, 0))
+      if @transport.open?
+        @transport.send_frame(AMQ::Protocol::Connection::Close.encode(200, "Goodbye", 0, 0))
 
-      maybe_shutdown_heartbeat_sender
-      @status   = :not_connected
+        maybe_shutdown_heartbeat_sender
+        @status   = :not_connected
 
-      if sync
-        @last_connection_close_ok = wait_on_continuations
+        if sync
+          @last_connection_close_ok = wait_on_continuations
+        end
       end
     end
 
@@ -414,16 +439,11 @@ module Bunny
         @last_connection_error = instantiate_connection_level_exception(method)
         @continuations.push(method)
 
-        raise @last_connection_error
+        @origin_thread.raise(@last_connection_error)
       when AMQ::Protocol::Connection::CloseOk then
         @last_connection_close_ok = method
         begin
           @continuations.clear
-
-          reader_loop.stop
-          @reader_loop = nil
-
-          @transport.close
         rescue StandardError => e
           @logger.error e.class.name
           @logger.error e.message
@@ -514,7 +534,8 @@ module Bunny
       begin
         sleep @network_recovery_interval
         @logger.debug "About to start connection recovery..."
-        start
+        self.initialize_transport
+        self.start
 
         if open?
           @recovering_from_network_failure = false
@@ -642,7 +663,27 @@ module Bunny
 
     # @private
     def maybe_shutdown_reader_loop
-      @reader_loop.stop if @reader_loop
+      if @reader_loop
+        @reader_loop.stop
+        # We don't need to kill the loop but
+        # this is the easiest way to wait until the loop
+        # is guaranteed to have terminated
+        @reader_loop.kill
+      end
+
+      @reader_loop = nil
+    end
+
+    # @private
+    def close_transport
+      begin
+        @transport.close
+      rescue StandardError => e
+        @logger.error "Exception when closing transport:"
+        @logger.error e.class.name
+        @logger.error e.message
+        @logger.error e.backtrace
+      end
     end
 
     # @private
@@ -657,11 +698,11 @@ module Bunny
     # @raise [ConnectionClosedError]
     # @private
     def send_frame(frame, signal_activity = true)
-      if closed?
-        raise ConnectionClosedError.new(frame)
-      else
+      if open?
         @transport.write(frame.encode)
         signal_activity! if signal_activity
+      else
+        raise ConnectionClosedError.new(frame)
       end
     end
 
@@ -672,11 +713,11 @@ module Bunny
     # @raise [ConnectionClosedError]
     # @private
     def send_frame_without_timeout(frame, signal_activity = true)
-      if closed?
-        raise ConnectionClosedError.new(frame)
-      else
+      if open?
         @transport.write_without_timeout(frame.encode)
         signal_activity! if signal_activity
+      else
+        raise ConnectionClosedError.new(frame)
       end
     end
 
@@ -825,7 +866,7 @@ module Bunny
 
     # @private
     def initialize_transport
-      @transport = Transport.new(self, @host, @port, @opts.merge(:session_thread => Thread.current))
+      @transport = Transport.new(self, @host, @port, @opts.merge(:session_thread => @origin_thread))
     end
 
     # @private

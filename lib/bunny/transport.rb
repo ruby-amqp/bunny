@@ -1,5 +1,6 @@
 require "socket"
 require "thread"
+require "monitor"
 
 begin
   require "openssl"
@@ -33,6 +34,7 @@ module Bunny
       @port    = port
       @opts    = opts
 
+      @logger                = session.logger
       @tls_enabled           = tls_enabled?(opts)
       @tls_certificate_path  = tls_certificate_path_from(opts)
       @tls_key_path          = tls_key_path_from(opts)
@@ -48,7 +50,7 @@ module Bunny
       @connect_timeout    = nil if @connect_timeout == 0
       @disconnect_timeout = @read_write_timeout || @connect_timeout
 
-      @writes_mutex       = Mutex.new
+      @writes_mutex       = @session.mutex_impl.new
 
       maybe_initialize_socket
       prepare_tls_context if @tls_enabled
@@ -115,6 +117,7 @@ module Bunny
           end
         end
       rescue SystemCallError, Bunny::ClientTimeout, Bunny::ConnectionError, IOError => e
+        @logger.error "Got an exception when sending data: #{e.message} (#{e.class.name})"
         close
         @status = :not_connected
 
@@ -309,13 +312,23 @@ module Bunny
     end
 
     def initialize_tls_context(ctx)
-      ctx.cert       = OpenSSL::X509::Certificate.new(@tls_certificate)
-      ctx.key        = OpenSSL::PKey::RSA.new(@tls_key)
+      ctx.cert       = OpenSSL::X509::Certificate.new(@tls_certificate) if @tls_certificate
+      ctx.key        = OpenSSL::PKey::RSA.new(@tls_key) if @tls_key
       ctx.cert_store = if @tls_certificate_store
                          @tls_certificate_store
                        else
                          initialize_tls_certificate_store(@tls_ca_certificates)
                        end
+
+      if !@tls_certificate
+        @logger.warn <<-MSG
+        Using TLS but no client certificate is provided! If RabbitMQ is configured to verify peer
+        certificate, connection upgrade will fail!
+        MSG
+      end
+      if @tls_certificate && !@tls_key
+        @logger.warn "Using TLS but no client private key is provided!"
+      end
 
       # setting TLS/SSL version only works correctly when done
       # vis set_params. MK.

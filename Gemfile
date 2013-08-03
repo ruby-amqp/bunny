@@ -29,6 +29,8 @@ group :development do
 
   gem "redcarpet", :platform => :mri
   gem "ruby-prof", :platform => :mri
+
+  gem "json"
 end
 
 group :test do

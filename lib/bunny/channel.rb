@@ -1,7 +1,9 @@
 # -*- coding: utf-8 -*-
 require "thread"
+require "monitor"
 require "set"
 
+require "bunny/concurrent/atomic_fixnum"
 require "bunny/consumer_work_pool"
 
 require "bunny/exchange"
@@ -42,8 +44,6 @@ module Bunny
   #   ch   = conn.create_channel
   #
   # This will automatically allocate a channel id.
-  #
-  # @example Instantiating
   #
   # ## Closing Channels
   #
@@ -175,10 +175,10 @@ module Bunny
       @work_pool  = work_pool
 
       # synchronizes frameset delivery. MK.
-      @publishing_mutex = Mutex.new
-      @consumer_mutex   = Mutex.new
+      @publishing_mutex = @connection.mutex_impl.new
+      @consumer_mutex   = @connection.mutex_impl.new
 
-      @unconfirmed_set_mutex = Mutex.new
+      @unconfirmed_set_mutex = @connection.mutex_impl.new
 
       self.reset_continuations
 
@@ -190,7 +190,11 @@ module Bunny
       @threads_waiting_on_basic_get_continuations = Set.new
 
       @next_publish_seq_no = 0
+
+      @recoveries_counter = Bunny::Concurrent::AtomicFixnum.new(0)
     end
+
+    attr_reader :recoveries_counter
 
     # @private
     def read_write_timeout
@@ -371,15 +375,15 @@ module Bunny
 
     # @group Higher-level API for queue operations
 
-    # Declares an exchange or looks it up in the per-channel cache.
+    # Declares a queue or looks it up in the per-channel cache.
     #
     # @param  [String] name  Queue name. Pass an empty string to declare a server-named queue (make RabbitMQ generate a unique name).
     # @param  [Hash]   opts  Queue properties and other options
     #
-    # @option options [Boolean] :durable (false) Should this queue be durable?
-    # @option options [Boolean] :auto-delete (false) Should this queue be automatically deleted when the last consumer disconnects?
-    # @option options [Boolean] :exclusive (false) Should this queue be exclusive (only can be used by this connection, removed when the connection is closed)?
-    # @option options [Boolean] :arguments ({}) Additional optional arguments (typically used by RabbitMQ extensions and plugins)
+    # @option opts [Boolean] :durable (false) Should this queue be durable?
+    # @option opts [Boolean] :auto-delete (false) Should this queue be automatically deleted when the last consumer disconnects?
+    # @option opts [Boolean] :exclusive (false) Should this queue be exclusive (only can be used by this connection, removed when the connection is closed)?
+    # @option opts [Boolean] :arguments ({}) Additional optional arguments (typically used by RabbitMQ extensions and plugins)
     #
     # @return [Bunny::Queue] Queue that was declared or looked up in the cache
     # @see http://rubybunny.info/articles/queues.html Queues and Consumers guide
@@ -439,7 +443,9 @@ module Bunny
     # @see http://rubybunny.info/articles/queues.html Queues and Consumers guide
     # @api public
     def reject(delivery_tag, requeue = false)
-      basic_reject(delivery_tag, requeue)
+      guarding_against_stale_delivery_tags(delivery_tag) do
+        basic_reject(delivery_tag.to_i, requeue)
+      end
     end
 
     # Acknowledges a message. Acknowledged messages are completely removed from the queue.
@@ -450,7 +456,9 @@ module Bunny
     # @see http://rubybunny.info/articles/queues.html Queues and Consumers guide
     # @api public
     def ack(delivery_tag, multiple = false)
-      basic_ack(delivery_tag, multiple)
+      guarding_against_stale_delivery_tags(delivery_tag) do
+        basic_ack(delivery_tag.to_i, multiple)
+      end
     end
     alias acknowledge ack
 
@@ -465,7 +473,9 @@ module Bunny
     # @see http://rubybunny.info/articles/queues.html Queues and Consumers guide
     # @api public
     def nack(delivery_tag, multiple = false, requeue = false)
-      basic_nack(delivery_tag, multiple, requeue)
+      guarding_against_stale_delivery_tags(delivery_tag) do
+        basic_nack(delivery_tag.to_i, multiple, requeue)
+      end
     end
 
     # @endgroup
@@ -523,13 +533,13 @@ module Bunny
       end
 
       m = AMQ::Protocol::Basic::Publish.encode(@id,
-                                               payload,
-                                               meta,
-                                               exchange_name,
-                                               routing_key,
-                                               meta[:mandatory],
-                                               false,
-                                               @connection.frame_max)
+        payload,
+        meta,
+        exchange_name,
+        routing_key,
+        meta[:mandatory],
+        false,
+        @connection.frame_max)
       @connection.send_frameset_without_timeout(m, self)
 
       self
@@ -702,6 +712,7 @@ module Bunny
     #   ch.basic_ack(delivery_info.delivery_tag, true)
     #
     # @see http://rubybunny.info/articles/queues.html Queues and Consumers guide
+    # @see #basic_ack_known_delivery_tag
     # @api public
     def basic_ack(delivery_tag, multiple)
       raise_if_no_longer_open!
@@ -766,9 +777,9 @@ module Bunny
     def basic_nack(delivery_tag, multiple = false, requeue = false)
       raise_if_no_longer_open!
       @connection.send_frame(AMQ::Protocol::Basic::Nack.encode(@id,
-                                                               delivery_tag,
-                                                               multiple,
-                                                               requeue))
+          delivery_tag,
+          multiple,
+          requeue))
 
       nil
     end
@@ -803,13 +814,13 @@ module Bunny
       end
 
       @connection.send_frame(AMQ::Protocol::Basic::Consume.encode(@id,
-                                                                  queue_name,
-                                                                  consumer_tag,
-                                                                  false,
-                                                                  no_ack,
-                                                                  exclusive,
-                                                                  false,
-                                                                  arguments))
+          queue_name,
+          consumer_tag,
+          false,
+          no_ack,
+          exclusive,
+          false,
+          arguments))
 
       begin
         Bunny::Timer.timeout(read_write_timeout, ClientTimeout) do
@@ -822,6 +833,10 @@ module Bunny
 
         raise e
       end
+
+      # in case there is another exclusive consumer and we get a channel.close
+      # response here. MK.
+      raise_if_channel_close!(@last_basic_consume_ok)
 
       # covers server-generated consumer tags
       add_consumer(queue_name, @last_basic_consume_ok.consumer_tag, no_ack, exclusive, arguments, &block)
@@ -848,13 +863,13 @@ module Bunny
       end
 
       @connection.send_frame(AMQ::Protocol::Basic::Consume.encode(@id,
-                                                                  consumer.queue_name,
-                                                                  consumer.consumer_tag,
-                                                                  false,
-                                                                  consumer.no_ack,
-                                                                  consumer.exclusive,
-                                                                  false,
-                                                                  consumer.arguments))
+          consumer.queue_name,
+          consumer.consumer_tag,
+          false,
+          consumer.no_ack,
+          consumer.exclusive,
+          false,
+          consumer.arguments))
 
       begin
         Bunny::Timer.timeout(read_write_timeout, ClientTimeout) do
@@ -867,6 +882,10 @@ module Bunny
 
         raise e
       end
+
+      # in case there is another exclusive consumer and we get a channel.close
+      # response here. MK.
+      raise_if_channel_close!(@last_basic_consume_ok)
 
       # covers server-generated consumer tags
       register_consumer(@last_basic_consume_ok.consumer_tag, consumer)
@@ -928,13 +947,13 @@ module Bunny
       raise_if_no_longer_open!
 
       @connection.send_frame(AMQ::Protocol::Queue::Declare.encode(@id,
-                                                                  name,
-                                                                  opts.fetch(:passive, false),
-                                                                  opts.fetch(:durable, false),
-                                                                  opts.fetch(:exclusive, false),
-                                                                  opts.fetch(:auto_delete, false),
-                                                                  false,
-                                                                  opts[:arguments]))
+          name,
+          opts.fetch(:passive, false),
+          opts.fetch(:durable, false),
+          opts.fetch(:exclusive, false),
+          opts.fetch(:auto_delete, false),
+          false,
+          opts[:arguments]))
       @last_queue_declare_ok = wait_on_continuations
 
       raise_if_continuation_resulted_in_a_channel_error!
@@ -957,10 +976,10 @@ module Bunny
       raise_if_no_longer_open!
 
       @connection.send_frame(AMQ::Protocol::Queue::Delete.encode(@id,
-                                                                 name,
-                                                                 opts[:if_unused],
-                                                                 opts[:if_empty],
-                                                                 false))
+          name,
+          opts[:if_unused],
+          opts[:if_empty],
+          false))
       Bunny::Timer.timeout(read_write_timeout, ClientTimeout) do
         @last_queue_delete_ok = wait_on_continuations
       end
@@ -1012,11 +1031,11 @@ module Bunny
                       end
 
       @connection.send_frame(AMQ::Protocol::Queue::Bind.encode(@id,
-                                                               name,
-                                                               exchange_name,
-                                                               opts[:routing_key],
-                                                               false,
-                                                               opts[:arguments]))
+          name,
+          exchange_name,
+          opts[:routing_key],
+          false,
+          opts[:arguments]))
       Bunny::Timer.timeout(read_write_timeout, ClientTimeout) do
         @last_queue_bind_ok = wait_on_continuations
       end
@@ -1048,10 +1067,10 @@ module Bunny
                       end
 
       @connection.send_frame(AMQ::Protocol::Queue::Unbind.encode(@id,
-                                                                 name,
-                                                                 exchange_name,
-                                                                 opts[:routing_key],
-                                                                 opts[:arguments]))
+          name,
+          exchange_name,
+          opts[:routing_key],
+          opts[:arguments]))
       Bunny::Timer.timeout(read_write_timeout, ClientTimeout) do
         @last_queue_unbind_ok = wait_on_continuations
       end
@@ -1083,14 +1102,14 @@ module Bunny
       raise_if_no_longer_open!
 
       @connection.send_frame(AMQ::Protocol::Exchange::Declare.encode(@id,
-                                                                     name,
-                                                                     type.to_s,
-                                                                     opts.fetch(:passive, false),
-                                                                     opts.fetch(:durable, false),
-                                                                     opts.fetch(:auto_delete, false),
-                                                                     false,
-                                                                     false,
-                                                                     opts[:arguments]))
+          name,
+          type.to_s,
+          opts.fetch(:passive, false),
+          opts.fetch(:durable, false),
+          opts.fetch(:auto_delete, false),
+          false,
+          false,
+          opts[:arguments]))
       Bunny::Timer.timeout(read_write_timeout, ClientTimeout) do
         @last_exchange_declare_ok = wait_on_continuations
       end
@@ -1113,9 +1132,9 @@ module Bunny
       raise_if_no_longer_open!
 
       @connection.send_frame(AMQ::Protocol::Exchange::Delete.encode(@id,
-                                                                    name,
-                                                                    opts[:if_unused],
-                                                                    false))
+          name,
+          opts[:if_unused],
+          false))
       Bunny::Timer.timeout(read_write_timeout, ClientTimeout) do
         @last_exchange_delete_ok = wait_on_continuations
       end
@@ -1155,11 +1174,11 @@ module Bunny
                          end
 
       @connection.send_frame(AMQ::Protocol::Exchange::Bind.encode(@id,
-                                                                  destination_name,
-                                                                  source_name,
-                                                                  opts[:routing_key],
-                                                                  false,
-                                                                  opts[:arguments]))
+          destination_name,
+          source_name,
+          opts[:routing_key],
+          false,
+          opts[:arguments]))
       Bunny::Timer.timeout(read_write_timeout, ClientTimeout) do
         @last_exchange_bind_ok = wait_on_continuations
       end
@@ -1199,11 +1218,11 @@ module Bunny
                          end
 
       @connection.send_frame(AMQ::Protocol::Exchange::Unbind.encode(@id,
-                                                                    destination_name,
-                                                                    source_name,
-                                                                    opts[:routing_key],
-                                                                    false,
-                                                                    opts[:arguments]))
+          destination_name,
+          source_name,
+          opts[:routing_key],
+          false,
+          opts[:arguments]))
       Bunny::Timer.timeout(read_write_timeout, ClientTimeout) do
         @last_exchange_unbind_ok = wait_on_continuations
       end
@@ -1400,6 +1419,7 @@ module Bunny
       # this includes recovering bindings
       recover_queues
       recover_consumers
+      increment_recoveries_counter
     end
 
     # Recovers basic.qos setting. Used by the Automatic Network Failure
@@ -1443,6 +1463,11 @@ module Bunny
       @consumers.values.dup.each do |c|
         c.recover_from_network_failure
       end
+    end
+
+    # @private
+    def increment_recoveries_counter
+      @recoveries_counter.increment
     end
 
     # @endgroup
@@ -1556,6 +1581,7 @@ module Bunny
 
     # @private
     def handle_basic_get_ok(basic_get_ok, properties, content)
+      basic_get_ok.delivery_tag = VersionedDeliveryTag.new(basic_get_ok.delivery_tag, @recoveries_counter.get)
       @basic_get_continuations.push([basic_get_ok, properties, content])
     end
 
@@ -1607,10 +1633,8 @@ module Bunny
 
       @unconfirmed_set_mutex.synchronize do
         @only_acks_received = (@only_acks_received && !nack)
-        @logger.debug "Channel #{@id}: @only_acks_received = #{@only_acks_received.inspect}, nack: #{nack.inspect}"
 
         @confirms_continuations.push(true) if @unconfirmed_set.empty?
-
         @confirms_callback.call(delivery_tag, multiple, nack) if @confirms_callback
       end
     end
@@ -1788,6 +1812,19 @@ module Bunny
     end
 
     # @private
+    def raise_if_channel_close!(method)
+      if method && method.is_a?(AMQ::Protocol::Channel::Close)
+        # basic.ack, basic.reject, basic.nack. MK.
+        if channel_level_exception_after_operation_that_has_no_response?(method)
+          @on_error.call(self, method) if @on_error
+        else
+          @last_channel_error = instantiate_channel_level_exception(method)
+          raise @last_channel_error
+        end
+      end
+    end
+
+    # @private
     def reset_continuations
       @continuations           = new_continuation
       @confirms_continuations  = new_continuation
@@ -1806,5 +1843,21 @@ module Bunny
         Concurrent::ContinuationQueue.new
       end
     end # if defined?
+
+    # @private
+    def guarding_against_stale_delivery_tags(tag, &block)
+      case tag
+      # if a fixnum was passed, execute unconditionally. MK.
+      when Fixnum then
+        block.call
+      # versioned delivery tags should be checked to avoid
+      # sending out stale (invalid) tags after channel was reopened
+      # during network failure recovery. MK.
+      when VersionedDeliveryTag then
+        if !tag.stale?(@recoveries_counter.get)
+          block.call
+        end
+      end
+    end
   end # Channel
 end # Bunny

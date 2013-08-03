@@ -25,7 +25,6 @@ $RABBITMQCTL set_permissions -p bunny_testbed guest ".*" ".*" ".*"
 # bunny_reader:reader_password has read access to bunny_testbed
 
 $RABBITMQCTL add_user bunny_reader reader_password
-$RABBITMQCTL clear_permissions -p bunny_testbed guest
 $RABBITMQCTL set_permissions -p bunny_testbed bunny_reader "^---$" "^---$" ".*"
 
 # requires RabbitMQ 3.0+

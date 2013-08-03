@@ -33,8 +33,14 @@ q2.subscribe do |delivery_info, metadata, payload|
 end
 
 loop do
-  sleep 3
+  sleep 2
   rk = ["abc", "def", "ghi", "xyz"].sample
   puts "Publishing with routing key #{rk}"
-  x1.publish(rand.to_s, :routing_key => rk)
+
+  begin
+    x1.publish(rand.to_s, :routing_key => rk)
+  # happens when a message is published before the connection
+  # is recovered
+  rescue Bunny::ConnectionClosedError => e
+  end
 end

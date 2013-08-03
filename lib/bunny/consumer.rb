@@ -37,6 +37,7 @@ module Bunny
       @consumer_tag  = consumer_tag
       @exclusive     = exclusive
       @arguments     = arguments
+      # no_ack set to true = no manual ack = automatic ack. MK.
       @no_ack        = no_ack
     end
 
@@ -87,6 +88,18 @@ module Bunny
     # @return [String] Brief human-readable string representation of this consumer
     def to_s
       "#<#{self.class.name}:#{object_id} @channel_id=#{@channel.number} @queue=#{self.queue_name}> @consumer_tag=#{@consumer_tag}>"
+    end
+
+    # @return [Boolean] true if this consumer uses automatic acknowledgement mode
+    # @api public
+    def automatic_acknowledgement?
+      @no_ack == false
+    end
+
+    # @return [Boolean] true if this consumer uses manual (explicit) acknowledgement mode
+    # @api public
+    def manual_acknowledgement?
+      @no_ack == true
     end
 
     #

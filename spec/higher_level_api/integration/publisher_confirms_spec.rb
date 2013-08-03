@@ -7,10 +7,11 @@ describe Bunny::Channel do
     c
   end
 
-  after :all do
+  after :each do
     connection.close if connection.open?
   end
 
+  let(:n) { 200 }
 
   context "when publishing with confirms enabled" do
     it "increments delivery index" do
@@ -23,15 +24,15 @@ describe Bunny::Channel do
       q  = ch.queue("", :exclusive => true)
       x  = ch.default_exchange
 
-      500.times do
+      n.times do
         x.publish("xyzzy", :routing_key => q.name)
       end
 
-      ch.next_publish_seq_no.should == 501
+      ch.next_publish_seq_no.should == n + 1
       ch.wait_for_confirms.should be_true
       sleep 0.25
 
-      q.message_count.should == 500
+      q.message_count.should == n
       q.purge
 
       ch.close

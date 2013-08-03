@@ -15,7 +15,7 @@ module Bunny
     def initialize(transport, logger)
       @transport = transport
       @logger    = logger
-      @mutex     = Mutex.new
+      @mutex     = Monitor.new
 
       @last_activity_time = Time.now
     end
