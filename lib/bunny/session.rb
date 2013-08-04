@@ -633,10 +633,14 @@ module Bunny
         @reader_loop.raise(ShutdownSignal)
         # joining the thread here may take forever
         # on JRuby because sun.nio.ch.KQueueArrayWrapper#kevent0 is
-        # a native method that seemingly cannot be interrupted.
+        # a native method that cannot be (easily) interrupted.
         # So we use this ugly hack or else our test suite takes forever
         # to run on JRuby (a new connection is opened/closed per example). MK.
-        sleep 0.05
+        if RUBY_ENGINE == "jruby"
+          sleep 0.075
+        else
+          @reader_loop.join
+        end
       end
 
       @reader_loop = nil
