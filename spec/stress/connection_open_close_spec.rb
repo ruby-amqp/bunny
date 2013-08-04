@@ -6,9 +6,9 @@ unless RUBY_ENGINE == "jruby" && !ENV["FORCE_JRUBY_RUN"]
     # twice as many threads and this won't fly with the JVM
     # in CI containers. MK.
     n = if RUBY_ENGINE == "jruby"
-          100
+          250
         else
-          5000
+          2500
         end
 
     n.times do |i|
