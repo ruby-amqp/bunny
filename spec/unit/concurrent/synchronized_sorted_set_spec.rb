@@ -64,7 +64,7 @@ unless ENV["CI"]
             s.delete_if { |i| i == 1 }
           end
         end
-        sleep 1.0
+        sleep 0.5
 
         s.length.should == 6
       end
