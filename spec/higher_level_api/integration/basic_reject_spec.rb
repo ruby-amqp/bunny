@@ -7,65 +7,64 @@ describe Bunny::Channel, "#reject" do
     c
   end
 
-  after :all do
+  after :each do
     connection.close if connection.open?
-  end
-
-  subject do
-    connection.create_channel
   end
 
   context "with requeue = true" do
     it "requeues a message" do
-      q = subject.queue("bunny.basic.reject.manual-acks", :exclusive => true)
-      x = subject.default_exchange
+      ch = connection.create_channel
+      q  = ch.queue("bunny.basic.reject.manual-acks", :exclusive => true)
+      x  = ch.default_exchange
 
       x.publish("bunneth", :routing_key => q.name)
       sleep(0.5)
       q.message_count.should == 1
       delivery_info, _, _ = q.pop(:ack => true)
 
-      subject.reject(delivery_info.delivery_tag, true)
+      ch.reject(delivery_info.delivery_tag, true)
       sleep(0.5)
       q.message_count.should == 1
 
-      subject.close
+      ch.close
     end
   end
 
   context "with requeue = false" do
     it "rejects a message" do
-      q = subject.queue("bunny.basic.reject.with-requeue-false", :exclusive => true)
-      x = subject.default_exchange
+      ch = connection.create_channel
+      q  = ch.queue("bunny.basic.reject.with-requeue-false", :exclusive => true)
+      x  = ch.default_exchange
 
       x.publish("bunneth", :routing_key => q.name)
       sleep(0.5)
       q.message_count.should == 1
       delivery_info, _, _ = q.pop(:ack => true)
 
-      subject.reject(delivery_info.delivery_tag, false)
+      ch.reject(delivery_info.delivery_tag, false)
       sleep(0.5)
       q.message_count.should == 0
 
-      subject.close
+      ch.close
     end
   end
 
 
   context "with an invalid (random) delivery tag" do
     it "causes a channel-level error" do
-      q = subject.queue("bunny.basic.reject.unknown-delivery-tag", :exclusive => true)
-      x = subject.default_exchange
+      ch = connection.create_channel
+      q  = ch.queue("bunny.basic.reject.unknown-delivery-tag", :exclusive => true)
+      x  = ch.default_exchange
 
       x.publish("bunneth", :routing_key => q.name)
       sleep(0.25)
       q.message_count.should == 1
       _, _, content = q.pop(:ack => true)
 
-      subject.on_error do |ch, channel_close|
+      ch.on_error do |ch, channel_close|
         @channel_close = channel_close
       end
-      subject.reject(82, true)
+      ch.reject(82, true)
 
       sleep 0.5
 

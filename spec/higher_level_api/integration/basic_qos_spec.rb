@@ -7,25 +7,22 @@ describe Bunny::Channel, "#prefetch" do
     c
   end
 
-  after :all do
+  after :each do
     connection.close
-  end
-
-
-  subject do
-    connection.create_channel
   end
 
   context "with a positive integer" do
     it "sets that prefetch level via basic.qos" do
-      subject.prefetch(10).should be_instance_of(AMQ::Protocol::Basic::QosOk)
+      ch = connection.create_channel
+      ch.prefetch(10).should be_instance_of(AMQ::Protocol::Basic::QosOk)
     end
   end
 
   context "with a negative integer" do
     it "raises an ArgumentError" do
+      ch = connection.create_channel
       expect {
-        subject.prefetch(-2)
+        ch.prefetch(-2)
       }.to raise_error(ArgumentError)
     end
   end

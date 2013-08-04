@@ -7,7 +7,7 @@ describe Bunny::Queue, "bound to an exchange" do
     c
   end
 
-  after :all do
+  after :each do
     connection.close
   end
 
@@ -37,7 +37,7 @@ describe Bunny::Queue, "NOT bound to an exchange" do
     c
   end
 
-  after :all do
+  after :each do
     connection.close
   end
 

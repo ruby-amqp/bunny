@@ -7,51 +7,42 @@ describe Bunny::Channel, "when opened" do
     c
   end
 
-  after :all do
+  after :each do
     connection.close
   end
 
   context "without explicitly provided id" do
-    subject do
-      connection.create_channel
-    end
-
     it "gets an allocated id and is successfully opened" do
       connection.should be_connected
-      subject.should be_open
+      ch = connection.create_channel
+      ch.should be_open
 
-      subject.id.should be > 0
+      ch.id.should be > 0
     end
   end
 
 
   context "with explicitly provided id" do
-    subject do
-      connection.create_channel(767)
-    end
-
     it "uses that id and is successfully opened" do
+      ch = connection.create_channel(767)
       connection.should be_connected
-      subject.should be_open
+      ch.should be_open
 
-      subject.id.should == 767
+      ch.id.should == 767
     end
   end
 
 
 
   context "with explicitly provided id that is already taken" do
-    subject do
-      connection.create_channel(767)
-    end
-
     it "reuses the channel that is already opened" do
+      ch = connection.create_channel(767)
       connection.should be_connected
-      subject.should be_open
+      ch.should be_open
 
-      subject.id.should == 767
+      ch.id.should == 767
 
-      connection.create_channel(767).should == subject
+      connection.create_channel(767).should == ch
     end
   end
 end

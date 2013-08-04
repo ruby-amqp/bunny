@@ -31,7 +31,7 @@ describe "A message that is proxied by multiple intermediate consumers" do
     c
   end
 
-  after :all do
+  after :each do
     [c1, c2, c3, c4, c5].each do |c|
       c.close if c.open?
     end

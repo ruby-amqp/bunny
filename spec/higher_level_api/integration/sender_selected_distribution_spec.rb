@@ -7,7 +7,7 @@ describe "Sender-selected distribution" do
     c
   end
 
-  after :all do
+  after :each do
     connection.close if connection.open?
   end
 
@@ -23,7 +23,7 @@ describe "Sender-selected distribution" do
     n.times do |i|
       x.publish("Message #{i}", :routing_key => "one", :headers => {"CC" => ["two", "three"]})
     end
-    
+
     sleep 0.5
 
     q1.message_count.should == n

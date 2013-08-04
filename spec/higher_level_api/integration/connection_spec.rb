@@ -284,7 +284,7 @@ describe Bunny::Session do
 
 
   context "initialized with :host => 127.0.0.1 and non-default credentials (take 2)" do
-    after :all do
+    after :each do
       subject.close if subject.open?
     end
 

@@ -15,7 +15,7 @@ unless ENV["CI"]
       c
     end
 
-    after :all do
+    after :each do
       connection.close
     end
 
@@ -57,7 +57,7 @@ unless ENV["CI"]
       c
     end
 
-    after :all do
+    after :each do
       connection.close
     end
 

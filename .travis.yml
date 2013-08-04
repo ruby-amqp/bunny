@@ -1,6 +1,6 @@
 bundler_args: --without development
 before_script: "./bin/ci/before_build.sh"
-script: "bundle exec rspec -c spec"
+script: "bundle exec rspec -cfs spec"
 rvm:
   - "2.0"
   - "1.9.3"
@@ -15,3 +15,6 @@ branches:
   only:
     - master
     - 0.9.x-stable
+matrix:
+  allow_failures:
+    - rvm: rbx-19mode
