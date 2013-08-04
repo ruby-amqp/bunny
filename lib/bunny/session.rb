@@ -269,7 +269,9 @@ module Bunny
           self.close_connection(true)
         end
 
+        # puts "before maybe_shutdown_reader_loop"
         maybe_shutdown_reader_loop
+        # puts "after maybe_shutdown_reader_loop"
         close_transport
 
         @status = :closed
@@ -626,10 +628,15 @@ module Bunny
     def maybe_shutdown_reader_loop
       if @reader_loop
         @reader_loop.stop
-        # We don't need to kill the loop but
         # this is the easiest way to wait until the loop
         # is guaranteed to have terminated
-        @reader_loop.kill
+        @reader_loop.raise(ShutdownSignal)
+        # joining the thread here may take forever
+        # on JRuby because sun.nio.ch.KQueueArrayWrapper#kevent0 is
+        # a native method that seemingly cannot be interrupted.
+        # So we use this ugly hack or else our test suite takes forever
+        # to run on JRuby (a new connection is opened/closed per example). MK.
+        sleep 0.05
       end
 
       @reader_loop = nil

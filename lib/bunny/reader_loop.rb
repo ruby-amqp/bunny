@@ -33,8 +33,10 @@ module Bunny
           break if @stopping || @network_is_down
           run_once
         rescue Errno::EBADF => ebadf
+          break if @stopping
           # ignored, happens when we loop after the transport has already been closed
         rescue AMQ::Protocol::EmptyResponseError, IOError, SystemCallError => e
+          break if @stopping
           log_exception(e)
 
           @network_is_down = true
@@ -44,7 +46,10 @@ module Bunny
           else
             @session_thread.raise(Bunny::NetworkFailure.new("detected a network failure: #{e.message}", e))
           end
+        rescue ShutdownSignal => _
+          break
         rescue Exception => e
+          break if @stopping
           log_exception(e)
 
           @network_is_down = true
@@ -84,6 +89,14 @@ module Bunny
 
     def stopped?
       @stopped
+    end
+
+    def raise(e)
+      @thread.raise(e)
+    end
+
+    def join
+      @thread.join
     end
 
     def kill

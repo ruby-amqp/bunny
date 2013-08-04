@@ -70,6 +70,9 @@ module Bunny
     end
   end
 
+  class ShutdownSignal < Exception
+  end
+
   # Raised when RabbitMQ closes TCP connection before finishing connection
   # sequence properly. This typically indicates an authentication issue.
   class PossibleAuthenticationFailureError < Exception
