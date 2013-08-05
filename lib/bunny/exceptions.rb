@@ -55,7 +55,7 @@ module Bunny
           when Exception then
             e.message
           end
-      super("Could not estabilish TCP connection to #{hostname}:#{port}: #{m}")
+      super("Could not establish TCP connection to #{hostname}:#{port}: #{m}")
     end
   end
 
