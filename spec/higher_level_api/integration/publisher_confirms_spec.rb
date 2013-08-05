@@ -2,7 +2,7 @@ require "spec_helper"
 
 describe Bunny::Channel do
   let(:connection) do
-    c = Bunny.new(:user => "bunny_gem", :password => "bunny_password", :vhost => "bunny_testbed")
+    c = Bunny.new(:user => "bunny_gem", :password => "bunny_password", :vhost => "bunny_testbed", :continuation_timeout => 10000)
     c.start
     c
   end
