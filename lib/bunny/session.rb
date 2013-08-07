@@ -54,7 +54,8 @@ module Bunny
         :publisher_confirms         => true,
         :consumer_cancel_notify     => true,
         :exchange_exchange_bindings => true,
-        :"basic.nack"               => true
+        :"basic.nack"               => true,
+        :"connection.blocked"       => true
       },
       :product      => "Bunny",
       :platform     => ::RUBY_DESCRIPTION,
@@ -135,6 +136,7 @@ module Bunny
       @continuation_timeout      = opts.fetch(:continuation_timeout, DEFAULT_CONTINUATION_TIMEOUT)
 
       @status             = :not_connected
+      @blocked            = false
 
       # these are negotiated with the broker during the connection tuning phase
       @client_frame_max   = opts.fetch(:frame_max, DEFAULT_FRAME_MAX)
@@ -208,6 +210,9 @@ module Bunny
       return self if connected?
 
       @status        = :connecting
+      # reset here for cases when automatic network recovery kicks in
+      # when we were blocked. MK.
+      @blocked       = false
       self.reset_continuations
 
       begin
@@ -344,6 +349,34 @@ module Bunny
       @default_channel.exchange(*args)
     end
 
+    # Defines a callback that will be executed when RabbitMQ blocks the connection
+    # because it is running low on memory or disk space (as configured via config file
+    # and/or rabbitmqctl).
+    #
+    # @yield [AMQ::Protocol::Connection::Blocked] connection.blocked method which provides a reason for blocking
+    #
+    # @api public
+    def on_blocked(&block)
+      @block_callback = block
+    end
+
+    # Defines a callback that will be executed when RabbitMQ unblocks the connection
+    # that was previously blocked, e.g. because the memory or disk space alarm has cleared.
+    #
+    # @see #on_blocked
+    # @api public
+    def on_unblocked(&block)
+      @unblock_callback = block
+    end
+
+    # @return [Boolean] true if the connection is currently blocked by RabbitMQ because it's running low on
+    #                   RAM, disk space, or other resource; false otherwise
+    # @see #on_blocked
+    # @see #on_unblocked
+    def blocked?
+      @blocked
+    end
+
 
     #
     # Implementation
@@ -420,6 +453,12 @@ module Bunny
         ensure
           @continuations.push(:__unblock__)
         end
+      when AMQ::Protocol::Connection::Blocked then
+        @blocked = true
+        @block_callback.call(method) if @block_callback
+      when AMQ::Protocol::Connection::Unblocked then
+        @blocked = false
+        @unblock_callback.call(method) if @unblock_callback
       when AMQ::Protocol::Channel::Close then
         begin
           ch = @channels[ch_number]
