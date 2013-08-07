@@ -1,3 +1,13 @@
+## Changes between Bunny 0.10.0 and 0.10.1
+
+### Fix Abnormally Slow Bunny::Connection#close on JRuby
+
+`Bunny::Connection#close` on JRuby sometimes could enter a waiting
+state [on a native NIO/kqueue method] that lasted up to over 10 seconds.
+
+This severely affected test suite run times.
+
+
 ## Changes between Bunny 0.9.0 and 0.10.0
 
 This release has one minor **breaking API change**.
