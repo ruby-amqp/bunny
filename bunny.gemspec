@@ -9,7 +9,7 @@ Gem::Specification.new do |s|
   s.version = Bunny::VERSION.dup
   s.homepage = "http://rubybunny.info"
   s.summary = "Popular easy to use Ruby client for RabbitMQ"
-  s.description = "Easy to use, feature complete Ruby client for RabbitMQ 2.0."
+  s.description = "Easy to use, feature complete Ruby client for RabbitMQ 2.0 and later versions."
   s.license = "MIT"
 
   # Sorted alphabetically.
