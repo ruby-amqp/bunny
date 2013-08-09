@@ -843,6 +843,7 @@ module Bunny
 
       @last_basic_consume_ok
     end
+    alias consume basic_consume
 
     # Registers a consumer for queue as {Bunny::Consumer} instance.
     #
@@ -894,6 +895,7 @@ module Bunny
 
       @last_basic_consume_ok
     end
+    alias consume_with basic_consume_with
 
     # Removes a consumer. Messages for this consumer will no longer be delivered. If the queue
     # it was on is auto-deleted and this consumer was the last one, the queue will be deleted.
@@ -1538,10 +1540,17 @@ module Bunny
         @continuations.push(method)
       when AMQ::Protocol::Basic::Cancel then
         if consumer = @consumers[method.consumer_tag]
-          consumer.handle_cancellation(method)
+          @work_pool.submit do
+            begin
+              @consumers.delete(method.consumer_tag)
+              consumer.handle_cancellation(method)
+            rescue Exception => e
+              @logger.error "Got excepton when notifying consumer #{method.consumer_tag} about cancellation!"
+            end
+          end
+        else
+          @logger.warn "No consumer for tag #{method.consumer_tag} on channel #{@id}!"
         end
-
-        @consumers.delete(method.consumer_tag)
       when AMQ::Protocol::Basic::CancelOk then
         @continuations.push(method)
         unregister_consumer(method.consumer_tag)
@@ -1847,12 +1856,12 @@ module Bunny
     # @private
     def guarding_against_stale_delivery_tags(tag, &block)
       case tag
-      # if a fixnum was passed, execute unconditionally. MK.
+        # if a fixnum was passed, execute unconditionally. MK.
       when Fixnum then
         block.call
-      # versioned delivery tags should be checked to avoid
-      # sending out stale (invalid) tags after channel was reopened
-      # during network failure recovery. MK.
+        # versioned delivery tags should be checked to avoid
+        # sending out stale (invalid) tags after channel was reopened
+        # during network failure recovery. MK.
       when VersionedDeliveryTag then
         if !tag.stale?(@recoveries_counter.get)
           block.call
