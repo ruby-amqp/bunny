@@ -226,7 +226,7 @@ module Bunny
         self.open_connection
 
         @reader_loop = nil
-        self.start_reader_loop if @threaded
+        self.start_reader_loop if threaded?
 
         @default_channel = self.create_channel
       rescue Exception => e
@@ -269,9 +269,7 @@ module Bunny
           self.close_connection(true)
         end
 
-        # puts "before maybe_shutdown_reader_loop"
         maybe_shutdown_reader_loop
-        # puts "after maybe_shutdown_reader_loop"
         close_transport
 
         @status = :closed
@@ -628,18 +626,22 @@ module Bunny
     def maybe_shutdown_reader_loop
       if @reader_loop
         @reader_loop.stop
-        # this is the easiest way to wait until the loop
-        # is guaranteed to have terminated
-        @reader_loop.raise(ShutdownSignal)
-        # joining the thread here may take forever
-        # on JRuby because sun.nio.ch.KQueueArrayWrapper#kevent0 is
-        # a native method that cannot be (easily) interrupted.
-        # So we use this ugly hack or else our test suite takes forever
-        # to run on JRuby (a new connection is opened/closed per example). MK.
-        if RUBY_ENGINE == "jruby"
-          sleep 0.075
+        if threaded?
+          # this is the easiest way to wait until the loop
+          # is guaranteed to have terminated
+          @reader_loop.raise(ShutdownSignal)
+          # joining the thread here may take forever
+          # on JRuby because sun.nio.ch.KQueueArrayWrapper#kevent0 is
+          # a native method that cannot be (easily) interrupted.
+          # So we use this ugly hack or else our test suite takes forever
+          # to run on JRuby (a new connection is opened/closed per example). MK.
+          if RUBY_ENGINE == "jruby"
+            sleep 0.075
+          else
+            @reader_loop.join
+          end
         else
-          @reader_loop.join
+          # single threaded mode, nothing to do. MK.
         end
       end
 

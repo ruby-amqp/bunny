@@ -91,16 +91,18 @@ module Bunny
     end
 
     def raise(e)
-      @thread.raise(e)
+      @thread.raise(e) if @thread
     end
 
     def join
-      @thread.join
+      @thread.join if @thread
     end
 
     def kill
-      @thread.kill
-      @thread.join
+      if @thread
+        @thread.kill
+        @thread.join
+      end
     end
 
     def log_exception(e)

@@ -22,5 +22,19 @@ unless RUBY_ENGINE == "jruby" && !ENV["FORCE_JRUBY_RUN"]
         c.should be_closed
       end
     end
+
+    context "in the single threaded mode" do
+      n.times do |i|
+        it "can be closed (take #{i})" do
+          c  = Bunny.new(:automatically_recover => false, :threaded => false)
+          c.start
+          ch = c.create_channel
+
+          c.should be_connected
+          c.stop
+          c.should be_closed
+        end
+      end
+    end
   end
 end
