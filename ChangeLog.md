@@ -1,3 +1,12 @@
+## Changes between Bunny 1.0.0.pre3 and 1.0.0.pre4
+
+### Bunny::Session#close Fixed for Single Threaded Connections
+
+`Bunny::Session#close` with single threaded connections no longer fails
+with a nil pointer exception.
+
+
+
 ## Changes between Bunny 1.0.0.pre2 and 1.0.0.pre3
 
 This release has **breaking API changes**.
