@@ -1,3 +1,12 @@
+## Changes between Bunny 0.10.1 and 0.10.2
+
+### Bunny::Session#close Fixed for Single Threaded Connections
+
+`Bunny::Session#close` with single threaded connections no longer fails
+with a nil pointer exception.
+
+
+
 ## Changes between Bunny 0.10.0 and 0.10.1
 
 ### Fix Abnormally Slow Bunny::Connection#close on JRuby
