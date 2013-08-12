@@ -7,13 +7,6 @@ from `Bunny::Consumer#handle_cancellation`, which is now invoked in the channel'
 thread pool.
 
 
-### Consumers Can Be Re-Registered From Bunny::Consumer#handle_cancellation
-
-It is now possible to re-register a consumer (and use any other synchronous methods)
-from `Bunny::Consumer#handle_cancellation`, which is now invoked in the channel's
-thread pool.
-
-
 ### Bunny::Session#close Fixed for Single Threaded Connections
 
 `Bunny::Session#close` with single threaded connections no longer fails
