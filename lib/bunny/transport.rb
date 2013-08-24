@@ -41,7 +41,12 @@ module Bunny
       @tls_certificate       = opts[:tls_certificate] || opts[:ssl_cert_string]
       @tls_key               = opts[:tls_key]         || opts[:ssl_key_string]
       @tls_certificate_store = opts[:tls_certificate_store]
-      @tls_ca_certificates   = opts.fetch(:tls_ca_certificates, [])
+      @tls_ca_certificates   = opts.fetch(:tls_ca_certificates, [
+        '/etc/ssl/certs/ca-certificates.crt', # Ubuntu/Debian
+        '/etc/ssl/certs/ca-bundle.crt', # Amazon Linux
+        '/etc/ssl/ca-bundle.pem', # OpenSUSE
+        '/etc/pki/tls/certs/ca-bundle.crt' # Fedora/RHEL
+      ])
       @verify_peer           = opts[:verify_ssl] || opts[:verify_peer]
 
       @read_write_timeout = opts[:socket_timeout] || 3
@@ -339,6 +344,10 @@ module Bunny
     end
 
     def initialize_tls_certificate_store(certs)
+      certs = certs.select { |path| File.readable? path }
+      if certs.empty?
+        @logger.error "No CA certificates found, add one with :tls_ca_certificates"
+      end
       OpenSSL::X509::Store.new.tap do |store|
         certs.each { |path| store.add_file(path) }
       end
