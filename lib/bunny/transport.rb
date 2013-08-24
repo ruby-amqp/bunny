@@ -41,11 +41,14 @@ module Bunny
       @tls_certificate       = opts[:tls_certificate] || opts[:ssl_cert_string]
       @tls_key               = opts[:tls_key]         || opts[:ssl_key_string]
       @tls_certificate_store = opts[:tls_certificate_store]
+
+      default_ca_file = ENV[OpenSSL::X509::DEFAULT_CERT_FILE_ENV] || OpenSSL::X509::DEFAULT_CERT_FILE
+      default_ca_path = ENV[OpenSSL::X509::DEFAULT_CERT_DIR_ENV] || OpenSSL::X509::DEFAULT_CERT_DIR
       @tls_ca_certificates   = opts.fetch(:tls_ca_certificates, [
-        '/etc/ssl/certs/ca-certificates.crt', # Ubuntu/Debian
-        '/etc/ssl/certs/ca-bundle.crt', # Amazon Linux
-        '/etc/ssl/ca-bundle.pem', # OpenSUSE
-        '/etc/pki/tls/certs/ca-bundle.crt' # Fedora/RHEL
+        default_ca_file,
+        File.join(default_ca_path, 'ca-certificates.crt'), # Ubuntu/Debian
+        File.join(default_ca_path, 'ca-bundle.crt'), # Amazon Linux & Fedora/RHEL
+        File.join(default_ca_path, 'ca-bundle.pem') # OpenSUSE
       ])
       @verify_peer           = opts[:verify_ssl] || opts[:verify_peer]
 
