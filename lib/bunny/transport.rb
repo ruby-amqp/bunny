@@ -344,11 +344,11 @@ module Bunny
     end
 
     def initialize_tls_certificate_store(certs)
+      certs = certs.select { |path| File.readable? path }
+      if certs.empty?
+        @logger.error "No CA certificates found, add one with :tls_ca_certificates"
+      end
       OpenSSL::X509::Store.new.tap do |store|
-        certs = certs.select { |path| File.readable? path }
-        if certs.empty?
-          @logger.warn "No CA certificates found, add one with :tls_ca_certificates"
-        end
         certs.each { |path| store.add_file(path) }
       end
     end
