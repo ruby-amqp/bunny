@@ -346,7 +346,7 @@ module Bunny
     def initialize_tls_certificate_store(certs)
       OpenSSL::X509::Store.new.tap do |store|
         certs.each do |path|
-          if File.exists?(path)
+          if File.readable?(path)
             store.add_file(path)
           end
         end
