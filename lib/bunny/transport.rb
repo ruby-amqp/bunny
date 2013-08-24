@@ -345,6 +345,7 @@ module Bunny
 
     def initialize_tls_certificate_store(certs)
       certs = certs.select { |path| File.readable? path }
+      @logger.debug "Using CA certificates at #{certs.join(', ')}"
       if certs.empty?
         @logger.error "No CA certificates found, add one with :tls_ca_certificates"
       end
