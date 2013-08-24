@@ -98,11 +98,16 @@ module Bunny
     # @option connection_string_or_opts [String] :password ("guest") Password
     # @option connection_string_or_opts [String] :vhost ("/") Virtual host to use
     # @option connection_string_or_opts [Integer] :heartbeat (600) Heartbeat interval. 0 means no heartbeat.
+    # @option connection_string_or_opts [Boolean] :tls (false) Should TLS/SSL be used?
+    # @option connection_string_or_opts [String] :tls_cert (nil) Path to client TLS/SSL certificate file (.pem)
+    # @option connection_string_or_opts [String] :tls_key (nil) Path to client TLS/SSL private key file (.pem)
+    # @option connection_string_or_opts [Array<String>] :tls_ca_certificates Array of paths to TLS/SSL CA files (.pem), by default detected from OpenSSL configuration
     #
     # @option optz [String] :auth_mechanism ("PLAIN") Authentication mechanism, PLAIN or EXTERNAL
     # @option optz [String] :locale ("PLAIN") Locale RabbitMQ should use
     #
     # @see http://rubybunny.info/articles/connecting.html Connecting to RabbitMQ guide
+    # @see http://rubybunny.info/articles/tls.html TLS/SSL guide
     # @api public
     def initialize(connection_string_or_opts = Hash.new, optz = Hash.new)
       opts = case (ENV["RABBITMQ_URL"] || connection_string_or_opts)
