@@ -21,7 +21,7 @@ module Bunny
 
       def poll(timeout_in_ms = nil)
         if timeout_in_ms
-          Bunny::Timer.timeout(timeout_in_ms / 1000, Timeout::Error) do
+          Bunny::Timeout.timeout(timeout_in_ms / 1000, Timeout::Error) do
             @q.pop
           end
         else

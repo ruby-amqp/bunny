@@ -9,6 +9,7 @@ require "amq/protocol/extensions"
 require "bunny/framing"
 require "bunny/exceptions"
 require "bunny/socket"
+require "bunny/timeout"
 
 begin
   require "openssl"
@@ -32,20 +33,6 @@ require "bunny/consumer"
 module Bunny
   # AMQP protocol version Bunny implements
   PROTOCOL_VERSION = AMQ::Protocol::PROTOCOL_VERSION
-
-  # unifies Ruby standard library's Timeout (which is not accurate on
-  # Ruby 1.8 and has other issues) and SystemTimer (the gem)
-  Timer = if RUBY_VERSION < "1.9"
-            begin
-              require "bunny/system_timer"
-              Bunny::SystemTimer
-            rescue LoadError
-              Timeout
-            end
-          else
-            Timeout
-          end
-
 
   #
   # API
