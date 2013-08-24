@@ -141,7 +141,7 @@ module Bunny
     end
 
 
-    # Deletes the exchange unless it is a default exchange
+    # Deletes the exchange unless it is predeclared
     #
     # @param [Hash] opts Options
     #
