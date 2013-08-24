@@ -1,3 +1,16 @@
+## Changes between Bunny 0.10.4 and 0.10.5
+
+### Bunny::Session.parse_uri
+
+`Bunny::Session.parse_uri` is a new method that parses
+connection URIs into hashes that `Bunny::Session#initialize`
+accepts.
+
+``` ruby
+Bunny::Session.parse_uri("amqp://user:pwd@broker.eng.megacorp.local/myapp_qa")
+```
+
+
 ## Changes between Bunny 0.10.3 and 0.10.4
 
 ### Default Paths for TLS/SSL CA's on All OS'es
