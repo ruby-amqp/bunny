@@ -113,7 +113,7 @@ module Bunny
              when nil then
                Hash.new
              when String then
-               AMQ::Settings.parse_amqp_url(connection_string_or_opts)
+               self.class.parse_uri(connection_string_or_opts)
              when Hash then
                connection_string_or_opts
              end.merge(optz)
@@ -198,6 +198,8 @@ module Bunny
     # @private
     attr_reader :mutex_impl
 
+    # Provides a way to fine tune the socket used by connection.
+    # Accepts a block that the socket will be yielded to.
     def configure_socket(&block)
       raise ArgumentError, "No block provided!" if block.nil?
 
@@ -347,6 +349,41 @@ module Bunny
       @default_channel.exchange(*args)
     end
 
+    # Defines a callback that will be executed when RabbitMQ blocks the connection
+    # because it is running low on memory or disk space (as configured via config file
+    # and/or rabbitmqctl).
+    #
+    # @yield [AMQ::Protocol::Connection::Blocked] connection.blocked method which provides a reason for blocking
+    #
+    # @api public
+    def on_blocked(&block)
+      @block_callback = block
+    end
+
+    # Defines a callback that will be executed when RabbitMQ unblocks the connection
+    # that was previously blocked, e.g. because the memory or disk space alarm has cleared.
+    #
+    # @see #on_blocked
+    # @api public
+    def on_unblocked(&block)
+      @unblock_callback = block
+    end
+
+    # @return [Boolean] true if the connection is currently blocked by RabbitMQ because it's running low on
+    #                   RAM, disk space, or other resource; false otherwise
+    # @see #on_blocked
+    # @see #on_unblocked
+    def blocked?
+      @blocked
+    end
+
+    # Parses an amqp[s] URI into a hash that {Bunny::Session#initialize} accepts.
+    #
+    # @param [String] uri amqp or amqps URI to parse
+    # @return [Hash] Parsed URI as a hash
+    def self.parse_uri(uri)
+      AMQ::Settings.parse_amqp_url(uri)
+    end
 
     #
     # Implementation
