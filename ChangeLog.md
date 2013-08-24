@@ -1,5 +1,19 @@
 ## Changes between Bunny 1.0.0.pre3 and 1.0.0.pre4
 
+### Default Paths for TLS/SSL CA's on Linux
+
+Bunny now will use the following TLS/SSL CA's paths on Linux by default:
+
+ * `/etc/ssl/certs/ca-certificates.crt` on Ubuntu/Debian
+ * `/etc/ssl/certs/ca-bundle.crt` on Amazon Linux
+ * `/etc/ssl/ca-bundle.pem` on OpenSUSE
+ * `/etc/pki/tls/certs/ca-bundle.crt` on Fedora/RHEL
+
+and will log a warning if no CA files are available via default paths
+or `:tls_ca_certificates`.
+
+Contributed by Carl Hörberg.
+
 ### Consumers Can Be Re-Registered From Bunny::Consumer#handle_cancellation
 
 It is now possible to re-register a consumer (and use any other synchronous methods)
