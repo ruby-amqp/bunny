@@ -1,3 +1,13 @@
+## Changes between Bunny 0.10.3 and 0.10.4
+
+### Default Paths for TLS/SSL CA's on All OS'es
+
+Bunny now uses OpenSSL to detect default TLS/SSL CA's paths, extending
+this feature to OS'es other than Linux.
+
+Contributed by Jingwen Owen Ou.
+
+
 ## Changes between Bunny 0.10.2 and 0.10.3
 
 ### Default Paths for TLS/SSL CA's on Linux
