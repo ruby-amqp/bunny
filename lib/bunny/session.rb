@@ -114,7 +114,7 @@ module Bunny
              when nil then
                Hash.new
              when String then
-               AMQ::Settings.parse_amqp_url(connection_string_or_opts)
+               self.class.parse_uri(connection_string_or_opts)
              when Hash then
                connection_string_or_opts
              end.merge(optz)
@@ -200,6 +200,8 @@ module Bunny
     # @private
     attr_reader :mutex_impl
 
+    # Provides a way to fine tune the socket used by connection.
+    # Accepts a block that the socket will be yielded to.
     def configure_socket(&block)
       raise ArgumentError, "No block provided!" if block.nil?
 
@@ -378,6 +380,14 @@ module Bunny
     # @see #on_unblocked
     def blocked?
       @blocked
+    end
+
+    # Parses an amqp[s] URI into a hash that {Bunny::Session#initialize} accepts.
+    #
+    # @param [String] uri amqp or amqps URI to parse
+    # @return [Hash] Parsed URI as a hash
+    def self.parse_uri(uri)
+      AMQ::Settings.parse_amqp_url(uri)
     end
 
 
