@@ -677,7 +677,7 @@ module Bunny
           # a native method that cannot be (easily) interrupted.
           # So we use this ugly hack or else our test suite takes forever
           # to run on JRuby (a new connection is opened/closed per example). MK.
-          if RUBY_ENGINE == "jruby"
+          if defined?(JRUBY_VERSION)
             sleep 0.075
           else
             @reader_loop.join
