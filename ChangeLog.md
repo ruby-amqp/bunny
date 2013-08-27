@@ -1,5 +1,10 @@
 ## Changes between Bunny 1.0.0.pre4 and 1.0.0.pre5
 
+### Ruby 1.8 Compatibility
+
+Bunny is Ruby 1.8-compatible again and no longer references
+`RUBY_ENGINE`.
+
 ### Bunny::Session.parse_uri
 
 `Bunny::Session.parse_uri` is a new method that parses
