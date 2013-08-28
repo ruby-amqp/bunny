@@ -631,7 +631,7 @@ module Bunny
 
     # @private
     def password_from(options)
-      options[:password] || options[:pass] || options [:pwd] || DEFAULT_PASSWORD
+      options[:password] || options[:pass] || options[:pwd] || DEFAULT_PASSWORD
     end
 
     # @private

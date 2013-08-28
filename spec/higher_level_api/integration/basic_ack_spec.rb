@@ -12,7 +12,7 @@ describe Bunny::Channel, "#ack" do
   end
 
   context "with a valid (known) delivery tag" do
-    it "acknowleges a message" do
+    it "acknowledges a message" do
       ch = connection.create_channel
       q  = ch.queue("bunny.basic.ack.manual-acks", :exclusive => true)
       x  = ch.default_exchange
