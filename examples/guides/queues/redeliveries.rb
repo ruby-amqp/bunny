@@ -41,7 +41,7 @@ q1.bind(x).subscribe(:ack => true, :block => false) do |delivery_info, propertie
   else
     # some messages are not ack-ed and will remain in the queue for redelivery
     # when app #1 connection is closed (either properly or due to a crash)
-    puts "[consumer1] Got message ##{properties.headers['i']}, SKIPPPED"
+    puts "[consumer1] Got message ##{properties.headers['i']}, SKIPPED"
   end
 end
 
