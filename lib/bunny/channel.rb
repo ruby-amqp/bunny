@@ -1545,7 +1545,7 @@ module Bunny
               @consumers.delete(method.consumer_tag)
               consumer.handle_cancellation(method)
             rescue Exception => e
-              @logger.error "Got excepton when notifying consumer #{method.consumer_tag} about cancellation!"
+              @logger.error "Got exception when notifying consumer #{method.consumer_tag} about cancellation!"
             end
           end
         else
