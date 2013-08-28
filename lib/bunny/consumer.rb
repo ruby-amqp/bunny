@@ -93,13 +93,13 @@ module Bunny
     # @return [Boolean] true if this consumer uses automatic acknowledgement mode
     # @api public
     def automatic_acknowledgement?
-      @no_ack == false
+      !@no_ack
     end
 
     # @return [Boolean] true if this consumer uses manual (explicit) acknowledgement mode
     # @api public
     def manual_acknowledgement?
-      @no_ack == true
+      @no_ack
     end
 
     #

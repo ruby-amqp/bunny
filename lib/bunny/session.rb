@@ -517,7 +517,7 @@ module Bunny
 
       @status = :disconnected
 
-      if !recovering_from_network_failure?
+      unless recovering_from_network_failure?
         @recovering_from_network_failure = true
         if recoverable_network_failure?(exception)
           @logger.warn "Recovering from a network failure..."
@@ -631,7 +631,7 @@ module Bunny
 
     # @private
     def password_from(options)
-      options[:password] || options[:pass] || options [:pwd] || DEFAULT_PASSWORD
+      options[:password] || options[:pass] || options[:pwd] || DEFAULT_PASSWORD
     end
 
     # @private
