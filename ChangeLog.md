@@ -1,3 +1,12 @@
+## Changes between Bunny 1.0.0.pre5 and 1.0.0.pre6
+
+### Respect RABBITMQ_URL value
+
+`RABBITMQ_URL` env variable will now have effect even if
+Bunny.new is invoked without arguments.
+
+
+
 ## Changes between Bunny 1.0.0.pre4 and 1.0.0.pre5
 
 ### Ruby 1.8 Compatibility
