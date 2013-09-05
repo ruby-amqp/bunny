@@ -1,3 +1,13 @@
+## Changes between Bunny 0.10.5 and 0.10.6
+
+### Respect RABBITMQ_URL value
+
+`RABBITMQ_URL` env variable will now have effect even if
+Bunny.new is invoked without arguments.
+
+Contributed by Robert Ross.
+
+
 ## Changes between Bunny 0.10.4 and 0.10.5
 
 ### Bunny::Session.parse_uri
