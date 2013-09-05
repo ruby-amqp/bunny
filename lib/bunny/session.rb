@@ -113,7 +113,7 @@ module Bunny
              when nil then
                Hash.new
              when String then
-               self.class.parse_uri(connection_string_or_opts)
+               self.class.parse_uri(ENV["RABBITMQ_URL"] || connection_string_or_opts)
              when Hash then
                connection_string_or_opts
              end.merge(optz)
