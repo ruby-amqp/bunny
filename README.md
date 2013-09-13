@@ -90,7 +90,7 @@ gem install bunny
 To use Bunny in a project managed with Bundler:
 
 ``` ruby
-gem "bunny", ">= 0.10.2"
+gem "bunny", ">= 0.10.7"
 ```
 
 
