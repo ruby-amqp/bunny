@@ -4,6 +4,8 @@ module Bunny
   # Thread pool that dispatches consumer deliveries. Not supposed to be shared between channels
   # or threads.
   #
+  # Every channel its own consumer pool.
+  #
   # @private
   class ConsumerWorkPool
 
@@ -11,6 +13,7 @@ module Bunny
     # API
     #
 
+    attr_reader :threads
     attr_reader :size
 
     def initialize(size = 1)
@@ -48,8 +51,8 @@ module Bunny
       end
     end
 
-    def join
-      @threads.each { |t| t.join }
+    def join(timeout = nil)
+      @threads.each { |t| t.join(timeout) }
     end
 
     def pause
