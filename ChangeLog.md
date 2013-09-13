@@ -1,3 +1,11 @@
+## Changes between Bunny 1.0.0.pre6 and 1.0.0.pre7
+
+### Add timeout Bunny::ConsumerWorkPool#join
+
+`Bunny::ConsumerWorkPool#join` now accepts an optional
+timeout argument.
+
+
 ## Changes between Bunny 1.0.0.pre5 and 1.0.0.pre6
 
 ### Respect RABBITMQ_URL value
