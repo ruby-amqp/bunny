@@ -1,5 +1,11 @@
 ## Changes between Bunny 1.0.0.pre6 and 1.0.0.pre7
 
+### amq-protocol Update
+
+Minimum `amq-protocol` version is now `1.8.0` which includes
+a bug fix for messages exactly 128 Kb in size.
+
+
 ### Add timeout Bunny::ConsumerWorkPool#join
 
 `Bunny::ConsumerWorkPool#join` now accepts an optional
