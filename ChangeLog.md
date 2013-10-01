@@ -1,10 +1,4 @@
-## Changes between Bunny 1.0.0.pre7 and 1.0.0.rc1
-
-No changes.
-
-
-
-## Changes between Bunny 1.0.0.pre6 and 1.0.0.pre7
+## Changes between Bunny 1.0.0.pre6 and 1.0.0.rc1
 
 ### amq-protocol Update
 
