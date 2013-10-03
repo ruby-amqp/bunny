@@ -1,3 +1,11 @@
+## Changes between Bunny 0.10.7 and 0.10.8
+
+### Ruby 1.8.7 Compatibility Fixes
+
+Ruby 1.8.7 compatibility fixes around timeouts.
+
+
+
 ## Changes between Bunny 0.10.6 and 0.10.7
 
 ### Add timeout Bunny::ConsumerWorkPool#join
