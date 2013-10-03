@@ -1,3 +1,11 @@
+## Changes between Bunny 1.0.0.rc1 and 1.0.0.rc2
+
+### Ruby 1.8.7 Compatibility Fixes
+
+Ruby 1.8.7 compatibility fixes around timeouts.
+
+
+
 ## Changes between Bunny 1.0.0.pre6 and 1.0.0.rc1
 
 ### amq-protocol Update
