@@ -7,7 +7,7 @@ module Bunny
   class SystemTimer
     # Executes a block of code, raising if the execution does not finish
     # in the alloted period of time, in seconds.
-    def self.timeout(seconds, exception=nil)
+    def self.timeout(seconds, exception = nil)
       if seconds
         ::SystemTimer.timeout_after(seconds, exception) do
           yield
