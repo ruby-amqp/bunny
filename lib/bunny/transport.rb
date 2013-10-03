@@ -250,12 +250,12 @@ module Bunny
 
     def initialize_socket
       begin
-        @socket = Bunny::Timeout.timeout(@connect_timeout, ConnectionTimeout) do
+        @socket = Bunny::Timeout.timeout(@connect_timeout, ClientTimeout) do
           Bunny::Socket.open(@host, @port,
                              :keepalive      => @opts[:keepalive],
                              :socket_timeout => @connect_timeout)
         end
-      rescue StandardError, ConnectionTimeout => e
+      rescue StandardError, ClientTimeout => e
         @status = :not_connected
         raise Bunny::TCPConnectionFailed.new(e, self.hostname, self.port)
       end

@@ -14,7 +14,7 @@ module Bunny
     READ_RETRY_EXCEPTION_CLASSES << IO::WaitReadable if IO.const_defined?(:WaitReadable)
 
     def self.open(host, port, options = {})
-      Timeout.timeout(options[:socket_timeout]) do
+      Timeout.timeout(options[:socket_timeout], ClientTimeout) do
         sock = new(host, port)
         if Socket.constants.include?('TCP_NODELAY') || Socket.constants.include?(:TCP_NODELAY)
           sock.setsockopt(::Socket::IPPROTO_TCP, ::Socket::TCP_NODELAY, true)
