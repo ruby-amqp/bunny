@@ -157,6 +157,7 @@ module Bunny
     # @return [Hash<String, Bunny::Consumer>] Consumer instances declared on this channel
     attr_reader :consumers
 
+    DEFAULT_CONTENT_TYPE = "application/octet-stream".freeze
 
     # @param [Bunny::Session] connection AMQP 0.9.1 connection
     # @param [Integer] id Channel id, pass nil to make Bunny automatically allocate it
@@ -524,8 +525,10 @@ module Bunny
              else
                1
              end
-      meta = { :priority => 0, :delivery_mode => mode, :content_type => "application/octet-stream" }.
-        merge(opts)
+
+      opts[:delivery_mode] ||= mode
+      opts[:content_type]  ||= DEFAULT_CONTENT_TYPE
+      opts[:priority]      ||= 0
 
       if @next_publish_seq_no > 0
         @unconfirmed_set.add(@next_publish_seq_no)
@@ -534,10 +537,10 @@ module Bunny
 
       m = AMQ::Protocol::Basic::Publish.encode(@id,
         payload,
-        meta,
+        opts,
         exchange_name,
         routing_key,
-        meta[:mandatory],
+        opts[:mandatory],
         false,
         @connection.frame_max)
       @connection.send_frameset_without_timeout(m, self)
