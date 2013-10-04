@@ -535,7 +535,7 @@ module Bunny
         @next_publish_seq_no += 1
       end
 
-      m = AMQ::Protocol::Basic::Publish.encode(@id,
+      frames = AMQ::Protocol::Basic::Publish.encode(@id,
         payload,
         opts,
         exchange_name,
@@ -543,7 +543,7 @@ module Bunny
         opts[:mandatory],
         false,
         @connection.frame_max)
-      @connection.send_frameset_without_timeout(m, self)
+      @connection.send_frameset_without_timeout(frames, self)
 
       self
     end
