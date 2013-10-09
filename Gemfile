@@ -30,7 +30,7 @@ group :development do
   gem "redcarpet", :platform => :mri
   gem "ruby-prof", :platform => :mri
 
-  gem "json"
+  gem "json",      :platform => :ruby_18
 end
 
 group :test do
