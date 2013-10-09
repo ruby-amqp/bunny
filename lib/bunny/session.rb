@@ -98,6 +98,7 @@ module Bunny
     # @option connection_string_or_opts [String] :password ("guest") Password
     # @option connection_string_or_opts [String] :vhost ("/") Virtual host to use
     # @option connection_string_or_opts [Integer] :heartbeat (600) Heartbeat interval. 0 means no heartbeat.
+    # @option connection_string_or_opts [Integer] :network_recovery_interval (4) Recovery interval periodic network recovery will use. This includes initial pause after network failure.
     # @option connection_string_or_opts [Boolean] :tls (false) Should TLS/SSL be used?
     # @option connection_string_or_opts [String] :tls_cert (nil) Path to client TLS/SSL certificate file (.pem)
     # @option connection_string_or_opts [String] :tls_key (nil) Path to client TLS/SSL private key file (.pem)
