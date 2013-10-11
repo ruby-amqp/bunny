@@ -351,11 +351,6 @@ module Bunny
       end
     end
 
-    def read_tls_keys!
-      read_client_certificate!
-      read_client_key!
-    end
-
     def initialize_tls_context(ctx)
       ctx.cert       = OpenSSL::X509::Certificate.new(@tls_certificate) if @tls_certificate
       ctx.key        = OpenSSL::PKey::RSA.new(@tls_key) if @tls_key
