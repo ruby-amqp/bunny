@@ -20,7 +20,8 @@ module Bunny
     #
 
     DEFAULT_CONNECTION_TIMEOUT = 5.0
-    # same as in RabbitMQ Java client
+    # Default TLS protocol version to use.
+    # Currently SSLv3, same as in RabbitMQ Java client
     DEFAULT_TLS_PROTOCOL       = "SSLv3"
 
 
