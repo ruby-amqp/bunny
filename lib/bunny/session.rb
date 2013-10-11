@@ -446,6 +446,13 @@ module Bunny
       end
     end
 
+    # Handles incoming frames and dispatches them.
+    #
+    # Channel methods (`channel.open-ok`, `channel.close-ok`) are
+    # handled by the session itself.
+    # Connection level errors result in exceptions being raised.
+    # Deliveries and other methods are passed on to channels to dispatch.
+    #
     # @private
     def handle_frame(ch_number, method)
       @logger.debug "Session#handle_frame on #{ch_number}: #{method.inspect}"
