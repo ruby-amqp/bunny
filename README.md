@@ -61,11 +61,13 @@ Bunny `0.7.x` and earlier versions support RabbitMQ 1.x and 2.x.
 
 ## Project Maturity
 
-Bunny is a pretty old (started circa late 2008) library that, before
-version 0.9, **a lot** of missing functionality. Version 0.9 can be
-considered to be "second birthday" for Bunny as it was rewritten from
-scratch with over a dozen of preview releases over the course of about
-a year.
+Bunny is a mature library (started in early 2009) library with
+a stable public API.
+
+Before version 0.9, **a lot** of functionality was missing.  Version
+0.9 can be considered to be "second birthday" for Bunny as it was
+rewritten from scratch with over a dozen of preview releases over the
+course of about a year.
 
 We (the maintainers) made our best effort to keep the new version as
 backwards compatible as possible but within reason.
