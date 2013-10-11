@@ -4,6 +4,7 @@ require "spec_helper"
 unless ENV["CI"]
   shared_examples_for "successful TLS connection" do
     it "succeeds" do
+      connection.should be_tls
       ch = connection.create_channel
 
       q  = ch.queue("", :exclusive => true)
