@@ -179,9 +179,13 @@ More detailed announcements can be found in the blogs
 
 ### Reporting Issues
 
-If you find a bug, poor default, missing feature or find any part of the API inconvenient, please [file an issue](http://github.com/ruby-amqp/bunny/issues) on GitHub.
-When filing an issue, please specify which Bunny and RabbitMQ versions you are using, provide recent RabbitMQ log file contents if possible,
-and try to explain what behavior you expected and why. Bonus points for contributing failing test cases.
+If you find a bug, poor default, missing feature or find any part of
+the API inconvenient, please [file an
+issue](http://github.com/ruby-amqp/bunny/issues) on GitHub.  When
+filing an issue, please specify which Bunny and RabbitMQ versions you
+are using, provide recent RabbitMQ log file contents if possible, and
+try to explain what behavior you expected and why. Bonus points for
+contributing failing test cases.
 
 
 ## Other Ruby RabbitMQ Clients
