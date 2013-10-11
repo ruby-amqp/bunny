@@ -1,3 +1,27 @@
+## Changes between Bunny 1.0.0.rc2 and 1.0.0.rc3
+
+### Inline TLS Certificates and Keys
+
+It is now possible to provide inline client
+certificate and private key (as strings) instead
+of filesystem paths. The options are the same:
+
+ * `:tls` which, when set to `true`, will set SSL context up and switch to TLS port (5671)
+ * `:tls_cert` which now can be a client certificate (public key) in PEM format
+ * `:tls_key` which now can be a client key (private key) in PEM format
+ * `:tls_ca_certificates` which is an array of string paths to CA certificates in PEM format
+
+For example:
+
+``` ruby
+conn = Bunny.new(:tls                   => true,
+                 :tls_cert              => ENV["TLS_CERTIFICATE"],
+                 :tls_key               => ENV["TLS_PRIVATE_KEY"],
+                 :tls_ca_certificates   => ["./examples/tls/cacert.pem"])
+```
+
+
+
 ## Changes between Bunny 1.0.0.rc1 and 1.0.0.rc2
 
 ### Ruby 1.8.7 Compatibility Fixes
