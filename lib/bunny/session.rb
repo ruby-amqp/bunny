@@ -312,6 +312,7 @@ module Bunny
       status == :closed
     end
 
+    # @return [Boolean] true if this AMQP 0.9.1 connection is open
     def open?
       (status == :open || status == :connected || status == :connecting) && @transport.open?
     end
