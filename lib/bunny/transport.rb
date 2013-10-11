@@ -5,7 +5,7 @@ require "monitor"
 begin
   require "openssl"
 rescue LoadError => le
-  puts "Could not load OpenSSL"
+  $stderr.puts "Could not load OpenSSL"
 end
 
 require "bunny/exceptions"
