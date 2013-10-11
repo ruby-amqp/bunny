@@ -20,7 +20,7 @@ require "amq/protocol/client"
 require "amq/settings"
 
 module Bunny
-  # Represents AMQP 0.9.1 connection (connection to RabbitMQ).
+  # Represents AMQP 0.9.1 connection (to a RabbitMQ node).
   # @see http://rubybunny.info/articles/connecting.html Connecting to RabbitMQ guide
   class Session
 
