@@ -36,21 +36,6 @@ module Bunny
 
       @logger                = session.logger
       @tls_enabled           = tls_enabled?(opts)
-      @tls_certificate_path  = tls_certificate_path_from(opts)
-      @tls_key_path          = tls_key_path_from(opts)
-      @tls_certificate       = opts[:tls_certificate] || opts[:ssl_cert_string]
-      @tls_key               = opts[:tls_key]         || opts[:ssl_key_string]
-      @tls_certificate_store = opts[:tls_certificate_store]
-
-      default_ca_file = ENV[OpenSSL::X509::DEFAULT_CERT_FILE_ENV] || OpenSSL::X509::DEFAULT_CERT_FILE
-      default_ca_path = ENV[OpenSSL::X509::DEFAULT_CERT_DIR_ENV] || OpenSSL::X509::DEFAULT_CERT_DIR
-      @tls_ca_certificates   = opts.fetch(:tls_ca_certificates, [
-        default_ca_file,
-        File.join(default_ca_path, 'ca-certificates.crt'), # Ubuntu/Debian
-        File.join(default_ca_path, 'ca-bundle.crt'), # Amazon Linux & Fedora/RHEL
-        File.join(default_ca_path, 'ca-bundle.pem') # OpenSUSE
-      ])
-      @verify_peer           = opts[:verify_ssl] || opts[:verify_peer]
 
       @read_write_timeout = opts[:socket_timeout] || 3
       @read_write_timeout = nil if @read_write_timeout == 0
@@ -61,9 +46,8 @@ module Bunny
       @writes_mutex       = @session.mutex_impl.new
 
       maybe_initialize_socket
-      prepare_tls_context if @tls_enabled
+      prepare_tls_context(opts) if @tls_enabled
     end
-
 
     def hostname
       @host
@@ -234,7 +218,7 @@ module Bunny
     def self.reacheable?(host, port, timeout)
       begin
         s = Bunny::Socket.open(host, port,
-                               :socket_timeout => timeout)
+          :socket_timeout => timeout)
 
         true
       rescue SocketError, Timeout::Error => e
@@ -252,8 +236,8 @@ module Bunny
       begin
         @socket = Bunny::Timeout.timeout(@connect_timeout, ClientTimeout) do
           Bunny::Socket.open(@host, @port,
-                             :keepalive      => @opts[:keepalive],
-                             :socket_timeout => @connect_timeout)
+            :keepalive      => @opts[:keepalive],
+            :socket_timeout => @connect_timeout)
         end
       rescue StandardError, ClientTimeout => e
         @status = :not_connected
@@ -289,8 +273,49 @@ module Bunny
       opts[:tls_key] || opts[:ssl_key] || opts[:tls_key_path] || opts[:ssl_key_path]
     end
 
-    def prepare_tls_context
-      read_tls_keys!
+    def tls_certificate_from(opts)
+      begin
+        read_client_certificate!
+      rescue ArgumentError => e
+        inline_client_certificate_from(opts)
+      end
+    end
+
+    def tls_key_from(opts)
+      begin
+        read_client_key!
+      rescue ArgumentError => e
+        inline_client_key_from(opts)
+      end
+    end
+
+
+    def inline_client_certificate_from(opts)
+      opts[:tls_certificate] || opts[:ssl_cert_string]
+    end
+
+    def inline_client_key_from(opts)
+      opts[:tls_key] || opts[:ssl_key_string]
+    end
+
+    def prepare_tls_context(opts)
+      # client cert/key paths
+      @tls_certificate_path  = tls_certificate_path_from(opts)
+      @tls_key_path          = tls_key_path_from(opts)
+      # client cert/key
+      @tls_certificate       = tls_certificate_from(opts)
+      @tls_key               = tls_key_from(opts)
+      @tls_certificate_store = opts[:tls_certificate_store]
+
+      default_ca_file = ENV[OpenSSL::X509::DEFAULT_CERT_FILE_ENV] || OpenSSL::X509::DEFAULT_CERT_FILE
+      default_ca_path = ENV[OpenSSL::X509::DEFAULT_CERT_DIR_ENV] || OpenSSL::X509::DEFAULT_CERT_DIR
+      @tls_ca_certificates   = opts.fetch(:tls_ca_certificates, [
+          default_ca_file,
+          File.join(default_ca_path, 'ca-certificates.crt'), # Ubuntu/Debian
+          File.join(default_ca_path, 'ca-bundle.crt'), # Amazon Linux & Fedora/RHEL
+          File.join(default_ca_path, 'ca-bundle.pem') # OpenSUSE
+        ])
+      @verify_peer           = opts[:verify_ssl] || opts[:verify_peer]
 
       @tls_context = initialize_tls_context(OpenSSL::SSL::SSLContext.new)
     end
@@ -308,15 +333,23 @@ module Bunny
       raise ArgumentError, "cannot read TLS certificate or key from #{s}" unless File.file?(s) && File.readable?(s)
     end
 
-    def read_tls_keys!
+    def read_client_certificate!
       if @tls_certificate_path
         check_local_path!(@tls_certificate_path)
         @tls_certificate = File.read(@tls_certificate_path)
       end
+    end
+
+    def read_client_key!
       if @tls_key_path
         check_local_path!(@tls_key_path)
         @tls_key         = File.read(@tls_key_path)
       end
+    end
+
+    def read_tls_keys!
+      read_client_certificate!
+      read_client_key!
     end
 
     def initialize_tls_context(ctx)
