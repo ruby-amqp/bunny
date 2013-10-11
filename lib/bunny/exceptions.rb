@@ -206,4 +206,11 @@ module Bunny
   class ConnectionForced < ConnectionLevelException
   end
 
+  # @private
+  class MissingTLSCertificateFile < Exception
+  end
+
+  # @private
+  class MissingTLSKeyFile < Exception
+  end
 end

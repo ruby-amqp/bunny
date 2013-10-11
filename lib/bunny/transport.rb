@@ -276,7 +276,7 @@ module Bunny
     def tls_certificate_from(opts)
       begin
         read_client_certificate!
-      rescue ArgumentError => e
+      rescue MissingTLSCertificateFile => e
         inline_client_certificate_from(opts)
       end
     end
@@ -284,7 +284,7 @@ module Bunny
     def tls_key_from(opts)
       begin
         read_client_key!
-      rescue ArgumentError => e
+      rescue MissingTLSKeyFile => e
         inline_client_key_from(opts)
       end
     end
@@ -329,20 +329,24 @@ module Bunny
       s
     end
 
-    def check_local_path!(s)
-      raise ArgumentError, "cannot read TLS certificate or key from #{s}" unless File.file?(s) && File.readable?(s)
+    def check_local_certificate_path!(s)
+      raise MissingTLSCertificateFile, "cannot read client TLS certificate from #{s}" unless File.file?(s) && File.readable?(s)
+    end
+
+    def check_local_key_path!(s)
+      raise MissingTLSKeyFile, "cannot read client TLS private key from #{s}" unless File.file?(s) && File.readable?(s)
     end
 
     def read_client_certificate!
       if @tls_certificate_path
-        check_local_path!(@tls_certificate_path)
+        check_local_certificate_path!(@tls_certificate_path)
         @tls_certificate = File.read(@tls_certificate_path)
       end
     end
 
     def read_client_key!
       if @tls_key_path
-        check_local_path!(@tls_key_path)
+        check_local_key_path!(@tls_key_path)
         @tls_key         = File.read(@tls_key_path)
       end
     end
