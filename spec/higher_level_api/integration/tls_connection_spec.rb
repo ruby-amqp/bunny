@@ -61,7 +61,7 @@ unless ENV["CI"]
       connection.close
     end
 
-    it "provides the same API as a regular connection" do
+    it "is possible" do
       ch = connection.create_channel
 
       q  = ch.queue("", :exclusive => true)
