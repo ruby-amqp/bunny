@@ -308,6 +308,7 @@ module Bunny
       status == :connecting
     end
 
+    # @return [Boolean] true if this AMQP 0.9.1 connection is closed
     def closed?
       status == :closed
     end
