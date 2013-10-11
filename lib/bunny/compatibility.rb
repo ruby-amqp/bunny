@@ -9,7 +9,6 @@ module Bunny
     # API
     #
 
-    # @api public
     # @private
     def channel_from(channel_or_connection)
       # Bunny 0.8.x and earlier completely hide channels from the API. So, queues and exchanges are
