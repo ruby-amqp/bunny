@@ -190,8 +190,10 @@ contributing failing test cases.
 
 ## Other Ruby RabbitMQ Clients
 
-Other widely used Ruby RabbitMQ clients are [Hot Bunnies](http://github.com/ruby-amqp/hot_bunnies) (JRuby-only) and [amqp gem](http://rubyamqp.info).
-Both are mature libraries and require RabbitMQ 2.x or 3.x.
+Other widely used Ruby RabbitMQ clients are [March
+Hare](http://rubymarchhare.info) (JRuby-only) and [amqp
+gem](http://rubyamqp.info).  Both are mature libraries and require
+RabbitMQ 2.x or 3.x.
 
 
 ## Contributing
@@ -208,7 +210,7 @@ then set up RabbitMQ vhosts with
 
 and then run tests with
 
-    ./bin/rspec -cfs spec
+    CI=true ./bin/rspec -cfs spec
 
 After that create a branch and make your changes on it. Once you are done with your changes and all tests pass, submit a pull request
 on GitHub.
