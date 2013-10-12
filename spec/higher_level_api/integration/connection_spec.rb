@@ -14,18 +14,18 @@ describe Bunny::Session do
     context "when schema is not one of [amqp, amqps]" do
       it "raises ArgumentError" do
         expect {
-          described_class.new("http://dev.rabbitmq.com")
+          described_class.new("http://127.0.0.1")
         }.to raise_error(ArgumentError, /amqp or amqps schema/)
       end
     end
 
 
     it "handles amqp:// URIs w/o path part" do
-      session = described_class.new("amqp://dev.rabbitmq.com")
+      session = described_class.new("amqp://127.0.0.1")
       session.start
 
       session.vhost.should == "/"
-      session.host.should == "dev.rabbitmq.com"
+      session.host.should == "127.0.0.1"
       session.port.should == 5672
       session.ssl?.should be_false
 
@@ -35,9 +35,9 @@ describe Bunny::Session do
 
     context "when URI ends in a slash" do
       it "parses vhost as an empty string" do
-        session = described_class.new("amqp://dev.rabbitmq.com/")
+        session = described_class.new("amqp://127.0.0.1/")
 
-        session.hostname.should == "dev.rabbitmq.com"
+        session.hostname.should == "127.0.0.1"
         session.port.should == 5672
         session.vhost.should == ""
       end
