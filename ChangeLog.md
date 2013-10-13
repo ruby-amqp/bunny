@@ -1,5 +1,14 @@
 ## Changes between Bunny 1.0.0.rc2 and 1.0.0.rc3
 
+### Bunny::Session#queue_exists?
+
+`Bunny::Session#queue_exists?` is a new predicate that makes it
+easier to check if a queue exists.
+
+It uses a one-off channel and `queue.declare` with `passive` set to true
+under the hood.
+
+
 ### Inline TLS Certificates and Keys
 
 It is now possible to provide inline client
