@@ -414,6 +414,26 @@ module Bunny
       end
     end
 
+    # Checks if a exchange with given name exists.
+    #
+    # Implemented using exchange.declare
+    # with passive set to true and a one-off (short lived) channel
+    # under the hood.
+    #
+    # @param [String] name Exchange name
+    # @return [Boolean] true if exchange exists
+    def exchange_exists?(name)
+      ch = create_channel
+      begin
+        ch.exchange(name, :passive => true)
+        true
+      rescue Bunny::NotFound => _
+        false
+      ensure
+        ch.close if ch.open?
+      end
+    end
+
 
     #
     # Implementation

@@ -81,4 +81,24 @@ describe Bunny::Exchange, "#delete" do
       x.delete.should == nil
     end
   end
+
+
+  describe "#exchange_exists?" do
+    context "when a exchange exists" do
+      it "returns true" do
+        ch = connection.create_channel
+
+        connection.exchange_exists?("amq.fanout").should be_true
+        connection.exchange_exists?("amq.direct").should be_true
+        connection.exchange_exists?("amq.topic").should be_true
+        connection.exchange_exists?("amq.match").should be_true
+      end
+    end
+
+    context "when a exchange DOES NOT exist" do
+      it "returns false" do
+        connection.exchange_exists?("suf89u9a4jo3ndnakls##{Time.now.to_i}").should be_false
+      end
+    end
+  end
 end
