@@ -394,6 +394,26 @@ module Bunny
       AMQ::Settings.parse_amqp_url(uri)
     end
 
+    # Checks if a queue with given name exists.
+    #
+    # Implemented using queue.declare
+    # with passive set to true and a one-off (short lived) channel
+    # under the hood.
+    #
+    # @param [String] name Queue name
+    # @return [Boolean] true if queue exists
+    def queue_exists?(name)
+      ch = create_channel
+      begin
+        ch.queue(name, :passive => true)
+        true
+      rescue Bunny::NotFound => _
+        false
+      ensure
+        ch.close if ch.open?
+      end
+    end
+
 
     #
     # Implementation

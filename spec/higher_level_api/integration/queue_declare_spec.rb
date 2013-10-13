@@ -136,6 +136,25 @@ describe Bunny::Queue do
   end
 
 
+  describe "#queue_exists?" do
+    context "when a queue exists" do
+      it "returns true" do
+        ch = connection.create_channel
+        q  = ch.queue("", :exlusive => true)
+
+        connection.queue_exists?(q.name).should be_true
+      end
+    end
+
+    context "when a queue DOES NOT exist" do
+      it "returns false" do
+        connection.queue_exists?("suf89u9a4jo3ndnakls##{Time.now.to_i}").should be_false
+      end
+    end
+  end
+
+
+
   unless ENV["CI"]
     # requires RabbitMQ 3.1+
     context "when queue is declared with bounded length" do
