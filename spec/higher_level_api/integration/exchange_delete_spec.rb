@@ -21,7 +21,7 @@ describe Bunny::Exchange, "#delete" do
       expect {
         x.delete
       }.to raise_error(Bunny::NotFound)
-      
+
       ch.exchanges.size.should == 0
     end
   end
@@ -36,48 +36,48 @@ describe Bunny::Exchange, "#delete" do
       }.to raise_error(Bunny::NotFound)
     end
   end
-  
+
   context "with a name of 'amq.direct'" do
     it "does not delete the exchange" do
       ch = connection.create_channel
       x  = ch.direct('amq.direct')
-      
+
       x.delete.should == nil
     end
   end
-  
+
   context "with a name of 'amq.fanout'" do
     it "does not delete the exchange" do
       ch = connection.create_channel
       x  = ch.fanout('amq.fanout')
-      
+
       x.delete.should == nil
     end
   end
-  
+
   context "with a name of 'amq.topic'" do
     it "does not delete the exchange" do
       ch = connection.create_channel
       x  = ch.topic('amq.topic')
-      
+
       x.delete.should == nil
     end
   end
-  
+
   context "with a name of 'amq.headers'" do
     it "does not delete the exchange" do
       ch = connection.create_channel
       x  = ch.headers('amq.headers')
-      
+
       x.delete.should == nil
     end
   end
-  
+
   context "with a name of 'amq.match'" do
     it "does not delete the exchange" do
       ch = connection.create_channel
       x  = ch.headers('amq.match')
-      
+
       x.delete.should == nil
     end
   end
