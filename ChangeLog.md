@@ -1,5 +1,13 @@
 ## Changes between Bunny 1.0.0.rc2 and 1.0.0.rc3
 
+### Bunny::Session#exchange_exists?
+
+`Bunny::Session#exchange_exists?` is a new predicate that makes it
+easier to check if a exchange exists.
+
+It uses a one-off channel and `exchange.declare` with `passive` set to true
+under the hood.
+
 ### Bunny::Session#queue_exists?
 
 `Bunny::Session#queue_exists?` is a new predicate that makes it
