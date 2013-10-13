@@ -92,7 +92,6 @@ module Bunny
       @arguments
     end
 
-
     # Binds queue to an exchange
     #
     # @param [Bunny::Exchange,String] exchange Exchange to bind to
