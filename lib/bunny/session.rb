@@ -298,7 +298,7 @@ module Bunny
     def with_channel(n = nil)
       ch = create_channel(n)
       yield ch
-      ch.close
+      ch.close if ch.open?
 
       self
     end
