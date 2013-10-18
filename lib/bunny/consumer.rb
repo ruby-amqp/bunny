@@ -26,8 +26,8 @@ module Bunny
     # @param [Bunny::Queue,String] queue Queue messages will be consumed from
     # @param [String] consumer_tag Consumer tag (unique identifier). Generally it is better to let Bunny generate one.
     #                              Empty string means RabbitMQ will generate consumer tag.
-    # @param [Boolean] no_ack (false) If false, delivered messages will be automatically acknowledged.
-    #                                 If true, manual acknowledgements will be necessary.
+    # @param [Boolean] no_ack (true) If true, delivered messages will be automatically acknowledged.
+    #                                 If false, manual acknowledgements will be necessary.
     # @param [Boolean] exclusive (false) Should this consumer be exclusive?
     # @param [Hash] arguments (nil) Optional arguments that may be used by RabbitMQ extensions, etc
     # @api public
@@ -93,13 +93,13 @@ module Bunny
     # @return [Boolean] true if this consumer uses automatic acknowledgement mode
     # @api public
     def automatic_acknowledgement?
-      @no_ack == false
+      @no_ack == true
     end
 
     # @return [Boolean] true if this consumer uses manual (explicit) acknowledgement mode
     # @api public
     def manual_acknowledgement?
-      @no_ack == true
+      @no_ack == false
     end
 
     #
