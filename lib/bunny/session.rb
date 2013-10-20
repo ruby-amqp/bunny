@@ -218,22 +218,6 @@ module Bunny
     def start
       return self if connected?
 
-      begin
-        do_start
-      rescue Errno::ECONNRESET => e
-        # try one more time to cover for cases when
-        # a period of time passes between Bunny::Session#initialize and
-        # Bunny::Session#start, e.g. in the REPL.
-        #
-        # See https://github.com/ruby-amqp/bunny/issues/158#issuecomment-26669651.
-        do_start
-      end
-
-      self
-    end
-
-    # @private
-    def do_start
       @status        = :connecting
       # reset here for cases when automatic network recovery kicks in
       # when we were blocked. MK.
@@ -263,8 +247,9 @@ module Bunny
         @status = :not_connected
         raise e
       end
+
+      self
     end
-    protected :do_start
 
     # Socket operation timeout used by this connection
     # @return [Integer]
