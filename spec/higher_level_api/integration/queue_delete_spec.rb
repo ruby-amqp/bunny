@@ -19,9 +19,8 @@ describe Bunny::Queue, "#delete" do
       q  = ch.queue("")
 
       q.delete
-      expect {
-        q.delete
-      }.to raise_error(Bunny::NotFound)
+      # no exception as of RabbitMQ 3.2. MK.
+      q.delete
 
       ch.queues.size.should == 0
     end
@@ -29,12 +28,14 @@ describe Bunny::Queue, "#delete" do
 
 
   context "with a name of an existing queue" do
-    it "raises an exception" do
+    it "DOES NOT raise an exception" do
       ch = connection.create_channel
 
-      expect {
-        ch.queue_delete("sdkhflsdjflskdjflsd#{rand}")
-      }.to raise_error(Bunny::NotFound)
+      # no exception as of RabbitMQ 3.2. MK.
+      ch.queue_delete("sdkhflsdjflskdjflsd#{rand}")
+      ch.queue_delete("sdkhflsdjflskdjflsd#{rand}")
+      ch.queue_delete("sdkhflsdjflskdjflsd#{rand}")
+      ch.queue_delete("sdkhflsdjflskdjflsd#{rand}")
     end
   end
 end
