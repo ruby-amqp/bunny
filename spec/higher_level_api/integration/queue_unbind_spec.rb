@@ -47,8 +47,8 @@ describe Bunny::Queue, "NOT bound to an exchange" do
     x  = ch.fanout("amq.fanout")
     q  = ch.queue("", :exclusive => true)
 
-    lambda {
-      q.unbind(x)
-    }.should raise_error(Bunny::NotFound, /no binding/)
+    # No exception as of RabbitMQ 3.2. MK.
+    q.unbind(x)
+    q.unbind(x)
   end
 end
