@@ -18,9 +18,8 @@ describe Bunny::Exchange, "#delete" do
       x  = ch.fanout("bunny.tests.exchanges.fanout#{rand}")
 
       x.delete
-      expect {
-        x.delete
-      }.to raise_error(Bunny::NotFound)
+      # no exception as of RabbitMQ 3.2. MK.
+      x.delete
 
       ch.exchanges.size.should == 0
     end
@@ -28,12 +27,14 @@ describe Bunny::Exchange, "#delete" do
 
 
   context "with a name of a non-existent exchange" do
-    it "raises an exception" do
+    it "DOES NOT rais an exception" do
       ch = connection.create_channel
 
-      expect {
-        ch.exchange_delete("sdkhflsdjflskdjflsd#{rand}")
-      }.to raise_error(Bunny::NotFound)
+      # no exception as of RabbitMQ 3.2. MK.
+      ch.exchange_delete("sdkhflsdjflskdjflsd#{rand}")
+      ch.exchange_delete("sdkhflsdjflskdjflsd#{rand}")
+      ch.exchange_delete("sdkhflsdjflskdjflsd#{rand}")
+      ch.exchange_delete("sdkhflsdjflskdjflsd#{rand}")
     end
   end
 
