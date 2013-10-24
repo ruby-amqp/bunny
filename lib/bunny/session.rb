@@ -51,11 +51,13 @@ module Bunny
     # RabbitMQ client metadata
     DEFAULT_CLIENT_PROPERTIES = {
       :capabilities => {
-        :publisher_confirms         => true,
-        :consumer_cancel_notify     => true,
-        :exchange_exchange_bindings => true,
-        :"basic.nack"               => true,
-        :"connection.blocked"       => true
+        :publisher_confirms           => true,
+        :consumer_cancel_notify       => true,
+        :exchange_exchange_bindings   => true,
+        :"basic.nack"                 => true,
+        :"connection.blocked"         => true,
+        # See http://www.rabbitmq.com/auth-notification.html
+        :authentication_failure_close => true
       },
       :product      => "Bunny",
       :platform     => ::RUBY_DESCRIPTION,
@@ -887,7 +889,16 @@ module Bunny
         raise Bunny::PossibleAuthenticationFailureError.new(self.user, self.vhost, self.password.size)
       end
 
-      connection_tune       = frame.decode_payload
+      response = frame.decode_payload
+      if response.is_a?(AMQ::Protocol::Connection::Close)
+        @state = :closed
+        @logger.error "Authentication with RabbitMQ failed: #{response.reply_code} #{response.reply_text}"
+        raise Bunny::AuthenticationFailureError.new(self.user, self.vhost, self.password.size)
+      end
+
+
+
+      connection_tune       = response
 
       @frame_max            = negotiate_value(@client_frame_max, connection_tune.frame_max)
       @channel_max          = negotiate_value(@client_channel_max, connection_tune.channel_max)
