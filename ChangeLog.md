@@ -1,6 +1,6 @@
 ## Changes between Bunny 1.0.0.rc2 and 1.0.0.rc3
 
-### Support [Authentication Failure Notification](http://www.rabbitmq.com/auth-notification.html)
+### [Authentication Failure Notification](http://www.rabbitmq.com/auth-notification.html) Support
 
 `Bunny::AuthenticationFailureError` is a new auth failure exception
 that subclasses `Bunny::PossibleAuthenticationFailureError` for
