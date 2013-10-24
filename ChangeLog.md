@@ -1,4 +1,4 @@
-## Changes between Bunnny 1.0.0.rc3 and 1.0.0
+## Changes between Bunny 1.0.0.rc2 and 1.0.0.rc3
 
 ### Support [Authentication Failure Notification](http://www.rabbitmq.com/auth-notification.html)
 
@@ -11,8 +11,6 @@ has changed.
 
 This extension is available in RabbitMQ 3.2+.
 
-
-## Changes between Bunny 1.0.0.rc2 and 1.0.0.rc3
 
 ### Bunny::Session#exchange_exists?
 
