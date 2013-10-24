@@ -87,9 +87,29 @@ module Bunny
       @username = username
       @vhost    = vhost
 
-      super("RabbitMQ closed TCP connection before authentication succeeded: this usually means authentication failure due to misconfiguration or that RabbitMQ version does not support AMQP 0.9.1. Please check your configuration. Username: #{username}, vhost: #{vhost}, password length: #{password_length}")
+      super("Authentication with RabbitMQ failed. Please check your connection settings. Username: #{username}, vhost: #{vhost}, password length: #{password_length}")
     end # initialize(settings)
   end # PossibleAuthenticationFailureError
+
+
+  # Raised when RabbitMQ closes TCP connection due to an authentication failure.
+  # Relies on RabbitMQ 3.2 Authentication Failure Notifications extension:
+  # http://www.rabbitmq.com/auth-notification.html
+  class AuthenticationFailureError < PossibleAuthenticationFailureError
+
+    #
+    # API
+    #
+
+    attr_reader :username, :vhost
+
+    def initialize(username, vhost, password_length)
+      @username = username
+      @vhost    = vhost
+
+      super(username, vhost, password_length)
+    end # initialize(settings)
+  end # AuthenticationFailureError
 
 
   # backwards compatibility
