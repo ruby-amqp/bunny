@@ -1,3 +1,8 @@
+## Changes between Bunny 1.0.0 and 1.0.1
+
+No changes yet.
+
+
 ## Changes between Bunny 1.0.0.rc2 and 1.0.0.rc3
 
 ### [Authentication Failure Notification](http://www.rabbitmq.com/auth-notification.html) Support
