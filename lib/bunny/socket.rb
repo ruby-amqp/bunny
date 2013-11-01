@@ -38,7 +38,7 @@ module Bunny
       value = ''
       begin
         loop do
-          value << read_nonblock(count - value.bytesize)
+          value << readpartial(count - value.bytesize)
           break if value.bytesize >= count
         end
       rescue EOFError
