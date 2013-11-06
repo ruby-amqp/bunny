@@ -1,3 +1,11 @@
+## Changes between Bunny 1.0.2 and 1.0.3
+
+### Eliminated Errouneous Debug Statement
+
+`1.0.3` eliminates a debug log message that should have
+never made it into a commit.
+
+
 ## Changes between Bunny 1.0.1 and 1.0.2
 
 ### Fixes CPU Burn on JRuby
