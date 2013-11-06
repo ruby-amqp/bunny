@@ -1,57 +1,14 @@
-require "socket"
+# See #165. MK.
+if defined?(JRUBY_VERSION)
+  require "bunny/jruby/ssl_socket"
 
-module Bunny
-  begin
-    require "openssl"
+  module Bunny
+    SSLSocketImpl = JRuby::SSLSocket
+  end
+else
+  require "bunny/cruby/ssl_socket"
 
-    # TLS-enabled TCP socket that implements convenience
-    # methods found in Bunny::Socket.
-    class SSLSocket < OpenSSL::SSL::SSLSocket
-
-      # IO::WaitReadable is 1.9+ only
-      READ_RETRY_EXCEPTION_CLASSES = [Errno::EAGAIN, Errno::EWOULDBLOCK]
-      READ_RETRY_EXCEPTION_CLASSES << IO::WaitReadable if IO.const_defined?(:WaitReadable)
-
-
-      # Reads given number of bytes with an optional timeout
-      #
-      # @param [Integer] count How many bytes to read
-      # @param [Integer] timeout Timeout
-      #
-      # @return [String] Data read from the socket
-      # @api public
-      def read_fully(count, timeout = nil)
-        return nil if @__bunny_socket_eof_flag__
-
-        value = ''
-        begin
-          loop do
-            value << read_nonblock(count - value.bytesize)
-            break if value.bytesize >= count
-          end
-        rescue EOFError => e
-          @__bunny_socket_eof_flag__ = true
-        rescue OpenSSL::SSL::SSLError => e
-          if e.message == "read would block"
-            if IO.select([self], nil, nil, timeout)
-              retry
-            else
-              raise Timeout::Error, "IO timeout when reading #{count} bytes"
-            end
-          else
-            raise e
-          end
-        rescue *READ_RETRY_EXCEPTION_CLASSES => e
-          if IO.select([self], nil, nil, timeout)
-            retry
-          else
-            raise Timeout::Error, "IO timeout when reading #{count} bytes"
-          end
-        end
-        value
-      end
-    end
-  rescue LoadError => le
-    puts "Could not load OpenSSL"
+  module Bunny
+    SSLSocketImpl = SSLSocket
   end
 end

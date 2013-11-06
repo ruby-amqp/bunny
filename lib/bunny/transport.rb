@@ -219,7 +219,7 @@ module Bunny
 
     def self.reacheable?(host, port, timeout)
       begin
-        s = Bunny::Socket.open(host, port,
+        s = Bunny::SocketImpl.open(host, port,
           :socket_timeout => timeout)
 
         true
@@ -237,7 +237,7 @@ module Bunny
     def initialize_socket
       begin
         @socket = Bunny::Timeout.timeout(@connect_timeout, ClientTimeout) do
-          Bunny::Socket.open(@host, @port,
+          Bunny::SocketImpl.open(@host, @port,
             :keepalive      => @opts[:keepalive],
             :socket_timeout => @connect_timeout)
         end
@@ -326,7 +326,7 @@ module Bunny
       raise ArgumentError, "cannot wrap nil into TLS socket, @tls_context is nil. This is a Bunny bug." unless socket
       raise "cannot wrap a socket into TLS socket, @tls_context is nil. This is a Bunny bug." unless @tls_context
 
-      s = Bunny::SSLSocket.new(socket, @tls_context)
+      s = Bunny::SSLSocketImpl.new(socket, @tls_context)
       s.sync_close = true
       s
     end
