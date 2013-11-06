@@ -1,3 +1,11 @@
+## Changes between Bunny 1.0.1 and 1.0.2
+
+### Fixes CPU Burn on JRuby
+
+A silly mistake in `1.0.1` testing process ended up reverting
+the fix for #165 and #166. This release corrects it.
+
+
 ## Changes between Bunny 1.0.0 and 1.0.1
 
 ### Default CA's Paths Are Disabled on JRuby
