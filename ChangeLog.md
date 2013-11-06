@@ -1,6 +1,20 @@
 ## Changes between Bunny 1.0.0 and 1.0.1
 
-No changes yet.
+### Default CA's Paths Are Disabled on JRuby
+
+Bunny uses OpenSSL provided CA certificate paths. This
+caused problems on some platforms on JRuby (see [jruby/jruby#155](https://github.com/jruby/jruby/issues/1055)).
+
+To avoid these issues, Bunny no longer uses default CA certificate paths on JRuby
+(there are no changes for other Rubies), so it's necessary to provide
+CA certificate explicitly.
+
+### Fixes CPU Burn on JRuby
+
+Bunny now uses slightly different ways of continuously reading from the socket
+on CRuby and JRuby, to prevent abnormally high CPU usage on JRuby after a
+certain period of time (the frequency of `EWOULDBLOCK` being raised spiked
+sharply).
 
 
 ## Changes between Bunny 1.0.0.rc2 and 1.0.0.rc3
