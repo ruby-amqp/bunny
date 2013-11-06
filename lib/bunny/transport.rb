@@ -396,7 +396,6 @@ module Bunny
       if certs.empty?
         @logger.error "No CA certificates found, add one with :tls_ca_certificates"
       end
-      puts certs.inspect
       OpenSSL::X509::Store.new.tap do |store|
         certs.each { |path| store.add_file(path) }
       end
