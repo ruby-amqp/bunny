@@ -8,7 +8,9 @@ require "amq/protocol/extensions"
 
 require "bunny/framing"
 require "bunny/exceptions"
+
 require "bunny/socket"
+
 require "bunny/timeout"
 
 begin
