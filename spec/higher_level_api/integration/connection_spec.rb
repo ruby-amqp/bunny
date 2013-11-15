@@ -389,7 +389,7 @@ describe Bunny::Session do
     let(:logger)  { ::Logger.new(io) }
 
     it "uses provided logger" do
-      conn = odescribed_class.new(:hostname => "localhost", :logger => logger)
+      conn = described_class.new(:hostname => "localhost", :logger => logger)
       conn.start
 
       io.string.length.should > 100
