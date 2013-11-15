@@ -1,5 +1,18 @@
 ## Changes between Bunny 1.0.0 and 1.1.0.pre1
 
+### User-Provided Loggers
+
+Bunny now can use any logger that provides the same API as Ruby standard library's `Logger`:
+
+``` ruby
+require "logger"
+require "stringio"
+
+io = StringIO.new
+# will log to `io`
+Bunny.new(:logger => Logger.new(io))
+```
+
 ### Default CA's Paths Are Disabled on JRuby
 
 Bunny uses OpenSSL provided CA certificate paths. This
