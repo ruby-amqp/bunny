@@ -348,7 +348,7 @@ describe Bunny::Session do
   end
 
 
-  context "initialized with a disconnected host" do
+  context "initialized with unreachable host or port" do
     it "fails to connect" do
       lambda do
         c = described_class.new(:port => 38000)
