@@ -378,4 +378,23 @@ describe Bunny::Session do
       subject.should_not be_open
     end
   end
+
+
+  context "initialized with a custom logger object" do
+    after :each do
+      subject.close if subject.open?
+    end
+
+    let(:io)      { StringIO.new }
+    let(:logger)  { ::Logger.new(io) }
+
+    it "uses provided logger" do
+      conn = odescribed_class.new(:hostname => "localhost", :logger => logger)
+      conn.start
+
+      io.string.length.should > 100
+
+      conn.close
+    end
+  end
 end
