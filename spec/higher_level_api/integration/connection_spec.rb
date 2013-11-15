@@ -381,10 +381,6 @@ describe Bunny::Session do
 
 
   context "initialized with a custom logger object" do
-    after :each do
-      subject.close if subject.open?
-    end
-
     let(:io)      { StringIO.new }
     let(:logger)  { ::Logger.new(io) }
 
