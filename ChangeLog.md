@@ -1,3 +1,13 @@
+## Changes between Bunny 1.0.3 and 1.0.4
+
+### Versioned Delivery Tag Fix
+
+Versioned delivery tag now ensures all the arguments it operates
+(original delivery tag, atomic fixnum instances, etc) are coerced to `Integer`
+before comparison.
+
+GitHub issues: #171.
+
 ## Changes between Bunny 1.0.2 and 1.0.3
 
 ### Eliminated Errouneous Debug Statement
