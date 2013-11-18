@@ -21,6 +21,7 @@ module Bunny
           @n
         end
       end
+      alias to_i get
 
       def set(n)
         @mutex.synchronize do
