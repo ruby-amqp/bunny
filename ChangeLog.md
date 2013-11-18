@@ -1,5 +1,13 @@
 ## Changes between Bunny 1.0.0 and 1.1.0.pre1
 
+### Versioned Delivery Tag Fix
+
+Versioned delivery tag now ensures all the arguments it operates
+(original delivery tag, atomic fixnum instances, etc) are coerced to `Integer`
+before comparison.
+
+GitHub issues: #171.
+
 ### User-Provided Loggers
 
 Bunny now can use any logger that provides the same API as Ruby standard library's `Logger`:
