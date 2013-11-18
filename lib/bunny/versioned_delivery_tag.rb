@@ -11,8 +11,8 @@ module Bunny
       raise ArgumentError.new("tag cannot be nil") unless tag
       raise ArgumentError.new("version cannot be nil") unless version
 
-      @tag     = tag
-      @version = version
+      @tag     = tag.to_i
+      @version = version.to_i
     end
 
     def to_i
@@ -22,7 +22,7 @@ module Bunny
     def stale?(version)
       raise ArgumentError.new("version cannot be nil") unless version
 
-      @version < version
+      @version < version.to_i
     end
   end
 end
