@@ -1,3 +1,12 @@
+## Changes between Bunny 1.1.0.pre1 and 1.1.0.pre2
+
+### Thread Leaks Fixes
+
+Bunny will now correctly release heartbeat sender when allocating
+a new one (usually happens only when connection recovers from a network
+failure).
+
+
 ## Changes between Bunny 1.0.0 and 1.1.0.pre1
 
 ### Versioned Delivery Tag Fix
