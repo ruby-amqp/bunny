@@ -958,6 +958,7 @@ module Bunny
 
     # @private
     def initialize_heartbeat_sender
+      maybe_shutdown_heartbeat_sender
       @logger.debug "Initializing heartbeat sender..."
       @heartbeat_sender = HeartbeatSender.new(@transport, @logger)
       @heartbeat_sender.start(@heartbeat)
