@@ -290,7 +290,7 @@ module Bunny
         close_transport
       end
 
-      shut_down_all_consumer_work_pools
+      shut_down_all_consumer_work_pools!
       @status = :closed
     end
     alias stop close
@@ -486,7 +486,7 @@ module Bunny
         end
       end
 
-      shut_down_all_consumer_work_pools
+      shut_down_all_consumer_work_pools!
       maybe_shutdown_heartbeat_sender
       @status   = :not_connected
     end
@@ -509,6 +509,8 @@ module Bunny
       when AMQ::Protocol::Connection::Close then
         @last_connection_error = instantiate_connection_level_exception(method)
         @continuations.push(method)
+
+        shut_down_all_consumer_work_pools!
 
         @origin_thread.raise(@last_connection_error)
       when AMQ::Protocol::Connection::CloseOk then
@@ -1043,7 +1045,7 @@ module Bunny
     end
 
     # @private
-    def shut_down_all_consumer_work_pools
+    def shut_down_all_consumer_work_pools!
       @channels.each do |_, ch|
         ch.maybe_kill_consumer_work_pool!
       end
