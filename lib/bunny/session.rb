@@ -288,9 +288,10 @@ module Bunny
 
         maybe_shutdown_reader_loop
         close_transport
-
-        @status = :closed
       end
+
+      shut_down_all_consumer_work_pools
+      @status = :closed
     end
     alias stop close
 
@@ -480,13 +481,14 @@ module Bunny
       if @transport.open?
         @transport.send_frame(AMQ::Protocol::Connection::Close.encode(200, "Goodbye", 0, 0))
 
-        maybe_shutdown_heartbeat_sender
-        @status   = :not_connected
-
         if sync
           @last_connection_close_ok = wait_on_continuations
         end
       end
+
+      shut_down_all_consumer_work_pools
+      maybe_shutdown_heartbeat_sender
+      @status   = :not_connected
     end
 
     # Handles incoming frames and dispatches them.
@@ -1037,6 +1039,13 @@ module Bunny
       when :fatal, Logger::FATAL, "fatal" then Logger::FATAL
       else
         Logger::WARN
+      end
+    end
+
+    # @private
+    def shut_down_all_consumer_work_pools
+      @channels.each do |_, ch|
+        ch.maybe_kill_consumer_work_pool!
       end
     end
   end # Session
