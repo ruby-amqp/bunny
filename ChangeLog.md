@@ -1,5 +1,10 @@
 ## Changes between Bunny 1.1.0.pre1 and 1.1.0.pre2
 
+### amq-protocol Update
+
+Minimum `amq-protocol` version is now `1.9.0` which includes
+bug fixes and performance improvements for channel ID allocator.
+
 ### Thread Leaks Fixes
 
 Bunny will now correctly release heartbeat sender when allocating
