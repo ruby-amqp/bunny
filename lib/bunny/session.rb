@@ -513,11 +513,12 @@ module Bunny
         begin
           shut_down_all_consumer_work_pools!
           maybe_shutdown_reader_loop
-          close_transport
         rescue ShutdownSignal => sse
           # no-op
         rescue Exception => e
           @logger.warn "Caught an exception when cleaning up after receiving connection.close: #{e.message}"
+        ensure
+          close_transport
         end
 
         @origin_thread.raise(@last_connection_error)
