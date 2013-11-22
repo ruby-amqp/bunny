@@ -510,7 +510,15 @@ module Bunny
         @last_connection_error = instantiate_connection_level_exception(method)
         @continuations.push(method)
 
-        shut_down_all_consumer_work_pools!
+        begin
+          shut_down_all_consumer_work_pools!
+          maybe_shutdown_reader_loop
+          close_transport
+        rescue ShutdownSignal => sse
+          # no-op
+        rescue Exception => e
+          @logger.warn "Caught an exception when cleaning up after receiving connection.close: #{e.message}"
+        end
 
         @origin_thread.raise(@last_connection_error)
       when AMQ::Protocol::Connection::CloseOk then
