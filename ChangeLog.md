@@ -1,3 +1,12 @@
+## Changes between Bunny 1.0.4 and 1.0.5
+
+### amq-protocol Update
+
+Minimum `amq-protocol` version is now `1.9.0` which includes
+bug fixes and performance improvements for channel ID allocator.
+
+
+
 ## Changes between Bunny 1.0.3 and 1.0.4
 
 ### Versioned Delivery Tag Fix
