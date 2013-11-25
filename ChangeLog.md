@@ -1,3 +1,8 @@
+## Changes between Bunny 1.1.0.pre2 and 1.1.0.pre3
+
+No changes yet.
+
+
 ## Changes between Bunny 1.1.0.pre1 and 1.1.0.pre2
 
 ### connection.tune.channel_max No Longer Overflows
