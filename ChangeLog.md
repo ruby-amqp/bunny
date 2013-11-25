@@ -1,5 +1,11 @@
 ## Changes between Bunny 1.0.4 and 1.0.5
 
+### Thread Leaks Fixes
+
+Bunny will now correctly release heartbeat sender when allocating
+a new one (usually happens only when connection recovers from a network
+failure).
+
 ### amq-protocol Update
 
 Minimum `amq-protocol` version is now `1.9.0` which includes
