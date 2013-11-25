@@ -42,6 +42,18 @@ module Bunny
     end
   end
 
+  # Can indicate either a channel or connection-level issue
+  class NotAllowedError < Exception
+    attr_reader :connection, :connection_close
+
+    def initialize(message, connection, connection_close = nil)
+      super(message)
+
+      @connection       = connection
+      @connection_close = connection_close
+    end
+  end
+
 
   # Raised when TCP connection to RabbitMQ fails because of an unresolved
   # hostname, connectivity problem, etc
