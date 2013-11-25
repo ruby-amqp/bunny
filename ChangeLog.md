@@ -1,5 +1,16 @@
 ## Changes between Bunny 1.0.4 and 1.0.5
 
+### connection.tune.channel_max No Longer Overflows
+
+`connection.tune.channel_max` could previously be configured to values
+greater than 2^16 - 1 (65535). This would result in a silent overflow
+during serialization. The issue was harmless in practice but is still
+a bug that can be quite confusing.
+
+Bunny now caps max number of channels to 65535. This allows it to be
+forward compatible with future RabbitMQ versions that may allow limiting
+total # of open channels via server configuration.
+
 ### Thread Leaks Fixes
 
 Bunny will now correctly release heartbeat sender when allocating
