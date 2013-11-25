@@ -78,7 +78,7 @@ module Bunny
 
     # @return [Bunny::Transport]
     attr_reader :transport
-    attr_reader :status, :host, :port, :heartbeat, :user, :pass, :vhost, :frame_max, :threaded
+    attr_reader :status, :host, :port, :heartbeat, :user, :pass, :vhost, :frame_max, :channel_max, :threaded
     attr_reader :server_capabilities, :server_properties, :server_authentication_mechanisms, :server_locales
     attr_reader :default_channel
     attr_reader :channel_id_allocator
@@ -150,6 +150,8 @@ module Bunny
       # these are negotiated with the broker during the connection tuning phase
       @client_frame_max   = opts.fetch(:frame_max, DEFAULT_FRAME_MAX)
       @client_channel_max = opts.fetch(:channel_max, 65536)
+      # will be-renegotiated during connection tuning steps. MK.
+      @channel_max        = @client_channel_max
       @client_heartbeat   = self.heartbeat_from(opts)
 
       @client_properties   = opts[:properties] || DEFAULT_CLIENT_PROPERTIES

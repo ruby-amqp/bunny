@@ -147,6 +147,25 @@ describe Bunny::Session do
       end
     end
 
+    context "initialized with :channel_max => 4096" do
+      after :each do
+        subject.close if subject.open?
+      end
+
+      let(:channel_max) { 1024 }
+      let(:subject)     { described_class.new(:channel_max => channel_max) }
+
+      # this assumes RabbitMQ has no lower value configured. In 3.2
+      # it is 0 (no limit) by default and 1024 is still a fairly low value
+      # for future releases. MK.
+      it "negotiates channel max to be 1024" do
+        subject.start
+        subject.channel_max.should == channel_max
+
+        subject.close
+      end
+    end
+
     context "initialized with :ssl => true" do
       let(:subject) do
         described_class.new(:user     => "bunny_gem",
