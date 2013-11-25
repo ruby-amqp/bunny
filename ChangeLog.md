@@ -1,5 +1,16 @@
 ## Changes between Bunny 1.1.0.pre1 and 1.1.0.pre2
 
+### connection.tune.channel_max No Longer Overflows
+
+`connection.tune.channel_max` could previously be configured to values
+greater than 2^16 - 1 (65535). This would result in a silent overflow
+during serialization. The issue was harmless in practice but is still
+a bug that can be quite confusing.
+
+Bunny now caps max number of channels to 65535. This allows it to be
+forward compatible with future RabbitMQ versions that may allow limiting
+total # of open channels via server configuration.
+
 ### amq-protocol Update
 
 Minimum `amq-protocol` version is now `1.9.0` which includes
