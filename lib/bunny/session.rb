@@ -36,6 +36,10 @@ module Bunny
     DEFAULT_HEARTBEAT = :server
     # @private
     DEFAULT_FRAME_MAX = 131072
+    # 2^16 - 1, maximum representable signed 16 bit integer.
+    # @private
+    CHANNEL_MAX_LIMIT   = 65535
+    DEFAULT_CHANNEL_MAX = CHANNEL_MAX_LIMIT
 
     # backwards compatibility
     # @private
@@ -150,7 +154,7 @@ module Bunny
 
       # these are negotiated with the broker during the connection tuning phase
       @client_frame_max   = opts.fetch(:frame_max, DEFAULT_FRAME_MAX)
-      @client_channel_max = opts.fetch(:channel_max, 65536)
+      @client_channel_max = normalize_client_channel_max(opts.fetch(:channel_max, DEFAULT_CHANNEL_MAX))
       # will be-renegotiated during connection tuning steps. MK.
       @channel_max        = @client_channel_max
       @client_heartbeat   = self.heartbeat_from(opts)
@@ -662,6 +666,8 @@ module Bunny
                   UnexpectedFrame
                 when 506 then
                   ResourceError
+                when 530 then
+                  NotAllowedError
                 when 541 then
                   InternalError
                 else
@@ -953,7 +959,25 @@ module Bunny
         initialize_heartbeat_sender
       end
 
-      raise "could not open connection: server did not respond with connection.open-ok" unless connection_open_ok.is_a?(AMQ::Protocol::Connection::OpenOk)
+      unless connection_open_ok.is_a?(AMQ::Protocol::Connection::OpenOk)
+        if connection_open_ok.is_a?(AMQ::Protocol::Connection::Close)
+          e = instantiate_connection_level_exception(connection_open_ok)
+          begin
+            shut_down_all_consumer_work_pools!
+            maybe_shutdown_reader_loop
+          rescue ShutdownSignal => sse
+            # no-op
+          rescue Exception => e
+            @logger.warn "Caught an exception when cleaning up after receiving connection.close: #{e.message}"
+          ensure
+            close_transport
+          end
+
+          @origin_thread.raise(e)
+        else
+          raise "could not open connection: server did not respond with connection.open-ok but #{connection_open_ok.inspect} instead"
+        end
+      end
     end
 
     def heartbeat_disabled?(val)
@@ -1059,6 +1083,17 @@ module Bunny
     def shut_down_all_consumer_work_pools!
       @channels.each do |_, ch|
         ch.maybe_kill_consumer_work_pool!
+      end
+    end
+
+    def normalize_client_channel_max(n)
+      return CHANNEL_MAX_LIMIT if n > CHANNEL_MAX_LIMIT
+
+      case n
+      when 0 then
+        CHANNEL_MAX_LIMIT
+      else
+        n
       end
     end
   end # Session
