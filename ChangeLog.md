@@ -1,6 +1,13 @@
 ## Changes between Bunny 1.1.0.pre2 and 1.1.0.pre3
 
-No changes yet.
+### Single Threaded Mode Fixes
+
+Single threaded mode no longer fails with
+
+```
+undefined method `event_loop'
+```
+
 
 
 ## Changes between Bunny 1.1.0.pre1 and 1.1.0.pre2
