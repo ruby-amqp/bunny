@@ -1681,7 +1681,7 @@ module Bunny
           @threads_waiting_on_basic_get_continuations.delete(t)
         end
       else
-        connection.event_loop.run_once until @basic_get_continuations.length > 0
+        connection.reader_loop.run_once until @basic_get_continuations.length > 0
 
         @basic_get_continuations.pop
       end
@@ -1699,7 +1699,7 @@ module Bunny
           @threads_waiting_on_confirms_continuations.delete(t)
         end
       else
-        connection.event_loop.run_once until @confirms_continuations.length > 0
+        connection.reader_loop.run_once until @confirms_continuations.length > 0
 
         @confirms_continuations.pop
       end
