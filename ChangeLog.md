@@ -1,5 +1,13 @@
 ## Changes between Bunny 1.0.4 and 1.0.5
 
+### Single Threaded Mode Fixes
+
+Single threaded mode no longer fails with
+
+```
+undefined method `event_loop'
+```
+
 ### connection.tune.channel_max No Longer Overflows
 
 `connection.tune.channel_max` could previously be configured to values
