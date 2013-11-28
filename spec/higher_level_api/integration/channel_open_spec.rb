@@ -21,6 +21,15 @@ describe Bunny::Channel, "when opened" do
     end
   end
 
+  context "with an explicitly provided id = 0" do
+    it "raises ArgumentError" do
+      connection.should be_connected
+      expect {
+        connection.create_channel(0)
+      }.to raise_error(ArgumentError)
+    end
+  end
+
 
   context "with explicitly provided id" do
     it "uses that id and is successfully opened" do
