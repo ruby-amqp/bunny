@@ -273,6 +273,8 @@ module Bunny
     #
     # @return [Bunny::Channel] Newly opened channel
     def create_channel(n = nil, consumer_pool_size = 1)
+      raise ArgumentError, "channel number 0 is reserved in the protocol and cannot be used" if 0 == n
+
       if n && (ch = @channels[n])
         ch
       else
