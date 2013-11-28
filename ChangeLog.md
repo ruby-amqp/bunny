@@ -1,5 +1,10 @@
 ## Changes between Bunny 1.1.0.pre2 and 1.1.0.pre3
 
+### Channel Number = 0 is Rejected
+
+`Bunny::Session#create_channel` will now reject channel number 0.
+
+
 ### Single Threaded Mode Fixes
 
 Single threaded mode no longer fails with
