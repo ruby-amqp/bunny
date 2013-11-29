@@ -1,5 +1,14 @@
 ## Changes between Bunny 1.1.0.pre2 and 1.1.0.pre3
 
+### Bunny::Session#with_channel Ensures the Channel is Closed
+
+`Bunny::Session#with_channel` now makes sure the channel is closed
+even if provided block raises an exception
+
+Contributed by Carl Hoerberg.
+
+
+
 ### Channel Number = 0 is Rejected
 
 `Bunny::Session#create_channel` will now reject channel number 0.
