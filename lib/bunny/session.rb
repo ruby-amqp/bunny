@@ -307,8 +307,11 @@ module Bunny
     # @return [Bunny::Session] self
     def with_channel(n = nil)
       ch = create_channel(n)
-      yield ch
-      ch.close if ch.open?
+      begin
+        yield ch
+      ensure
+        ch.close if ch.open?
+      end
 
       self
     end
