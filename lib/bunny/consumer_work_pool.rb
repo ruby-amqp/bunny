@@ -82,10 +82,10 @@ module Bunny
 
           begin
             callable.call
-          rescue Exception => e
-            # TODO
-            puts e.class.name
-            puts e.message
+          rescue ::Exception => e
+            # TODO: use connection logger
+            $stderr.puts e.class.name
+            $stderr.puts e.message
           end
         end
       end
