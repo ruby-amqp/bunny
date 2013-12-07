@@ -1,5 +1,12 @@
 ## Changes between Bunny 1.1.0.pre2 and 1.1.0.pre3
 
+### TLS	Without Peer Verification
+
+Bunny now successfully performs	TLS upgrade when peer verification
+is disabled.
+
+Contribute by Jordan Curzon.
+
 ### Bunny::Session#with_channel Ensures the Channel is Closed
 
 `Bunny::Session#with_channel` now makes sure the channel is closed
