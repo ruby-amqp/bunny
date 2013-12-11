@@ -368,7 +368,14 @@ module Bunny
       # setting TLS/SSL version only works correctly when done
       # vis set_params. MK.
       ctx.set_params(:ssl_version => @opts.fetch(:tls_protocol, DEFAULT_TLS_PROTOCOL))
-      ctx.set_params(:verify_mode => OpenSSL::SSL::VERIFY_PEER|OpenSSL::SSL::VERIFY_FAIL_IF_NO_PEER_CERT) if @verify_peer
+     
+      verify_mode = if @verify_peer
+        OpenSSL::SSL::VERIFY_PEER|OpenSSL::SSL::VERIFY_FAIL_IF_NO_PEER_CERT
+      else
+        OpenSSL::SSL::VERIFY_NONE
+      end
+
+      ctx.set_params(:verify_mode => verify_mode)
 
       ctx
     end
