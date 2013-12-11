@@ -1,3 +1,9 @@
+## Changes between Bunny 1.0.6 and 1.0.7
+
+No changes yet.
+
+
+
 ## Changes between Bunny 1.0.5 and 1.0.6
 
 ### Better Exception Handling in Consumers
