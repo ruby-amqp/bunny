@@ -1,5 +1,11 @@
 ## Changes between Bunny 1.0.5 and 1.0.6
 
+### Better Exception Handling in Consumers
+
+Consumer work pools will now correctly catch all exceptions
+when dispatching submitted operations, not just `Bunny::Exception`
+subclasses.
+
 ### TLS Without Peer Verification
 
 Bunny now successfully performs TLS upgrade when peer verification
