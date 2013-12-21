@@ -636,7 +636,7 @@ module Bunny
           recover_channels
         end
       rescue TCPConnectionFailed, AMQ::Protocol::EmptyResponseError => e
-        @logger.warn "TCP connection failed, reconnecting in 5 seconds"
+        @logger.warn "TCP connection failed, reconnecting in #{@network_recovery_interval} seconds"
         sleep @network_recovery_interval
         retry if recoverable_network_failure?(e)
       end
