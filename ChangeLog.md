@@ -1,6 +1,9 @@
 ## Changes between Bunny 1.0.6 and 1.0.7
 
-No changes yet.
+### amq-protocol Update
+
+Minimum `amq-protocol` version is now `1.9.2` which includes
+bug fixes around singed 8 and 16 bit integer decoding.
 
 
 
