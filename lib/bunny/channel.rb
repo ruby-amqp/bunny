@@ -1351,7 +1351,7 @@ module Bunny
       Bunny::Timeout.timeout(read_write_timeout, ClientTimeout) do
         @last_confirm_select_ok = wait_on_continuations
       end
-      @confirm_flag = true
+      @confirm_mode = true
       raise_if_continuation_resulted_in_a_channel_error!
       @last_confirm_select_ok
     end
@@ -1443,8 +1443,8 @@ module Bunny
     # Recovery feature.
     #
     # @api plugin
-    def recover_confirm_flag
-      confirm_select if @confirm_flag
+    def recover_confirm_mode
+      confirm_select if @confirm_mode
     end
 
     # Recovers transaction mode. Used by the Automatic Network Failure
