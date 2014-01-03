@@ -1281,6 +1281,7 @@ module Bunny
         @last_tx_select_ok = wait_on_continuations
       end
       raise_if_continuation_resulted_in_a_channel_error!
+      @tx_flag = true
 
       @last_tx_select_ok
     end
@@ -1422,7 +1423,7 @@ module Bunny
 
       recover_prefetch_setting
       recover_confirm_flag
-      # recover_tx_flag
+      recover_tx_flag
       recover_exchanges
       # this includes recovering bindings
       recover_queues
@@ -1444,6 +1445,14 @@ module Bunny
     # @api plugin
     def recover_confirm_flag
       confirm_select if @confirm_flag
+    end
+
+    # Recovers transaction mode. Used by the Automatic Network Failure
+    # Recovery feature.
+    #
+    # @api plugin
+    def recover_tx_flag
+      tx_select if @tx_flag
     end
 
     # Recovers exchanges. Used by the Automatic Network Failure
