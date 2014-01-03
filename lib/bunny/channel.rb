@@ -1350,6 +1350,7 @@ module Bunny
       Bunny::Timeout.timeout(read_write_timeout, ClientTimeout) do
         @last_confirm_select_ok = wait_on_continuations
       end
+      @confirm_flag = true
       raise_if_continuation_resulted_in_a_channel_error!
       @last_confirm_select_ok
     end
@@ -1420,6 +1421,8 @@ module Bunny
       release_all_continuations
 
       recover_prefetch_setting
+      recover_confirm_flag
+      # recover_tx_flag
       recover_exchanges
       # this includes recovering bindings
       recover_queues
@@ -1433,6 +1436,14 @@ module Bunny
     # @api plugin
     def recover_prefetch_setting
       basic_qos(@prefetch_count) if @prefetch_count
+    end
+
+    # Recovers publisher confirms mode. Used by the Automatic Network Failure
+    # Recovery feature.
+    #
+    # @api plugin
+    def recover_confirm_flag
+      basic_qos(@confirm_flag) if @confirm_flag
     end
 
     # Recovers exchanges. Used by the Automatic Network Failure
