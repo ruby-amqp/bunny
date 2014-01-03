@@ -1443,7 +1443,7 @@ module Bunny
     #
     # @api plugin
     def recover_confirm_flag
-      basic_qos(@confirm_flag) if @confirm_flag
+      confirm_select if @confirm_flag
     end
 
     # Recovers exchanges. Used by the Automatic Network Failure
