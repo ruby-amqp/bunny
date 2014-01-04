@@ -1,12 +1,10 @@
-## Changes between Bunny 1.1.0.pre3 and 1.1.0.rc1
+## Changes between Bunny 1.1.0.pre2 and 1.1.0.rc1
 
 ### Full Channel State Recovery
 
 Channel recovery now involves recovery of publisher confirms and
 transaction modes.
 
-
-## Changes between Bunny 1.1.0.pre2 and 1.1.0.pre3
 
 ### TLS	Without Peer Verification
 
