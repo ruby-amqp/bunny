@@ -1,3 +1,11 @@
+## Changes between Bunny 1.1.0.pre2 and 1.1.0.rc1
+
+### Full Channel State Recovery
+
+Channel recovery now involves recovery of publisher confirms and
+transaction modes.
+
+
 ## Changes between Bunny 1.1.0.pre2 and 1.1.0.pre3
 
 ### TLS	Without Peer Verification
@@ -5,7 +13,7 @@
 Bunny now successfully performs	TLS upgrade when peer verification
 is disabled.
 
-Contribute by Jordan Curzon.
+Contributed by Jordan Curzon.
 
 ### Bunny::Session#with_channel Ensures the Channel is Closed
 
