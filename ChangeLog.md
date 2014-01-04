@@ -1,4 +1,4 @@
-## Changes between Bunny 1.1.0.pre2 and 1.1.0.rc1
+## Changes between Bunny 1.1.0.pre3 and 1.1.0.rc1
 
 ### Full Channel State Recovery
 
