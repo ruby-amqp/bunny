@@ -1422,7 +1422,7 @@ module Bunny
       release_all_continuations
 
       recover_prefetch_setting
-      recover_confirm_flag
+      recover_confirm_mode
       recover_tx_mode
       recover_exchanges
       # this includes recovering bindings
