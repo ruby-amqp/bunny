@@ -1,3 +1,14 @@
+## Changes between Bunny 1.1.0.rc1 and 1.1.0.rc2
+
+### Corrected Recovery Log Message
+
+Bunny will now use actual recovery interval in the log.
+
+Contributed by Chad Fowler.
+
+
+
+
 ## Changes between Bunny 1.1.0.pre2 and 1.1.0.rc1
 
 ### Full Channel State Recovery
