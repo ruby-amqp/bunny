@@ -26,7 +26,7 @@ unless ENV["CI"]
       end
     end
 
-    context "in a multi-threaded scenario" do
+    context "in a multi-threaded scenario A" do
       # actually, on MRI values greater than ~100 will eventually cause write
       # operations to fail with a timeout (1 second is not enough)
       # which will cause recovery to re-acquire @channel_mutex in Session.
@@ -50,6 +50,36 @@ unless ENV["CI"]
               ch2.close
             end
             t.abort_on_exception = true
+          end
+        end
+      end
+    end
+
+    context "in a multi-threaded scenario B" do
+      let(:n) { 100 }
+
+      10.times do |i|
+        it "works correctly (take #{i})" do
+          c = Bunny.new(:automatic_recovery => false)
+          c.start
+          c
+
+          ts = []
+
+          n.times do
+            t = Thread.new do
+              10.times do
+                ch = c.create_channel
+                x  = ch.topic('bunny.stress.topics.t1', :durable => true)
+                ch.close
+              end
+            end
+            t.abort_on_exception = true
+            ts << t
+          end
+
+          ts.each do |t|
+            t.join
           end
         end
       end
