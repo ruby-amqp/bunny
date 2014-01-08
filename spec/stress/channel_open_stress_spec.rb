@@ -42,9 +42,11 @@ unless ENV["CI"]
         c
         n.times do
           t = Thread.new do
-            ch = c.create_channel
+            ch1 = c.create_channel
+            ch1.close
 
-            ch.close
+            ch2 = c.create_channel
+            ch2.close
           end
           t.abort_on_exception = true
         end
