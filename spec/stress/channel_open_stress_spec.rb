@@ -37,9 +37,12 @@ unless ENV["CI"]
       let(:n) { 20 }
 
       it "works correctly" do
+        c = Bunny.new(:automatic_recovery => false)
+        c.start
+        c
         n.times do
           t = Thread.new do
-            ch = connection.create_channel
+            ch = c.create_channel
 
             ch.close
           end
