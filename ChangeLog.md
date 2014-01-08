@@ -1,3 +1,12 @@
+## Changes between Bunny 1.0.7 and 1.0.8
+
+### Corrected Recovery Log Message
+
+Bunny will now use actual recovery interval in the log.
+
+Contributed by Chad Fowler.
+
+
 ## Changes between Bunny 1.0.6 and 1.0.7
 
 ### amq-protocol Update
