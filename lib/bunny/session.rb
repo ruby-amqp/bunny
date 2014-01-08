@@ -950,7 +950,11 @@ module Bunny
       @logger.debug "Sent connection.open with vhost = #{self.vhost}"
 
       frame2 = begin
-                 @transport.read_next_frame
+                 fr = @transport.read_next_frame
+                 while fr.is_a?(AMQ::Protocol::HeartbeatFrame)
+                   fr = @transport.read_next_frame
+                 end
+                 fr
                  # frame timeout means the broker has closed the TCP connection, which it
                  # does per 0.9.1 spec.
                rescue Errno::ECONNRESET, ClientTimeout, AMQ::Protocol::EmptyResponseError, EOFError => e
