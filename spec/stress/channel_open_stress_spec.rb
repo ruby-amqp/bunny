@@ -36,19 +36,21 @@ unless ENV["CI"]
       # Bunny is safe to use in such scenarios.
       let(:n) { 20 }
 
-      it "works correctly" do
-        c = Bunny.new(:automatic_recovery => false)
-        c.start
-        c
-        n.times do
-          t = Thread.new do
-            ch1 = c.create_channel
-            ch1.close
+      100.times do |i|
+        it "works correctly (take #{i})" do
+          c = Bunny.new(:automatic_recovery => false)
+          c.start
+          c
+          n.times do
+            t = Thread.new do
+              ch1 = c.create_channel
+              ch1.close
 
-            ch2 = c.create_channel
-            ch2.close
+              ch2 = c.create_channel
+              ch2.close
+            end
+            t.abort_on_exception = true
           end
-          t.abort_on_exception = true
         end
       end
     end
