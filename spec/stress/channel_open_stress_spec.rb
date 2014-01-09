@@ -55,9 +55,9 @@ describe "Rapidly opening and closing lots of channels" do
   end
 
   context "in a multi-threaded scenario B" do
-    let(:n) { 100 }
+    let(:n) { 20 }
 
-    10.times do |i|
+    20.times do |i|
       it "works correctly (take #{i})" do
         c = Bunny.new(:automatic_recovery => false)
         c.start
@@ -67,7 +67,7 @@ describe "Rapidly opening and closing lots of channels" do
 
         n.times do
           t = Thread.new do
-            10.times do
+            15.times do
               ch = c.create_channel
               x  = ch.topic('bunny.stress.topics.t1', :durable => true)
               ch.close
