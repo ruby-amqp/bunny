@@ -47,14 +47,12 @@ describe "Rapidly opening and closing lots of channels" do
           ts << t
         end
 
-        ts.each do |t|
-          t.join
-        end
+        ts.each { |t| t.join }
       end
     end
   end
 
-  50.times do |i|
+  100.times do |i|
     context "in a multi-threaded scenario B (take #{i})" do
       let(:n) { 20 }
 
@@ -63,7 +61,7 @@ describe "Rapidly opening and closing lots of channels" do
 
         n.times do
           t = Thread.new do
-            15.times do
+            3.times do
               ch = connection.create_channel
               x  = ch.topic('bunny.stress.topics.t2', :durable => false)
               ch.close
@@ -73,9 +71,7 @@ describe "Rapidly opening and closing lots of channels" do
           ts << t
         end
 
-        ts.each do |t|
-          t.join
-        end
+        ts.each { |t| t.join }
       end
     end
   end
