@@ -1,14 +1,8 @@
 require "spec_helper"
 
 describe "Rapidly opening and closing lots of channels" do
-  let(:connection) do
-    c = Bunny.new(:user => "bunny_gem", :password => "bunny_password", :vhost => "bunny_testbed", :automatic_recovery => false)
+  connection = Bunny.new(:automatic_recovery => false).tap do |c|
     c.start
-    c
-  end
-
-  after :all do
-    connection.close
   end
 
   context "in a single-threaded scenario" do
@@ -25,51 +19,53 @@ describe "Rapidly opening and closing lots of channels" do
     end
   end
 
-  context "in a multi-threaded scenario A" do
-    # actually, on MRI values greater than ~100 will eventually cause write
-    # operations to fail with a timeout (1 second is not enough)
-    # which will cause recovery to re-acquire @channel_mutex in Session.
-    # Because Ruby's mutexes are not re-entrant, it will raise a ThreadError.
-    #
-    # But this already demonstrates that within these platform constraints,
-    # Bunny is safe to use in such scenarios.
-    let(:n) { 20 }
+  100.times do |i|
+    context "in a multi-threaded scenario A (take #{i})" do
+      # actually, on MRI values greater than ~100 will eventually cause write
+      # operations to fail with a timeout (1 second is not enough)
+      # which will cause recovery to re-acquire @channel_mutex in Session.
+      # Because Ruby's mutexes are not re-entrant, it will raise a ThreadError.
+      #
+      # But this already demonstrates that within these platform constraints,
+      # Bunny is safe to use in such scenarios.
+      let(:n) { 20 }
 
-    100.times do |i|
-      it "works correctly (take #{i})" do
-        c = Bunny.new(:automatic_recovery => false)
-        c.start
-        c
+      it "works correctly" do
+        ts = []
+
         n.times do
           t = Thread.new do
-            ch1 = c.create_channel
+            ch1 = connection.create_channel
+            q   = ch1.queue("", :exclusive => true)
+            q.delete
             ch1.close
 
-            ch2 = c.create_channel
+            ch2 = connection.create_channel
             ch2.close
           end
           t.abort_on_exception = true
+          ts << t
+        end
+
+        ts.each do |t|
+          t.join
         end
       end
     end
   end
 
-  context "in a multi-threaded scenario B" do
-    let(:n) { 20 }
+  50.times do |i|
+    context "in a multi-threaded scenario B (take #{i})" do
+      let(:n) { 20 }
 
-    20.times do |i|
-      it "works correctly (take #{i})" do
-        c = Bunny.new(:automatic_recovery => false)
-        c.start
-        c
-
+      it "works correctly" do
         ts = []
 
         n.times do
           t = Thread.new do
             15.times do
-              ch = c.create_channel
-              x  = ch.topic('bunny.stress.topics.t1', :durable => true)
+              ch = connection.create_channel
+              x  = ch.topic('bunny.stress.topics.t2', :durable => false)
               ch.close
             end
           end
