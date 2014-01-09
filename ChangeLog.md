@@ -1,5 +1,12 @@
 ## Changes between Bunny 1.1.0.rc1 and 1.1.0.rc2
 
+### Synchronized Session#create_channel and Session#close_channel
+
+Full bodies of `Bunny::Session#create_channel` and `Bunny::Session#close_channel`
+are now synchronized, which makes sure concurrent `channel.open` and subsequent
+operations (e.g. `exchange.declare`) do not result in connection-level exceptions
+(incorrect connection state transitions).
+
 ### Corrected Recovery Log Message
 
 Bunny will now use actual recovery interval in the log.
