@@ -275,12 +275,14 @@ module Bunny
     def create_channel(n = nil, consumer_pool_size = 1)
       raise ArgumentError, "channel number 0 is reserved in the protocol and cannot be used" if 0 == n
 
-      if n && (ch = @channels[n])
-        ch
-      else
-        ch = Bunny::Channel.new(self, n, ConsumerWorkPool.new(consumer_pool_size || 1))
-        ch.open
-        ch
+      @channel_mutex.synchronize do
+        if n && (ch = @channels[n])
+          ch
+        else
+          ch = Bunny::Channel.new(self, n, ConsumerWorkPool.new(consumer_pool_size || 1))
+          ch.open
+          ch
+        end
       end
     end
     alias channel create_channel
@@ -470,14 +472,16 @@ module Bunny
 
     # @private
     def close_channel(ch)
-      n = ch.number
+      @channel_mutex.synchronize do
+        n = ch.number
 
-      @transport.send_frame(AMQ::Protocol::Channel::Close.encode(n, 200, "Goodbye", 0, 0))
-      @last_channel_close_ok = wait_on_continuations
-      raise_if_continuation_resulted_in_a_connection_error!
+        @transport.send_frame(AMQ::Protocol::Channel::Close.encode(n, 200, "Goodbye", 0, 0))
+        @last_channel_close_ok = wait_on_continuations
+        raise_if_continuation_resulted_in_a_connection_error!
 
-      self.unregister_channel(ch)
-      @last_channel_close_ok
+        self.unregister_channel(ch)
+        @last_channel_close_ok
+      end
     end
 
     # @private
@@ -807,6 +811,9 @@ module Bunny
     # @private
     def send_frame(frame, signal_activity = true)
       if open?
+        # @transport_mutex.synchronize do
+        #   @transport.write(frame.encode)
+        # end
         @transport.write(frame.encode)
         signal_activity! if signal_activity
       else
