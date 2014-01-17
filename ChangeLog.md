@@ -1,4 +1,4 @@
-## Changes between Bunny 1.1.0.rc1 and 1.1.0.rc2
+## Changes between Bunny 1.1.0.rc1 and 1.1.0
 
 ### Synchronized Session#create_channel and Session#close_channel
 
