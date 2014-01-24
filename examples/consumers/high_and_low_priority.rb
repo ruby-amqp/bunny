@@ -33,11 +33,11 @@ end
 end
 
 hi_q.subscribe do |delivery_info, metadata, payload|
-  puts "[priority:high] Consumed #{payload}"
+  puts "[high] Consumed #{payload}"
 end
 
 lo_q.subscribe do |delivery_info, metadata, payload|
-  puts "[priority:low] Consumed #{payload}"
+  puts "[low] Consumed #{payload}"
 end
 
 loop do
