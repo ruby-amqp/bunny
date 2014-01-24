@@ -23,7 +23,7 @@ ch3  = conn.create_channel
 x    = ch3.default_exchange
 
 # create a backlog of low priority messages
-100.times do
+30.times do
   x.publish(rand.to_s, :routing_key => LOW_PRIORITY_Q)
 end
 
