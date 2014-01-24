@@ -27,7 +27,7 @@ x    = ch3.default_exchange
   x.publish(rand.to_s, :routing_key => LOW_PRIORITY_Q)
 end
 
-# and a tiny one high priority messages
+# and a much smaller one of high priority messages
 3.times do
   x.publish(rand.to_s, :routing_key => HIGH_PRIORITY_Q)
 end
