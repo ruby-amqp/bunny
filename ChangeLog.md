@@ -1,3 +1,18 @@
+## Changes between Bunny 1.1.0 and 1.2.0
+
+### Uncaught Consumer Exceptions
+
+Uncaught consumer exceptions are now handled by uncaught exceptions
+handler that can be defined per channel:
+
+``` ruby
+ch.on_uncaught_exception do |e, consumer|
+  # ...
+end
+```
+
+
+
 ## Changes between Bunny 1.1.0.rc1 and 1.1.0
 
 ### Synchronized Session#create_channel and Session#close_channel
