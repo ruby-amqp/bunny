@@ -193,6 +193,9 @@ module Bunny
       @next_publish_seq_no = 0
 
       @recoveries_counter = Bunny::Concurrent::AtomicFixnum.new(0)
+      @uncaught_exception_handler = Proc.new do |e, consumer|
+        @logger.error "Uncaught exception from consumer #{consumer.to_s}: #{e.message}"
+      end
     end
 
     attr_reader :recoveries_counter
@@ -1406,6 +1409,13 @@ module Bunny
       @on_error = block
     end
 
+    # Defines a handler for uncaught exceptions in consumers
+    # (e.g. delivered message handlers).
+    #
+    # @api public
+    def on_uncaught_exception(&block)
+      @uncaught_exception_handler = block
+    end
 
     #
     # Recovery
@@ -1569,6 +1579,7 @@ module Bunny
               consumer.handle_cancellation(method)
             rescue Exception => e
               @logger.error "Got exception when notifying consumer #{method.consumer_tag} about cancellation!"
+              @uncaught_exception_handler.call(e, consumer) if @uncaught_exception_handler
             end
           end
         else
@@ -1627,7 +1638,11 @@ module Bunny
       consumer = @consumers[basic_deliver.consumer_tag]
       if consumer
         @work_pool.submit do
-          consumer.call(DeliveryInfo.new(basic_deliver, consumer, self), MessageProperties.new(properties), content)
+          begin
+            consumer.call(DeliveryInfo.new(basic_deliver, consumer, self), MessageProperties.new(properties), content)
+          rescue StandardError => e
+            @uncaught_exception_handler.call(e, consumer) if @uncaught_exception_handler
+          end
         end
       else
         @logger.warn "No consumer for tag #{basic_deliver.consumer_tag} on channel #{@id}!"
