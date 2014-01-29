@@ -222,4 +222,123 @@ describe Bunny::Queue, "#subscribe" do
     end
   end
 
+
+  context "with uncaught exceptions in delivery handler" do
+    context "and defined exception handler" do
+      let(:queue_name) { "bunny.basic_consume#{rand}" }
+
+      it "uses exception handler" do
+        caught = nil
+        t = Thread.new do
+          ch = connection.create_channel
+          q  = ch.queue(queue_name, :auto_delete => true, :durable => false)
+
+          ch.on_uncaught_exception do |e, consumer|
+            caught = e
+          end
+
+          q.subscribe(:exclusive => false, :manual_ack => false) do |delivery_info, properties, payload|
+            raise RuntimeError.new(queue_name)
+          end
+        end
+        t.abort_on_exception = true
+        sleep 0.5
+
+        ch     = connection.create_channel
+        x  = ch.default_exchange
+        x.publish("hello", :routing_key => queue_name)
+        sleep 0.5
+
+        caught.message.should == queue_name
+
+        ch.close
+      end
+    end
+
+
+    context "and default exception handler" do
+      let(:queue_name) { "bunny.basic_consume#{rand}" }
+
+      it "uses exception handler" do
+        t = Thread.new do
+          ch = connection.create_channel
+          q  = ch.queue(queue_name, :auto_delete => true, :durable => false)
+
+          q.subscribe(:exclusive => false, :manual_ack => false) do |delivery_info, properties, payload|
+            raise RuntimeError.new(queue_name)
+          end
+        end
+        t.abort_on_exception = true
+        sleep 0.5
+
+        ch     = connection.create_channel
+        x  = ch.default_exchange
+        5.times { x.publish("hello", :routing_key => queue_name) }
+        sleep 1.5
+
+        ch.close
+      end
+    end
+
+
+    context "with a single consumer" do
+      let(:queue_name) { "bunny.basic_consume#{rand}" }
+
+      it "provides delivery tag access" do
+        delivery_tags = SortedSet.new
+
+        cch = connection.create_channel
+        q = cch.queue(queue_name, :auto_delete => true, :durable => false)
+        q.subscribe(:exclusive => false, :manual_ack => false) do |delivery_info, properties, payload|
+          delivery_tags << delivery_info.delivery_tag
+        end
+        sleep 0.5
+
+        ch = connection.create_channel
+        x  = ch.default_exchange
+        100.times do
+          x.publish("hello", :routing_key => queue_name)
+        end
+
+        sleep 1.0
+        delivery_tags.should == SortedSet.new(Range.new(1, 100).to_a)
+
+        ch.queue(queue_name, :auto_delete => true, :durable => false).message_count.should == 0
+
+        ch.close
+      end
+    end
+
+
+    context "with multiple consumers on the same channel" do
+      let(:queue_name) { "bunny.basic_consume#{rand}" }
+
+      it "provides delivery tag access" do
+        delivery_tags = SortedSet.new
+
+        cch = connection.create_channel
+        q   = cch.queue(queue_name, :auto_delete => true, :durable => false)
+
+        7.times do
+          q.subscribe(:exclusive => false, :manual_ack => false) do |delivery_info, properties, payload|
+            delivery_tags << delivery_info.delivery_tag
+          end
+        end
+        sleep 1.0
+
+        ch = connection.create_channel
+        x  = ch.default_exchange
+        100.times do
+          x.publish("hello", :routing_key => queue_name)
+        end
+
+        sleep 1.5
+        delivery_tags.should == SortedSet.new(Range.new(1, 100).to_a)
+
+        ch.queue(queue_name, :auto_delete => true, :durable => false).message_count.should == 0
+
+        ch.close
+      end
+    end
+  end
 end # describe
