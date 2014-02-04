@@ -1115,8 +1115,8 @@ module Bunny
           opts.fetch(:passive, false),
           opts.fetch(:durable, false),
           opts.fetch(:auto_delete, false),
-          false,
-          false,
+          opts.fetch(:internal, false),
+          false, # nowait
           opts[:arguments]))
       Bunny::Timeout.timeout(read_write_timeout, ClientTimeout) do
         @last_exchange_declare_ok = wait_on_continuations

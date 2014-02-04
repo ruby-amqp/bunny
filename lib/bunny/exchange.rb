@@ -85,6 +85,7 @@ module Bunny
 
       @durable          = @options[:durable]
       @auto_delete      = @options[:auto_delete]
+      @internal         = @options[:internal]
       @arguments        = @options[:arguments]
 
       declare! unless opts[:no_declare] || predeclared? || (@name == AMQ::Protocol::EMPTY_STRING)
@@ -103,6 +104,12 @@ module Bunny
     def auto_delete?
       @auto_delete
     end # auto_delete?
+
+    # @return [Boolean] true if this exchange is internal (used solely for exchange-to-exchange
+    #                   bindings and cannot be published to by clients)
+    def internal?
+      @internal
+    end
 
     # @return [Hash] Additional optional arguments (typically used by RabbitMQ extensions and plugins)
     # @api public
@@ -261,6 +268,7 @@ module Bunny
           :passive     => false,
           :durable     => false,
           :auto_delete => false,
+          :internal    => false,
           :arguments   => nil
         }.merge(h)
       else
