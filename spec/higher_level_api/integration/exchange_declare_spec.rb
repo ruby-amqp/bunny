@@ -201,4 +201,27 @@ describe Bunny::Exchange do
       end
     end
   end
+
+
+  context "that is internal" do
+    it "can be declared" do
+      ch = connection.create_channel
+      x  = ch.fanout("bunny.tests.exchanges.internal", :internal => true)
+      x.should be_internal
+      x.delete
+
+      ch.close
+    end
+  end
+
+  context "not declared as internal" do
+    it "is not internal" do
+      ch = connection.create_channel
+      x  = ch.fanout("bunny.tests.exchanges.non-internal")
+      x.should_not be_internal
+      x.delete
+
+      ch.close
+    end
+  end
 end
