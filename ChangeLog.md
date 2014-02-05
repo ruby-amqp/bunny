@@ -1,3 +1,10 @@
+## Changes between Bunny 1.1.5 and 1.1.6
+
+### Cherry-picked Missing Commit from Master
+
+`Bunny::Session#clean_up_on_shutdown` was cherry-picked from master.
+
+
 ## Changes between Bunny 1.1.4 and 1.1.5
 
 ### Thread Leak Plugged
