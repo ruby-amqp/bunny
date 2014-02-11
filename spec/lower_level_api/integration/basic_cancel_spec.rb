@@ -66,4 +66,19 @@ describe Bunny::Channel, "#basic_cancel" do
       ch.close
     end
   end
+
+  context "when the given consumer tag belongs to a different channel" do
+    it "DOES NOT cause a channel error" do
+      ch1 = connection.create_channel
+      ch2 = connection.create_channel
+
+      q    = ch1.queue("", :exclusive => true)
+      cons = q.subscribe do |_, _, _|
+      end
+      ch2.basic_cancel(cons.consumer_tag)
+
+      ch1.close
+      ch2.close
+    end
+  end
 end
