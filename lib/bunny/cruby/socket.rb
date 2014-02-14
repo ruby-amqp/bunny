@@ -16,7 +16,7 @@ module Bunny
     def self.open(host, port, options = {})
       Timeout.timeout(options[:socket_timeout], ClientTimeout) do
         sock = new(host, port)
-        if Socket.constants.include?('TCP_NODELAY') || Socket.constants.include?(:TCP_NODELAY)
+        if ::Socket.constants.include?('TCP_NODELAY') || ::Socket.constants.include?(:TCP_NODELAY)
           sock.setsockopt(::Socket::IPPROTO_TCP, ::Socket::TCP_NODELAY, true)
         end
         sock.setsockopt(::Socket::SOL_SOCKET, ::Socket::SO_KEEPALIVE, true) if options.fetch(:keepalive, true)
