@@ -1,5 +1,14 @@
 ## Changes between Bunny 1.1.0 and 1.2.0
 
+### Nagle's Algorithm Disabled Correctly
+
+Bunny now properly disables [Nagle's algorithm](http://boundary.com/blog/2012/05/02/know-a-delay-nagles-algorithm-and-you/)
+on the sockets it opens. This likely means
+significantly lower latency for workloads that involve
+sending a lot of small messages very frequently.
+
+[Contributed](https://github.com/ruby-amqp/bunny/pull/187) by Nelson Gauthier (AirBnB).
+
 ### Internal Exchanges
 
 Exchanges now can be declared as internal:
