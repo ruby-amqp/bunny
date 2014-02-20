@@ -17,7 +17,7 @@ services:
 branches:
   only:
     - master
-    - 0.9.x-stable
+    - 1.1.x-stable
 matrix:
   allow_failures:
     - rvm: rbx
