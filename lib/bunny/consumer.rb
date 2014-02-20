@@ -102,6 +102,16 @@ module Bunny
       @no_ack == false
     end
 
+    # @return [String] Name of the queue this consumer is on
+    # @api public
+    def queue_name
+      if @queue.respond_to?(:name)
+        @queue.name
+      else
+        @queue
+      end
+    end
+
     #
     # Recovery
     #
@@ -109,15 +119,6 @@ module Bunny
     # @private
     def recover_from_network_failure
       @channel.basic_consume_with(self)
-    end
-
-    # @private
-    def queue_name
-      if @queue.respond_to?(:name)
-        @queue.name
-      else
-        @queue
-      end
     end
   end
 end
