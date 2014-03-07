@@ -1,5 +1,11 @@
 ## Changes between Bunny 1.1.0 and 1.2.0
 
+### Routing Key Limit
+
+Per AMQP 0-9-1 spec, routing keys cannot be longer than 255 characters.
+`Bunny::Channel#basic_publish` and `Bunny::Exchange#publish` now enforces
+this limit.
+
 ### Nagle's Algorithm Disabled Correctly
 
 Bunny now properly disables [Nagle's algorithm](http://boundary.com/blog/2012/05/02/know-a-delay-nagles-algorithm-and-you/)
