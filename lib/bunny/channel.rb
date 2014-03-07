@@ -517,7 +517,7 @@ module Bunny
     # @api public
     def basic_publish(payload, exchange, routing_key, opts = {})
       raise_if_no_longer_open!
-      raise ArgumentError, "routing key cannot be longer than #{SHORTSTR_LIMIT} characters" if routing_key.size > SHORTSTR_LIMIT
+      raise ArgumentError, "routing key cannot be longer than #{SHORTSTR_LIMIT} characters" if routing_key && routing_key.size > SHORTSTR_LIMIT
 
       exchange_name = if exchange.respond_to?(:name)
                         exchange.name
