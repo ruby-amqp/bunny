@@ -158,6 +158,7 @@ module Bunny
     attr_reader :consumers
 
     DEFAULT_CONTENT_TYPE = "application/octet-stream".freeze
+    SHORTSTR_LIMIT = 255
 
     # @param [Bunny::Session] connection AMQP 0.9.1 connection
     # @param [Integer] id Channel id, pass nil to make Bunny automatically allocate it
@@ -516,6 +517,7 @@ module Bunny
     # @api public
     def basic_publish(payload, exchange, routing_key, opts = {})
       raise_if_no_longer_open!
+      raise ArgumentError, "routing key cannot be longer than #{SHORTSTR_LIMIT} characters" if routing_key.size > SHORTSTR_LIMIT
 
       exchange_name = if exchange.respond_to?(:name)
                         exchange.name
