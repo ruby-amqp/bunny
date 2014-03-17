@@ -1,5 +1,12 @@
 ## Changes between Bunny 1.1.0 and 1.2.0
 
+### Bunny::Concurrent::ContinuationQueue#poll Rounding Fix
+
+`Bunny::Concurrent::ContinuationQueue#poll` no longer floors the argument
+to the nearest second.
+
+Contributed by Brian Abreu.
+
 ### Routing Key Limit
 
 Per AMQP 0-9-1 spec, routing keys cannot be longer than 255 characters.
