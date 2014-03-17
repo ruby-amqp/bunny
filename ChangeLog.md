@@ -1,3 +1,13 @@
+## Changes between Bunny 1.1.3 and 1.1.4
+
+### Bunny::Concurrent::ContinuationQueue#poll Rounding Fix
+
+`Bunny::Concurrent::ContinuationQueue#poll` no longer floors the argument
+to the nearest second.
+
+Contributed by Brian Abreu.
+
+
 ## Changes between Bunny 1.1.2 and 1.1.3
 
 ### Nagle's Algorithm Disabled Correctly
