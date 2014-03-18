@@ -301,12 +301,9 @@ module Bunny
         Bunny::Timeout.timeout(@transport.disconnect_timeout, ClientTimeout) do
           self.close_connection(true)
         end
-
-        maybe_shutdown_reader_loop
-        close_transport
       end
 
-      shut_down_all_consumer_work_pools!
+      clean_up_on_shutdown
       @status = :closed
     end
     alias stop close
