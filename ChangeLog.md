@@ -4,6 +4,12 @@
 
 `Bunny::Session#clean_up_on_shutdown` was cherry-picked from master.
 
+### Routing Key Limit
+
+Per AMQP 0-9-1 spec, routing keys cannot be longer than 255 characters.
+`Bunny::Channel#basic_publish` and `Bunny::Exchange#publish` now enforces
+this limit.
+
 
 ## Changes between Bunny 1.1.4 and 1.1.5
 
@@ -24,6 +30,7 @@ Contributed by Brian Abreu.
 
 
 ## Changes between Bunny 1.1.2 and 1.1.3
+
 
 ### Nagle's Algorithm Disabled Correctly
 

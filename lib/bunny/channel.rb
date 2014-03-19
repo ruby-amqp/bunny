@@ -158,6 +158,7 @@ module Bunny
     attr_reader :consumers
 
     DEFAULT_CONTENT_TYPE = "application/octet-stream".freeze
+    SHORTSTR_LIMIT = 255
 
     # @param [Bunny::Session] connection AMQP 0.9.1 connection
     # @param [Integer] id Channel id, pass nil to make Bunny automatically allocate it
@@ -516,6 +517,7 @@ module Bunny
     # @api public
     def basic_publish(payload, exchange, routing_key, opts = {})
       raise_if_no_longer_open!
+      raise ArgumentError, "routing key cannot be longer than #{SHORTSTR_LIMIT} characters" if routing_key && routing_key.size > SHORTSTR_LIMIT
 
       exchange_name = if exchange.respond_to?(:name)
                         exchange.name
@@ -1505,6 +1507,16 @@ module Bunny
       @recoveries_counter.increment
     end
 
+    # @api public
+    def recover_cancelled_consumers!
+      @recover_cancelled_consumers = true
+    end
+
+    # @api public
+    def recovers_cancelled_consumers?
+      !!@recover_cancelled_consumers
+    end
+
     # @endgroup
 
 
@@ -1575,8 +1587,15 @@ module Bunny
         if consumer = @consumers[method.consumer_tag]
           @work_pool.submit do
             begin
-              @consumers.delete(method.consumer_tag)
-              consumer.handle_cancellation(method)
+              if recovers_cancelled_consumers?
+                consumer.handle_cancellation(method)
+                @logger.info "Automatically recovering cancelled consumer #{consumer.consumer_tag} on queue #{consumer.queue_name}"
+
+                consume_with(consumer)
+              else
+                @consumers.delete(method.consumer_tag)
+                consumer.handle_cancellation(method)
+              end
             rescue Exception => e
               @logger.error "Got exception when notifying consumer #{method.consumer_tag} about cancellation!"
               @uncaught_exception_handler.call(e, consumer) if @uncaught_exception_handler

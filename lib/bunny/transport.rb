@@ -55,6 +55,10 @@ module Bunny
       @host
     end
 
+    def local_address
+      @socket.local_address
+    end
+
     def uses_tls?
       @tls_enabled
     end

@@ -39,6 +39,8 @@ module Bunny
       @arguments     = arguments
       # no_ack set to true = no manual ack = automatic ack. MK.
       @no_ack        = no_ack
+
+      @on_cancellation = []
     end
 
     # Defines message delivery handler
@@ -61,14 +63,16 @@ module Bunny
     # @see http://rubybunny.info/articles/extensions.html RabbitMQ Extensions guide
     # @api public
     def on_cancellation(&block)
-      @on_cancellation = block
+      @on_cancellation << block
       self
     end
 
     # Invokes consumer cancellation notification handler
     # @private
     def handle_cancellation(basic_cancel)
-      @on_cancellation.call(basic_cancel) if @on_cancellation
+      @on_cancellation.each do |fn|
+        fn.call(basic_cancel)
+      end
     end
 
     # Cancels this consumer. Messages for this consumer will no longer be delivered. If the queue
@@ -102,6 +106,16 @@ module Bunny
       @no_ack == false
     end
 
+    # @return [String] Name of the queue this consumer is on
+    # @api public
+    def queue_name
+      if @queue.respond_to?(:name)
+        @queue.name
+      else
+        @queue
+      end
+    end
+
     #
     # Recovery
     #
@@ -109,15 +123,6 @@ module Bunny
     # @private
     def recover_from_network_failure
       @channel.basic_consume_with(self)
-    end
-
-    # @private
-    def queue_name
-      if @queue.respond_to?(:name)
-        @queue.name
-      else
-        @queue
-      end
     end
   end
 end
