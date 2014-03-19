@@ -1,3 +1,11 @@
+## Changes between Bunny 1.1.4 and 1.1.5
+
+### Thread Leak Plugged
+
+`Bunny::Session#close` on connections that have experienced a network failure
+will correctly clean up I/O thread.
+
+
 ## Changes between Bunny 1.1.3 and 1.1.4
 
 ### Bunny::Concurrent::ContinuationQueue#poll Rounding Fix
