@@ -1,9 +1,11 @@
 ## Changes between Bunny 1.1.0 and 1.2.0
 
-### Thread Leak Plugged
+### Thread Leaks Plugged
 
 `Bunny::Session#close` on connections that have experienced a network failure
-will correctly clean up I/O thread.
+will correctly clean up I/O and heartbeat sender threads.
+
+Contributed by m-o-e.
 
 ### Bunny::Concurrent::ContinuationQueue#poll Rounding Fix
 
