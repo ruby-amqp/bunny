@@ -703,6 +703,7 @@ module Bunny
       begin
         shut_down_all_consumer_work_pools!
         maybe_shutdown_reader_loop
+        maybe_shutdown_heartbeat_sender
       rescue ShutdownSignal => sse
         # no-op
       rescue Exception => e
