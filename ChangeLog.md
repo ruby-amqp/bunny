@@ -1,3 +1,13 @@
+## Changes between Bunny 1.1.6 and 1.1.7
+
+### Heartbeat Sender Thread Leak
+
+`Bunny::Session#close` no longer leaks heartbeat sender
+threads.
+
+Contributed by m-o-e.
+
+
 ## Changes between Bunny 1.1.5 and 1.1.6
 
 ### Cherry-picked Missing Commit from Master
