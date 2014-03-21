@@ -49,8 +49,7 @@ Specific examples:
 Bunny 0.9 and more recent versions support
 
  * CRuby 2.0.0, 1.9.3, 1.9.2, and 1.8.7
- * JRuby 1.7+
- * Rubinius 2.0+
+  * Rubinius 2.0+
 
 
 ## Supported RabbitMQ Versions
