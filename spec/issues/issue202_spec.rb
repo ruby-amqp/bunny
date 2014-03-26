@@ -7,7 +7,7 @@ describe Bunny::Session do
         conn = Bunny.new(:hostname => "192.192.192.192")
         conn.start
 
-        false.should be(true)
+        fail "expected 192.192.192.192 to be unreachable"
       rescue Bunny::TCPConnectionFailed => e
       end
     end
