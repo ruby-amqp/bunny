@@ -47,7 +47,6 @@ module Bunny
 
       @writes_mutex       = @session.mutex_impl.new
 
-      maybe_initialize_socket
       prepare_tls_context(opts) if @tls_enabled
     end
 
