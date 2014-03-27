@@ -1,8 +1,8 @@
 ## Changes between Bunny 1.1.7 and 1.1.8
 
-### Initial Socket Connection Again Raises Bunny::TCPConnectionFailed
+### Initial Socket Connection Timeout Again Raises Bunny::TCPConnectionFailed
 
-Initial socket connection again raises `Bunny::TCPConnectionFailed`
+Initial socket connection timeout again raises `Bunny::TCPConnectionFailed`
 on the connection origin thread.
 
 ## Changes between Bunny 1.1.6 and 1.1.7
