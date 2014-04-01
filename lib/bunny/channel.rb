@@ -1043,7 +1043,7 @@ module Bunny
       @connection.send_frame(AMQ::Protocol::Queue::Bind.encode(@id,
           name,
           exchange_name,
-          opts[:routing_key],
+          (opts[:routing_key] || opts[:key]),
           false,
           opts[:arguments]))
       Bunny::Timeout.timeout(read_write_timeout, ClientTimeout) do
