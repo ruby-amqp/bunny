@@ -1,5 +1,11 @@
 ## Changes between Bunny 1.1.0 and 1.2.0
 
+### :key Supported in Bunny::Channel#queue_bind
+
+It is now possible to use `:key` (which Bunny versions prior to 0.9 used)
+as well as `:routing_key` as an argument to `Bunny::Queue#bind`.
+
+
 ### Initial Socket Connection Timeout Again Raises Bunny::TCPConnectionFailed
 
 Initial socket connection timeout again raises `Bunny::TCPConnectionFailed`
