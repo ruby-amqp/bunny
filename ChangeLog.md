@@ -1,3 +1,17 @@
+## Changes between Bunny 1.1.8 and 1.1.9
+
+### :key Supported in Bunny::Channel#queue_bind
+
+It is now possible to use `:key` (which Bunny versions prior to 0.9 used)
+as well as `:routing_key` as an	 argument to `Bunny::Queue#bind`.
+
+### System Exceptions Not Rescued by the Library
+
+Bunny now rescues `StandardError` instead of `Exception` where
+it automatically does so (e.g. when dispatching deliveries to consumers).
+
+Contributed by Alex Young.
+
 ## Changes between Bunny 1.1.7 and 1.1.8
 
 ### Initial Socket Connection Timeout Again Raises Bunny::TCPConnectionFailed
