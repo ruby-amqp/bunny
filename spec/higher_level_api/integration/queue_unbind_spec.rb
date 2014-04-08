@@ -42,7 +42,7 @@ describe Bunny::Queue, "NOT bound to an exchange" do
   end
 
 
-  it "cannot be unbound (raises a channel error)" do
+  it "is idempotent (succeeds)" do
     ch = connection.create_channel
     x  = ch.fanout("amq.fanout")
     q  = ch.queue("", :exclusive => true)
