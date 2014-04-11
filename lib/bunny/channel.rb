@@ -157,6 +157,9 @@ module Bunny
     # @return [Hash<String, Bunny::Consumer>] Consumer instances declared on this channel
     attr_reader :consumers
 
+    # @return [Integer] active basic.qos prefetch value
+    attr_reader :prefetch_count
+
     DEFAULT_CONTENT_TYPE = "application/octet-stream".freeze
     SHORTSTR_LIMIT = 255
 
@@ -412,8 +415,8 @@ module Bunny
     # @see http://rubybunny.info/articles/exchanges.html Exchanges and Publishing guide
     # @see http://rubybunny.info/articles/queues.html Queues and Consumers guide
     # @api public
-    def prefetch(prefetch_count)
-      self.basic_qos(prefetch_count, false)
+    def prefetch(count)
+      self.basic_qos(count, false)
     end
 
     # Flow control. When set to false, RabbitMQ will stop delivering messages on this
@@ -606,18 +609,18 @@ module Bunny
     # @see Bunny::Channel#prefetch
     # @see http://rubybunny.info/articles/queues.html Queues and Consumers guide
     # @api public
-    def basic_qos(prefetch_count, global = false)
-      raise ArgumentError.new("prefetch count must be a positive integer, given: #{prefetch_count}") if prefetch_count < 0
+    def basic_qos(count, global = false)
+      raise ArgumentError.new("prefetch count must be a positive integer, given: #{prefetch_count}") if count < 0
       raise_if_no_longer_open!
 
-      @connection.send_frame(AMQ::Protocol::Basic::Qos.encode(@id, 0, prefetch_count, global))
+      @connection.send_frame(AMQ::Protocol::Basic::Qos.encode(@id, 0, count, global))
 
       Bunny::Timeout.timeout(read_write_timeout, ClientTimeout) do
         @last_basic_qos_ok = wait_on_continuations
       end
       raise_if_continuation_resulted_in_a_channel_error!
 
-      @prefetch_count = prefetch_count
+      @prefetch_count = count
 
       @last_basic_qos_ok
     end
@@ -1323,6 +1326,11 @@ module Bunny
       @last_tx_rollback_ok
     end
 
+    # @return [Boolean] true if this channel has transactions enabled
+    def using_tx?
+      !!@tx_mode
+    end
+
     # @endgroup
 
 
@@ -1334,6 +1342,7 @@ module Bunny
     def using_publisher_confirmations?
       @next_publish_seq_no > 0
     end
+    alias using_publisher_confirms? using_publisher_confirmations?
 
     # Enables publisher confirms for the channel.
     # @return [AMQ::Protocol::Confirm::SelectOk] RabbitMQ response
