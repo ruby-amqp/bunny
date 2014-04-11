@@ -536,8 +536,10 @@ module Bunny
       opts[:priority]      ||= 0
 
       if @next_publish_seq_no > 0
-        @unconfirmed_set.add(@next_publish_seq_no)
-        @next_publish_seq_no += 1
+        @unconfirmed_set_mutex.synchronize do
+          @unconfirmed_set.add(@next_publish_seq_no)
+          @next_publish_seq_no += 1
+        end
       end
 
       frames = AMQ::Protocol::Basic::Publish.encode(@id,
@@ -1681,23 +1683,23 @@ module Bunny
 
     # @private
     def handle_ack_or_nack(delivery_tag, multiple, nack)
-      if nack
-        cloned_set = @unconfirmed_set.clone
-        if multiple
-          cloned_set.keep_if { |i| i <= delivery_tag }
-          @nacked_set.merge(cloned_set)
-        else
-          @nacked_set.add(delivery_tag)
-        end
-      end
-
-      if multiple
-        @unconfirmed_set.delete_if { |i| i <= delivery_tag }
-      else
-        @unconfirmed_set.delete(delivery_tag)
-      end
-
       @unconfirmed_set_mutex.synchronize do
+        if nack
+          cloned_set = @unconfirmed_set.clone
+          if multiple
+            cloned_set.keep_if { |i| i <= delivery_tag }
+            @nacked_set.merge(cloned_set)
+          else
+            @nacked_set.add(delivery_tag)
+          end
+        end
+
+        if multiple
+          @unconfirmed_set.delete_if { |i| i <= delivery_tag }
+        else
+          @unconfirmed_set.delete(delivery_tag)
+        end
+
         @only_acks_received = (@only_acks_received && !nack)
 
         @confirms_continuations.push(true) if @unconfirmed_set.empty?
