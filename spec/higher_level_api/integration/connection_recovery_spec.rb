@@ -208,5 +208,27 @@ unless ENV["CI"]
         c.should be_open
       end
     end
+
+    it "recovers consumer" do
+      with_open do |c|
+        delivered = false
+
+        ch = c.create_channel
+        q  = ch.queue("", :exclusive => true)
+        q.subscribe do |_, _, _|
+          delivered = true
+        end
+        close_all_connections!
+        sleep 0.1
+        c.should_not be_open
+
+        wait_for_recovery
+        ch.should be_open
+
+        q.publish("")
+        sleep 0.5
+        expect(delivered).to be_true
+      end
+    end
   end
 end
