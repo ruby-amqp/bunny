@@ -23,6 +23,24 @@ unless defined?(JRUBY_VERSION) && !ENV["FORCE_JRUBY_RUN"]
       end
     end
 
+    n.times do |i|
+      it "can be closed in the Hello, World example (take #{i})" do
+        c  = Bunny.new(:automatically_recover => false)
+        c.start
+        ch = c.create_channel
+        x  = ch.default_exchange
+        q  = ch.queue("", :exclusive => true)
+        q.subscribe do |delivery_info, properties, payload|
+          # no-op
+        end
+        20.times { x.publish("hello", :routing_key => q.name) }
+
+        c.should be_connected
+        c.stop
+        c.should be_closed
+      end
+    end
+
     context "in the single threaded mode" do
       n.times do |i|
         it "can be closed (take #{i})" do
