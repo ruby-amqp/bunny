@@ -1,3 +1,20 @@
+## Changes between Bunny 1.2.0 and 1.2.1
+
+### Better Synchronization for Publisher Confirms
+
+Publisher confirms implementation now synchronizes unconfirmed
+set better.
+
+Contributed by Nicolas Viennot.
+
+### Channel Allocation After Recovery
+
+Channel id allocator is no longer reset after recovery
+if there are channels open. Makes it possible to open channels
+on a recovered connection (in addition to the channels
+it already had).
+
+
 ## Changes between Bunny 1.1.0 and 1.2.0
 
 ### :key Supported in Bunny::Channel#queue_bind
