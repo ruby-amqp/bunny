@@ -186,4 +186,26 @@ describe "Connection recovery" do
       ensure_exchange_binding_recovery(ch, x, x2)
     end
   end
+
+  it "recovers allocated channel ids" do
+    with_open do |c|
+      q = "queue#{Time.now.to_i}"
+      10.times { c.create_channel }
+      c.queue_exists?(q).should be_false
+      close_all_connections!
+      sleep 0.1
+      c.should_not be_open
+
+      wait_for_recovery
+      c.queue_exists?(q).should be_false
+      # make sure the connection isn't closed shortly after
+      # due to "second 'channel.open' seen". MK.
+      c.should be_open
+      sleep 0.1
+      c.should be_open
+      sleep 0.1
+      c.should be_open
+    end
+  end
 end
+

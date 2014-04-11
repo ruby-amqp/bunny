@@ -975,7 +975,11 @@ module Bunny
       @logger.debug "Heartbeat interval negotiation: client = #{@client_heartbeat}, server = #{connection_tune.heartbeat}, result = #{@heartbeat}"
       @logger.info "Heartbeat interval used (in seconds): #{@heartbeat}"
 
-      @channel_id_allocator = ChannelIdAllocator.new(@channel_max)
+      # if there are existing channels we've just recovered from
+      # a network failure and need to fix the allocated set. See issue 205. MK.
+      if @channels.empty?
+        @channel_id_allocator = ChannelIdAllocator.new(@channel_max)
+      end
 
       @transport.send_frame(AMQ::Protocol::Connection::TuneOk.encode(@channel_max, @frame_max, @heartbeat))
       @logger.debug "Sent connection.tune-ok with heartbeat interval = #{@heartbeat}, frame_max = #{@frame_max}, channel_max = #{@channel_max}"
