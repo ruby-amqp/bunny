@@ -13,7 +13,7 @@ unless ENV["CI"]
     end
 
     def wait_for_recovery
-      sleep 0.7
+      sleep 1.0
     end
 
     def with_open(c = Bunny.new(:network_recovery_interval => 0.2, :recover_from_connection_close => true), &block)
@@ -209,7 +209,7 @@ unless ENV["CI"]
       end
     end
 
-    it "recovers consumer" do
+    it "recovers consumers" do
       with_open do |c|
         delivered = false
 
@@ -228,6 +228,52 @@ unless ENV["CI"]
         q.publish("")
         sleep 0.5
         expect(delivered).to be_true
+      end
+    end
+
+    it "recovers all consumers" do
+      n = 1024
+
+      with_open do |c|
+        ch = c.create_channel
+        q  = ch.queue("", :exclusive => true)
+        n.times do
+          q.subscribe do |_, _, _|
+            delivered = true
+          end
+        end
+        close_all_connections!
+        sleep 0.1
+        c.should_not be_open
+
+        wait_for_recovery
+        ch.should be_open
+
+        q.consumer_count.should == n
+      end
+    end
+
+    it "recovers all queues" do
+      n = 256
+
+      qs = []
+
+      with_open do |c|
+        ch = c.create_channel
+
+        n.times do
+          qs << ch.queue("", :exclusive => true)
+        end
+        close_all_connections!
+        sleep 0.1
+        c.should_not be_open
+
+        wait_for_recovery
+        ch.should be_open
+
+        qs.each do |q|
+          ch.queue_declare(q.name, :passive => true)
+        end
       end
     end
   end
