@@ -11,6 +11,15 @@ describe Bunny::Exchange do
     connection.close
   end
 
+  context "of default type" do
+    it "is declared with an empty name" do
+      ch = connection.create_channel
+
+      x = Bunny::Exchange.default(ch)
+
+      x.name.should == ''
+    end
+  end
 
   context "of type fanout" do
     context "with a non-predefined name" do

@@ -55,7 +55,7 @@ module Bunny
     # @return [Exchange] An instance that corresponds to the default exchange (of type direct).
     # @api public
     def self.default(channel_or_connection)
-      self.new(channel_from(channel_or_connection), :direct, AMQ::Protocol::EMPTY_STRING, :no_declare => true)
+      self.new(channel_or_connection, :direct, AMQ::Protocol::EMPTY_STRING, :no_declare => true)
     end
 
     # @param [Bunny::Channel] channel_or_connection Channel this exchange will use. {Bunny::Session} instances are supported only for
