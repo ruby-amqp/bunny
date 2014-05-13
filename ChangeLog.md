@@ -1,5 +1,18 @@
 ## Changes between Bunny 1.2.0 and 1.3.0
 
+### Bunny::Queue#pop_as_hash Removed
+
+`Bunny::Queue#pop_as_hash`, which was added to ease migration
+to Bunny 0.9, was removed.
+
+### Bunny::Queue#pop Wraps Metadata
+
+`Bunny::Queue#pop` now wraps `basic.get-ok` and message properties
+into `Bunny::GetResponse` and `Bunny::MessageProperties`, just like
+`basic.consume` deliveries.
+
+GH issue: [#212](https://github.com/ruby-amqp/bunny/issues/212).
+
 ### Better Synchronization for Publisher Confirms
 
 Publisher confirms implementation now synchronizes unconfirmed
