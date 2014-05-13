@@ -19,11 +19,17 @@ describe Bunny::Queue, "#pop" do
       q  = ch.queue("", :exclusive => true)
       x  = ch.default_exchange
 
-      x.publish("xyzzy", :routing_key => q.name)
+      msg = "xyzzy"
+      x.publish(msg, :routing_key => q.name)
 
       sleep(0.5)
-      delivery_info, properties, content = q.pop
-      content.should == "xyzzy"
+      get_ok, properties, content = q.pop
+      expect(get_ok).to be_kind_of(Bunny::GetResponse)
+      expect(properties).to be_kind_of(Bunny::MessageProperties)
+      expect(properties.content_type).to eq("application/octet-stream")
+      expect(get_ok.routing_key).to eq(q.name)
+      expect(get_ok.delivery_tag).to be_kind_of(Bunny::VersionedDeliveryTag)
+      expect(content).to eq(msg)
       q.message_count.should == 0
 
       ch.close
@@ -38,8 +44,10 @@ describe Bunny::Queue, "#pop" do
       q  = ch.queue("", :exclusive => true)
       q.purge
 
-      _, _, content = q.pop
-      content.should be_nil
+      get_empty, properties, content = q.pop
+      expect(get_empty).to eq(nil)
+      expect(properties).to eq(nil)
+      expect(content).to eq(nil)
       q.message_count.should == 0
 
       ch.close

@@ -1,4 +1,5 @@
 require "bunny/compatibility"
+require "bunny/get_response"
 
 module Bunny
   # Represents AMQP 0.9.1 queue.
@@ -229,32 +230,28 @@ module Bunny
     #   puts "This is the message: " + payload + "\n\n"
     #   conn.close
     def pop(opts = {:ack => false}, &block)
-      delivery_info, properties, content = @channel.basic_get(@name, opts)
+      get_response, properties, content = @channel.basic_get(@name, opts)
 
       if block
-        block.call(delivery_info, properties, content)
+        if properties
+          di = GetResponse.new(get_response, properties, @channel)
+          mp = MessageProperties.new(properties)
+
+          block.call(di, mp, content)
+        else
+          block.call(nil, nil, nil)
+        end
       else
-        [delivery_info, properties, content]
+        if properties
+          di = GetResponse.new(get_response, properties, @channel)
+          mp = MessageProperties.new(properties)
+          [di, mp, content]
+        else
+          [nil, nil, nil]
+        end
       end
     end
     alias get pop
-
-    # Version of {Bunny::Queue#pop} that returns data in legacy format
-    # (as a hash).
-    # @return [Hash]
-    # @deprecated
-    def pop_as_hash(opts = {:ack => false}, &block)
-      delivery_info, properties, content = @channel.basic_get(@name, opts)
-
-      result = {:header => properties, :payload => content, :delivery_details => delivery_info}
-
-      if block
-        block.call(result)
-      else
-        result
-      end
-    end
-
 
     # Publishes a message to the queue via default exchange. Takes the same arguments
     # as {Bunny::Exchange#publish}
