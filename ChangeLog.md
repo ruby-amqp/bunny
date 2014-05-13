@@ -1,5 +1,16 @@
 ## Changes between Bunny 1.2.0 and 1.3.0
 
+### Bunny::Exchange.default Fix
+
+`Bunny::Exchange.default` no longer raises an exception.
+
+Note that it is a legacy compatibility method. Please use
+`Bunny::Channel#default_exchange` instead.
+
+Contributed by Justin Litchfield.
+
+GH issue [#211](https://github.com/ruby-amqp/bunny/pull/211).
+
 ### Bunny::Queue#pop_as_hash Removed
 
 `Bunny::Queue#pop_as_hash`, which was added to ease migration
