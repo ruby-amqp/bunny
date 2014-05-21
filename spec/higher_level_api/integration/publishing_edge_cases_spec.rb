@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 require "spec_helper"
 
 unless ENV["CI"]
@@ -24,6 +25,27 @@ unless ENV["CI"]
         x  = ch.default_exchange
 
         as = ("a" * (1024 * 1024 * 4 + 28237777))
+        x.publish(as, :routing_key => q.name, :persistent => true)
+
+        sleep(1)
+        q.message_count.should == 1
+
+        _, _, payload      = q.pop
+        payload.bytesize.should == as.bytesize
+
+        ch.close
+      end
+    end
+
+
+    context "with payload of several MBs of non-ASCII characters" do
+      it "successfully frames the message" do
+        ch = connection.create_channel
+
+        q  = ch.queue("", :exclusive => true)
+        x  = ch.default_exchange
+
+        as = "кириллца, йо" * (1024 * 1024)
         x.publish(as, :routing_key => q.name, :persistent => true)
 
         sleep(1)
