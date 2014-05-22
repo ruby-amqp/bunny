@@ -29,7 +29,7 @@ unless ENV["CI"]
       q.purge
       x = ch.default_exchange
       x.publish("msg", :routing_key => q.name)
-      sleep 0.2
+      sleep 0.5
       q.message_count.should == 1
       q.purge
     end
@@ -37,7 +37,7 @@ unless ENV["CI"]
     def ensure_queue_binding_recovery(x, q, routing_key = "")
       q.purge
       x.publish("msg", :routing_key => routing_key)
-      sleep 0.2
+      sleep 0.5
       q.message_count.should == 1
       q.purge
     end
