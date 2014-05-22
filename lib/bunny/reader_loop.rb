@@ -36,14 +36,18 @@ module Bunny
           # ignored, happens when we loop after the transport has already been closed
         rescue AMQ::Protocol::EmptyResponseError, IOError, SystemCallError => e
           break if @stopping
-          log_exception(e)
+          begin
+            log_exception(e)
 
-          @network_is_down = true
+            @network_is_down = true
 
-          if @session.automatically_recover?
-            @session.handle_network_failure(e)
-          else
-            @session_thread.raise(Bunny::NetworkFailure.new("detected a network failure: #{e.message}", e))
+            if @session.automatically_recover?
+              @session.handle_network_failure(e)
+            else
+              @session_thread.raise(Bunny::NetworkFailure.new("detected a network failure: #{e.message}", e))
+            end
+          rescue ShutdownSignal => _
+            break
           end
         rescue ShutdownSignal => _
           break
