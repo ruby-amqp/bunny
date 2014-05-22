@@ -29,23 +29,28 @@ module Bunny
     def run_loop
       loop do
         begin
-          break if @stopping || @network_is_down
+          break if @stopping || @stopped || @network_is_down
           run_once
         rescue Errno::EBADF => ebadf
-          break if @stopping
+          break if @stopping || @stopped
           # ignored, happens when we loop after the transport has already been closed
+          @stopping = true
         rescue AMQ::Protocol::EmptyResponseError, IOError, SystemCallError => e
-          break if @stopping
-          log_exception(e)
+          break if @stopping || @stopped
 
-          @network_is_down = true
+          if !(@session.closing? || @session.closed?)
+            log_exception(e)
 
-          if @session.automatically_recover?
-            @session.handle_network_failure(e)
-          else
-            @session_thread.raise(Bunny::NetworkFailure.new("detected a network failure: #{e.message}", e))
+            @network_is_down = true
+
+            if @session.automatically_recover?
+              @session.handle_network_failure(e)
+            else
+              @session_thread.raise(Bunny::NetworkFailure.new("detected a network failure: #{e.message}", e))
+            end
           end
         rescue ShutdownSignal => _
+          @stopping = true
           break
         rescue Exception => e
           break if @stopping
@@ -105,11 +110,21 @@ module Bunny
       end
     end
 
+    protected
+
     def log_exception(e)
-      @logger.error "Exception in the reader loop: #{e.class.name}: #{e.message}"
-      @logger.error "Backtrace: "
-      e.backtrace.each do |line|
-        @logger.error "\t#{line}"
+      if !(io_error?(e) && (@session.closing? || @session.closed?))
+        @logger.error "Exception in the reader loop: #{e.class.name}: #{e.message}"
+        @logger.error "Backtrace: "
+        e.backtrace.each do |line|
+          @logger.error "\t#{line}"
+        end
+      end
+    end
+
+    def io_error?(e)
+      [AMQ::Protocol::EmptyResponseError, IOError, SystemCallError].any? do |klazz|
+        e.is_a?(klazz)
       end
     end
   end

@@ -295,6 +295,8 @@ module Bunny
 
     # Closes the connection. This involves closing all of its channels.
     def close
+      @status = :closing
+
       if @transport.open?
         close_all_channels
 
@@ -328,6 +330,12 @@ module Bunny
       status == :connecting
     end
 
+    # @return [Boolean] true if this AMQP 0.9.1 connection is closing
+    # @api private
+    def closing?
+      @status == :closing
+    end
+
     # @return [Boolean] true if this AMQP 0.9.1 connection is closed
     def closed?
       status == :closed
@@ -341,7 +349,7 @@ module Bunny
 
     # @return [Boolean] true if this connection has automatic recovery from network failure enabled
     def automatically_recover?
-      @automatically_recover
+      @automatically_recover && !self.closing? && !self.closed?
     end
 
     #
@@ -496,17 +504,21 @@ module Bunny
 
     # @private
     def close_connection(sync = true)
-      if @transport.open?
-        @transport.send_frame(AMQ::Protocol::Connection::Close.encode(200, "Goodbye", 0, 0))
+      begin
+        if @transport.open?
+          @transport.send_frame(AMQ::Protocol::Connection::Close.encode(200, "Goodbye", 0, 0))
 
-        if sync
-          @last_connection_close_ok = wait_on_continuations
+          if sync
+            @last_connection_close_ok = wait_on_continuations
+          end
         end
-      end
 
-      shut_down_all_consumer_work_pools!
-      maybe_shutdown_heartbeat_sender
-      @status   = :not_connected
+        shut_down_all_consumer_work_pools!
+        maybe_shutdown_heartbeat_sender
+        @status   = :not_connected
+      rescue AMQ::Protocol::EmptyResponseError, IOError, SystemCallError, Bunny::NetworkFailure => _
+        # ignore, we are closing anyway
+      end
     end
 
     # Handles incoming frames and dispatches them.
