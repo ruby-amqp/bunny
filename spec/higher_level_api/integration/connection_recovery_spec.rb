@@ -13,7 +13,7 @@ unless ENV["CI"]
     end
 
     def wait_for_recovery
-      sleep 1.0
+      sleep 1.5
     end
 
     def with_open(c = Bunny.new(:network_recovery_interval => 0.2, :recover_from_connection_close => true), &block)
