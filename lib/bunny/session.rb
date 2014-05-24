@@ -298,13 +298,15 @@ module Bunny
     def close
       @status_mutex.synchronize { @status = :closing }
 
-      if @transport.open?
-        close_all_channels
+      ignoring_io_errors do
+        if @transport.open?
+          close_all_channels
 
-        self.close_connection(true)
+          self.close_connection(true)
+        end
+
+        clean_up_on_shutdown
       end
-
-      clean_up_on_shutdown
       @status_mutex.synchronize { @status = :closed }
     end
     alias stop close
@@ -505,21 +507,17 @@ module Bunny
 
     # @private
     def close_connection(sync = true)
-      begin
-        if @transport.open?
-          @transport.send_frame(AMQ::Protocol::Connection::Close.encode(200, "Goodbye", 0, 0))
+      if @transport.open?
+        @transport.send_frame(AMQ::Protocol::Connection::Close.encode(200, "Goodbye", 0, 0))
 
-          if sync
-            @last_connection_close_ok = wait_on_continuations
-          end
+        if sync
+          @last_connection_close_ok = wait_on_continuations
         end
-
-        shut_down_all_consumer_work_pools!
-        maybe_shutdown_heartbeat_sender
-        @status_mutex.synchronize { @status = :not_connected }
-      rescue AMQ::Protocol::EmptyResponseError, IOError, SystemCallError, Bunny::NetworkFailure => _
-        # ignore, we are closing anyway
       end
+
+      shut_down_all_consumer_work_pools!
+      maybe_shutdown_heartbeat_sender
+      @status_mutex.synchronize { @status = :not_connected }
     end
 
     # Handles incoming frames and dispatches them.
@@ -1157,6 +1155,14 @@ module Bunny
         CHANNEL_MAX_LIMIT
       else
         n
+      end
+    end
+
+    def ignoring_io_errors(&block)
+      begin
+        block.call
+      rescue AMQ::Protocol::EmptyResponseError, IOError, SystemCallError, Bunny::NetworkFailure => _
+        # ignore
       end
     end
   end # Session
