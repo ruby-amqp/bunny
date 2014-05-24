@@ -708,7 +708,7 @@ module Bunny
       @continuations.push(method)
 
       clean_up_on_shutdown
-      @origin_thread.raise(@last_connection_error)
+      @origin_thread.terminate_with(@last_connection_error)
     end
 
     def clean_up_on_shutdown
@@ -805,7 +805,7 @@ module Bunny
         if threaded?
           # this is the easiest way to wait until the loop
           # is guaranteed to have terminated
-          @reader_loop.raise(ShutdownSignal)
+          @reader_loop.terminate_with(ShutdownSignal)
           # joining the thread here may take forever
           # on JRuby because sun.nio.ch.KQueueArrayWrapper#kevent0 is
           # a native method that cannot be (easily) interrupted.
@@ -1035,7 +1035,7 @@ module Bunny
             close_transport
           end
 
-          @origin_thread.raise(e)
+          @origin_thread.terminate_with(e)
         else
           raise "could not open connection: server did not respond with connection.open-ok but #{connection_open_ok.inspect} instead"
         end

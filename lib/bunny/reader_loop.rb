@@ -99,6 +99,12 @@ module Bunny
       @stopped
     end
 
+    def terminate_with(e)
+      @stopping = true
+
+      self.raise(e)
+    end
+
     def raise(e)
       @thread.raise(e) if @thread
     end
