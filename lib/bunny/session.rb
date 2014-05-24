@@ -172,6 +172,7 @@ module Bunny
       # transport operations/continuations mutex. A workaround for
       # the non-reentrant Ruby mutexes. MK.
       @transport_mutex     = @mutex_impl.new
+      @status_mutex        = @mutex_impl.new
       @channels            = Hash.new
 
       @origin_thread       = Thread.current
@@ -233,7 +234,7 @@ module Bunny
     def start
       return self if connected?
 
-      @status        = :connecting
+      @status_mutex.synchronize { @status = :connecting }
       # reset here for cases when automatic network recovery kicks in
       # when we were blocked. MK.
       @blocked       = false
@@ -259,7 +260,7 @@ module Bunny
 
         @default_channel = self.create_channel
       rescue Exception => e
-        @status = :not_connected
+        @status_mutex.synchronize { @status = :not_connected }
         raise e
       end
 
@@ -295,18 +296,16 @@ module Bunny
 
     # Closes the connection. This involves closing all of its channels.
     def close
-      @status = :closing
+      @status_mutex.synchronize { @status = :closing }
 
       if @transport.open?
         close_all_channels
 
-        Bunny::Timeout.timeout(@transport.disconnect_timeout, ClientTimeout) do
-          self.close_connection(true)
-        end
+        self.close_connection(true)
       end
 
       clean_up_on_shutdown
-      @status = :closed
+      @status_mutex.synchronize { @status = :closed }
     end
     alias stop close
 
@@ -333,23 +332,25 @@ module Bunny
     # @return [Boolean] true if this AMQP 0.9.1 connection is closing
     # @api private
     def closing?
-      @status == :closing
+      @status_mutex.synchronize { @status == :closing }
     end
 
     # @return [Boolean] true if this AMQP 0.9.1 connection is closed
     def closed?
-      status == :closed
+      @status_mutex.synchronize { @status == :closed }
     end
 
     # @return [Boolean] true if this AMQP 0.9.1 connection is open
     def open?
-      (status == :open || status == :connected || status == :connecting) && @transport.open?
+      @status_mutex.synchronize do
+        (status == :open || status == :connected || status == :connecting) && @transport.open?
+      end
     end
     alias connected? open?
 
     # @return [Boolean] true if this connection has automatic recovery from network failure enabled
     def automatically_recover?
-      @automatically_recover && !self.closing? && !self.closed?
+      @automatically_recover
     end
 
     #
@@ -515,7 +516,7 @@ module Bunny
 
         shut_down_all_consumer_work_pools!
         maybe_shutdown_heartbeat_sender
-        @status   = :not_connected
+        @status_mutex.synchronize { @status = :not_connected }
       rescue AMQ::Protocol::EmptyResponseError, IOError, SystemCallError, Bunny::NetworkFailure => _
         # ignore, we are closing anyway
       end
@@ -609,7 +610,7 @@ module Bunny
     def handle_network_failure(exception)
       raise NetworkErrorWrapper.new(exception) unless @threaded
 
-      @status = :disconnected
+      @status_mutex.synchronize { @status = :disconnected }
 
       if !recovering_from_network_failure?
         begin
@@ -940,7 +941,7 @@ module Bunny
       @server_authentication_mechanisms = (connection_start.mechanisms || "").split(" ")
       @server_locales                   = Array(connection_start.locales)
 
-      @status = :connected
+      @status_mutex.synchronize { @status = :connected }
     end
 
     # @private
@@ -1016,7 +1017,7 @@ module Bunny
       end
       connection_open_ok = frame2.decode_payload
 
-      @status = :open
+      @status_mutex.synchronize { @status = :open }
       if @heartbeat && @heartbeat > 0
         initialize_heartbeat_sender
       end
