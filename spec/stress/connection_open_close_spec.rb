@@ -12,8 +12,20 @@ unless defined?(JRUBY_VERSION) && !ENV["FORCE_JRUBY_RUN"]
         end
 
     n.times do |i|
-      it "can be closed (take #{i})" do
+      it "can be closed (automatic recovery disabled, take #{i})" do
         c  = Bunny.new(:automatically_recover => false)
+        c.start
+        ch = c.create_channel
+
+        c.should be_connected
+        c.stop
+        c.should be_closed
+      end
+    end
+
+    n.times do |i|
+      it "can be closed (automatic recovery enabled, take #{i})" do
+        c  = Bunny.new(:automatically_recover => true)
         c.start
         ch = c.create_channel
 
