@@ -1,5 +1,11 @@
 ## Changes between Bunny 1.2.0 and 1.3.0
 
+### Synchronization Improvements for Session#close
+
+`Bunny::Session#close` now better synchronizes state transitions,
+eliminating a few race condition scenarios with I/O reader thread.
+
+
 ### Bunny::Exchange.default Fix
 
 `Bunny::Exchange.default` no longer raises an exception.
