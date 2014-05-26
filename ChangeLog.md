@@ -1,3 +1,11 @@
+## Changes between Bunny 1.2.1 and 1.2.2
+
+### Synchronization Improvements for Session#close
+
+`Bunny::Session#close` now better synchronizes state transitions,
+eliminating a few race condition scenarios with I/O reader thread.
+
+
 ## Changes between Bunny 1.2.0 and 1.2.1
 
 ### Better Synchronization for Publisher Confirms
