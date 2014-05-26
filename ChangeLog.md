@@ -1,9 +1,27 @@
+## Changes between Bunny 1.2.2 and 1.2.3
+
+No changes yet.
+
+
+
 ## Changes between Bunny 1.2.1 and 1.2.2
 
 ### Synchronization Improvements for Session#close
 
 `Bunny::Session#close` now better synchronizes state transitions,
 eliminating a few race condition scenarios with I/O reader thread.
+
+### Bunny::Exchange.default Fix
+
+`Bunny::Exchange.default` no longer raises an exception.
+
+Note that it is a legacy compatibility method. Please use
+`Bunny::Channel#default_exchange` instead.
+
+Contributed by Justin Litchfield.
+
+GH issue [#211](https://github.com/ruby-amqp/bunny/pull/211).
+
 
 
 ## Changes between Bunny 1.2.0 and 1.2.1
