@@ -34,7 +34,7 @@ group :development do
 end
 
 group :test do
-  gem "rspec", ">= 2.13.0"
+  gem "rspec", "~> 2.13.0"
   gem "rabbitmq_http_api_client", "~> 1.1.0"
 end
 
