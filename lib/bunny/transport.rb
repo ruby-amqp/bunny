@@ -120,6 +120,7 @@ module Bunny
 
         if @session.automatically_recover?
           @session.handle_network_failure(e)
+          @session.transport.write(data)
         else
           @session_thread.raise(Bunny::NetworkFailure.new("detected a network failure: #{e.message}", e))
         end
@@ -132,10 +133,12 @@ module Bunny
         @writes_mutex.synchronize { @socket.write(data) }
         @socket.flush
       rescue SystemCallError, Bunny::ConnectionError, IOError => e
+        @logger.error "Got an exception when sending data: #{e.message} (#{e.class.name})"
         close
 
         if @session.automatically_recover?
           @session.handle_network_failure(e)
+          @session.transport.write_without_timeout(data)
         else
           @session_thread.raise(Bunny::NetworkFailure.new("detected a network failure: #{e.message}", e))
         end
@@ -149,6 +152,7 @@ module Bunny
     def send_frame(frame)
       if closed?
         @session.handle_network_failure(ConnectionClosedError.new(frame))
+        @session.transport.send_frame(frame)
       else
         write(frame.encode)
       end
@@ -161,6 +165,7 @@ module Bunny
     def send_frame_without_timeout(frame)
       if closed?
         @session.handle_network_failure(ConnectionClosedError.new(frame))
+        @session.transport.send_frame_without_timeout(frame)
       else
         write_without_timeout(frame.encode)
       end
