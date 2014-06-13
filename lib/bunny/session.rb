@@ -707,7 +707,11 @@ module Bunny
       @continuations.push(method)
 
       clean_up_on_shutdown
-      @origin_thread.terminate_with(@last_connection_error)
+      if threaded?
+        @origin_thread.terminate_with(@last_connection_error)
+      else
+        raise @last_connection_error
+      end
     end
 
     def clean_up_on_shutdown
