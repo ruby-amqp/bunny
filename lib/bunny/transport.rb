@@ -265,7 +265,9 @@ module Bunny
     protected
 
     def tls_enabled?(opts)
-      opts[:tls] || opts[:ssl] || (opts[:port] == AMQ::Protocol::TLS_PORT) || false
+      return opts[:tls] unless opts[:tls].nil?
+      return opts[:ssl] unless opts[:ssl].nil?
+      (opts[:port] == AMQ::Protocol::TLS_PORT) || false
     end
 
     def tls_certificate_path_from(opts)
