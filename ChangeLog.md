@@ -12,6 +12,14 @@ conn = Bunny.new(:port => 5671, :tls => false)
 Contributed by Muhan Zou.
 
 
+### Single Threaded Connections Raise Shutdown Exceptions
+
+Single threaded Bunny connections will now raise exceptions
+that occur during shutdown as is (instead of trying to shut down
+I/O loop which only threaded ones have).
+
+Contributed by Carl Hörberg.
+
 
 ### Synchronization Improvements for Session#close
 
