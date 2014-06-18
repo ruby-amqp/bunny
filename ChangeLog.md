@@ -1,5 +1,18 @@
 ## Changes between Bunny 1.2.0 and 1.3.0
 
+### TLS Can Be Explicitly Disabled
+
+TLS now can be explicitly disabled even when connecting (without TLS)
+to the default RabbitMQ TLS/amqps port (5671):
+
+``` ruby
+conn = Bunny.new(:port => 5671, :tls => false)
+```
+
+Contributed by Muhan Zou.
+
+
+
 ### Synchronization Improvements for Session#close
 
 `Bunny::Session#close` now better synchronizes state transitions,
