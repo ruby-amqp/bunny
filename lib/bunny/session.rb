@@ -708,7 +708,7 @@ module Bunny
 
       clean_up_on_shutdown
       if threaded?
-        @origin_thread.terminate_with(@last_connection_error)
+        @origin_thread.raise(@last_connection_error)
       else
         raise @last_connection_error
       end
@@ -1038,7 +1038,11 @@ module Bunny
             close_transport
           end
 
-          @origin_thread.terminate_with(e)
+          if threaded?
+            @origin_thread.raise(e)
+          else
+            raise e
+          end
         else
           raise "could not open connection: server did not respond with connection.open-ok but #{connection_open_ok.inspect} instead"
         end
