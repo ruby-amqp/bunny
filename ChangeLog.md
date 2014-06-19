@@ -1,3 +1,12 @@
+## Changes between Bunny 1.3.0 and 1.4.0
+
+### NoMethodError on Thread During Shutdown
+
+During abnormal termination, `Bunny::Session` no longer tries
+to call the non-existent `terminate_with` method on its origin
+thread.
+
+
 ## Changes between Bunny 1.2.0 and 1.3.0
 
 ### TLS Can Be Explicitly Disabled
