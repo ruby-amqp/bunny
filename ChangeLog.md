@@ -2,7 +2,7 @@
 
 ### NoMethodError on Thread During Shutdown
 
-During abnormal termination, `Bunny::Session` no longer tries
+During abnormal termination, `Bunny::Session#close` no longer tries
 to call the non-existent `terminate_with` method on its origin
 thread.
 
