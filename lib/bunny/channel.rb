@@ -195,6 +195,7 @@ module Bunny
       @threads_waiting_on_basic_get_continuations = Set.new
 
       @next_publish_seq_no = 0
+      @delivery_tag_offset = 0
 
       @recoveries_counter = Bunny::Concurrent::AtomicFixnum.new(0)
       @uncaught_exception_handler = Proc.new do |e, consumer|
@@ -1467,7 +1468,10 @@ module Bunny
     #
     # @api plugin
     def recover_confirm_mode
-      confirm_select if @confirm_mode
+      if using_publisher_confirmations?
+        @delivery_tag_offset = @next_publish_seq_no - 1
+        confirm_select(@confirms_callback)
+      end
     end
 
     # Recovers transaction mode. Used by the Automatic Network Failure
@@ -1691,28 +1695,26 @@ module Bunny
     end
 
     # @private
-    def handle_ack_or_nack(delivery_tag, multiple, nack)
+    def handle_ack_or_nack(delivery_tag_before_offset, multiple, nack)
+      delivery_tag          = delivery_tag_before_offset + @delivery_tag_offset
+      confirmed_range_start = multiple ? @delivery_tag_offset + 1 : delivery_tag
+      confirmed_range_end   = delivery_tag
+      confirmed_range       = (confirmed_range_start..confirmed_range_end)
+
       @unconfirmed_set_mutex.synchronize do
         if nack
-          cloned_set = @unconfirmed_set.clone
-          if multiple
-            cloned_set.keep_if { |i| i <= delivery_tag }
-            @nacked_set.merge(cloned_set)
-          else
-            @nacked_set.add(delivery_tag)
-          end
+          @nacked_set.merge(@unconfirmed_set & confirmed_range)
         end
 
-        if multiple
-          @unconfirmed_set.delete_if { |i| i <= delivery_tag }
-        else
-          @unconfirmed_set.delete(delivery_tag)
-        end
+        @unconfirmed_set.subtract(confirmed_range)
 
         @only_acks_received = (@only_acks_received && !nack)
 
         @confirms_continuations.push(true) if @unconfirmed_set.empty?
-        @confirms_callback.call(delivery_tag, multiple, nack) if @confirms_callback
+
+        if @confirms_callback
+          confirmed_range.each { |tag| @confirms_callback.call(tag, false, nack) }
+        end
       end
     end
 
