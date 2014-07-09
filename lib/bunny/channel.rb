@@ -1360,6 +1360,7 @@ module Bunny
         @unconfirmed_set        = Set.new
         @nacked_set             = Set.new
         @next_publish_seq_no    = 1
+        @only_acks_received = true
       end
 
       @confirms_callback = callback
@@ -1374,19 +1375,18 @@ module Bunny
     end
 
     # Blocks calling thread until confirms are received for all
-    # currently unacknowledged published messages.
+    # currently unacknowledged published messages. Returns immediately
+    # if there are no outstanding confirms.
     #
-    # @return [Boolean] true if all messages were acknowledged positively, false otherwise
+    # @return [Boolean] true if all messages were acknowledged positively since the last time this method was called, false otherwise
     # @see #confirm_select
     # @see #unconfirmed_set
     # @see #nacked_set
     # @see http://rubybunny.info/articles/extensions.html RabbitMQ Extensions guide
     # @api public
     def wait_for_confirms
-      @only_acks_received = true
       wait_on_confirms_continuations
-
-      @only_acks_received
+      read_and_reset_only_acks_received
     end
 
     # @endgroup
@@ -1761,16 +1761,31 @@ module Bunny
         @threads_waiting_on_confirms_continuations << t
 
         begin
-          @confirms_continuations.poll(@connection.continuation_timeout)
+          outstanding_confirms = false
+          @unconfirmed_set_mutex.synchronize do
+            outstanding_confirms = !@unconfirmed_set.empty?
+          end
+          @confirms_continuations.poll(@connection.continuation_timeout) if outstanding_confirms
         ensure
           @threads_waiting_on_confirms_continuations.delete(t)
         end
       else
-        connection.reader_loop.run_once until @confirms_continuations.length > 0
-
-        @confirms_continuations.pop
+        unless @unconfirmed_set.empty?
+          connection.reader_loop.run_once until @confirms_continuations.length > 0
+          @confirms_continuations.pop
+        end
       end
     end
+
+    # @private
+    def read_and_reset_only_acks_received
+      @unconfirmed_set_mutex.synchronize do
+        result = @only_acks_received
+        @only_acks_received = true
+        result
+      end
+    end
+
 
     # Releases all continuations. Used by automatic network recovery.
     # @private
