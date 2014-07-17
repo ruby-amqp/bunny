@@ -162,7 +162,7 @@ Other documentation guides are available at [rubybunny.info](http://rubybunny.in
 ### Mailing List
 
 [Bunny has a mailing list](http://groups.google.com/group/ruby-amqp). We encourage you
-to also join the [rabbitmq-discuss](https://lists.rabbitmq.com/cgi-bin/mailman/listinfo/rabbitmq-discuss) mailing list. Feel free to ask any questions that you may have.
+to also join the [RabbitMQ mailing list](https://groups.google.com/forum/#!forum/rabbitmq-users) mailing list. Feel free to ask any questions that you may have.
 
 
 ### IRC
