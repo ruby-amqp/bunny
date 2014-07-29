@@ -1,5 +1,17 @@
 ## Changes between Bunny 1.3.0 and 1.4.0
 
+### Channel#wait_for_confirms Returns Immediately If All Publishes Confirmed
+
+Contributed by Matt Campbell.
+
+### Publisher Confirms is In Sync After Recovery
+
+When a connection is recovered, the sequence counter resets on the
+broker, but not the client. To keep things in sync the client must store a confirmation
+offset after a recovery.
+
+Contributed by Devin Christensen.
+
 ### NoMethodError on Thread During Shutdown
 
 During abnormal termination, `Bunny::Session#close` no longer tries
