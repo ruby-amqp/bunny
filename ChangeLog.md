@@ -1,3 +1,12 @@
+## Changes between Bunny 1.4.0 and 1.5.0
+
+### Host Lists
+
+It is now possible to pass the `:hosts` option to `Bunny.new`/`Bunny::Session#initialize`.
+When connection to RabbitMQ (including during connection recovery), a random host
+will be chosen from the list.
+
+
 ## Changes between Bunny 1.3.0 and 1.4.0
 
 ### Channel#wait_for_confirms Returns Immediately If All Publishes Confirmed
