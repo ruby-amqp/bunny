@@ -99,6 +99,7 @@ module Bunny
     # @param [Hash] optz Extra options not related to connection
     #
     # @option connection_string_or_opts [String] :host ("127.0.0.1") Hostname or IP address to connect to
+    # @option connection_string_or_opts [Array<String>] :hosts (["127.0.0.1"]) list of hostname or IP addresses to select hostname from when connecting
     # @option connection_string_or_opts [Integer] :port (5672) Port RabbitMQ listens on
     # @option connection_string_or_opts [String] :username ("guest") Username
     # @option connection_string_or_opts [String] :password ("guest") Password
@@ -127,6 +128,14 @@ module Bunny
              when Hash then
                connection_string_or_opts
              end.merge(optz)
+
+      @default_host_selection_strategy = Proc.new { |hosts|
+        if RUBY_VERSION.to_f < 1.9
+          hosts.choice
+        else
+          hosts.sample
+        end
+      }
 
       @opts            = opts
       @host            = self.hostname_from(opts)
@@ -730,7 +739,14 @@ module Bunny
 
     # @private
     def hostname_from(options)
-      options[:host] || options[:hostname] || DEFAULT_HOST
+      pick_host(options.fetch(:hosts, []), options) || options[:host] || options[:hostname] || DEFAULT_HOST
+    end
+
+    # @private
+    def pick_host(hosts, options)
+      if fn = options.fetch(:host_selection_strategy, @default_host_selection_strategy)
+        fn.call(hosts)
+      end
     end
 
     # @private
