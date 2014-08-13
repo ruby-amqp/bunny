@@ -25,6 +25,15 @@ unless ENV["CI"]
       end
     end
 
+    def with_open_multi_host(c = Bunny.new(:hosts => ["127.0.0.1", "localhost"], :network_recovery_interval => 0.2, :recover_from_connection_close => true), &block)
+      begin
+        c.start
+        block.call(c)
+      ensure
+        c.close
+      end
+    end
+
     def ensure_queue_recovery(ch, q)
       q.purge
       x = ch.default_exchange
@@ -66,8 +75,33 @@ unless ENV["CI"]
       end
     end
 
-    it "recovers channel" do
+    it "reconnects after grace period (with multiple hosts)" do
+      with_open_multi_host do |c|
+        close_all_connections!
+        sleep 0.1
+        c.should_not be_open
+
+        wait_for_recovery
+        c.should be_open
+      end
+    end
+
+    it "recovers channels" do
       with_open do |c|
+        ch1 = c.create_channel
+        ch2 = c.create_channel
+        close_all_connections!
+        sleep 0.1
+        c.should_not be_open
+
+        wait_for_recovery
+        ch1.should be_open
+        ch2.should be_open
+      end
+    end
+
+    it "recovers channels (with multiple hosts)" do
+      with_open_multi_host do |c|
         ch1 = c.create_channel
         ch2 = c.create_channel
         close_all_connections!

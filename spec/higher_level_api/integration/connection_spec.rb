@@ -147,6 +147,30 @@ describe Bunny::Session do
       end
     end
 
+    context "initialized with :hosts => [...]" do
+      after :each do
+        subject.close if subject.open?
+      end
+
+      let(:host)    { "192.168.1.10" }
+      let(:hosts)   { [host] }
+      let(:subject) { described_class.new(:hosts => hosts) }
+
+      it "uses hostname = localhost" do
+        subject.host.should == host
+        subject.hostname.should == host
+      end
+
+      it "uses port 5672" do
+        subject.port.should == port
+      end
+
+      it "uses username = guest" do
+        subject.username.should == username
+        subject.user.should == username
+      end
+    end
+
     context "initialized with :channel_max => 4096" do
       after :each do
         subject.close if subject.open?
