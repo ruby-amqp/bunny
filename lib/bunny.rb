@@ -17,7 +17,7 @@ begin
   require "openssl"
 
   require "bunny/ssl_socket"
-rescue LoadError => e
+rescue LoadError
   # no-op
 end
 
