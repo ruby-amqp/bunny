@@ -29,7 +29,7 @@ x   = ch3.direct("amq.direct")
 q1  = ch1.queue("bunny.examples.acknowledgements.explicit", :auto_delete => false)
 q1.purge
 
-q1.bind(x).subscribe(:ack => true, :block => false) do |delivery_info, properties, payload|
+q1.bind(x).subscribe(:manual_ack => true, :block => false) do |delivery_info, properties, payload|
   # do some work
   sleep(0.2)
 
@@ -46,7 +46,7 @@ q1.bind(x).subscribe(:ack => true, :block => false) do |delivery_info, propertie
 end
 
 q2   = ch2.queue("bunny.examples.acknowledgements.explicit", :auto_delete => false)
-q2.bind(x).subscribe(:ack => true, :block => false) do |delivery_info, properties, payload|
+q2.bind(x).subscribe(:manual_ack => true, :block => false) do |delivery_info, properties, payload|
   # do some work
   sleep(0.2)
 

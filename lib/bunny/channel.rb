@@ -566,7 +566,8 @@ module Bunny
     # @param [String] queue Queue name
     # @param [Hash] opts Options
     #
-    # @option opts [Boolean] :ack (true) Will this message be acknowledged manually?
+    # @option opts [Boolean] :ack (true) [DEPRECATED] Use :manual_ack instead
+    # @option opts [Boolean] :manual_ack (true) Will this message be acknowledged manually?
     #
     # @return [Array] A triple of delivery info, message properties and message content
     #
@@ -575,15 +576,20 @@ module Bunny
     #   conn.start
     #   ch   = conn.create_channel
     #   # here we assume the queue already exists and has messages
-    #   delivery_info, properties, payload = ch.basic_get("bunny.examples.queue1", :ack => true)
+    #   delivery_info, properties, payload = ch.basic_get("bunny.examples.queue1", :manual_ack => true)
     #   ch.acknowledge(delivery_info.delivery_tag)
     # @see Bunny::Queue#pop
     # @see http://rubybunny.info/articles/queues.html Queues and Consumers guide
     # @api public
-    def basic_get(queue, opts = {:ack => true})
+    def basic_get(queue, opts = {:manual_ack => true})
       raise_if_no_longer_open!
 
-      @connection.send_frame(AMQ::Protocol::Basic::Get.encode(@id, queue, !(opts[:ack])))
+      unless opts[:ack].nil?
+        warn "[DEPRECATION] `:ack` is deprecated.  Please use `:manual_ack` instead."
+        opts[:manual_ack] = opts[:ack]
+      end
+
+      @connection.send_frame(AMQ::Protocol::Basic::Get.encode(@id, queue, !(opts[:manual_ack])))
       # this is a workaround for the edge case when basic_get is called in a tight loop
       # and network goes down we need to perform recovery. The problem is, basic_get will
       # keep blocking the thread that calls it without clear way to constantly unblock it
@@ -675,7 +681,7 @@ module Bunny
     #
     #   ch    = conn.create_channel
     #   # we assume the queue exists and has messages
-    #   delivery_info, properties, payload = ch.basic_get("bunny.examples.queue3", :ack => true)
+    #   delivery_info, properties, payload = ch.basic_get("bunny.examples.queue3", :manual_ack => true)
     #   ch.basic_reject(delivery_info.delivery_tag, true)
     #
     # @see Bunny::Channel#basic_nack
@@ -710,7 +716,7 @@ module Bunny
     #
     #   ch    = conn.create_channel
     #   # we assume the queue exists and has messages
-    #   delivery_info, properties, payload = ch.basic_get("bunny.examples.queue3", :ack => true)
+    #   delivery_info, properties, payload = ch.basic_get("bunny.examples.queue3", :manual_ack => true)
     #   ch.basic_ack(delivery_info.delivery_tag)
     #
     # @example Ack multiple messages fetched via basic.get
@@ -719,9 +725,9 @@ module Bunny
     #
     #   ch    = conn.create_channel
     #   # we assume the queue exists and has messages
-    #   _, _, payload1 = ch.basic_get("bunny.examples.queue3", :ack => true)
-    #   _, _, payload2 = ch.basic_get("bunny.examples.queue3", :ack => true)
-    #   delivery_info, properties, payload3 = ch.basic_get("bunny.examples.queue3", :ack => true)
+    #   _, _, payload1 = ch.basic_get("bunny.examples.queue3", :manual_ack => true)
+    #   _, _, payload2 = ch.basic_get("bunny.examples.queue3", :manual_ack => true)
+    #   delivery_info, properties, payload3 = ch.basic_get("bunny.examples.queue3", :manual_ack => true)
     #   # ack all fetched messages up to payload3
     #   ch.basic_ack(delivery_info.delivery_tag, true)
     #
@@ -769,7 +775,7 @@ module Bunny
     #
     #   ch    = conn.create_channel
     #   # we assume the queue exists and has messages
-    #   delivery_info, properties, payload = ch.basic_get("bunny.examples.queue3", :ack => true)
+    #   delivery_info, properties, payload = ch.basic_get("bunny.examples.queue3", :manual_ack => true)
     #   ch.basic_nack(delivery_info.delivery_tag, false, true)
     #
     #
@@ -779,9 +785,9 @@ module Bunny
     #
     #   ch    = conn.create_channel
     #   # we assume the queue exists and has messages
-    #   _, _, payload1 = ch.basic_get("bunny.examples.queue3", :ack => true)
-    #   _, _, payload2 = ch.basic_get("bunny.examples.queue3", :ack => true)
-    #   delivery_info, properties, payload3 = ch.basic_get("bunny.examples.queue3", :ack => true)
+    #   _, _, payload1 = ch.basic_get("bunny.examples.queue3", :manual_ack => true)
+    #   _, _, payload2 = ch.basic_get("bunny.examples.queue3", :manual_ack => true)
+    #   delivery_info, properties, payload3 = ch.basic_get("bunny.examples.queue3", :manual_ack => true)
     #   # requeue all fetched messages up to payload3
     #   ch.basic_nack(delivery_info.delivery_tag, true, true)
     #

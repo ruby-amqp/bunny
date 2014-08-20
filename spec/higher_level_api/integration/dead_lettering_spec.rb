@@ -22,7 +22,7 @@ describe "A message" do
     x.publish("")
     sleep 0.2
 
-    delivery_info, _, _ = q.pop(:ack => true)
+    delivery_info, _, _ = q.pop(:manual_ack => true)
     dlq.message_count.should be_zero
     ch.nack(delivery_info.delivery_tag)
 

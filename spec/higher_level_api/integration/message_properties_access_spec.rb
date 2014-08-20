@@ -21,7 +21,7 @@ describe Bunny::Queue, "#subscribe" do
     t = Thread.new do
       ch = connection.create_channel
       q = ch.queue(queue_name, :auto_delete => true, :durable => false)
-      q.subscribe(:exclusive => true, :ack => false) do |delivery_info, properties, payload|
+      q.subscribe(:exclusive => true, :manual_ack => false) do |delivery_info, properties, payload|
         metadata = properties
         envelope = delivery_info
       end

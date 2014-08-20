@@ -25,7 +25,7 @@ describe Bunny::Exchange do
     sleep 0.5
 
     queue.message_count.should be == 1
-    queue.pop(:ack => true)
+    queue.pop(:manual_ack => true)
 
     destination.unbind(source)
     source.publish("")
