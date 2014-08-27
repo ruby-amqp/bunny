@@ -152,6 +152,7 @@ module Bunny
     #
     # @param [Hash] opts Options
     #
+    # @option opts [Boolean] :ack (false) [DEPRECATED] Use :manual_ack instead
     # @option opts [Boolean] :manual_ack (false) Will this consumer use manual acknowledgements?
     # @option opts [Boolean] :exclusive (false) Should this consumer be exclusive for this queue?
     # @option opts [Boolean] :block (false) Should the call block calling thread?
@@ -163,17 +164,22 @@ module Bunny
     # @api public
     def subscribe(opts = {
                     :consumer_tag    => @channel.generate_consumer_tag,
-                    :ack             => false,
+                    :manual_ack      => false,
                     :exclusive       => false,
                     :block           => false,
                     :on_cancellation => nil
                   }, &block)
 
+      unless opts[:ack].nil?
+        warn "[DEPRECATION] `:ack` is deprecated.  Please use `:manual_ack` instead."
+        opts[:manual_ack] = opts[:ack]
+      end
+
       ctag       = opts.fetch(:consumer_tag, @channel.generate_consumer_tag)
       consumer   = Consumer.new(@channel,
                                 self,
                                 ctag,
-                                !(opts[:ack] || opts[:manual_ack]),
+                                !opts[:manual_ack],
                                 opts[:exclusive],
                                 opts[:arguments])
 
@@ -208,7 +214,8 @@ module Bunny
 
     # @param [Hash] opts Options
     #
-    # @option opts [Boolean] :ack (false) Will the message be acknowledged manually?
+    # @option opts [Boolean] :ack (false) [DEPRECATED] Use :manual_ack instead
+    # @option opts [Boolean] :manual_ack (false) Will the message be acknowledged manually?
     #
     # @return [Array] Triple of delivery info, message properties and message content.
     #                 If the queue is empty, all three will be nils.
@@ -229,7 +236,12 @@ module Bunny
     #
     #   puts "This is the message: " + payload + "\n\n"
     #   conn.close
-    def pop(opts = {:ack => false}, &block)
+    def pop(opts = {:manual_ack => false}, &block)
+      unless opts[:ack].nil?
+        warn "[DEPRECATION] `:ack` is deprecated.  Please use `:manual_ack` instead."
+        opts[:manual_ack] = opts[:ack]
+      end
+
       get_response, properties, content = @channel.basic_get(@name, opts)
 
       if block

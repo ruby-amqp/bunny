@@ -27,7 +27,7 @@ unless ENV["CI"]
         ch2 = connection1.create_channel
 
         q   = ch1.queue("", :exclusive => true)
-        q.subscribe(:ack => false, :block => false) do |delivery_info, properties, payload|
+        q.subscribe(:manual_ack => false, :block => false) do |delivery_info, properties, payload|
           delivered_data << payload
         end
         sleep 0.5
@@ -60,7 +60,7 @@ unless ENV["CI"]
         sleep 0.7
         q.message_count.should == 3
 
-        q.subscribe(:ack => false, :block => false) do |delivery_info, properties, payload|
+        q.subscribe(:manual_ack => false, :block => false) do |delivery_info, properties, payload|
           delivered_data << payload
         end
         sleep 0.7

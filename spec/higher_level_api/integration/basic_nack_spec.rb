@@ -23,7 +23,7 @@ describe Bunny::Channel, "#nack" do
       x.publish("bunneth", :routing_key => q.name)
       sleep(0.5)
       q.message_count.should == 1
-      delivery_info, _, content = q.pop(:ack => true)
+      delivery_info, _, content = q.pop(:manual_ack => true)
 
       subject.nack(delivery_info.delivery_tag, false, false)
       sleep(0.5)
@@ -43,9 +43,9 @@ q = subject.queue("bunny.basic.nack.with-requeue-true-multi-true", :exclusive =>
       end
       sleep(0.5)
       q.message_count.should == 3
-      _, _, _ = q.pop(:ack => true)
-      _, _, _ = q.pop(:ack => true)
-      delivery_info, _, content = q.pop(:ack => true)
+      _, _, _ = q.pop(:manual_ack => true)
+      _, _, _ = q.pop(:manual_ack => true)
+      delivery_info, _, content = q.pop(:manual_ack => true)
 
       subject.nack(delivery_info.delivery_tag, true, true)
       sleep(0.5)
@@ -64,7 +64,7 @@ q = subject.queue("bunny.basic.nack.with-requeue-true-multi-true", :exclusive =>
       x.publish("bunneth", :routing_key => q.name)
       sleep(0.25)
       q.message_count.should == 1
-      _, _, content = q.pop(:ack => true)
+      _, _, content = q.pop(:manual_ack => true)
 
       subject.on_error do |ch, channel_close|
         @channel_close = channel_close

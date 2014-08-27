@@ -18,7 +18,7 @@ q    = ch.queue("", :exclusive => true)
 end
 
 20.times do
-  delivery_info, _, _ = q.pop(:ack => true)
+  delivery_info, _, _ = q.pop(:manual_ack => true)
 
   if delivery_info.delivery_tag == 20
     # requeue them all at once with basic.nack

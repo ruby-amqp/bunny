@@ -44,7 +44,7 @@ describe Bunny::Queue, "#subscribe_with" do
       end
       t.abort_on_exception = true
 
-      q1.subscribe_with(ec, :ack => true)
+      q1.subscribe_with(ec, :manual_ack => true)
       sleep 2
       ch1.close
 

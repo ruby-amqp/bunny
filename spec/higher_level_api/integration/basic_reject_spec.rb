@@ -20,7 +20,7 @@ describe Bunny::Channel, "#reject" do
       x.publish("bunneth", :routing_key => q.name)
       sleep(0.5)
       q.message_count.should == 1
-      delivery_info, _, _ = q.pop(:ack => true)
+      delivery_info, _, _ = q.pop(:manual_ack => true)
 
       ch.reject(delivery_info.delivery_tag, true)
       sleep(0.5)
@@ -39,7 +39,7 @@ describe Bunny::Channel, "#reject" do
       x.publish("bunneth", :routing_key => q.name)
       sleep(0.5)
       q.message_count.should == 1
-      delivery_info, _, _ = q.pop(:ack => true)
+      delivery_info, _, _ = q.pop(:manual_ack => true)
 
       ch.reject(delivery_info.delivery_tag, false)
       sleep(0.5)
@@ -59,7 +59,7 @@ describe Bunny::Channel, "#reject" do
       x.publish("bunneth", :routing_key => q.name)
       sleep(0.25)
       q.message_count.should == 1
-      _, _, content = q.pop(:ack => true)
+      _, _, content = q.pop(:manual_ack => true)
 
       ch.on_error do |ch, channel_close|
         @channel_close = channel_close
