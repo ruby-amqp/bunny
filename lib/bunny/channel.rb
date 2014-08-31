@@ -37,11 +37,10 @@ module Bunny
   # Channels can be opened either via `Bunny::Session#create_channel` (sufficient in the majority
   # of cases) or by instantiating `Bunny::Channel` directly:
   #
-  # @example Using {Bunny::Session#create_channel}:
-  #   conn = Bunny.new
-  #   conn.start
+  #     conn = Bunny.new
+  #     conn.start
   #
-  #   ch   = conn.create_channel
+  #     ch   = conn.create_channel
   #
   # This will automatically allocate a channel id.
   #
@@ -51,10 +50,8 @@ module Bunny
   # closed, too. Closed channels can no longer be used. Attempts to use them will raise
   # {Bunny::ChannelAlreadyClosed}.
   #
-  # @example
-  #
-  #   ch  = conn.create_channel
-  #   ch.close
+  #     ch = conn.create_channel
+  #     ch.close
   #
   # ## Higher-level API
   #
