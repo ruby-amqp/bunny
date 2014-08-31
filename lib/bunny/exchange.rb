@@ -33,12 +33,12 @@ module Bunny
     attr_accessor :opts
 
 
-    # The default exchange. Default exchange is a direct exchange that is predefined.
-    # It cannot be removed. Every queue is bind to this (direct) exchange by default with
-    # the following routing semantics: messages will be routed to the queue withe same
-    # same name as message's routing key. In other words, if a message is published with
-    # a routing key of "weather.usa.ca.sandiego" and there is a queue Q with this name,
-    # that message will be routed to Q.
+    # The default exchange. This exchange is a direct exchange that is predefined by the broker
+    # and that cannot be removed. Every queue is bound to this exchange by default with
+    # the following routing semantics: messages will be routed to the queue with the same
+    # name as the message's routing key. In other words, if a message is published with
+    # a routing key of "weather.usa.ca.sandiego" and there is a queue with this name,
+    # the message will be routed to the queue.
     #
     # @param [Bunny::Channel] channel_or_connection Channel to use. {Bunny::Session} instances
     #                                               are only supported for backwards compatibility.
@@ -46,11 +46,11 @@ module Bunny
     # @example Publishing a messages to the tasks queue
     #   channel     = Bunny::Channel.new(connection)
     #   tasks_queue = channel.queue("tasks")
-    #   Bunny::Exchange.default(channel).publish("make clean", routing_key => "tasks")
+    #   Bunny::Exchange.default(channel).publish("make clean", :routing_key => "tasks")
     #
     # @see http://rubybunny.info/articles/exchanges.html Exchanges and Publishing guide
     # @see http://www.rabbitmq.com/resources/specs/amqp0-9-1.pdf AMQP 0.9.1 specification (Section 2.1.2.4)
-    # @note Do not confuse default exchange with amq.direct: amq.direct is a pre-defined direct
+    # @note Do not confuse the default exchange with amq.direct: amq.direct is a pre-defined direct
     #       exchange that doesn't have any special routing semantics.
     # @return [Exchange] An instance that corresponds to the default exchange (of type direct).
     # @api public
