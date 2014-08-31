@@ -1,5 +1,17 @@
 ## Changes between Bunny 1.4.0 and 1.5.0
 
+### Convenience Method for Temporary (Server-named, Exclusive) Queue Declaration
+
+`Bunny::Channel#temporary_queue` is a convenience method that declares a new
+server-named exclusive queue:
+
+``` ruby
+q = ch.temporary_queue
+```
+
+Contributed by Daniel Schierbeck (Zendesk).
+
+
 ### Host Lists
 
 It is now possible to pass the `:hosts` option to `Bunny.new`/`Bunny::Session#initialize`.
