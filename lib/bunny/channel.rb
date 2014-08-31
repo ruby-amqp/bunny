@@ -1421,6 +1421,18 @@ module Bunny
       "#{name}-#{Time.now.to_i * 1000}-#{Kernel.rand(999_999_999_999)}"
     end
 
+    # Waits for all queue subscribers on this channel to finish. This is
+    # useful if you wish to run several concurrent subscribers.
+    #
+    #     channel.queue("pings").subscribe { ... }
+    #     channel.queue("pongs").subscribe { ... }
+    #     channel.wait_for_subscribers
+    #
+    # @api public
+    def wait_for_subscribers
+      worker_pool.join
+    end
+
     # @endgroup
 
 
