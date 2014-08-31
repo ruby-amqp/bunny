@@ -404,6 +404,16 @@ module Bunny
       register_queue(q)
     end
 
+    # Declares a new server-named queue that is automatically deleted when the
+    # connection is closed.
+    #
+    # @return [Bunny::Queue] Queue that was declared
+    # @see #queue
+    # @api public
+    def temporary_queue(opts = {})
+      queue("", opts.merge(:exclusive => true))
+    end
+
     # @endgroup
 
 
