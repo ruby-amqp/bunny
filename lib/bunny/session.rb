@@ -268,7 +268,7 @@ module Bunny
         @reader_loop = nil
         self.start_reader_loop if threaded?
 
-        @default_channel = self.create_channel
+        @default_channel = self.create_channel unless @default_channel
       rescue Exception => e
         @status_mutex.synchronize { @status = :not_connected }
         raise e
@@ -673,10 +673,7 @@ module Bunny
 
     # @private
     def recover_channels
-      # default channel is reopened right after connection
-      # negotiation is completed, so make sure we do not try to open
-      # it twice. MK.
-      @channels.reject { |n, ch| ch == @default_channel }.each do |n, ch|
+      @channels.each do |n, ch|
         ch.open
 
         ch.recover_from_network_failure
