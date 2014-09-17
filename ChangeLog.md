@@ -1,3 +1,13 @@
+## Changes between Bunny 1.4.0 and 1.4.1
+
+### Prevent Default Channel From Being Re-opened Twice on Recovery
+
+Bunny's default channel (a relic from the `0.7.x` days when channels were not
+even part of the API) is no longer recovered one time too many.
+
+Contributed by Carl Chatfield.
+
+
 ## Changes between Bunny 1.3.0 and 1.4.0
 
 ### Channel#wait_for_confirms Returns Immediately If All Publishes Confirmed
