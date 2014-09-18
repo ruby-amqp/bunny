@@ -7,9 +7,6 @@ module Bunny
   # @see http://rubybunny.info/articles/extensions.html RabbitMQ Extensions guide
   class Exchange
 
-    include Bunny::Compatibility
-
-
     #
     # API
     #
@@ -58,11 +55,10 @@ module Bunny
       self.new(channel_or_connection, :direct, AMQ::Protocol::EMPTY_STRING, :no_declare => true)
     end
 
-    # @param [Bunny::Channel] channel_or_connection Channel this exchange will use. {Bunny::Session} instances are supported only for
-    #                                               backwards compatibility with 0.8.
-    # @param [Symbol,String] type                   Exchange type
-    # @param [String] name                          Exchange name
-    # @param [Hash] opts                            Exchange properties
+    # @param [Bunny::Channel] channel Channel this exchange will use.
+    # @param [Symbol,String] type     Exchange type
+    # @param [String] name            Exchange name
+    # @param [Hash] opts              Exchange properties
     #
     # @option opts [Boolean] :durable (false)      Should this exchange be durable?
     # @option opts [Boolean] :auto_delete (false)  Should this exchange be automatically deleted when it is no longer used?
@@ -75,10 +71,8 @@ module Bunny
     # @see http://rubybunny.info/articles/exchanges.html Exchanges and Publishing guide
     # @see http://rubybunny.info/articles/extensions.html RabbitMQ Extensions guide
     # @api public
-    def initialize(channel_or_connection, type, name, opts = {})
-      # old Bunny versions pass a connection here. In that case,
-      # we just use default channel from it. MK.
-      @channel          = channel_from(channel_or_connection)
+    def initialize(channel, type, name, opts = {})
+      @channel          = channel
       @name             = name
       @type             = type
       @options          = self.class.add_default_options(name, opts)

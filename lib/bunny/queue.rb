@@ -8,9 +8,6 @@ module Bunny
   # @see http://rubybunny.info/articles/extensions.html RabbitMQ Extensions guide
   class Queue
 
-    include Bunny::Compatibility
-
-
     #
     # API
     #
@@ -22,8 +19,7 @@ module Bunny
     # @return [Hash] Options this queue was created with
     attr_reader :options
 
-    # @param [Bunny::Channel] channel_or_connection Channel this queue will use. {Bunny::Session} instances are supported only for
-    #                                               backwards compatibility with 0.8.
+    # @param [Bunny::Channel] channel Channel this queue will use.
     # @param [String] name                          Queue name. Pass an empty string to make RabbitMQ generate a unique one.
     # @param [Hash] opts                            Queue properties
     #
@@ -36,10 +32,10 @@ module Bunny
     # @see http://rubybunny.info/articles/queues.html Queues and Consumers guide
     # @see http://rubybunny.info/articles/extensions.html RabbitMQ Extensions guide
     # @api public
-    def initialize(channel_or_connection, name = AMQ::Protocol::EMPTY_STRING, opts = {})
+    def initialize(channel, name = AMQ::Protocol::EMPTY_STRING, opts = {})
       # old Bunny versions pass a connection here. In that case,
       # we just use default channel from it. MK.
-      @channel          = channel_from(channel_or_connection)
+      @channel          = channel
       @name             = name
       @options          = self.class.add_default_options(name, opts)
       @consumers        = Hash.new

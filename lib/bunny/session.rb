@@ -84,7 +84,6 @@ module Bunny
     attr_reader :transport
     attr_reader :status, :host, :port, :heartbeat, :user, :pass, :vhost, :frame_max, :channel_max, :threaded
     attr_reader :server_capabilities, :server_properties, :server_authentication_mechanisms, :server_locales
-    attr_reader :default_channel
     attr_reader :channel_id_allocator
     # Authentication mechanism, e.g. "PLAIN" or "EXTERNAL"
     # @return [String]
@@ -267,8 +266,6 @@ module Bunny
 
         @reader_loop = nil
         self.start_reader_loop if threaded?
-
-        @default_channel = self.create_channel
       rescue Exception => e
         @status_mutex.synchronize { @status = :not_connected }
         raise e
@@ -363,40 +360,6 @@ module Bunny
     # @return [Boolean] true if this connection has automatic recovery from network failure enabled
     def automatically_recover?
       @automatically_recover
-    end
-
-    #
-    # Backwards compatibility
-    #
-
-    # @private
-    def queue(*args)
-      @default_channel.queue(*args)
-    end
-
-    # @private
-    def direct(*args)
-      @default_channel.direct(*args)
-    end
-
-    # @private
-    def fanout(*args)
-      @default_channel.fanout(*args)
-    end
-
-    # @private
-    def topic(*args)
-      @default_channel.topic(*args)
-    end
-
-    # @private
-    def headers(*args)
-      @default_channel.headers(*args)
-    end
-
-    # @private
-    def exchange(*args)
-      @default_channel.exchange(*args)
     end
 
     # Defines a callback that will be executed when RabbitMQ blocks the connection
@@ -676,7 +639,7 @@ module Bunny
       # default channel is reopened right after connection
       # negotiation is completed, so make sure we do not try to open
       # it twice. MK.
-      @channels.reject { |n, ch| ch == @default_channel }.each do |n, ch|
+      @channels.each do |n, ch|
         ch.open
 
         ch.recover_from_network_failure
