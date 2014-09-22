@@ -1,4 +1,3 @@
-require "bunny/compatibility"
 require "bunny/get_response"
 
 module Bunny
