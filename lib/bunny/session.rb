@@ -82,7 +82,7 @@ module Bunny
 
     # @return [Bunny::Transport]
     attr_reader :transport
-    attr_reader :status, :host, :port, :heartbeat, :user, :pass, :vhost, :frame_max, :channel_max, :threaded
+    attr_reader :status, :port, :heartbeat, :user, :pass, :vhost, :frame_max, :channel_max, :threaded
     attr_reader :server_capabilities, :server_properties, :server_authentication_mechanisms, :server_locales
     attr_reader :channel_id_allocator
     # Authentication mechanism, e.g. "PLAIN" or "EXTERNAL"
@@ -112,6 +112,7 @@ module Bunny
     # @option connection_string_or_opts [String] :verify_peer (true) Whether TLS peer verification should be performed
     # @option connection_string_or_opts [Integer] :continuation_timeout (4000) Timeout for client operations that expect a response (e.g. {Bunny::Queue#get}), in milliseconds.
     # @option connection_string_or_opts [Integer] :connection_timeout (5) Timeout in seconds for connecting to the server.
+    # @option connection_string_or_opts [Proc] :hosts_shuffle_strategy A Proc that reorders a list of host strings, defaults to Array#shuffle
     #
     # @option optz [String] :auth_mechanism ("PLAIN") Authentication mechanism, PLAIN or EXTERNAL
     # @option optz [String] :locale ("PLAIN") Locale RabbitMQ should use
@@ -129,16 +130,12 @@ module Bunny
                connection_string_or_opts
              end.merge(optz)
 
-      @default_host_selection_strategy = Proc.new { |hosts|
-        if RUBY_VERSION.to_f < 1.9
-          hosts.choice
-        else
-          hosts.sample
-        end
-      }
+      @default_hosts_shuffle_strategy = Proc.new { |hosts| hosts.shuffle }
 
       @opts            = opts
-      @host            = self.hostname_from(opts)
+      @hosts           = self.hostnames_from(opts)
+      @host_index      = 0
+
       @port            = self.port_from(opts)
       @user            = self.username_from(opts)
       @pass            = self.password_from(opts)
@@ -182,6 +179,8 @@ module Bunny
       # the non-reentrant Ruby mutexes. MK.
       @transport_mutex     = @mutex_impl.new
       @status_mutex        = @mutex_impl.new
+      @host_index_mutex    = @mutex_impl.new
+
       @channels            = Hash.new
 
       @origin_thread       = Thread.current
@@ -219,6 +218,14 @@ module Bunny
       @threaded
     end
 
+    def host
+      @transport ? @transport.host : @hosts[@host_index]
+    end
+
+    def reset_host_index
+      @host_index_mutex.synchronize { @host_index = 0 }
+    end
+
     # @private
     attr_reader :mutex_impl
 
@@ -241,6 +248,7 @@ module Bunny
     # @see http://rubybunny.info/articles/connecting.html
     # @api public
     def start
+
       return self if connected?
 
       @status_mutex.synchronize { @status = :connecting }
@@ -250,25 +258,42 @@ module Bunny
       self.reset_continuations
 
       begin
-        # close existing transport if we have one,
-        # to not leak sockets
-        @transport.maybe_initialize_socket
 
-        @transport.post_initialize_socket
-        @transport.connect
+        begin
 
-        if @socket_configurator
-          @transport.configure_socket(&@socket_configurator)
+          # close existing transport if we have one,
+          # to not leak sockets
+          @transport.maybe_initialize_socket
+
+          @transport.post_initialize_socket
+          @transport.connect
+
+          if @socket_configurator
+            @transport.configure_socket(&@socket_configurator)
+          end
+
+          self.init_connection
+          self.open_connection
+
+          @reader_loop = nil
+          self.start_reader_loop if threaded?
+
+        rescue TCPConnectionFailed => e
+          self.initialize_transport
+
+          @logger.warn e.message
+          @logger.warn "Retrying connection on next host in line: #{@transport.host}:#{@transport.port}"
+
+          return self.start
+        rescue Exception
+          @status_mutex.synchronize { @status = :not_connected }
+          raise
         end
 
-        self.init_connection
-        self.open_connection
-
-        @reader_loop = nil
-        self.start_reader_loop if threaded?
-      rescue Exception => e
+      rescue HostListDepleted
+        self.reset_host_index
         @status_mutex.synchronize { @status = :not_connected }
-        raise e
+        raise TCPConnectionFailedForAllHosts
       end
 
       self
@@ -619,6 +644,8 @@ module Bunny
       begin
         sleep @network_recovery_interval
         @logger.debug "About to start connection recovery..."
+
+        self.reset_host_index # since we are starting a fresh try.
         self.initialize_transport
         self.start
 
@@ -627,7 +654,7 @@ module Bunny
 
           recover_channels
         end
-      rescue TCPConnectionFailed, AMQ::Protocol::EmptyResponseError => e
+      rescue TCPConnectionFailedForAllHosts, TCPConnectionFailed, AMQ::Protocol::EmptyResponseError => e
         @logger.warn "TCP connection failed, reconnecting in #{@network_recovery_interval} seconds"
         sleep @network_recovery_interval
         retry if recoverable_network_failure?(e)
@@ -702,15 +729,10 @@ module Bunny
     end
 
     # @private
-    def hostname_from(options)
-      pick_host(options.fetch(:hosts, []), options) || options[:host] || options[:hostname] || DEFAULT_HOST
-    end
-
-    # @private
-    def pick_host(hosts, options)
-      if fn = options.fetch(:host_selection_strategy, @default_host_selection_strategy)
-        fn.call(hosts)
-      end
+    def hostnames_from(options)
+      options.fetch(:hosts_shuffle_strategy, @default_hosts_shuffle_strategy).call(
+        [ options[:hosts] || options[:host] || options[:hostname] || DEFAULT_HOST ].flatten
+      )
     end
 
     # @private
@@ -906,7 +928,7 @@ module Bunny
     # @return [String]
     # @api public
     def to_s
-      "#<#{self.class.name}:#{object_id} #{@user}@#{@host}:#{@port}, vhost=#{@vhost}>"
+      "#<#{self.class.name}:#{object_id} #{@user}@#{host}:#{@port}, vhost=#{@vhost}, hosts=[#{@hosts.join(',')}]>"
     end
 
     protected
@@ -1059,7 +1081,12 @@ module Bunny
 
     # @private
     def initialize_transport
-      @transport = Transport.new(self, @host, @port, @opts.merge(:session_thread => @origin_thread))
+      if host = @hosts[ @host_index ]
+        @host_index_mutex.synchronize { @host_index += 1 }
+        @transport = Transport.new(self, host, @port, @opts.merge(:session_thread => @origin_thread))
+      else
+        raise HostListDepleted
+      end
     end
 
     # @private
