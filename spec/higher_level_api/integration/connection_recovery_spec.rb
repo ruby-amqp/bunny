@@ -8,7 +8,11 @@ unless ENV["CI"]
 
     def close_all_connections!
       http_client.list_connections.each do |conn_info|
-        http_client.close_connection(conn_info.name)
+        begin
+          http_client.close_connection(conn_info.name)
+        rescue Bunny::ConnectionForced
+          # This is not a problem, but the specs intermittently believe it is.
+        end
       end
     end
 
