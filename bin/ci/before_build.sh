@@ -1,6 +1,7 @@
 #!/bin/sh
 
-${RABBITMQCTL:="sudo rabbitmqctl"}
+${RABBITMQ_NODENAME:="rabbit"}
+${RABBITMQCTL:="sudo rabbitmqctl -n $RABBITMQ_NODENAME"}
 ${RABBITMQ_PLUGINS:="sudo rabbitmq-plugins"}
 
 # guest:guest has full access to /

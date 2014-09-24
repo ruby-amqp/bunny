@@ -191,6 +191,26 @@ try to explain what behavior you expected and why. Bonus points for
 contributing failing test cases.
 
 
+### Running the specs
+
+The cleanest way to get the specs running is by starting a clean rabbitmq server
+node on your machine specifically for the bunny specs.
+
+Make sure you have a recent version of RabbitMQ (> 3.2) and run the following command
+from the base directory of the gem:
+
+`RABBITMQ_NODENAME=bunny RABBITMQ_CONFIG_FILE=./spec/config/rabbitmq RABBITMQ_ENABLED_PLUGINS_FILE=./spec/config/enabled_plugins rabbitmq-server`
+
+> The specs use the Rabbitmq management plugin and require an SSL port to be available. The config files in the spec/config directory enable these. Please note that this config uses verify_none because the certificates are expired.
+
+Next up you'll need to prepare your node for the specs (Only once):
+
+`RABBITMQ_NODENAME=bunny ./bin/ci/before_build.sh`
+
+And then run the specs:
+
+`RABBITMQ_NODENAME=bunny rspec`
+
 ## Other Ruby RabbitMQ Clients
 
 Other widely used Ruby RabbitMQ clients are [March

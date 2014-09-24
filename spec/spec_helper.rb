@@ -14,8 +14,6 @@ require "rabbitmq/http/client"
 require "amq/protocol/version"
 puts "Using Ruby #{RUBY_VERSION}, amq-protocol #{AMQ::Protocol::VERSION}"
 
-
-
 #
 # Ruby version-specific
 #
@@ -29,21 +27,22 @@ when "1.8.6" then
   raise "Ruby 1.8.6 is not supported. Sorry, pal. Time to move on beyond One True Ruby. Yes, time flies by."
 end
 
-
-
 module RabbitMQ
   module Control
+
+    RABBITMQ_NODENAME = ENV['RABBITMQ_NODENAME'] || 'rabbit'
+
     def rabbitmq_pid
-      $1.to_i if `rabbitmqctl status` =~ /\{pid,(\d+)\}/
+      $1.to_i if `rabbitmqctl -n #{RABBITMQ_NODENAME} status` =~ /\{pid,(\d+)\}/
     end
 
     def start_rabbitmq(delay = 1.0)
       # this is Homebrew-specific :(
-      `rabbitmq-server > /dev/null 2>&1 &`; sleep(delay)
+      `RABBITMQ_NODENAME=#{RABBITMQ_NODENAME} rabbitmq-server > /dev/null 2>&1 &`; sleep(delay)
     end
 
     def stop_rabbitmq(pid = rabbitmq_pid, delay = 1.0)
-      `rabbitmqctl stop`; sleep(delay)
+      `rabbitmqctl -n #{RABBITMQ_NODENAME} stop`; sleep(delay)
     end
 
     def kill_rabbitmq(pid = rabbitmq_pid, delay = 1.0)
