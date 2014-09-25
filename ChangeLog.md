@@ -18,6 +18,9 @@ It is now possible to pass the `:hosts` option to `Bunny.new`/`Bunny::Session#in
 When connection to RabbitMQ (including during connection recovery), a random host
 will be chosen from the list.
 
+Connection shuffling and robustness improvements are contributed by
+Andre Foeken (Nedap).
+
 
 ## Changes between Bunny 1.3.0 and 1.4.0
 
