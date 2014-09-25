@@ -8,7 +8,11 @@ unless ENV["CI"]
 
     def close_all_connections!
       http_client.list_connections.each do |conn_info|
-        http_client.close_connection(conn_info.name)
+        begin
+          http_client.close_connection(conn_info.name)
+        rescue Bunny::ConnectionForced
+          # This is not a problem, but the specs intermittently believe it is.
+        end
       end
     end
 
@@ -25,7 +29,21 @@ unless ENV["CI"]
       end
     end
 
-    def with_open_multi_host(c = Bunny.new(:hosts => ["127.0.0.1", "localhost"], :network_recovery_interval => 0.2, :recover_from_connection_close => true), &block)
+    def with_open_multi_host( c = Bunny.new( :hosts => ["127.0.0.1", "localhost"],
+                                             :network_recovery_interval => 0.2,
+                                             :recover_from_connection_close => true), &block)
+      begin
+        c.start
+        block.call(c)
+      ensure
+        c.close
+      end
+    end
+
+    def with_open_multi_broken_host( c = Bunny.new( :hosts => ["broken", "127.0.0.1", "localhost"],
+                                             :hosts_shuffle_strategy => Proc.new { |hosts| hosts }, # We do not shuffle for these tests so we always hit the broken host
+                                             :network_recovery_interval => 0.2,
+                                             :recover_from_connection_close => true), &block)
       begin
         c.start
         block.call(c)
@@ -86,6 +104,17 @@ unless ENV["CI"]
       end
     end
 
+    it "reconnects after grace period (with multiple hosts, including a broken one)" do
+      with_open_multi_broken_host do |c|
+        close_all_connections!
+        sleep 0.1
+        c.should_not be_open
+
+        wait_for_recovery
+        c.should be_open
+      end
+    end
+
     it "recovers channels" do
       with_open do |c|
         ch1 = c.create_channel
@@ -102,6 +131,20 @@ unless ENV["CI"]
 
     it "recovers channels (with multiple hosts)" do
       with_open_multi_host do |c|
+        ch1 = c.create_channel
+        ch2 = c.create_channel
+        close_all_connections!
+        sleep 0.1
+        c.should_not be_open
+
+        wait_for_recovery
+        ch1.should be_open
+        ch2.should be_open
+      end
+    end
+
+    it "recovers channels (with multiple hosts, including a broken one)" do
+      with_open_multi_broken_host do |c|
         ch1 = c.create_channel
         ch2 = c.create_channel
         close_all_connections!
