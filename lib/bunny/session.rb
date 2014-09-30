@@ -285,7 +285,7 @@ module Bunny
           @logger.warn "Retrying connection on next host in line: #{@transport.host}:#{@transport.port}"
 
           return self.start
-        rescue Exception
+        rescue
           @status_mutex.synchronize { @status = :not_connected }
           raise
         end
@@ -961,13 +961,14 @@ module Bunny
                 fr
                 # frame timeout means the broker has closed the TCP connection, which it
                 # does per 0.9.1 spec.
-              rescue Errno::ECONNRESET, ClientTimeout, AMQ::Protocol::EmptyResponseError, EOFError, IOError => e
+              rescue
                 nil
               end
       if frame.nil?
-        @state = :closed
-        @logger.error "RabbitMQ closed TCP connection before AMQP 0.9.1 connection was finalized. Most likely this means authentication failure."
-        raise Bunny::PossibleAuthenticationFailureError.new(self.user, self.vhost, self.password.size)
+        raise TCPConnectionFailed.new('An empty frame while opening the connection')
+        # @state = :closed
+        # @logger.error "RabbitMQ closed TCP connection before AMQP 0.9.1 connection was finalized. Most likely this means authentication failure."
+        # raise Bunny::PossibleAuthenticationFailureError.new(self.user, self.vhost, self.password.size)
       end
 
       response = frame.decode_payload
@@ -1011,13 +1012,14 @@ module Bunny
                  fr
                  # frame timeout means the broker has closed the TCP connection, which it
                  # does per 0.9.1 spec.
-               rescue Errno::ECONNRESET, ClientTimeout, AMQ::Protocol::EmptyResponseError, EOFError => e
+               rescue
                  nil
                end
       if frame2.nil?
-        @state = :closed
-        @logger.warn "RabbitMQ closed TCP connection before AMQP 0.9.1 connection was finalized. Most likely this means authentication failure."
-        raise Bunny::PossibleAuthenticationFailureError.new(self.user, self.vhost, self.password.size)
+        raise TCPConnectionFailed.new('An empty frame while opening the connection')
+        # @state = :closed
+        # @logger.warn "RabbitMQ closed TCP connection before AMQP 0.9.1 connection was finalized. Most likely this means authentication failure."
+        # raise Bunny::PossibleAuthenticationFailureError.new(self.user, self.vhost, self.password.size)
       end
       connection_open_ok = frame2.decode_payload
 

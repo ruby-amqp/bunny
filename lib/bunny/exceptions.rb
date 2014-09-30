@@ -65,7 +65,7 @@ module Bunny
   class TCPConnectionFailed < Exception
     attr_reader :hostname, :port
 
-    def initialize(e, hostname, port)
+    def initialize(e, hostname=nil, port=nil)
       m = case e
           when String then
             e
