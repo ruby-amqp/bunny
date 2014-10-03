@@ -196,7 +196,7 @@ module Bunny
 
       @recoveries_counter = Bunny::Concurrent::AtomicFixnum.new(0)
       @uncaught_exception_handler = Proc.new do |e, consumer|
-        @logger.error "Uncaught exception from consumer #{consumer.to_s}: #{e.message}"
+        @logger.error "Uncaught exception from consumer #{consumer.to_s}: #{e.inspect} @ #{e.backtrace[0]}"
       end
     end
 
