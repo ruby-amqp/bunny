@@ -1,5 +1,13 @@
 ## Changes between Bunny 1.4.0 and 1.5.0
 
+### Improved Uncaught Exception Handler
+
+Uncaught exception handler now provides more information about the exception,
+including its caller (one more stack trace line).
+
+Contributed by Carl Hörberg (CloudAMQP).
+
+
 ### Convenience Method for Temporary (Server-named, Exclusive) Queue Declaration
 
 `Bunny::Channel#temporary_queue` is a convenience method that declares a new
@@ -11,6 +19,10 @@ q = ch.temporary_queue
 
 Contributed by Daniel Schierbeck (Zendesk).
 
+### Recovery Reliability Improvements
+
+Automatic connection recovery robustness improvements.
+Contributed by Andre Foeken (Nedap).
 
 ### Host Lists
 
@@ -18,8 +30,9 @@ It is now possible to pass the `:hosts` option to `Bunny.new`/`Bunny::Session#in
 When connection to RabbitMQ (including during connection recovery), a random host
 will be chosen from the list.
 
-Connection shuffling and robustness improvements are contributed by
-Andre Foeken (Nedap).
+Connection shuffling and robustness improvements.
+
+Contributed by Andre Foeken (Nedap).
 
 
 ## Changes between Bunny 1.3.0 and 1.4.0
