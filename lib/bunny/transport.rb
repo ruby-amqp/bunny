@@ -401,13 +401,23 @@ module Bunny
     end
 
     def initialize_tls_certificate_store(certs)
-      certs = certs.select { |path| File.readable? path }
-      @logger.debug "Using CA certificates at #{certs.join(', ')}"
+      cert_files = []
+      cert_inlines = []
+      certs.each do |cert|
+        if File.readable? cert
+          cert_files.push(cert)
+        else
+          cert_inlines.push(cert)
+        end
+      end
+      @logger.debug "Using CA certificates at #{cert_files.join(', ')}"
+      @logger.debug "Using #{cert_inlines.count} inline ca_certificates"
       if certs.empty?
         @logger.error "No CA certificates found, add one with :tls_ca_certificates"
       end
       OpenSSL::X509::Store.new.tap do |store|
-        certs.each { |path| store.add_file(path) }
+        cert_files.each { |path| store.add_file(path) }
+        cert_inlines.each { |cert| store.add_cert(OpenSSL::X509::Certificate.new(cert)) }
       end
     end
 
