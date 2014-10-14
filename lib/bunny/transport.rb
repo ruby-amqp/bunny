@@ -296,7 +296,7 @@ module Bunny
 
 
     def inline_client_certificate_from(opts)
-      opts[:tls_certificate] || opts[:ssl_cert_string]
+      opts[:tls_certificate] || opts[:ssl_cert_string] || opts[:tls_cert]
     end
 
     def inline_client_key_from(opts)
