@@ -75,7 +75,7 @@ module Bunny
           begin
             count = self.write_nonblock(data)
           rescue OpenSSL::SSL::SSLError => e
-            if e.message == "read would block"
+            if e.message == "write would block"
               if IO.select([], [self], nil, timeout)
                 retry
               else
