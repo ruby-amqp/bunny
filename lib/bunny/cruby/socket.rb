@@ -64,20 +64,28 @@ module Bunny
     # @param [String] data Data to write
     #
     # @api public
-    def write_nonblock_fully(data)
+    def write_nonblock_fully(data, timeout = nil)
       return nil if @__bunny_socket_eof_flag__
 
-      begin
-        while !data.empty?
-          written = self.write_nonblock(data)
-          data.slice!(0, written)
+      length = data.bytesize
+      total_count = 0
+      count = 0
+      loop do
+        begin
+          count = self.write_nonblock(data)
+        rescue Errno::EWOULDBLOCK, Errno::EAGAIN
+          if IO.select([], [self], nil, timeout)
+            retry
+          else
+            raise Timeout::Error, "IO timeout when writing to socket"
+          end
         end
-      rescue Errno::EWOULDBLOCK, Errno::EAGAIN
-        IO.select([], [self])
-        retry
+
+        total_count += count
+        return total_count if total_count >= length
+        data = data.byteslice(count..-1)
       end
 
-      data.bytesize
     end
   end
 end

@@ -94,26 +94,20 @@ module Bunny
       block.call(@tls_context) if @tls_context
     end
 
-    # Writes data to the socket. If read/write timeout was specified, Bunny::ClientTimeout will be raised
-    # if the operation times out.
+    # Writes data to the socket. If read/write timeout was specified the operation will return after that
+    # amount of time has elapsed waiting for the socket.
     #
     # @raise [ClientTimeout]
     def write(data)
+      return write_without_timeout(data) unless @read_write_timeout
+
       begin
-        if @read_write_timeout
-          Bunny::Timeout.timeout(@read_write_timeout, Bunny::ClientTimeout) do
-            if open?
-              @writes_mutex.synchronize { @socket.write(data) }
-              @socket.flush
-            end
-          end
-        else
-          if open?
-            @writes_mutex.synchronize { @socket.write(data) }
-            @socket.flush
+        if open?
+          @writes_mutex.synchronize do
+            @socket.write_nonblock_fully(data, @read_write_timeout)
           end
         end
-      rescue SystemCallError, Bunny::ClientTimeout, Bunny::ConnectionError, IOError => e
+      rescue SystemCallError, Timeout::Error, Bunny::ConnectionError, IOError => e
         @logger.error "Got an exception when sending data: #{e.message} (#{e.class.name})"
         close
         @status = :not_connected
