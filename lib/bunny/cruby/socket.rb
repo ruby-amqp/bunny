@@ -13,6 +13,10 @@ module Bunny
     READ_RETRY_EXCEPTION_CLASSES = [Errno::EAGAIN, Errno::EWOULDBLOCK]
     READ_RETRY_EXCEPTION_CLASSES << IO::WaitReadable if IO.const_defined?(:WaitReadable)
 
+    # IO::WaitWritable is 1.9+ only
+    WRITE_RETRY_EXCEPTION_CLASSES = [Errno::EAGAIN, Errno::EWOULDBLOCK]
+    WRITE_RETRY_EXCEPTION_CLASSES << IO::WaitWritable if IO.const_defined?(:WaitWritable)
+
     def self.open(host, port, options = {})
       Timeout.timeout(options[:socket_timeout], ClientTimeout) do
         sock = new(host, port)
@@ -62,6 +66,7 @@ module Bunny
     # if this is not appropriate in your case.
     #
     # @param [String] data Data to write
+    # @param [Integer] timeout Timeout
     #
     # @api public
     def write_nonblock_fully(data, timeout = nil)
@@ -73,7 +78,7 @@ module Bunny
       loop do
         begin
           count = self.write_nonblock(data)
-        rescue Errno::EWOULDBLOCK, Errno::EAGAIN
+        rescue WRITE_RETRY_EXCEPTION_CLASSES
           if IO.select([], [self], nil, timeout)
             retry
           else
@@ -87,5 +92,6 @@ module Bunny
       end
 
     end
+
   end
 end

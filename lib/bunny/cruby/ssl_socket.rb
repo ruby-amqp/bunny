@@ -12,6 +12,9 @@ module Bunny
       READ_RETRY_EXCEPTION_CLASSES = [Errno::EAGAIN, Errno::EWOULDBLOCK]
       READ_RETRY_EXCEPTION_CLASSES << IO::WaitReadable if IO.const_defined?(:WaitReadable)
 
+      # IO::WaitWritable is 1.9+ only
+      WRITE_RETRY_EXCEPTION_CLASSES = [Errno::EAGAIN, Errno::EWOULDBLOCK]
+      WRITE_RETRY_EXCEPTION_CLASSES << IO::WaitWritable if IO.const_defined?(:WaitWritable)
 
       # Reads given number of bytes with an optional timeout
       #
@@ -50,6 +53,51 @@ module Bunny
         end
         value
       end
+
+      # Writes provided data using IO#write_nonblock, taking care of handling
+      # of exceptions it raises when writing would fail (e.g. due to socket buffer
+      # being full).
+      #
+      # IMPORTANT: this method will mutate (slice) the argument. Pass in duplicates
+      # if this is not appropriate in your case.
+      #
+      # @param [String] data Data to write
+      # @param [Integer] timeout Timeout
+      #
+      # @api public
+      def write_nonblock_fully(data, timeout = nil)
+        return nil if @__bunny_socket_eof_flag__
+
+        length = data.bytesize
+        total_count = 0
+        count = 0
+        loop do
+          begin
+            count = self.write_nonblock(data)
+          rescue OpenSSL::SSL::SSLError => e
+            if e.message == "read would block"
+              if IO.select([], [self], nil, timeout)
+                retry
+              else
+                raise Timeout::Error, "IO timeout when writing to socket"
+              end
+            end
+            raise e
+          rescue WRITE_RETRY_EXCEPTION_CLASSES
+            if IO.select([], [self], nil, timeout)
+              retry
+            else
+              raise Timeout::Error, "IO timeout when writing to socket"
+            end
+          end
+
+          total_count += count
+          return total_count if total_count >= length
+          data = data.byteslice(count..-1)
+        end
+
+      end
+
     end
   rescue LoadError => le
     puts "Could not load OpenSSL"
