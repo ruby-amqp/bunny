@@ -155,7 +155,6 @@ module Bunny
       @recover_from_connection_close = opts.fetch(:recover_from_connection_close, false)
       # in ms
       @continuation_timeout   = opts.fetch(:continuation_timeout, DEFAULT_CONTINUATION_TIMEOUT)
-      @socket_timeout         = opts.fetch(:socket_timeout, Transport::DEFAULT_READ_WRITE_TIMEOUT)
 
       @status             = :not_connected
       @blocked            = false
@@ -991,6 +990,10 @@ module Bunny
       @logger.debug "Heartbeat interval negotiation: client = #{@client_heartbeat}, server = #{connection_tune.heartbeat}, result = #{@heartbeat}"
       @logger.info "Heartbeat interval used (in seconds): #{@heartbeat}"
 
+      # We set the read_write_timeout to twice the heartbeat value
+      # This allows us to miss a single heartbeat before we time out the socket.
+      @transport.read_write_timeout = @heartbeat * 2
+
       # if there are existing channels we've just recovered from
       # a network failure and need to fix the allocated set. See issue 205. MK.
       if @channels.empty?
@@ -1080,7 +1083,7 @@ module Bunny
     def initialize_transport
       if host = @hosts[ @host_index ]
         @host_index_mutex.synchronize { @host_index += 1 }
-        @transport = Transport.new(self, host, @port, @opts.merge(:session_thread => @origin_thread, :socket_timeout => @socket_timeout))
+        @transport = Transport.new(self, host, @port, @opts.merge(:session_thread => @origin_thread))
       else
         raise HostListDepleted
       end

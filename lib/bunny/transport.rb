@@ -21,7 +21,7 @@ module Bunny
 
     # Default TCP connection timeout
     DEFAULT_CONNECTION_TIMEOUT = 5.0
-    DEFAULT_READ_WRITE_TIMEOUT = 120.0
+    DEFAULT_READ_WRITE_TIMEOUT = 5.0
 
     # Default TLS protocol version to use.
     # Currently SSLv3, same as in RabbitMQ Java client
