@@ -183,8 +183,20 @@ module Bunny
       @socket.flush if @socket
     end
 
-    def read_fully(*args)
-      @socket.read_fully(*args)
+    def read_fully(count)
+      begin
+        @socket.read_fully(count, @read_write_timeout)
+      rescue SystemCallError, Timeout::Error, Bunny::ConnectionError, IOError => e
+        @logger.error "Got an exception when receiving data: #{e.message} (#{e.class.name})"
+        close
+        @status = :not_connected
+
+        if @session.automatically_recover?
+          @session.handle_network_failure(e)
+        else
+          @session_thread.raise(Bunny::NetworkFailure.new("detected a network failure: #{e.message}", e))
+        end
+      end
     end
 
     def read_ready?(timeout = nil)
@@ -192,11 +204,10 @@ module Bunny
       io && io[0].include?(@socket)
     end
 
-
     # Exposed primarily for Bunny::Channel
     # @private
     def read_next_frame(opts = {})
-      header    = @socket.read_fully(7)
+      header    = read_fully(7)
       # TODO: network issues here will sometimes cause
       #       the socket method return an empty string. We need to log
       #       and handle this better.
@@ -206,8 +217,8 @@ module Bunny
       #                         puts "Got AMQ::Protocol::EmptyResponseError, header is #{header.inspect}"
       #                       end
       type, channel, size = AMQ::Protocol::Frame.decode_header(header)
-      payload   = @socket.read_fully(size)
-      frame_end = @socket.read_fully(1)
+      payload   = read_fully(size)
+      frame_end = read_fully(1)
 
       # 1) the size is miscalculated
       if payload.bytesize != size
@@ -371,7 +382,7 @@ module Bunny
       # setting TLS/SSL version only works correctly when done
       # vis set_params. MK.
       ctx.set_params(:ssl_version => @opts.fetch(:tls_protocol, DEFAULT_TLS_PROTOCOL))
-     
+
       verify_mode = if @verify_peer
         OpenSSL::SSL::VERIFY_PEER|OpenSSL::SSL::VERIFY_FAIL_IF_NO_PEER_CERT
       else
