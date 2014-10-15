@@ -154,7 +154,8 @@ module Bunny
       @network_recovery_interval = opts.fetch(:network_recovery_interval, DEFAULT_NETWORK_RECOVERY_INTERVAL)
       @recover_from_connection_close = opts.fetch(:recover_from_connection_close, false)
       # in ms
-      @continuation_timeout      = opts.fetch(:continuation_timeout, DEFAULT_CONTINUATION_TIMEOUT)
+      @continuation_timeout   = opts.fetch(:continuation_timeout, DEFAULT_CONTINUATION_TIMEOUT)
+      @socket_timeout         = opts.fetch(:socket_timeout, Transport::DEFAULT_READ_WRITE_TIMEOUT)
 
       @status             = :not_connected
       @blocked            = false
@@ -1079,7 +1080,7 @@ module Bunny
     def initialize_transport
       if host = @hosts[ @host_index ]
         @host_index_mutex.synchronize { @host_index += 1 }
-        @transport = Transport.new(self, host, @port, @opts.merge(:session_thread => @origin_thread))
+        @transport = Transport.new(self, host, @port, @opts.merge(:session_thread => @origin_thread, :socket_timeout => @socket_timeout))
       else
         raise HostListDepleted
       end

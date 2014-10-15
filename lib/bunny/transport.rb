@@ -21,6 +21,8 @@ module Bunny
 
     # Default TCP connection timeout
     DEFAULT_CONNECTION_TIMEOUT = 5.0
+    DEFAULT_READ_WRITE_TIMEOUT = 120.0
+
     # Default TLS protocol version to use.
     # Currently SSLv3, same as in RabbitMQ Java client
     DEFAULT_TLS_PROTOCOL       = "SSLv3"
@@ -39,7 +41,7 @@ module Bunny
       @logger                = session.logger
       @tls_enabled           = tls_enabled?(opts)
 
-      @read_write_timeout = opts[:socket_timeout] || 3
+      @read_write_timeout = opts[:socket_timeout] || DEFAULT_READ_WRITE_TIMEOUT
       @read_write_timeout = nil if @read_write_timeout == 0
       @connect_timeout    = self.timeout_from(opts)
       @connect_timeout    = nil if @connect_timeout == 0
