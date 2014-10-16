@@ -239,7 +239,7 @@ module Bunny
     def self.reacheable?(host, port, timeout)
       begin
         s = Bunny::SocketImpl.open(host, port,
-          :socket_timeout => timeout)
+          :connect_timeout => timeout)
 
         true
       rescue SocketError, Timeout::Error => e
@@ -257,7 +257,7 @@ module Bunny
       begin
         @socket = Bunny::SocketImpl.open(@host, @port,
           :keepalive      => @opts[:keepalive],
-          :socket_timeout => @connect_timeout)
+          :connect_timeout => @connect_timeout)
       rescue StandardError, ClientTimeout => e
         @status = :not_connected
         raise Bunny::TCPConnectionFailed.new(e, self.hostname, self.port)

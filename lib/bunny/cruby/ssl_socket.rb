@@ -83,7 +83,7 @@ module Bunny
               end
             end
             raise e
-          rescue WRITE_RETRY_EXCEPTION_CLASSES
+          rescue *WRITE_RETRY_EXCEPTION_CLASSES
             if IO.select([], [self], nil, timeout)
               retry
             else
