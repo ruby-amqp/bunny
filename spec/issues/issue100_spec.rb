@@ -6,7 +6,8 @@ unless ENV["CI"]
       c = Bunny.new(:user     => "bunny_gem",
                     :password => "bunny_password",
                     :vhost    => "bunny_testbed",
-                    :socket_timeout => 0)
+                    :write_timeout => 0,
+                    :read_timeout => 0)
       c.start
       c
     end

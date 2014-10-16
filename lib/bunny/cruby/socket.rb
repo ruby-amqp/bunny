@@ -18,7 +18,7 @@ module Bunny
     WRITE_RETRY_EXCEPTION_CLASSES << IO::WaitWritable if IO.const_defined?(:WaitWritable)
 
     def self.open(host, port, options = {})
-      Timeout.timeout(options[:socket_timeout], ClientTimeout) do
+      Timeout.timeout(options[:connect_timeout], ClientTimeout) do
         sock = new(host, port)
         if ::Socket.constants.include?('TCP_NODELAY') || ::Socket.constants.include?(:TCP_NODELAY)
           sock.setsockopt(::Socket::IPPROTO_TCP, ::Socket::TCP_NODELAY, true)
@@ -78,7 +78,7 @@ module Bunny
       loop do
         begin
           count = self.write_nonblock(data)
-        rescue WRITE_RETRY_EXCEPTION_CLASSES
+        rescue *WRITE_RETRY_EXCEPTION_CLASSES
           if IO.select([], [self], nil, timeout)
             retry
           else
