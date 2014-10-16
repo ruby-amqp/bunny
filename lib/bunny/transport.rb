@@ -21,15 +21,18 @@ module Bunny
 
     # Default TCP connection timeout
     DEFAULT_CONNECTION_TIMEOUT = 5.0
-    DEFAULT_READ_WRITE_TIMEOUT = 5.0
+
+    DEFAULT_READ_TIMEOUT  = 5.0
+    DEFAULT_WRITE_TIMEOUT = 5.0
 
     # Default TLS protocol version to use.
     # Currently SSLv3, same as in RabbitMQ Java client
     DEFAULT_TLS_PROTOCOL       = "SSLv3"
 
-
-    attr_reader :session, :host, :port, :socket, :connect_timeout, :read_write_timeout, :disconnect_timeout
+    attr_reader :session, :host, :port, :socket, :connect_timeout, :read_timeout, :write_timeout, :disconnect_timeout
     attr_reader :tls_context
+
+    attr_writer :read_timeout
 
     def initialize(session, host, port, opts)
       @session        = session
@@ -41,11 +44,17 @@ module Bunny
       @logger                = session.logger
       @tls_enabled           = tls_enabled?(opts)
 
-      @read_write_timeout = opts[:socket_timeout] || DEFAULT_READ_WRITE_TIMEOUT
-      @read_write_timeout = nil if @read_write_timeout == 0
+      @read_timeout = opts[:read_timeout] || DEFAULT_READ_TIMEOUT
+      @read_timeout = nil if @read_timeout == 0
+
+      @write_timeout = opts[:socket_timeout] # Backwards compatability
+
+      @write_timeout ||= opts[:write_timeout] || DEFAULT_WRITE_TIMEOUT
+      @write_timeout = nil if @write_timeout == 0
+
       @connect_timeout    = self.timeout_from(opts)
       @connect_timeout    = nil if @connect_timeout == 0
-      @disconnect_timeout = @read_write_timeout || @connect_timeout
+      @disconnect_timeout = @write_timeout || @read_timeout || @connect_timeout
 
       @writes_mutex       = @session.mutex_impl.new
 
@@ -101,12 +110,12 @@ module Bunny
     #
     # @raise [ClientTimeout]
     def write(data)
-      return write_without_timeout(data) unless @read_write_timeout
+      return write_without_timeout(data) unless @write_timeout
 
       begin
         if open?
           @writes_mutex.synchronize do
-            @socket.write_nonblock_fully(data, @read_write_timeout)
+            @socket.write_nonblock_fully(data, @write_timeout)
           end
         end
       rescue SystemCallError, Timeout::Error, Bunny::ConnectionError, IOError => e
@@ -181,7 +190,7 @@ module Bunny
 
     def read_fully(count)
       begin
-        @socket.read_fully(count, @read_write_timeout)
+        @socket.read_fully(count, @read_timeout)
       rescue SystemCallError, Timeout::Error, Bunny::ConnectionError, IOError => e
         @logger.error "Got an exception when receiving data: #{e.message} (#{e.class.name})"
         close
