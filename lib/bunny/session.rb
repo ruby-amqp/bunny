@@ -1086,6 +1086,7 @@ module Bunny
     def initialize_transport
       if host = @hosts[ @host_index ]
         @host_index_mutex.synchronize { @host_index += 1 }
+        @transport.close rescue nil # Let's make sure the previous transport socket is closed
         @transport = Transport.new(self, host, @port, @opts.merge(:session_thread => @origin_thread))
 
         # Reset the cached progname for the logger
