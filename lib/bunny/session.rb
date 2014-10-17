@@ -279,9 +279,11 @@ module Bunny
           self.start_reader_loop if threaded?
 
         rescue TCPConnectionFailed => e
-          self.initialize_transport
 
           @logger.warn e.message
+
+          self.initialize_transport
+
           @logger.warn "Retrying connection on next host in line: #{@transport.host}:#{@transport.port}"
 
           return self.start
@@ -1084,6 +1086,11 @@ module Bunny
       if host = @hosts[ @host_index ]
         @host_index_mutex.synchronize { @host_index += 1 }
         @transport = Transport.new(self, host, @port, @opts.merge(:session_thread => @origin_thread))
+
+        # Reset the cached progname for the logger
+        @logger.progname = to_s if @logger.respond_to?(:progname)
+
+        @transport
       else
         raise HostListDepleted
       end
