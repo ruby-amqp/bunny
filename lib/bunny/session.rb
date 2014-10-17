@@ -648,6 +648,8 @@ module Bunny
         @logger.debug "About to start connection recovery..."
 
         self.initialize_transport
+
+        @logger.warn "Retrying connection on next host in line: #{@transport.host}:#{@transport.port}"
         self.start
 
         if open?
