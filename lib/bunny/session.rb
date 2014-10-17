@@ -647,7 +647,6 @@ module Bunny
         sleep @network_recovery_interval
         @logger.debug "About to start connection recovery..."
 
-        self.reset_host_index # since we are starting a fresh try.
         self.initialize_transport
         self.start
 
