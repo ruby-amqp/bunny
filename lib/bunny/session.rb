@@ -657,6 +657,9 @@ module Bunny
 
           recover_channels
         end
+      rescue HostListDepleted
+        reset_host_index
+        retry
       rescue TCPConnectionFailedForAllHosts, TCPConnectionFailed, AMQ::Protocol::EmptyResponseError => e
         @logger.warn "TCP connection failed, reconnecting in #{@network_recovery_interval} seconds"
         sleep @network_recovery_interval
