@@ -6,12 +6,16 @@ Bunny now sets a read timeout on the sockets it opens, and uses
 `IO.select` timeouts as the most reliable option available
 on Ruby 1.9 and later.
 
+GH issue: [#254](https://github.com/ruby-amqp/bunny/pull/254).
+
 Contributed by Andre Foeken (Nedap).
 
 ### Inline TLS Certificates Support
 
 TLS certificate options now accept inline certificates as well as
 file paths.
+
+GH issues: [#255](https://github.com/ruby-amqp/bunny/pull/255), [#256](https://github.com/ruby-amqp/bunny/pull/256).
 
 Contributed by Will Barrett (Sqwiggle).
 
