@@ -26,8 +26,8 @@ module Bunny
     DEFAULT_WRITE_TIMEOUT = 5.0
 
     # Default TLS protocol version to use.
-    # Currently SSLv3, same as in RabbitMQ Java client
-    DEFAULT_TLS_PROTOCOL       = "SSLv3"
+    # Currently TLSv1, same as in RabbitMQ Java client
+    DEFAULT_TLS_PROTOCOL       = "TLSv1"
 
     attr_reader :session, :host, :port, :socket, :connect_timeout, :read_timeout, :write_timeout, :disconnect_timeout
     attr_reader :tls_context
