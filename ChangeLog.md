@@ -1,5 +1,11 @@
 ## Changes between Bunny 1.5.0 and 1.6.0
 
+### TLSv1 by Default
+
+Bunny now uses TLSv1 by default due to the recently discovered
+[POODLE attack](https://www.openssl.org/~bodo/ssl-poodle.pdf) on SSLv3.
+
+
 ### Socket Read and Write Timeout Improvements
 
 Bunny now sets a read timeout on the sockets it opens, and uses
