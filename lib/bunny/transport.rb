@@ -420,7 +420,9 @@ module Bunny
       cert_files = []
       cert_inlines = []
       certs.each do |cert|
-        if File.readable?(cert) || cert =~ /^\/etc/
+        # if it starts with / then it's a file path that may or may not
+        # exists (e.g. a default OpenSSL path). MK.
+        if File.readable?(cert) || cert =~ /^\//
           cert_files.push(cert)
         else
           cert_inlines.push(cert)
