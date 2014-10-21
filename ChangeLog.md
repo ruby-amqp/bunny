@@ -1,3 +1,21 @@
+## Changes between Bunny 1.5.0 and 1.6.0
+
+### Socket Read and Write Timeout Improvements
+
+Bunny now sets a read timeout on the sockets it opens, and uses
+`IO.select` timeouts as the most reliable option available
+on Ruby 1.9 and later.
+
+Contributed by Andre Foeken (Nedap).
+
+### Inline TLS Certificates Support
+
+TLS certificate options now accept inline certificates as well as
+file paths.
+
+Contributed by Will Barrett (Sqwiggle).
+
+
 ## Changes between Bunny 1.4.0 and 1.5.0
 
 ### Improved Uncaught Exception Handler
