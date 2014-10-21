@@ -420,20 +420,22 @@ module Bunny
       cert_files = []
       cert_inlines = []
       certs.each do |cert|
-        if File.readable? cert
+        if File.readable?(cert) || cert =~ /^\/etc/
           cert_files.push(cert)
         else
           cert_inlines.push(cert)
         end
       end
       @logger.debug "Using CA certificates at #{cert_files.join(', ')}"
-      @logger.debug "Using #{cert_inlines.count} inline ca_certificates"
+      @logger.debug "Using #{cert_inlines.count} inline CA certificates"
       if certs.empty?
         @logger.error "No CA certificates found, add one with :tls_ca_certificates"
       end
       OpenSSL::X509::Store.new.tap do |store|
-        cert_files.each { |path| store.add_file(path) }
-        cert_inlines.each { |cert| store.add_cert(OpenSSL::X509::Certificate.new(cert)) }
+        cert_files.select { |path| File.readable?(path) }.
+          each { |path| store.add_file(path) }
+        cert_inlines.
+          each { |cert| store.add_cert(OpenSSL::X509::Certificate.new(cert)) }
       end
     end
 
