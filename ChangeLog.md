@@ -2,8 +2,10 @@
 
 ### TLSv1 by Default
 
-Bunny now uses TLSv1 by default due to the recently discovered
+TLS connections now prefer TLSv1 (or later, if available) due to the recently discovered
 [POODLE attack](https://www.openssl.org/~bodo/ssl-poodle.pdf) on SSLv3.
+
+Contributed by Michael Klishin (Pivotal) and Justin Powers (Desk.com).
 
 
 ### Socket Read and Write Timeout Improvements
