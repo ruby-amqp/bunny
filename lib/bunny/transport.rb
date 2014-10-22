@@ -21,10 +21,8 @@ module Bunny
 
     # Default TCP connection timeout
     DEFAULT_CONNECTION_TIMEOUT = 5.0
-    # Default TLS protocol version to use.
-    # Currently TLSv1, same as in RabbitMQ Java client
-    DEFAULT_TLS_PROTOCOL       = "TLSv1"
-
+    DEFAULT_READ_TIMEOUT  = 5.0
+    DEFAULT_WRITE_TIMEOUT = 5.0
 
     attr_reader :session, :host, :port, :socket, :connect_timeout, :read_write_timeout, :disconnect_timeout
     attr_reader :tls_context
@@ -315,7 +313,7 @@ module Bunny
       @tls_ca_certificates   = opts.fetch(:tls_ca_certificates, default_tls_certificates)
       @verify_peer           = opts[:verify_ssl] || opts[:verify_peer]
 
-      @tls_context = initialize_tls_context(OpenSSL::SSL::SSLContext.new)
+      @tls_context = initialize_tls_context(OpenSSL::SSL::SSLContext.new, opts)
     end
 
     def wrap_in_tls_socket(socket)
@@ -349,7 +347,7 @@ module Bunny
       end
     end
 
-    def initialize_tls_context(ctx)
+    def initialize_tls_context(ctx, opts={})
       ctx.cert       = OpenSSL::X509::Certificate.new(@tls_certificate) if @tls_certificate
       ctx.key        = OpenSSL::PKey::RSA.new(@tls_key) if @tls_key
       ctx.cert_store = if @tls_certificate_store
@@ -368,17 +366,15 @@ module Bunny
         @logger.warn "Using TLS but no client private key is provided!"
       end
 
-      # setting TLS/SSL version only works correctly when done
-      # vis set_params. MK.
-      ctx.set_params(:ssl_version => @opts.fetch(:tls_protocol, DEFAULT_TLS_PROTOCOL))
-     
       verify_mode = if @verify_peer
         OpenSSL::SSL::VERIFY_PEER|OpenSSL::SSL::VERIFY_FAIL_IF_NO_PEER_CERT
       else
         OpenSSL::SSL::VERIFY_NONE
       end
+      ctx.verify_mode = verify_mode
 
-      ctx.set_params(:verify_mode => verify_mode)
+      ssl_version = opts[:tls_protocol] || opts[:ssl_version]
+      ctx.ssl_version = ssl_version if ssl_version
 
       ctx
     end
