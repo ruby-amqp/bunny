@@ -1,3 +1,20 @@
+## Changes between Bunny 1.5.0 and 1.5.1
+
+### TLSv1 by Default
+
+TLS connections now prefer TLSv1 (or later, if available) due to the recently discovered
+[POODLE attack](https://www.openssl.org/~bodo/ssl-poodle.pdf) on SSLv3.
+
+Contributed by Michael Klishin (Pivotal) and Justin Powers (Desk.com).
+
+GH issues:
+
+ * [#259](https://github.com/ruby-amqp/bunny/pull/259)
+ * [#260](https://github.com/ruby-amqp/bunny/pull/260)
+ * [#261](https://github.com/ruby-amqp/bunny/pull/261)
+
+
+
 ## Changes between Bunny 1.4.0 and 1.5.0
 
 ### Improved Uncaught Exception Handler
