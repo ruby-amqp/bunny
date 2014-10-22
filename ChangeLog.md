@@ -7,6 +7,12 @@ TLS connections now prefer TLSv1 (or later, if available) due to the recently di
 
 Contributed by Michael Klishin (Pivotal) and Justin Powers (Desk.com).
 
+GH issues:
+
+ * [#259](https://github.com/ruby-amqp/bunny/pull/259)
+ * [#260](https://github.com/ruby-amqp/bunny/pull/260)
+ * [#261](https://github.com/ruby-amqp/bunny/pull/261)
+
 
 ### Socket Read and Write Timeout Improvements
 
