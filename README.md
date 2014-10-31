@@ -58,7 +58,7 @@ use [March Hare](http://rubymarchhare.info).
 
 ## Supported RabbitMQ Versions
 
-Bunny `1.5.0` (including previews) and later versions only support RabbitMQ `3.2+`.
+Bunny `1.5.0` (including previews) and later versions only support RabbitMQ `3.3+`.
 Bunny `1.4.x` and supports RabbitMQ 2.x and 3.x.
 
 
