@@ -58,7 +58,7 @@ module Bunny
     def pause
       @running = false
 
-      @threads.each { |t| t.stop }
+      @threads.each { |t| t[:running] = false }
     end
 
     def resume
@@ -78,6 +78,8 @@ module Bunny
     def run_loop
       catch(:terminate) do
         loop do
+          Thread.stop if Thread.current[:running] == false
+
           callable = @queue.pop
 
           begin
