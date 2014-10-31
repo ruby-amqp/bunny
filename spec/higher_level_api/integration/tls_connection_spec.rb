@@ -107,13 +107,13 @@ unless ENV["CI"]
 
   describe "TLS connection to RabbitMQ with client certificates provided inline" do
     let(:connection) do
-      c = Bunny.new(:user     => "bunny_gem",
-        :password => "bunny_password",
-        :vhost    => "bunny_testbed",
-        :tls                   => true,
-        :tls_cert              => File.read("./spec/tls/client_cert.pem"),
-        :tls_key               => File.read("./spec/tls/client_key.pem"),
-        :tls_ca_certificates   => ["./spec/tls/cacert.pem"])
+      c = Bunny.new(:user    => "bunny_gem",
+        :password            => "bunny_password",
+        :vhost               => "bunny_testbed",
+        :tls                 => true,
+        :tls_cert            => File.read("./spec/tls/client_cert.pem"),
+        :tls_key             => File.read("./spec/tls/client_key.pem"),
+        :tls_ca_certificates => ["./spec/tls/cacert.pem"])
       c.start
       c
     end
@@ -127,12 +127,12 @@ unless ENV["CI"]
 
   describe "TLS connection to RabbitMQ with tls_version TLSv1 specified" do
     let(:connection) do
-      c = Bunny.new(:user     => "bunny_gem",
-        :password => "bunny_password",
-        :vhost    => "bunny_testbed",
-        :tls                   => true,
-        :tls_protocol           => :TLSv1,
-        :tls_ca_certificates   => ["./spec/tls/cacert.pem"])
+      c = Bunny.new(:user    => "bunny_gem",
+        :password            => "bunny_password",
+        :vhost               => "bunny_testbed",
+        :tls                 => true,
+        :tls_protocol        => :TLSv1,
+        :tls_ca_certificates => ["./spec/tls/cacert.pem"])
       c.start
       c
     end
