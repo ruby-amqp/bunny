@@ -125,30 +125,6 @@ unless ENV["CI"]
     include_examples "successful TLS connection"
   end
 
-
-  describe "TLS connection to RabbitMQ with ssl_version SSLv3 specified" do
-    let(:connection) do
-      c = Bunny.new(:user     => "bunny_gem",
-        :password => "bunny_password",
-        :vhost    => "bunny_testbed",
-        :tls                   => true,
-        :ssl_version           => :SSLv3,
-        :tls_ca_certificates   => ["./spec/tls/cacert.pem"])
-      c.start
-      c
-    end
-
-    after :each do
-      connection.close
-    end
-
-    include_examples "successful TLS connection"
-
-    it "connects using SSLv3" do
-      connection.transport.socket.ssl_version.should == "SSLv3"
-    end
-  end
-
   describe "TLS connection to RabbitMQ with tls_version TLSv1 specified" do
     let(:connection) do
       c = Bunny.new(:user     => "bunny_gem",
