@@ -494,6 +494,7 @@ module Bunny
         raise_if_continuation_resulted_in_a_connection_error!
 
         self.unregister_channel(ch)
+        self.release_channel_id(ch.id)
         @last_channel_close_ok
       end
     end
