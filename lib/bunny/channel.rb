@@ -229,7 +229,8 @@ module Bunny
     # @api public
     def close
       @connection.close_channel(self)
-      closed!
+      @status = :closed
+      @work_pool.shutdown
       maybe_kill_consumer_work_pool!
     end
 
