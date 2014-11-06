@@ -1,5 +1,14 @@
 ## Changes between Bunny 1.6.0 and 1.7.0
 
+### JRuby Writes Fixes
+
+On JRuby, Bunny reverts back to using plain old `write(2)` for writes. The CRuby implementation
+on JRuby suffers from I/O incompatibilities. Until JRuby
+
+Bunny users who run on JRuby are highly recommended to switch to [March Hare](http://rubymarchhare.info),
+which has nearly identical API and is significantly more efficient.
+
+
 ### Bunny::Session#with_channel Synchornisation Improvements
 
 `Bunny::Session#with_channel` is now fully synchronised and won't run into `COMMAND_INVALID` errors
