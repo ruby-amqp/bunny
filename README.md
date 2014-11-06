@@ -1,6 +1,6 @@
 # Bunny, a Ruby RabbitMQ Client
 
-Bunny is a synchronous RabbitMQ client that focuses on ease of use. It
+Bunny is a RabbitMQ client that focuses on ease of use. It
 is feature complete, supports all RabbitMQ 3.0 features and does not
 have any heavyweight dependencies.
 
