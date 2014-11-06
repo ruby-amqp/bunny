@@ -1,6 +1,6 @@
 require "spec_helper"
 
-describe "Rapidly opening and closing lots of channels" do
+describe "Rapidly closing lots of temporary channels" do
   before :all do
     @connection = Bunny.new(:automatic_recovery => false).tap do |c|
       c.start
