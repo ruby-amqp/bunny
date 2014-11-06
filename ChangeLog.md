@@ -1,3 +1,12 @@
+## Changes between Bunny 1.6.0 and 1.7.0
+
+### Bunny::Session#with_channel Synchornisation Improvements
+
+`Bunny::Session#with_channel` is now fully synchronised and won't run into `COMMAND_INVALID` errors
+when used from multiple threads that share a connection.
+
+
+
 ## Changes between Bunny 1.5.0 and 1.6.0
 
 ### TLSv1 by Default
