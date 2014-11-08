@@ -1,3 +1,10 @@
+## Changes between Bunny 1.6.2 and 1.6.3
+
+### Socket Read Timeout No Longer Set to 0 With Disabled Heartbeats
+
+GH issue: [#267](https://github.com/ruby-amqp/bunny/pull/267).
+
+
 ## Changes between Bunny 1.6.1 and 1.6.2
 
 ### JRuby Writes Fixes
