@@ -1,5 +1,10 @@
 ## Changes between Bunny 1.6.0 and 1.7.0
 
+### Socket Read Timeout No Longer Set to 0 With Disabled Heartbeats
+
+GH issue: [#267](https://github.com/ruby-amqp/bunny/pull/267).
+
+
 ### JRuby Writes Fixes
 
 On JRuby, Bunny reverts back to using plain old `write(2)` for writes. The CRuby implementation
