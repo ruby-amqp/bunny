@@ -999,7 +999,13 @@ module Bunny
 
       # We set the read_write_timeout to twice the heartbeat value
       # This allows us to miss a single heartbeat before we time out the socket.
-      @transport.read_timeout = @heartbeat * 2
+      @transport.read_timeout = if heartbeat_disabled?(@client_heartbeat)
+                                  Transport::DEFAULT_READ_TIMEOUT
+                                else
+                                  # pad to account for edge cases. MK.
+                                  @heartbeat * 2.2
+                                end
+
 
       # if there are existing channels we've just recovered from
       # a network failure and need to fix the allocated set. See issue 205. MK.
