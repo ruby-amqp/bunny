@@ -1,16 +1,34 @@
 require "spec_helper"
 
 describe "Client-defined heartbeat interval" do
-  let(:connection) do
-    c = Bunny.new(:user => "bunny_gem", :password => "bunny_password", :vhost => "bunny_testbed", :heartbeat_interval => 4)
-    c.start
-    c
+  context "with value > 0" do
+    let(:connection) do
+      c = Bunny.new(:user => "bunny_gem", :password => "bunny_password", :vhost => "bunny_testbed", :heartbeat_interval => 4)
+      c.start
+      c
+    end
+
+    it "can be enabled explicitly" do
+      sleep 5.0
+
+      connection.close
+    end
   end
 
-  it "can be enabled explicitly" do
-    sleep 5.0
+  # issue 267
+  context "with value = 0" do
+    let(:connection) do
+      c = Bunny.new(:user => "bunny_gem", :password => "bunny_password", :vhost => "bunny_testbed",
+        :heartbeat_interval => 0, :automatically_recover => false)
+      c.start
+      c
+    end
 
-    connection.close
+    it "disables heartbeats" do
+      sleep 1.0
+
+      connection.close
+    end
   end
 end
 
