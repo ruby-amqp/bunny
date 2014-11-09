@@ -1,3 +1,8 @@
+## Changes between Bunny 1.6.3 and 1.6.4
+
+No changes yet.
+
+
 ## Changes between Bunny 1.6.2 and 1.6.3
 
 ### Socket Read Timeout No Longer Set to 0 With Disabled Heartbeats
