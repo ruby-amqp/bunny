@@ -1,14 +1,16 @@
 #!/usr/bin/env ruby
 
-@nodename = ENV.fetch("RABBITMQ_NODENAME", "rabbit")
+nodename = ENV.fetch("RABBITMQ_NODENAME", "rabbit")
+ctl      = ENV.fetch("RABBITMQCTL",       "sudo rabbitmqctl")
+plugins  = ENV.fetch("RABBITMQ_PLUGINS",  "sudo rabbitmq-plugins")
 
 def rabbit_control(args)
-  command = "sudo rabbitmqctl -n #{@nodename} #{args}"
+  command = "#{ctl} -n #{nodename} #{args}"
   system command
 end
 
 def rabbit_plugins(args)
-  command = "sudo rabbitmq-plugins #{args}"
+  command = "#{plugins} #{args}"
   system command
 end
 
@@ -38,4 +40,4 @@ rabbit_control 'add_user bunny_reader reader_password'
 rabbit_control 'set_permissions -p bunny_testbed bunny_reader "^---$" "^---$" ".*"'
 
 # requires RabbitMQ 3.0+
-# rabbit_plugins 'enable rabbitmq_consistent_hash_exchange'
+rabbit_plugins 'enable rabbitmq_management'
