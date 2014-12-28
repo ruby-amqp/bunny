@@ -1117,6 +1117,7 @@ module Bunny
     # Declares a echange using echange.declare AMQP 0.9.1 method.
     #
     # @param [String] name Exchange name
+    # @param [String,Symbol] type Exchange type, e.g. :fanout or :topic
     # @param [Hash] opts Exchange properties
     #
     # @option opts [Boolean] durable (false)     Should information about this echange be persisted to disk so that it
