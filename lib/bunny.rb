@@ -50,7 +50,7 @@ module Bunny
     AMQ::Protocol::PROTOCOL_VERSION
   end
 
-  # Instantiates a new connection. The actual connection network
+  # Instantiates a new connection. The actual network
   # connection is started with {Bunny::Session#start}
   #
   # @return [Bunny::Session]
