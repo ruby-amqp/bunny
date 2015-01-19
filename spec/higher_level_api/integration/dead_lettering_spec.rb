@@ -49,4 +49,23 @@ describe "A message" do
 
     dlx.delete
   end
+
+  it "carries the x-death header" do
+    ch   = connection.create_channel
+    x    = ch.fanout("amq.fanout")
+    dlx  = ch.fanout("bunny.tests.dlx.exchange")
+    q    = ch.queue("", :exclusive => true, :arguments => {"x-dead-letter-exchange" => dlx.name, "x-message-ttl" => 100}).bind(x)
+    # dead letter queue
+    dlq  = ch.queue("", :exclusive => true).bind(dlx)
+
+    x.publish("")
+    sleep 0.2
+
+    delivery, properties, body = dlq.pop
+    ds = properties.headers["x-death"]
+    ds.should_not be_empty
+    expect(ds.first["reason"]).to eq("expired")
+
+    dlx.delete
+  end
 end
