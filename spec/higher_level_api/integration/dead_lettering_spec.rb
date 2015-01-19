@@ -28,7 +28,11 @@ describe "A message" do
 
     sleep 0.2
     q.message_count.should be_zero
-    dlq.message_count.should == 1
+
+    delivery, properties, body = dlq.pop
+    ds = properties.headers["x-death"]
+    ds.should_not be_empty
+    expect(ds.first["reason"]).to eq("rejected")
 
     dlx.delete
   end
