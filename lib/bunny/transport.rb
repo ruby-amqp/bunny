@@ -20,7 +20,7 @@ module Bunny
     #
 
     # Default TCP connection timeout
-    DEFAULT_CONNECTION_TIMEOUT = 5.0
+    DEFAULT_CONNECTION_TIMEOUT = 25.0
 
     DEFAULT_READ_TIMEOUT  = 5.0
     DEFAULT_WRITE_TIMEOUT = 5.0
