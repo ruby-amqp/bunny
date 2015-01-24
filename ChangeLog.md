@@ -1,5 +1,16 @@
 ## Changes between Bunny 1.6.0 and 1.7.0
 
+### Higher Default Connection Timeout
+
+Default connection timeout has been increased to 25 seconds. The older
+default of 5 seconds wasn't sufficient in some edge cases with DNS
+resolution (e.g. when primary DNS server is down).
+
+The value can be overriden at connection time.
+
+Contributed by Yury Batenko.
+
+
 ### Socket Read Timeout No Longer Set to 0 With Disabled Heartbeats
 
 GH issue: [#267](https://github.com/ruby-amqp/bunny/pull/267).
