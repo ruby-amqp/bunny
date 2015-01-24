@@ -1,6 +1,14 @@
 ## Changes between Bunny 1.6.3 and 1.6.4
 
-No changes yet.
+### Higher Default Connection Timeout
+
+Default connection timeout has been increased to 25 seconds. The older
+default of 5 seconds wasn't sufficient in some edge cases with DNS
+resolution (e.g. when primary DNS server is down).
+
+The value can be overriden at connection time.
+
+Contributed by Yury Batenko.
 
 
 ## Changes between Bunny 1.6.2 and 1.6.3
