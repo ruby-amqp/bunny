@@ -79,7 +79,9 @@ module Bunny
     def connect
       if uses_ssl?
         @socket.connect
-        @socket.post_connection_check(host) if uses_tls? && @verify_peer
+        if uses_tls? && @verify_peer
+          @socket.post_connection_check(host)
+        end
 
         @status = :connected
 
@@ -339,6 +341,10 @@ module Bunny
     end
 
     def prepare_tls_context(opts)
+      if (opts[:verify_ssl] || opts[:verify_peer]).nil?
+        opts[:verify_peer] = true
+      end
+
       # client cert/key paths
       @tls_certificate_path  = tls_certificate_path_from(opts)
       @tls_key_path          = tls_key_path_from(opts)
@@ -348,7 +354,7 @@ module Bunny
       @tls_certificate_store = opts[:tls_certificate_store]
 
       @tls_ca_certificates   = opts.fetch(:tls_ca_certificates, default_tls_certificates)
-      @verify_peer           = opts[:verify_ssl] || opts[:verify_peer]
+      @verify_peer           = (opts[:verify_ssl] || opts[:verify_peer])
 
       @tls_context = initialize_tls_context(OpenSSL::SSL::SSLContext.new, opts)
     end
@@ -395,8 +401,8 @@ module Bunny
 
       if !@tls_certificate
         @logger.warn <<-MSG
-        Using TLS but no client certificate is provided! If RabbitMQ is configured to verify peer
-        certificate, connection upgrade will fail!
+Using TLS but no client certificate is provided! If RabbitMQ is configured to verify peer
+certificate, connection upgrade will fail!
         MSG
       end
       if @tls_certificate && !@tls_key
@@ -409,6 +415,13 @@ module Bunny
         OpenSSL::SSL::VERIFY_NONE
       end
       ctx.verify_mode = verify_mode
+
+      if !@verify_peer
+        @logger.warn <<-MSG
+Using TLS but peer hostname verification is disabled. This is convenient for local development
+but prone man-in-the-middle attacks. Please set :verify_peer => true in production!
+        MSG
+      end
 
       ssl_version = opts[:tls_protocol] || opts[:ssl_version]
       ctx.ssl_version = ssl_version if ssl_version
