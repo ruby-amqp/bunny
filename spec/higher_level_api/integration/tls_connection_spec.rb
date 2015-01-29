@@ -39,7 +39,8 @@ unless ENV["CI"]
         :tls                   => true,
         :tls_cert              => "spec/tls/client_cert.pem",
         :tls_key               => "spec/tls/client_key.pem",
-        :tls_ca_certificates   => ["./spec/tls/cacert.pem"])
+        :tls_ca_certificates   => ["./spec/tls/cacert.pem"],
+        :verify_peer           => false)
       c.start
       c
     end
@@ -58,7 +59,8 @@ unless ENV["CI"]
         :password => "bunny_password",
         :vhost    => "bunny_testbed",
         :tls                   => true,
-        :tls_ca_certificates   => ["./spec/tls/cacert.pem"])
+        :tls_ca_certificates   => ["./spec/tls/cacert.pem"],
+        :verify_peer           => false)
       c.start
       c
     end
@@ -76,7 +78,8 @@ unless ENV["CI"]
       c = Bunny.new("amqps://bunny_gem:bunny_password@127.0.0.1/bunny_testbed",
         :tls_cert              => "spec/tls/client_cert.pem",
         :tls_key               => "spec/tls/client_key.pem",
-        :tls_ca_certificates   => ["./spec/tls/cacert.pem"])
+        :tls_ca_certificates   => ["./spec/tls/cacert.pem"],
+        :verify_peer           => false)
       c.start
       c
     end
@@ -92,7 +95,8 @@ unless ENV["CI"]
   describe "TLS connection to RabbitMQ with a connection string and w/o client certificate and key" do
     let(:connection) do
       c = Bunny.new("amqps://bunny_gem:bunny_password@127.0.0.1/bunny_testbed",
-        :tls_ca_certificates   => ["./spec/tls/cacert.pem"])
+        :tls_ca_certificates   => ["./spec/tls/cacert.pem"],
+        :verify_peer           => false)
       c.start
       c
     end
@@ -113,7 +117,8 @@ unless ENV["CI"]
         :tls                 => true,
         :tls_cert            => File.read("./spec/tls/client_cert.pem"),
         :tls_key             => File.read("./spec/tls/client_key.pem"),
-        :tls_ca_certificates => ["./spec/tls/cacert.pem"])
+        :tls_ca_certificates => ["./spec/tls/cacert.pem"],
+        :verify_peer         => false)
       c.start
       c
     end
@@ -132,7 +137,8 @@ unless ENV["CI"]
         :vhost               => "bunny_testbed",
         :tls                 => true,
         :tls_protocol        => :TLSv1,
-        :tls_ca_certificates => ["./spec/tls/cacert.pem"])
+        :tls_ca_certificates => ["./spec/tls/cacert.pem"],
+        :verify_peer         => false)
       c.start
       c
     end
