@@ -1,5 +1,19 @@
 ## Changes between Bunny 1.6.0 and 1.7.0
 
+### TLS Peer Verification Enabled by Default
+
+When using TLS, peer verification is now enabled by default.
+It is still possible to [disable verification](http://rubybunny.info/articles/tls.html), e.g. for convenient
+development locally.
+
+Peer verification is a means of protection against man-in-the-middle attacks
+and is highly recommended in production settings. However, it can be an inconvenience
+during local development. We believe it's time to have the default to be
+more secure.
+
+Contributed by Michael Klishin (Pivotal) and Andre Foeken (Nedap).
+
+
 ### Higher Default Connection Timeout
 
 Default connection timeout has been increased to 25 seconds. The older
