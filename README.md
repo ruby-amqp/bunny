@@ -12,7 +12,7 @@ have any heavyweight dependencies.
 
 ## What is Bunny Good For?
 
-One can use amqp gem to make Ruby applications interoperate with other
+One can use Bunny to make Ruby applications interoperate with other
 applications (both Ruby and not). Complexity and size may vary from
 simple work queues to complex multi-stage data processing workflows that involve
 many applications built with all kinds of technologies.
