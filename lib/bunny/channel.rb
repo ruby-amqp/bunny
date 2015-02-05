@@ -615,6 +615,9 @@ module Bunny
       @last_basic_get_response
     end
 
+    # prefetch_count is of type short in the protocol. MK.
+    MAX_PREFETCH_COUNT = (2 ** 16) - 1
+
     # Controls message delivery rate using basic.qos AMQP 0.9.1 method.
     #
     # @param [Integer] prefetch_count How many messages can consumers on this channel be given at a time
@@ -626,6 +629,7 @@ module Bunny
     # @api public
     def basic_qos(count, global = false)
       raise ArgumentError.new("prefetch count must be a positive integer, given: #{prefetch_count}") if count < 0
+      raise ArgumentError.new("prefetch count must be no greater than #{MAX_PREFETCH_COUNT}, given: #{prefetch_count}") if count > MAX_PREFETCH_COUNT
       raise_if_no_longer_open!
 
       @connection.send_frame(AMQ::Protocol::Basic::Qos.encode(@id, 0, count, global))
