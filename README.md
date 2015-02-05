@@ -177,7 +177,6 @@ To subscribe for announcements of releases, important changes and so on, please 
 More detailed announcements can be found in the blogs
 
 * [RabbitMQ Ruby clients blog](http://blog.rubyrabbitmq.info)
-* [Bunny Blog](http://bunnyamqp.wordpress.com)
 
 
 ### Reporting Issues
