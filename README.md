@@ -239,7 +239,3 @@ on GitHub.
 ## License
 
 Released under the MIT license.
-
-
-[![Bitdeli Badge](https://d2weczhvl823v0.cloudfront.net/ruby-amqp/bunny/trend.png)](https://bitdeli.com/free "Bitdeli Badge")
-
