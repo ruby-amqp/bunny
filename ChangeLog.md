@@ -1,3 +1,13 @@
+## Changes between Bunny 1.7.0 and 1.8.0
+
+### prefetch_count is Limited to 65535
+
+Since `basic.qos`'s `prefetch_count` field is of type `short` in the protocol,
+Bunny must enforce its maximum allowed value to `2^16 - 1` to avoid
+confusing issues due to overflow.
+
+
+
 ## Changes between Bunny 1.6.0 and 1.7.0
 
 ### TLS Peer Verification Enabled by Default
