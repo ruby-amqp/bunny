@@ -46,7 +46,7 @@ Specific examples:
 
 ## Supported Ruby Versions
 
-Bunny 0.9 and more recent versions support
+Modern Bunny versions support
 
  * CRuby 2.2, 2.1, 2.0, 1.9.3, and 1.8.7
  * Rubinius 2.0+
