@@ -195,7 +195,7 @@ contributing failing test cases.
 The cleanest way to get the specs running is by starting a clean rabbitmq server
 node on your machine specifically for the bunny specs.
 
-Make sure you have a recent version of RabbitMQ (> 3.2) and run the following command
+Make sure you have a recent version of RabbitMQ (> 3.4) and run the following command
 from the base directory of the gem:
 
 `RABBITMQ_NODENAME=bunny RABBITMQ_CONFIG_FILE=./spec/config/rabbitmq RABBITMQ_ENABLED_PLUGINS_FILE=./spec/config/enabled_plugins rabbitmq-server`
