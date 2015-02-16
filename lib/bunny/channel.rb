@@ -246,6 +246,14 @@ module Bunny
       @status == :closed
     end
 
+    def to_s
+      oid = ("0x%x" % (self.object_id << 1))
+      "<#{self.class.name}:#{oid} number=#{@channel.id} @open=#{open?} connection=#{@connection.to_s}>"
+    end
+
+    def inspect
+      to_s
+    end
 
     #
     # @group Backwards compatibility with 0.8.0

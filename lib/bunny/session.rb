@@ -939,7 +939,12 @@ module Bunny
     # @return [String]
     # @api public
     def to_s
-      "#<#{self.class.name}:#{object_id} #{@user}@#{host}:#{@port}, vhost=#{@vhost}, hosts=[#{@hosts.join(',')}]>"
+      oid = ("0x%x" % (self.object_id << 1))
+      "#<#{self.class.name}:#{oid} #{@user}@#{host}:#{@port}, vhost=#{@vhost}, hosts=[#{@hosts.join(',')}]>"
+    end
+
+    def inspect
+      to_s
     end
 
     protected

@@ -88,6 +88,15 @@ module Bunny
       @arguments
     end
 
+    def to_s
+      oid = ("0x%x" % (self.object_id << 1))
+      "<#{self.class.name}:#{oid} @name=\"#{name}\" channel=#{@channel.to_s} @durable=#{@durable} @auto_delete=#{@auto_delete} @exclusive=#{@exclusive} @arguments=#{@arguments}>"
+    end
+
+    def inspect
+      to_s
+    end
+
     # Binds queue to an exchange
     #
     # @param [Bunny::Exchange,String] exchange Exchange to bind to
