@@ -213,7 +213,7 @@ And then run the specs:
 ## Other Ruby RabbitMQ Clients
 
 The other widely used Ruby RabbitMQ client is [March Hare](http://rubymarchhare.info) (JRuby-only).
-It's a mature library that require RabbitMQ 3.x.
+It's a mature library that require RabbitMQ 3.3.x or later.
 
 
 ## Contributing
