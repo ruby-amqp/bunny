@@ -224,7 +224,7 @@ First, clone the repository and run
 
 then set up RabbitMQ vhosts with
 
-    ./bin/ci/before_build.sh
+    ./bin/ci/before_build
 
 (if needed, set `RABBITMQCTL` env variable to point to `rabbitmqctl` you want to use)
 
