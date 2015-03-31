@@ -246,11 +246,6 @@ module Bunny
     end
 
     # @private
-    def self.add_default_options(name, opts, block)
-      { :exchange => name, :nowait => (block.nil? && !name.empty?) }.merge(opts)
-    end
-
-    # @private
     def self.add_default_options(name, opts)
       # :nowait is always false for Bunny
       h = { :queue => name, :nowait => false }.merge(opts)
