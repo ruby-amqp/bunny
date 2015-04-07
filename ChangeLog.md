@@ -128,11 +128,12 @@ Connection shuffling and robustness improvements.
 
 Contributed by Andre Foeken (Nedap).
 
-### Default channel
+### Default Channel Removed
 
-Rip out default channel. Breaks compatibility with Bunny 0.8.x.
+Breaks compatibility with Bunny 0.8.x.
 
-`Bunny:Session#default_channel` removed. Please open channels explicitly now
+`Bunny:Session#default_channel` was removed. Please open channels explicitly now,
+as all the examples in the docs do.
 
 
 ## Changes between Bunny 1.3.0 and 1.4.0
