@@ -128,6 +128,12 @@ Connection shuffling and robustness improvements.
 
 Contributed by Andre Foeken (Nedap).
 
+### Default channel
+
+Rip out default channel. Breaks compatibility with Bunny 0.8.x.
+
+`Bunny:Session#default_channel` removed. Please open channels explicitly now
+
 
 ## Changes between Bunny 1.3.0 and 1.4.0
 
@@ -541,7 +547,7 @@ Bunny now will use the following TLS/SSL CA's paths on Linux by default:
 and will log a warning if no CA files are available via default paths
 or `:tls_ca_certificates`.
 
-Contributed by Carl Hörberg.
+Contributed by Carl Hörberg.
 
 ### Consumers Can Be Re-Registered From Bunny::Consumer#handle_cancellation
 
