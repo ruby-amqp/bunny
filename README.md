@@ -204,7 +204,7 @@ from the base directory of the gem:
 
 Next up you'll need to prepare your node for the specs (Only once):
 
-`RABBITMQ_NODENAME=bunny ./bin/ci/before_build.sh`
+`RABBITMQ_NODENAME=bunny ./bin/ci/before_build`
 
 And then run the specs:
 
