@@ -24,7 +24,7 @@ describe Bunny::Exchange do
     source.publish("")
     sleep 0.5
 
-    queue.message_count.should be > 0
+    expect(queue.message_count).to be > 0
 
     ch.close
   end

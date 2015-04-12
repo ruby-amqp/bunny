@@ -17,9 +17,9 @@ unless defined?(JRUBY_VERSION) && !ENV["FORCE_JRUBY_RUN"]
         c.start
         ch = c.create_channel
 
-        c.should be_connected
+        expect(c).to be_connected
         c.stop
-        c.should be_closed
+        expect(c).to be_closed
       end
     end
 
@@ -29,9 +29,9 @@ unless defined?(JRUBY_VERSION) && !ENV["FORCE_JRUBY_RUN"]
         c.start
         ch = c.create_channel
 
-        c.should be_connected
+        expect(c).to be_connected
         c.stop
-        c.should be_closed
+        expect(c).to be_closed
       end
     end
 
@@ -42,9 +42,9 @@ unless defined?(JRUBY_VERSION) && !ENV["FORCE_JRUBY_RUN"]
           c.start
           ch = c.create_channel
 
-          c.should be_connected
+          expect(c).to be_connected
           c.stop
-          c.should be_closed
+          expect(c).to be_closed
         end
       end
     end

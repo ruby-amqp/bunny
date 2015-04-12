@@ -6,14 +6,13 @@ unless ENV["CI"]
   require "bunny/test_kit"
 
   describe "Long running [relatively to heartbeat interval] consumer that never publishes" do
-    let(:connection) do
-      c = Bunny.new(:user => "bunny_gem", :password => "bunny_password", :vhost => "bunny_testbed", :automatic_recovery => false, :heartbeat_interval => 6)
-      c.start
-      c
+    before :all do
+      @connection = Bunny.new(:user => "bunny_gem", :password => "bunny_password", :vhost => "bunny_testbed", :automatic_recovery => false, :heartbeat_interval => 6)
+      @connection.start
     end
 
     after :all do
-      connection.close
+      @connection.close
     end
 
     let(:target) { 512 * 1024 * 1024 }
@@ -29,7 +28,7 @@ unless ENV["CI"]
 
       ct = Thread.new do
         t  = 0
-        ch = connection.create_channel(nil, 6)
+        ch = @connection.create_channel(nil, 6)
         begin
           q  = ch.queue(queue, :exclusive => true)
 
@@ -53,7 +52,7 @@ unless ENV["CI"]
 
       pt = Thread.new do
         t  = 0
-        ch = connection.create_channel
+        ch = @connection.create_channel
         begin
           x  = ch.fanout("amq.fanout")
 

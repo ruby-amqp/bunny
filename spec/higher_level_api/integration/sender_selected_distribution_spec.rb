@@ -26,10 +26,10 @@ describe "Sender-selected distribution" do
 
     sleep 0.5
 
-    q1.message_count.should == n
-    q2.message_count.should == n
-    q3.message_count.should == n
-    q4.message_count.should be_zero
+    expect(q1.message_count).to eq n
+    expect(q2.message_count).to eq n
+    expect(q3.message_count).to eq n
+    expect(q4.message_count).to be_zero
 
     x.delete
   end

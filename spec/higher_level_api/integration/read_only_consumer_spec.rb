@@ -49,10 +49,10 @@ describe Bunny::Queue, "#subscribe" do
       x.publish("hello", :routing_key => queue_name)
 
       sleep 0.7
-      delivered_keys.should include(queue_name)
-      delivered_data.should include("hello")
+      expect(delivered_keys).to include(queue_name)
+      expect(delivered_data).to include("hello")
 
-      ch.queue(queue_name, :auto_delete => true, :durable => false).message_count.should == 0
+      expect(ch.queue(queue_name, :auto_delete => true, :durable => false).message_count).to eq 0
 
       ch.close
     end

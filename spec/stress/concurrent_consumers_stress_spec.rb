@@ -3,15 +3,14 @@ require "spec_helper"
 
 unless ENV["CI"]
   describe "Concurrent consumers sharing a connection" do
-    let(:connection) do
-      c = Bunny.new(:user => "bunny_gem", :password => "bunny_password", :vhost => "bunny_testbed",
+    before :all do
+      @connection = Bunny.new(:user => "bunny_gem", :password => "bunny_password", :vhost => "bunny_testbed",
                     :automatic_recovery => false, :continuation_timeout => 6000)
-      c.start
-      c
+      @connection.start
     end
 
     after :all do
-      connection.close
+      @connection.close
     end
 
     def any_not_drained?(qs)
@@ -25,13 +24,13 @@ unless ENV["CI"]
       let(:m) { 1000 }
 
       it "successfully drain all queues" do
-        ch   = connection.create_channel
+        ch   = @connection.create_channel
         body = "абвг"
         x    = ch.topic("bunny.stress.concurrent.consumers.topic", :durable => true)
 
         chs  = {}
         n.times do |i|
-          chs[i] = connection.create_channel
+          chs[i] = @connection.create_channel
         end
         qs   = []
 

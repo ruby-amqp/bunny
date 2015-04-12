@@ -3,21 +3,20 @@ require "spec_helper"
 
 unless ENV["CI"]
   describe "Concurrent publishers sharing a connection" do
-    let(:connection) do
-      c = Bunny.new(:user => "bunny_gem", :password => "bunny_password", :vhost => "bunny_testbed", :automatically_recover => false, :continuation_timeout => 20.0)
-      c.start
-      c
+    before :all do
+      @connection = Bunny.new(:user => "bunny_gem", :password => "bunny_password", :vhost => "bunny_testbed", :automatically_recover => false, :continuation_timeout => 20.0)
+      @connection.start
     end
 
     after :all do
-      connection.close
+      @connection.close
     end
 
     let(:concurrency) { 24 }
     let(:rate)        { 5_000 }
 
     it "successfully finish publishing" do
-      ch = connection.create_channel
+      ch = @connection.create_channel
 
       q    = ch.queue("", :exclusive => true)
       body = "сообщение"
@@ -27,7 +26,7 @@ unless ENV["CI"]
 
       chs  = {}
       concurrency.times do |i|
-        chs[i] = connection.create_channel
+        chs[i] = @connection.create_channel
       end
 
       ts = []

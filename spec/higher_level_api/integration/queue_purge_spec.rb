@@ -21,9 +21,9 @@ describe Bunny::Queue do
     x.publish("xyzzy", :routing_key => q.name)
     sleep(0.5)
 
-    q.message_count.should == 1
+    expect(q.message_count).to eq 1
     q.purge
-    q.message_count.should == 0
+    expect(q.message_count).to eq 0
 
     ch.close
   end

@@ -57,38 +57,38 @@ describe Bunny::Queue, "#subscribe" do
 
     sleep 0.7
 
-    metadata.content_type.should == "application/octet-stream"
-    metadata.priority.should     == 8
+    expect(metadata.content_type).to eq "application/octet-stream"
+    expect(metadata.priority).to     eq 8
 
     time = metadata.headers["time"]
-    time.year.should == @now.year
-    time.month.should == @now.month
-    time.day.should == @now.day
-    time.hour.should == @now.hour
-    time.min.should == @now.min
-    time.sec.should == @now.sec
+    expect(time.year).to eq @now.year
+    expect(time.month).to eq @now.month
+    expect(time.day).to eq @now.day
+    expect(time.hour).to eq @now.hour
+    expect(time.min).to eq @now.min
+    expect(time.sec).to eq @now.sec
 
-    metadata.headers["coordinates"]["latitude"].should == 59.35
-    metadata.headers["participants"].should == 11
-    metadata.headers["venue"].should == "Stockholm"
-    metadata.headers["true_field"].should == true
-    metadata.headers["false_field"].should == false
-    metadata.headers["nil_field"].should be_nil
-    metadata.headers["ary_field"].should == ["one", 2.0, 3, [{ "abc" => 123}]]
+    expect(metadata.headers["coordinates"]["latitude"]).to eq 59.35
+    expect(metadata.headers["participants"]).to eq 11
+    expect(metadata.headers["venue"]).to eq "Stockholm"
+    expect(metadata.headers["true_field"]).to eq true
+    expect(metadata.headers["false_field"]).to eq false
+    expect(metadata.headers["nil_field"]).to be_nil
+    expect(metadata.headers["ary_field"]).to eq ["one", 2.0, 3, [{ "abc" => 123}]]
 
-    metadata.timestamp.should == Time.at(@now.to_i)
-    metadata.type.should == "kinda.checkin"
-    metadata.reply_to.should == "a.sender"
-    metadata.correlation_id.should == "r-1"
-    metadata.message_id.should == "m-1"
-    metadata.app_id.should == "bunny.example"
+    expect(metadata.timestamp).to eq Time.at(@now.to_i)
+    expect(metadata.type).to eq "kinda.checkin"
+    expect(metadata.reply_to).to eq "a.sender"
+    expect(metadata.correlation_id).to eq "r-1"
+    expect(metadata.message_id).to eq "m-1"
+    expect(metadata.app_id).to eq "bunny.example"
 
-    envelope.consumer_tag.should_not be_nil
-    envelope.consumer_tag.should_not be_empty
-    envelope.should_not be_redelivered
-    envelope.delivery_tag.should == 1
-    envelope.routing_key.should  == queue_name
-    envelope.exchange.should == ""
+    expect(envelope.consumer_tag).not_to be_nil
+    expect(envelope.consumer_tag).not_to be_empty
+    expect(envelope).not_to be_redelivered
+    expect(envelope.delivery_tag).to eq 1
+    expect(envelope.routing_key).to  eq queue_name
+    expect(envelope.exchange).to eq ""
 
     ch.close
   end

@@ -57,7 +57,7 @@ unless ENV["CI"]
       x = ch.default_exchange
       x.publish("msg", :routing_key => q.name)
       sleep 0.5
-      q.message_count.should == 1
+      expect(q.message_count).to eq 1
       q.purge
     end
 
@@ -65,7 +65,7 @@ unless ENV["CI"]
       q.purge
       x.publish("msg", :routing_key => routing_key)
       sleep 0.5
-      q.message_count.should == 1
+      expect(q.message_count).to eq 1
       q.purge
     end
 
@@ -74,7 +74,7 @@ unless ENV["CI"]
       q.bind(destination, :routing_key => routing_key)
 
       source.publish("msg", :routing_key => routing_key)
-      q.message_count.should == 1
+      expect(q.message_count).to eq 1
       q.delete
     end
 
@@ -86,10 +86,10 @@ unless ENV["CI"]
       with_open do |c|
         close_all_connections!
         sleep 0.1
-        c.should_not be_open
+        expect(c).not_to be_open
 
         wait_for_recovery
-        c.should be_open
+        expect(c).to be_open
       end
     end
 
@@ -97,10 +97,10 @@ unless ENV["CI"]
       with_open_multi_host do |c|
         close_all_connections!
         sleep 0.1
-        c.should_not be_open
+        expect(c).not_to be_open
 
         wait_for_recovery
-        c.should be_open
+        expect(c).to be_open
       end
     end
 
@@ -108,10 +108,10 @@ unless ENV["CI"]
       with_open_multi_broken_host do |c|
         close_all_connections!
         sleep 0.1
-        c.should_not be_open
+        expect(c).not_to be_open
 
         wait_for_recovery
-        c.should be_open
+        expect(c).to be_open
       end
     end
 
@@ -121,11 +121,11 @@ unless ENV["CI"]
         ch2 = c.create_channel
         close_all_connections!
         sleep 0.1
-        c.should_not be_open
+        expect(c).not_to be_open
 
         wait_for_recovery
-        ch1.should be_open
-        ch2.should be_open
+        expect(ch1).to be_open
+        expect(ch2).to be_open
       end
     end
 
@@ -135,11 +135,11 @@ unless ENV["CI"]
         ch2 = c.create_channel
         close_all_connections!
         sleep 0.1
-        c.should_not be_open
+        expect(c).not_to be_open
 
         wait_for_recovery
-        ch1.should be_open
-        ch2.should be_open
+        expect(ch1).to be_open
+        expect(ch2).to be_open
       end
     end
 
@@ -149,11 +149,11 @@ unless ENV["CI"]
         ch2 = c.create_channel
         close_all_connections!
         sleep 0.1
-        c.should_not be_open
+        expect(c).not_to be_open
 
         wait_for_recovery
-        ch1.should be_open
-        ch2.should be_open
+        expect(ch1).to be_open
+        expect(ch2).to be_open
       end
     end
 
@@ -161,14 +161,14 @@ unless ENV["CI"]
       with_open do |c|
         ch = c.create_channel
         ch.prefetch(11)
-        ch.prefetch_count.should == 11
+        expect(ch.prefetch_count).to eq 11
         close_all_connections!
         sleep 0.1
-        c.should_not be_open
+        expect(c).not_to be_open
 
         wait_for_recovery
-        ch.should be_open
-        ch.prefetch_count.should == 11
+        expect(ch).to be_open
+        expect(ch.prefetch_count).to eq 11
       end
     end
 
@@ -177,14 +177,14 @@ unless ENV["CI"]
       with_open do |c|
         ch = c.create_channel
         ch.confirm_select
-        ch.should be_using_publisher_confirms
+        expect(ch).to be_using_publisher_confirms
         close_all_connections!
         sleep 0.1
-        c.should_not be_open
+        expect(c).not_to be_open
 
         wait_for_recovery
-        ch.should be_open
-        ch.should be_using_publisher_confirms
+        expect(ch).to be_open
+        expect(ch).to be_using_publisher_confirms
       end
     end
 
@@ -192,14 +192,14 @@ unless ENV["CI"]
       with_open do |c|
         ch = c.create_channel
         ch.tx_select
-        ch.should be_using_tx
+        expect(ch).to be_using_tx
         close_all_connections!
         sleep 0.1
-        c.should_not be_open
+        expect(c).not_to be_open
 
         wait_for_recovery
-        ch.should be_open
-        ch.should be_using_tx
+        expect(ch).to be_open
+        expect(ch).to be_using_tx
       end
     end
 
@@ -209,10 +209,10 @@ unless ENV["CI"]
         q  = ch.queue("bunny.tests.recovery.client-named#{rand}")
         close_all_connections!
         sleep 0.1
-        c.should_not be_open
+        expect(c).not_to be_open
 
         wait_for_recovery
-        ch.should be_open
+        expect(ch).to be_open
         ensure_queue_recovery(ch, q)
         q.delete
       end
@@ -225,10 +225,10 @@ unless ENV["CI"]
         q  = ch.queue("", :exclusive => true)
         close_all_connections!
         sleep 0.1
-        c.should_not be_open
+        expect(c).not_to be_open
 
         wait_for_recovery
-        ch.should be_open
+        expect(ch).to be_open
         ensure_queue_recovery(ch, q)
       end
     end
@@ -241,10 +241,10 @@ unless ENV["CI"]
         q.bind(x)
         close_all_connections!
         sleep 0.1
-        c.should_not be_open
+        expect(c).not_to be_open
 
         wait_for_recovery
-        ch.should be_open
+        expect(ch).to be_open
         ensure_queue_binding_recovery(x, q)
       end
     end
@@ -257,10 +257,10 @@ unless ENV["CI"]
         x2.bind(x)
         close_all_connections!
         sleep 0.1
-        c.should_not be_open
+        expect(c).not_to be_open
 
         wait_for_recovery
-        ch.should be_open
+        expect(ch).to be_open
         ensure_exchange_binding_recovery(ch, x, x2)
       end
     end
@@ -269,20 +269,20 @@ unless ENV["CI"]
       with_open do |c|
         q = "queue#{Time.now.to_i}"
         10.times { c.create_channel }
-        c.queue_exists?(q).should be_false
+        expect(c.queue_exists?(q)).to eq false
         close_all_connections!
         sleep 0.1
-        c.should_not be_open
+        expect(c).not_to be_open
 
         wait_for_recovery
-        c.queue_exists?(q).should be_false
+        expect(c.queue_exists?(q)).to eq false
         # make sure the connection isn't closed shortly after
         # due to "second 'channel.open' seen". MK.
-        c.should be_open
+        expect(c).to be_open
         sleep 0.1
-        c.should be_open
+        expect(c).to be_open
         sleep 0.1
-        c.should be_open
+        expect(c).to be_open
       end
     end
 
@@ -297,14 +297,14 @@ unless ENV["CI"]
         end
         close_all_connections!
         sleep 0.1
-        c.should_not be_open
+        expect(c).not_to be_open
 
         wait_for_recovery
-        ch.should be_open
+        expect(ch).to be_open
 
         q.publish("")
         sleep 0.5
-        expect(delivered).to be_true
+        expect(delivered).to eq true
       end
     end
 
@@ -321,12 +321,12 @@ unless ENV["CI"]
         end
         close_all_connections!
         sleep 0.1
-        c.should_not be_open
+        expect(c).not_to be_open
 
         wait_for_recovery
-        ch.should be_open
+        expect(ch).to be_open
 
-        q.consumer_count.should == n
+        expect(q.consumer_count).to eq n
       end
     end
 
@@ -343,10 +343,10 @@ unless ENV["CI"]
         end
         close_all_connections!
         sleep 0.1
-        c.should_not be_open
+        expect(c).not_to be_open
 
         wait_for_recovery
-        ch.should be_open
+        expect(ch).to be_open
 
         qs.each do |q|
           ch.queue_declare(q.name, :passive => true)

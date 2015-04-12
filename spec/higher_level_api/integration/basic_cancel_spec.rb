@@ -24,9 +24,9 @@ describe Bunny::Consumer, "#cancel" do
           delivered_data << payload
         end
 
-        consumer.consumer_tag.should_not be_nil
+        expect(consumer.consumer_tag).not_to be_nil
         cancel_ok = consumer.cancel
-        cancel_ok.consumer_tag.should == consumer.consumer_tag
+        expect(cancel_ok.consumer_tag).to eq consumer.consumer_tag
 
         ch.close
       end
@@ -37,7 +37,7 @@ describe Bunny::Consumer, "#cancel" do
       ch.default_exchange.publish("", :routing_key => queue_name)
 
       sleep 0.7
-      delivered_data.should be_empty
+      expect(delivered_data).to be_empty
     end
   end
 
@@ -70,7 +70,7 @@ describe Bunny::Consumer, "#cancel" do
       ch.default_exchange.publish("", :routing_key => queue_name)
 
       sleep 0.7
-      delivered_data.should be_empty
+      expect(delivered_data).to be_empty
     end
   end
 end

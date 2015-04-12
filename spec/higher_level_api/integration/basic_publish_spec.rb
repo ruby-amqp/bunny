@@ -15,7 +15,7 @@ if RUBY_VERSION <= "1.9"
 
     context "with all default delivery and message properties" do
       it "routes messages to a queue with the same name as the routing key" do
-        connection.should be_threaded
+        expect(connection).to be_threaded
         ch = connection.create_channel
 
         q  = ch.queue("", :exclusive => true)
@@ -27,7 +27,7 @@ if RUBY_VERSION <= "1.9"
           publish("xyzzy", :routing_key => q.name)
 
         sleep(1)
-        q.message_count.should == 4
+        expect(q.message_count).to eq 4
 
         ch.close
       end
@@ -36,7 +36,7 @@ if RUBY_VERSION <= "1.9"
 
     context "with all default delivery and message properties" do
       it "routes the messages and preserves all the metadata" do
-        connection.should be_threaded
+        expect(connection).to be_threaded
         ch = connection.create_channel
 
         q  = ch.queue("", :exclusive => true)
@@ -45,15 +45,15 @@ if RUBY_VERSION <= "1.9"
         x.publish("xyzzy", :routing_key => q.name, :persistent => true)
 
         sleep(1)
-        q.message_count.should == 1
+        expect(q.message_count).to eq 1
 
         envelope, headers, payload = q.pop
 
-        payload.should == "xyzzy"
+        expect(payload).to eq "xyzzy"
 
-        headers[:content_type].should == "application/octet-stream"
-        headers[:delivery_mode].should == 2
-        headers[:priority].should == 0
+        expect(headers[:content_type]).to eq "application/octet-stream"
+        expect(headers[:delivery_mode]).to eq 2
+        expect(headers[:priority]).to eq 0
 
         ch.close
       end
@@ -68,7 +68,7 @@ if RUBY_VERSION <= "1.9"
       end
 
       it "routes messages to a queue with the same name as the routing key" do
-        connection.should_not be_threaded
+        expect(connection).not_to be_threaded
         ch = connection.create_channel
 
         q  = ch.queue("", :exclusive => true)
@@ -80,7 +80,7 @@ if RUBY_VERSION <= "1.9"
           publish("xyzzy", :routing_key => q.name)
 
         sleep(1)
-        q.message_count.should == 4
+        expect(q.message_count).to eq 4
 
         ch.close
       end
@@ -112,11 +112,11 @@ describe "Published message" do
       x.publish("xyzzy", :routing_key => rk, :persistent => true)
 
       sleep(1)
-      q.message_count.should == 1
+      expect(q.message_count).to eq 1
 
       _, _, payload = q.pop
 
-      payload.should == "xyzzy"
+      expect(payload).to eq "xyzzy"
 
       ch.close
     end
@@ -134,11 +134,11 @@ describe "Published message" do
       x.publish("xyzzy", :routing_key => rk, :persistent => true)
 
       sleep(1)
-      q.message_count.should == 1
+      expect(q.message_count).to eq 1
 
       _, _, payload = q.pop
 
-      payload.should == "xyzzy"
+      expect(payload).to eq "xyzzy"
 
       ch.close
     end

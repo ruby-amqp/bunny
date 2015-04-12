@@ -79,7 +79,7 @@ describe "A message that is proxied by multiple intermediate consumers" do
     puts "About to sleep for #{t} seconds..."
     sleep(t)
 
-    xs.size.should == n
-    xs.last.should == "msg #{n - 1}"
+    expect(xs.size).to eq n
+    expect(xs.last).to eq "msg #{n - 1}"
   end
 end

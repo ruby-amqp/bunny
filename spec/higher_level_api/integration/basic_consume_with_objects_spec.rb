@@ -48,7 +48,7 @@ describe Bunny::Queue, "#subscribe_with" do
       sleep 2
       ch1.close
 
-      q2.message_count.should == 50
+      expect(q2.message_count).to eq 50
     end
   end
 end

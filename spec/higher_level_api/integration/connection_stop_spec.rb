@@ -20,9 +20,9 @@ describe Bunny::Session do
     c.start
     ch = c.create_channel
 
-    c.should be_connected
+    expect(c).to be_connected
     c.stop
-    c.should be_closed
+    expect(c).to be_closed
   end
 
   it "can be closed twice (Session#close is idempotent)" do
@@ -30,11 +30,11 @@ describe Bunny::Session do
     c.start
     ch = c.create_channel
 
-    c.should be_connected
+    expect(c).to be_connected
     c.stop
-    c.should be_closed
+    expect(c).to be_closed
     c.stop
-    c.should be_closed
+    expect(c).to be_closed
   end
 
   describe "in a single threaded mode" do
@@ -43,9 +43,9 @@ describe Bunny::Session do
       c.start
       ch = c.create_channel
 
-      c.should be_connected
+      expect(c).to be_connected
       c.stop
-      c.should be_closed
+      expect(c).to be_closed
     end
   end
 
@@ -56,14 +56,14 @@ describe Bunny::Session do
       c.start
       ch = c.create_channel
 
-      c.should be_open
+      expect(c).to be_open
       close_connection(c.local_port)
       sleep 0.2
-      c.should_not be_open
+      expect(c).not_to be_open
 
       wait_for_recovery
-      c.should be_open
-      ch.should be_open
+      expect(c).to be_open
+      expect(ch).to be_open
 
       c.close
     end

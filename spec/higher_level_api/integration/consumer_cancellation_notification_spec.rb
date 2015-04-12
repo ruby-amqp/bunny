@@ -34,7 +34,7 @@ describe Bunny::Channel do
       ch.queue(queue_name, :auto_delete => true).delete
 
       sleep 0.5
-      cancelled.should be_true
+      expect(cancelled).to eq true
 
       ch.close
     end
@@ -75,7 +75,7 @@ describe Bunny::Channel do
       ch.queue(queue_name, :auto_delete => true).delete
 
       sleep 0.5
-      consumer.should be_cancelled
+      expect(consumer).to be_cancelled
 
       ch.close
     end
@@ -120,7 +120,7 @@ describe Bunny::Channel do
       x.publish("abc", :routing_key => queue_name)
       sleep 0.5
       q = ch.queue("basic.consume.after_cancellation", :auto_delete => true)
-      xs.should == ["abc"]
+      expect(xs).to eq ["abc"]
 
       ch.close
     end

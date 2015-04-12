@@ -25,7 +25,7 @@ describe Bunny::Exchange, "#publish" do
       x.publish("xyzzy", :routing_key => rand.to_s, :mandatory => true)
       sleep 0.5
 
-      returned.should include("xyzzy")
+      expect(returned).to include("xyzzy")
 
       ch.close
     end

@@ -4,7 +4,7 @@ require "spec_helper"
 unless ENV["CI"]
   shared_examples_for "successful TLS connection" do
     it "succeeds" do
-      connection.should be_tls
+      expect(connection).to be_tls
       ch = connection.create_channel
 
       q  = ch.queue("", :exclusive => true)
@@ -16,15 +16,15 @@ unless ENV["CI"]
         publish("xyzzy", :routing_key => q.name)
 
       sleep 0.5
-      q.message_count.should == 4
+      expect(q.message_count).to eq 4
 
       i = 0
       q.subscribe do |delivery_info, _, payload|
         i += 1
       end
       sleep 1.0
-      i.should == 4
-      q.message_count.should == 0
+      expect(i).to eq 4
+      expect(q.message_count).to eq 0
 
       ch.close
     end
@@ -150,7 +150,7 @@ unless ENV["CI"]
     include_examples "successful TLS connection"
 
     it "connects using TLSv1" do
-      connection.transport.socket.ssl_version.should == "TLSv1"
+      expect(connection.transport.socket.ssl_version).to eq "TLSv1"
     end
   end
 end

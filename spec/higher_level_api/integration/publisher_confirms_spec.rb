@@ -11,10 +11,10 @@ describe Bunny::Channel do
     context "when publishing with confirms enabled" do
       it "increments delivery index" do
         ch = connection.create_channel
-        ch.should_not be_using_publisher_confirmations
+        expect(ch).not_to be_using_publisher_confirmations
 
         ch.confirm_select
-        ch.should be_using_publisher_confirmations
+        expect(ch).to be_using_publisher_confirmations
 
         q  = ch.queue("", :exclusive => true)
         x  = ch.default_exchange
@@ -23,11 +23,11 @@ describe Bunny::Channel do
           x.publish("xyzzy", :routing_key => q.name)
         end
 
-        ch.next_publish_seq_no.should == n + 1
-        ch.wait_for_confirms.should be_true
+        expect(ch.next_publish_seq_no).to eq n + 1
+        expect(ch.wait_for_confirms).to eq true
         sleep 0.25
 
-        q.message_count.should == n
+        expect(q.message_count).to eq n
         q.purge
 
         ch.close
@@ -36,10 +36,10 @@ describe Bunny::Channel do
       describe "#wait_for_confirms" do
         it "should not hang when all the publishes are confirmed" do
           ch = connection.create_channel
-          ch.should_not be_using_publisher_confirmations
+          expect(ch).not_to be_using_publisher_confirmations
 
           ch.confirm_select
-          ch.should be_using_publisher_confirmations
+          expect(ch).to be_using_publisher_confirmations
 
           q  = ch.queue("", :exclusive => true)
           x  = ch.default_exchange
@@ -48,14 +48,14 @@ describe Bunny::Channel do
             x.publish("xyzzy", :routing_key => q.name)
           end
 
-          ch.next_publish_seq_no.should == n + 1
-          ch.wait_for_confirms.should be_true
+          expect(ch.next_publish_seq_no).to eq n + 1
+          expect(ch.wait_for_confirms).to eq true
 
           sleep 0.25
 
           expect {
             Bunny::Timeout.timeout(2) do
-              ch.wait_for_confirms.should be_true
+              expect(ch.wait_for_confirms).to eq true
             end
           }.not_to raise_error
 
@@ -65,10 +65,10 @@ describe Bunny::Channel do
       context "when some of the messages get nacked" do
         it "puts the nacks in the nacked_set" do
           ch = connection.create_channel
-          ch.should_not be_using_publisher_confirmations
+          expect(ch).not_to be_using_publisher_confirmations
 
           ch.confirm_select
-          ch.should be_using_publisher_confirmations
+          expect(ch).to be_using_publisher_confirmations
 
           q  = ch.queue("", :exclusive => true)
           x  = ch.default_exchange
@@ -85,17 +85,17 @@ describe Bunny::Channel do
             ch.handle_ack_or_nack(nacked_tag, false, true)
           end
 
-          ch.nacked_set.should_not be_empty
-          ch.nacked_set.should include(nacked_tag)
+          expect(ch.nacked_set).not_to be_empty
+          expect(ch.nacked_set).to include(nacked_tag)
 
-          ch.next_publish_seq_no.should == n + 1
-          ch.wait_for_confirms.should be_false
+          expect(ch.next_publish_seq_no).to eq n + 1
+          expect(ch.wait_for_confirms).to eq false
 
-          ch.nacked_set.should_not be_empty
-          ch.nacked_set.should include(nacked_tag)
+          expect(ch.nacked_set).not_to be_empty
+          expect(ch.nacked_set).to include(nacked_tag)
 
           sleep 0.25
-          q.message_count.should == n
+          expect(q.message_count).to eq n
           q.purge
 
           ch.close
