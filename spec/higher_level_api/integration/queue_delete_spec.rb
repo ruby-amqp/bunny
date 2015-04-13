@@ -22,7 +22,7 @@ describe Bunny::Queue, "#delete" do
       # no exception as of RabbitMQ 3.2. MK.
       q.delete
 
-      ch.queues.size.should == 0
+      expect(ch.queues.size).to eq 0
     end
   end
 

@@ -18,7 +18,7 @@ describe Bunny::Queue do
       ch   = connection.create_channel
 
       q    = ch.queue(name)
-      q.name.should == name
+      expect(q.name).to eq name
 
       q.delete
       ch.close
@@ -28,7 +28,7 @@ describe Bunny::Queue do
       ch   = connection.create_channel
 
       q = ch.queue(name)
-      ch.queue(name).object_id.should == q.object_id
+      expect(ch.queue(name).object_id).to eq q.object_id
 
       q.delete
       ch.close
@@ -41,9 +41,9 @@ describe Bunny::Queue do
       ch   = connection.create_channel
 
       q = ch.queue("")
-      q.name.should_not be_empty
-      q.name.should =~ /^amq.gen.+/
-      q.should be_server_named
+      expect(q.name).not_to be_empty
+      expect(q.name).to match /^amq.gen.+/
+      expect(q).to be_server_named
       q.delete
 
       ch.close
@@ -56,10 +56,10 @@ describe Bunny::Queue do
       ch   = connection.create_channel
 
       q = ch.queue("bunny.tests.queues.durable", :durable => true)
-      q.should be_durable
-      q.should_not be_auto_delete
-      q.should_not be_exclusive
-      q.arguments.should be_nil
+      expect(q).to be_durable
+      expect(q).not_to be_auto_delete
+      expect(q).not_to be_exclusive
+      expect(q.arguments).to be_nil
       q.delete
 
       ch.close
@@ -72,8 +72,8 @@ describe Bunny::Queue do
       ch   = connection.create_channel
 
       q = ch.queue("bunny.tests.queues.exclusive", :exclusive => true)
-      q.should be_exclusive
-      q.should_not be_durable
+      expect(q).to be_exclusive
+      expect(q).not_to be_durable
       q.delete
 
       ch.close
@@ -86,9 +86,9 @@ describe Bunny::Queue do
       ch   = connection.create_channel
 
       q = ch.queue("bunny.tests.queues.auto-delete", :auto_delete => true)
-      q.should be_auto_delete
-      q.should_not be_exclusive
-      q.should_not be_durable
+      expect(q).to be_auto_delete
+      expect(q).not_to be_exclusive
+      expect(q).not_to be_durable
       q.delete
 
       ch.close
@@ -107,7 +107,7 @@ describe Bunny::Queue do
         ch.queue_declare("bunny.tests.queues.auto-delete", :auto_delete => false, :durable => true)
       }.to raise_error(Bunny::PreconditionFailed)
 
-      ch.should be_closed
+      expect(ch).to be_closed
     end
   end
 
@@ -122,14 +122,14 @@ describe Bunny::Queue do
       ch   = connection.create_channel
 
       q = ch.queue("bunny.tests.queues.with-arguments.ttl", :arguments => args, :exclusive => true)
-      q.arguments.should == args
+      expect(q.arguments).to eq args
 
       q.publish("xyzzy")
       sleep 0.1
 
-      q.message_count.should == 1
+      expect(q.message_count).to eq 1
       sleep 1.5
-      q.message_count.should == 0
+      expect(q.message_count).to eq 0
 
       ch.close
     end
@@ -142,13 +142,13 @@ describe Bunny::Queue do
         ch = connection.create_channel
         q  = ch.queue("", :exlusive => true)
 
-        connection.queue_exists?(q.name).should be_true
+        expect(connection.queue_exists?(q.name)).to eq true
       end
     end
 
     context "when a queue DOES NOT exist" do
       it "returns false" do
-        connection.queue_exists?("suf89u9a4jo3ndnakls##{Time.now.to_i}").should be_false
+        expect(connection.queue_exists?("suf89u9a4jo3ndnakls##{Time.now.to_i}")).to eq false
       end
     end
   end
@@ -169,18 +169,18 @@ describe Bunny::Queue do
         ch   = connection.create_channel
 
         q = ch.queue("bunny.tests.queues.with-arguments.max-length", :arguments => args, :exclusive => true)
-        q.arguments.should == args
+        expect(q.arguments).to eq args
 
         (n * 10).times do
           q.publish("xyzzy")
         end
 
-        q.message_count.should == n
+        expect(q.message_count).to eq n
         (n * 5).times do
           q.publish("xyzzy")
         end
 
-        q.message_count.should == n
+        expect(q.message_count).to eq n
         q.delete
 
         ch.close

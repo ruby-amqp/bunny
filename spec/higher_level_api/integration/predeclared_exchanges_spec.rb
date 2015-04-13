@@ -16,7 +16,7 @@ describe "amq.* exchanges" do
 
     ["amq.fanout", "amq.direct", "amq.topic", "amq.match", "amq.headers"].each do |e|
       x = ch.exchange(e)
-      x.should be_predeclared
+      expect(x).to be_predeclared
     end
 
     ch.close

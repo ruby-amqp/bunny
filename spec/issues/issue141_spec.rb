@@ -1,22 +1,21 @@
 require "spec_helper"
 
 describe "Registering 2nd exclusive consumer on queue" do
-  let(:connection) do
-    c = Bunny.new(:user => "bunny_gem", :password => "bunny_password", :vhost => "bunny_testbed")
-    c.start
-    c
+    before :all do
+    @connection = Bunny.new(:user => "bunny_gem", :password => "bunny_password", :vhost => "bunny_testbed")
+    @connection.start
   end
 
   after :each do
-    connection.close if connection.open?
+    @connection.close if @connection.open?
   end
 
 
   it "raises a meaningful exception" do
     xs  = []
 
-    ch1 = connection.create_channel
-    ch2 = connection.create_channel
+    ch1 = @connection.create_channel
+    ch2 = @connection.create_channel
     q1  = ch1.queue("", :auto_delete => true)
     q2  = ch2.queue(q1.name, :auto_delete => true, :passive => true)
 
@@ -25,19 +24,19 @@ describe "Registering 2nd exclusive consumer on queue" do
     end
     sleep 0.1
 
-    lambda do
+    expect do
       q2.subscribe(:exclusive => true) do |_, _, _|
       end
-    end.should raise_error(Bunny::AccessRefused)
+    end.to raise_error(Bunny::AccessRefused)
 
-    ch1.should be_open
-    ch2.should be_closed
+    expect(ch1).to be_open
+    expect(ch2).to be_closed
 
     q1.publish("abc")
     sleep 0.1
 
     # verify that the first consumer is fine
-    xs.should == ["abc"]
+    expect(xs).to eq ["abc"]
 
     q1.delete
   end

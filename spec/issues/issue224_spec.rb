@@ -28,10 +28,10 @@ unless ENV["CI"]
         x.publish(as, :routing_key => q.name, :persistent => true)
 
         sleep(1)
-        q.message_count.should == 1
+        expect(q.message_count).to eq 1
 
         _, _, payload      = q.pop
-        payload.bytesize.should == as.bytesize
+        expect(payload.bytesize).to eq as.bytesize
 
         ch.close
       end

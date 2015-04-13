@@ -12,7 +12,7 @@ describe Bunny::Channel, "#recover" do
   end
 
   it "is supported" do
-    subject.recover(true).should be_instance_of(AMQ::Protocol::Basic::RecoverOk)
-    subject.recover(true).should be_instance_of(AMQ::Protocol::Basic::RecoverOk)
+    expect(subject.recover(true)).to be_instance_of(AMQ::Protocol::Basic::RecoverOk)
+    expect(subject.recover(true)).to be_instance_of(AMQ::Protocol::Basic::RecoverOk)
   end
 end

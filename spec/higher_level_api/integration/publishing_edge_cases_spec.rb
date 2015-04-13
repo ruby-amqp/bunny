@@ -28,10 +28,10 @@ unless ENV["CI"]
         x.publish(as, :routing_key => q.name, :persistent => true)
 
         sleep(1)
-        q.message_count.should == 1
+        expect(q.message_count).to eq 1
 
         _, _, payload      = q.pop
-        payload.bytesize.should == as.bytesize
+        expect(payload.bytesize).to eq as.bytesize
 
         ch.close
       end
@@ -49,10 +49,10 @@ unless ENV["CI"]
         x.publish(as, :routing_key => q.name, :persistent => true)
 
         sleep(1)
-        q.message_count.should == 1
+        expect(q.message_count).to eq 1
 
         _, _, payload      = q.pop
-        payload.bytesize.should == as.bytesize
+        expect(payload.bytesize).to eq as.bytesize
 
         ch.close
       end
@@ -70,15 +70,15 @@ unless ENV["CI"]
         x.publish("", :routing_key => q.name, :persistent => false, :mandatory => true)
 
         sleep(0.5)
-        q.message_count.should == 1
+        expect(q.message_count).to eq 1
 
         envelope, headers, payload = q.pop
 
-        payload.should == ""
+        expect(payload).to eq ""
 
-        headers[:content_type].should == "application/octet-stream"
-        headers[:delivery_mode].should == 1
-        headers[:priority].should == 0
+        expect(headers[:content_type]).to eq "application/octet-stream"
+        expect(headers[:delivery_mode]).to eq 1
+        expect(headers[:priority]).to eq 0
 
         ch.close
       end

@@ -21,7 +21,7 @@ describe Bunny::Exchange, "#delete" do
       # no exception as of RabbitMQ 3.2. MK.
       x.delete
 
-      ch.exchanges.size.should == 0
+      expect(ch.exchanges.size).to eq 0
     end
   end
 
@@ -43,7 +43,7 @@ describe Bunny::Exchange, "#delete" do
       ch = connection.create_channel
       x  = ch.direct('amq.direct')
 
-      x.delete.should == nil
+      expect(x.delete).to eq nil
     end
   end
 
@@ -52,7 +52,7 @@ describe Bunny::Exchange, "#delete" do
       ch = connection.create_channel
       x  = ch.fanout('amq.fanout')
 
-      x.delete.should == nil
+      expect(x.delete).to eq nil
     end
   end
 
@@ -61,7 +61,7 @@ describe Bunny::Exchange, "#delete" do
       ch = connection.create_channel
       x  = ch.topic('amq.topic')
 
-      x.delete.should == nil
+      expect(x.delete).to eq nil
     end
   end
 
@@ -70,7 +70,7 @@ describe Bunny::Exchange, "#delete" do
       ch = connection.create_channel
       x  = ch.headers('amq.headers')
 
-      x.delete.should == nil
+      expect(x.delete).to eq nil
     end
   end
 
@@ -79,7 +79,7 @@ describe Bunny::Exchange, "#delete" do
       ch = connection.create_channel
       x  = ch.headers('amq.match')
 
-      x.delete.should == nil
+      expect(x.delete).to eq nil
     end
   end
 
@@ -89,16 +89,16 @@ describe Bunny::Exchange, "#delete" do
       it "returns true" do
         ch = connection.create_channel
 
-        connection.exchange_exists?("amq.fanout").should be_true
-        connection.exchange_exists?("amq.direct").should be_true
-        connection.exchange_exists?("amq.topic").should be_true
-        connection.exchange_exists?("amq.match").should be_true
+        expect(connection.exchange_exists?("amq.fanout")).to eq true
+        expect(connection.exchange_exists?("amq.direct")).to eq true
+        expect(connection.exchange_exists?("amq.topic")).to eq true
+        expect(connection.exchange_exists?("amq.match")).to eq true
       end
     end
 
     context "when a exchange DOES NOT exist" do
       it "returns false" do
-        connection.exchange_exists?("suf89u9a4jo3ndnakls##{Time.now.to_i}").should be_false
+        expect(connection.exchange_exists?("suf89u9a4jo3ndnakls##{Time.now.to_i}")).to eq false
       end
     end
   end

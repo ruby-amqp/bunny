@@ -14,7 +14,7 @@ describe Bunny::Channel, "#prefetch" do
   context "with a positive integer < 65535" do
     it "sets that prefetch level via basic.qos" do
       ch = connection.create_channel
-      ch.prefetch(10).should be_instance_of(AMQ::Protocol::Basic::QosOk)
+      expect(ch.prefetch(10)).to be_instance_of(AMQ::Protocol::Basic::QosOk)
     end
   end
 

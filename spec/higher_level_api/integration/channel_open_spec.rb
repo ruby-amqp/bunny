@@ -13,17 +13,17 @@ describe Bunny::Channel, "when opened" do
 
   context "without explicitly provided id" do
     it "gets an allocated id and is successfully opened" do
-      connection.should be_connected
+      expect(connection).to be_connected
       ch = connection.create_channel
-      ch.should be_open
+      expect(ch).to be_open
 
-      ch.id.should be > 0
+      expect(ch.id).to be > 0
     end
   end
 
   context "with an explicitly provided id = 0" do
     it "raises ArgumentError" do
-      connection.should be_connected
+      expect(connection).to be_connected
       expect {
         connection.create_channel(0)
       }.to raise_error(ArgumentError)
@@ -34,10 +34,10 @@ describe Bunny::Channel, "when opened" do
   context "with explicitly provided id" do
     it "uses that id and is successfully opened" do
       ch = connection.create_channel(767)
-      connection.should be_connected
-      ch.should be_open
+      expect(connection).to be_connected
+      expect(ch).to be_open
 
-      ch.id.should == 767
+      expect(ch.id).to eq 767
     end
   end
 
@@ -46,12 +46,12 @@ describe Bunny::Channel, "when opened" do
   context "with explicitly provided id that is already taken" do
     it "reuses the channel that is already opened" do
       ch = connection.create_channel(767)
-      connection.should be_connected
-      ch.should be_open
+      expect(connection).to be_connected
+      expect(ch).to be_open
 
-      ch.id.should == 767
+      expect(ch.id).to eq 767
 
-      connection.create_channel(767).should == ch
+      expect(connection.create_channel(767)).to eq ch
     end
   end
 end

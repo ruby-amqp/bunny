@@ -24,10 +24,10 @@ describe Bunny::Session do
       session = described_class.new("amqp://127.0.0.1")
       session.start
 
-      session.vhost.should == "/"
-      session.host.should == "127.0.0.1"
-      session.port.should == 5672
-      session.ssl?.should be_false
+      expect(session.vhost).to eq "/"
+      expect(session.host).to eq "127.0.0.1"
+      expect(session.port).to eq 5672
+      expect(session.ssl?).to eq false
 
       session.close
     end
@@ -37,15 +37,15 @@ describe Bunny::Session do
       it "parses vhost as an empty string" do
         session = described_class.new("amqp://127.0.0.1/")
 
-        session.hostname.should == "127.0.0.1"
-        session.port.should == 5672
-        session.vhost.should == ""
+        expect(session.hostname).to eq "127.0.0.1"
+        expect(session.port).to eq 5672
+        expect(session.vhost).to eq ""
       end
     end
 
     context "when URI is amqp://dev.rabbitmq.com/a/path/with/slashes" do
       it "raises an ArgumentError" do
-        lambda { described_class.new("amqp://dev.rabbitmq.com/a/path/with/slashes") }.should raise_error(ArgumentError)
+        expect { described_class.new("amqp://dev.rabbitmq.com/a/path/with/slashes") }.to raise_error(ArgumentError)
       end
     end
   end
@@ -57,7 +57,7 @@ describe Bunny::Session do
     it "provides a way to fine tune socket options" do
       conn = Bunny.new
       conn.start
-      conn.transport.socket.should respond_to(:setsockopt)
+      expect(conn.transport.socket).to respond_to(:setsockopt)
 
       conn.close
     end
@@ -65,16 +65,16 @@ describe Bunny::Session do
     it "successfully negotiates the connection" do
       conn = Bunny.new
       conn.start
-      conn.should be_connected
+      expect(conn).to be_connected
 
-      conn.server_properties.should_not be_nil
-      conn.server_capabilities.should_not be_nil
+      expect(conn.server_properties).not_to be_nil
+      expect(conn.server_capabilities).not_to be_nil
 
       props = conn.server_properties
 
-      props["product"].should_not be_nil
-      props["platform"].should_not be_nil
-      props["version"].should_not be_nil
+      expect(props["product"]).not_to be_nil
+      expect(props["platform"]).not_to be_nil
+      expect(props["version"]).not_to be_nil
 
       conn.close
     end
@@ -85,16 +85,16 @@ describe Bunny::Session do
       it "successfully connects" do
         conn = described_class.new(:connection_timeout => 5)
         conn.start
-        conn.should be_connected
+        expect(conn).to be_connected
 
-        conn.server_properties.should_not be_nil
-        conn.server_capabilities.should_not be_nil
+        expect(conn.server_properties).not_to be_nil
+        expect(conn.server_capabilities).not_to be_nil
 
         props = conn.server_properties
 
-        props["product"].should_not be_nil
-        props["platform"].should_not be_nil
-        props["version"].should_not be_nil
+        expect(props["product"]).not_to be_nil
+        expect(props["platform"]).not_to be_nil
+        expect(props["version"]).not_to be_nil
 
         conn.close
       end
@@ -111,16 +111,16 @@ describe Bunny::Session do
       end
 
       it "uses hostname = 127.0.0.1" do
-        subject.host.should == host
-        subject.hostname.should == host
+        expect(subject.host).to eq host
+        expect(subject.hostname).to eq host
       end
 
       it "uses port 5672" do
-        subject.port.should == port
+        expect(subject.port).to eq port
       end
 
       it "uses username = guest" do
-        subject.username.should == username
+        expect(subject.username).to eq username
       end
     end
 
@@ -133,17 +133,17 @@ describe Bunny::Session do
       let(:subject) { described_class.new(:hostname => host) }
 
       it "uses hostname = localhost" do
-        subject.host.should == host
-        subject.hostname.should == host
+        expect(subject.host).to eq host
+        expect(subject.hostname).to eq host
       end
 
       it "uses port 5672" do
-        subject.port.should == port
+        expect(subject.port).to eq port
       end
 
       it "uses username = guest" do
-        subject.username.should == username
-        subject.user.should == username
+        expect(subject.username).to eq username
+        expect(subject.user).to eq username
       end
     end
 
@@ -157,17 +157,17 @@ describe Bunny::Session do
       let(:subject) { described_class.new(:hosts => hosts) }
 
       it "uses hostname = localhost" do
-        subject.host.should == host
-        subject.hostname.should == host
+        expect(subject.host).to eq host
+        expect(subject.hostname).to eq host
       end
 
       it "uses port 5672" do
-        subject.port.should == port
+        expect(subject.port).to eq port
       end
 
       it "uses username = guest" do
-        subject.username.should == username
-        subject.user.should == username
+        expect(subject.username).to eq username
+        expect(subject.user).to eq username
       end
     end
 
@@ -184,7 +184,7 @@ describe Bunny::Session do
       # for future releases. MK.
       it "negotiates channel max to be 1024" do
         subject.start
-        subject.channel_max.should == channel_max
+        expect(subject.channel_max).to eq channel_max
 
         subject.close
       end
@@ -202,7 +202,7 @@ describe Bunny::Session do
       end
 
       it "uses TLS port" do
-        subject.port.should == tls_port
+        expect(subject.port).to eq tls_port
       end
     end
 
@@ -218,7 +218,7 @@ describe Bunny::Session do
       end
 
       it "uses TLS port" do
-        subject.port.should == tls_port
+        expect(subject.port).to eq tls_port
       end
     end
   end
@@ -241,38 +241,38 @@ describe Bunny::Session do
 
     it "successfully connects" do
       5.times { subject.start }
-      subject.should be_connected
+      expect(subject).to be_connected
 
-      subject.server_properties.should_not be_nil
-      subject.server_capabilities.should_not be_nil
+      expect(subject.server_properties).not_to be_nil
+      expect(subject.server_capabilities).not_to be_nil
 
       props = subject.server_properties
 
-      props["product"].should_not be_nil
-      props["platform"].should_not be_nil
-      props["version"].should_not be_nil
+      expect(props["product"]).not_to be_nil
+      expect(props["platform"]).not_to be_nil
+      expect(props["version"]).not_to be_nil
     end
 
     it "uses hostname = 127.0.0.1" do
-      subject.host.should == host
-      subject.hostname.should == host
+      expect(subject.host).to eq host
+      expect(subject.hostname).to eq host
     end
 
     it "uses port 5672" do
-      subject.port.should == port
+      expect(subject.port).to eq port
     end
 
     it "uses provided vhost" do
-      subject.vhost.should == vhost
-      subject.virtual_host.should == vhost
+      expect(subject.vhost).to eq vhost
+      expect(subject.virtual_host).to eq vhost
     end
 
     it "uses provided username" do
-      subject.username.should == username
+      expect(subject.username).to eq username
     end
 
     it "uses provided password" do
-      subject.password.should == password
+      expect(subject.password).to eq password
     end
   end
 
@@ -294,33 +294,33 @@ describe Bunny::Session do
 
     it "successfully connects" do
       subject.start
-      subject.should be_connected
+      expect(subject).to be_connected
 
-      subject.server_properties.should_not be_nil
-      subject.server_capabilities.should_not be_nil
+      expect(subject.server_properties).not_to be_nil
+      expect(subject.server_capabilities).not_to be_nil
 
       props = subject.server_properties
 
-      props["product"].should_not be_nil
-      props["platform"].should_not be_nil
-      props["version"].should_not be_nil
+      expect(props["product"]).not_to be_nil
+      expect(props["platform"]).not_to be_nil
+      expect(props["version"]).not_to be_nil
     end
 
     it "uses hostname = 127.0.0.1" do
-      subject.host.should == host
-      subject.hostname.should == host
+      expect(subject.host).to eq host
+      expect(subject.hostname).to eq host
     end
 
     it "uses port 5672" do
-      subject.port.should == port
+      expect(subject.port).to eq port
     end
 
     it "uses provided username" do
-      subject.username.should == username
+      expect(subject.username).to eq username
     end
 
     it "uses provided password" do
-      subject.password.should == password
+      expect(subject.password).to eq password
     end
   end
 
@@ -344,21 +344,21 @@ describe Bunny::Session do
 
     it "successfully connects" do
       subject.start
-      subject.should be_connected
+      expect(subject).to be_connected
 
-      subject.server_properties.should_not be_nil
-      subject.server_capabilities.should_not be_nil
+      expect(subject.server_properties).not_to be_nil
+      expect(subject.server_capabilities).not_to be_nil
 
       props = subject.server_properties
 
-      props["product"].should_not be_nil
-      props["platform"].should_not be_nil
-      props["version"].should_not be_nil
-      props["capabilities"].should_not be_nil
+      expect(props["product"]).not_to be_nil
+      expect(props["platform"]).not_to be_nil
+      expect(props["version"]).not_to be_nil
+      expect(props["capabilities"]).not_to be_nil
 
       # this is negotiated with RabbitMQ, so we need to
       # establish the connection first
-      subject.heartbeat.should == interval
+      expect(subject.heartbeat).to eq interval
     end
   end
 
@@ -376,27 +376,27 @@ describe Bunny::Session do
     end
 
     it "fails to connect" do
-      lambda do
+      expect do
         subject.start
-      end.should raise_error(Bunny::PossibleAuthenticationFailureError)
+      end.to raise_error(Bunny::PossibleAuthenticationFailureError)
     end
 
     it "uses provided username" do
-      subject.username.should == username
+      expect(subject.username).to eq username
     end
 
     it "uses provided password" do
-      subject.password.should == password
+      expect(subject.password).to eq password
     end
   end
 
 
   context "initialized with unreachable host or port" do
     it "fails to connect" do
-      lambda do
+      expect do
         c = described_class.new(:port => 38000)
         c.start
-      end.should raise_error(Bunny::TCPConnectionFailed)
+      end.to raise_error(Bunny::TCPConnectionFailed)
     end
 
     it "is not connected" do
@@ -407,7 +407,7 @@ describe Bunny::Session do
         true
       end
 
-      subject.status.should == :not_connected
+      expect(subject.status).to eq :not_connected
     end
 
     it "is not open" do
@@ -418,7 +418,7 @@ describe Bunny::Session do
         true
       end
 
-      subject.should_not be_open
+      expect(subject).not_to be_open
     end
   end
 
@@ -431,7 +431,7 @@ describe Bunny::Session do
       conn = described_class.new(:hostname => "localhost", :logger => logger)
       conn.start
 
-      io.string.length.should > 100
+      expect(io.string.length).to be > 100
 
       conn.close
     end

@@ -230,7 +230,7 @@ then set up RabbitMQ vhosts with
 
 and then run tests with
 
-    CI=true ./bin/rspec -cfs spec
+    CI=true ./bin/rspec -cf documentation spec
 
 After that create a branch and make your changes on it. Once you are done with your changes and all tests pass, submit a pull request
 on GitHub.

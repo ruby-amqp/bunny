@@ -2,14 +2,14 @@ require "spec_helper"
 
 describe Bunny do
   it "has library version" do
-    Bunny::VERSION.should_not be_nil
-    Bunny.version.should_not be_nil
+    expect(Bunny::VERSION).not_to be_nil
+    expect(Bunny.version).not_to be_nil
   end
 
 
   it "has AMQP protocol version" do
-    Bunny::PROTOCOL_VERSION.should == "0.9.1"
-    AMQ::Protocol::PROTOCOL_VERSION.should == "0.9.1"
-    Bunny.protocol_version.should == "0.9.1"
+    expect(Bunny::PROTOCOL_VERSION).to eq "0.9.1"
+    expect(AMQ::Protocol::PROTOCOL_VERSION).to eq "0.9.1"
+    expect(Bunny.protocol_version).to eq "0.9.1"
   end
 end

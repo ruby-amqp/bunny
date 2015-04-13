@@ -18,7 +18,7 @@ describe "Rapidly opening and closing lots of channels" do
       xs = Array.new(n) { @connection.create_channel }
       puts "Opened #{n} channels"
 
-      xs.size.should == n
+      expect(xs.size).to eq n
       xs.each do |ch|
         ch.close
       end

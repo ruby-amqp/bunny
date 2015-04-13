@@ -20,6 +20,6 @@ describe Bunny::Channel, "#with_channel" do
       end
     rescue Exception
     end
-    ch.should be_closed
+    expect(ch).to be_closed
   end
 end

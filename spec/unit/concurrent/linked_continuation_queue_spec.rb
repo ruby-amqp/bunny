@@ -14,7 +14,7 @@ if defined?(JRUBY_VERSION)
         t.abort_on_exception = true
 
         v = subject.poll(500)
-        v.should == 10
+        expect(v).to eq 10
       end
     end
 
@@ -28,7 +28,7 @@ if defined?(JRUBY_VERSION)
         end
         t.abort_on_exception = true
 
-        lambda { subject.poll(500) }.should raise_error(::Timeout::Error)
+        expect { subject.poll(500) }.to raise_error(::Timeout::Error)
       end
     end
   end

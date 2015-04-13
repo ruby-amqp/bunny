@@ -30,7 +30,7 @@ describe Bunny::Queue, "#pop" do
       expect(get_ok.routing_key).to eq(q.name)
       expect(get_ok.delivery_tag).to be_kind_of(Bunny::VersionedDeliveryTag)
       expect(content).to eq(msg)
-      q.message_count.should == 0
+      expect(q.message_count).to eq 0
 
       ch.close
     end
@@ -48,7 +48,7 @@ describe Bunny::Queue, "#pop" do
       expect(get_empty).to eq(nil)
       expect(properties).to eq(nil)
       expect(content).to eq(nil)
-      q.message_count.should == 0
+      expect(q.message_count).to eq 0
 
       ch.close
     end

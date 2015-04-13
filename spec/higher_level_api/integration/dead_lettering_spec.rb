@@ -23,15 +23,15 @@ describe "A message" do
     sleep 0.2
 
     delivery_info, _, _ = q.pop(:manual_ack => true)
-    dlq.message_count.should be_zero
+    expect(dlq.message_count).to be_zero
     ch.nack(delivery_info.delivery_tag)
 
     sleep 0.2
-    q.message_count.should be_zero
+    expect(q.message_count).to be_zero
 
     delivery, properties, body = dlq.pop
     ds = properties.headers["x-death"]
-    ds.should_not be_empty
+    expect(ds).not_to be_empty
     expect(ds.first["reason"]).to eq("rejected")
 
     dlx.delete
@@ -48,8 +48,8 @@ describe "A message" do
     x.publish("")
     sleep 0.2
 
-    q.message_count.should be_zero
-    dlq.message_count.should == 1
+    expect(q.message_count).to be_zero
+    expect(dlq.message_count).to eq 1
 
     dlx.delete
   end
@@ -67,7 +67,7 @@ describe "A message" do
 
     delivery, properties, body = dlq.pop
     ds = properties.headers["x-death"]
-    ds.should_not be_empty
+    expect(ds).not_to be_empty
     expect(ds.first["reason"]).to eq("expired")
 
     dlx.delete

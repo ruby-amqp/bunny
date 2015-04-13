@@ -35,10 +35,10 @@ describe Bunny::Queue, "#subscribe" do
       x.publish("hello", :routing_key => queue_name)
 
       sleep 0.7
-      delivered_keys.should include(queue_name)
-      delivered_data.should include("hello")
+      expect(delivered_keys).to include(queue_name)
+      expect(delivered_data).to include("hello")
 
-      ch.queue(queue_name, :auto_delete => true, :durable => false).message_count.should == 0
+      expect(ch.queue(queue_name, :auto_delete => true, :durable => false).message_count).to eq 0
 
       ch.close
     end
@@ -63,9 +63,9 @@ describe Bunny::Queue, "#subscribe" do
         end
 
         sleep 1.0
-        delivery_tags.should == SortedSet.new(Range.new(1, 100).to_a)
+        expect(delivery_tags).to eq SortedSet.new(Range.new(1, 100).to_a)
 
-        ch.queue(queue_name, :auto_delete => true, :durable => false).message_count.should == 0
+        expect(ch.queue(queue_name, :auto_delete => true, :durable => false).message_count).to eq 0
 
         ch.close
       end
@@ -95,9 +95,9 @@ describe Bunny::Queue, "#subscribe" do
         end
 
         sleep 1.5
-        delivery_tags.should == SortedSet.new(Range.new(1, 100).to_a)
+        expect(delivery_tags).to eq SortedSet.new(Range.new(1, 100).to_a)
 
-        ch.queue(queue_name, :auto_delete => true, :durable => false).message_count.should == 0
+        expect(ch.queue(queue_name, :auto_delete => true, :durable => false).message_count).to eq 0
 
         ch.close
       end
@@ -129,10 +129,10 @@ describe Bunny::Queue, "#subscribe" do
       x.publish("hello", :routing_key => queue_name)
 
       sleep 0.7
-      delivered_keys.should include(queue_name)
-      delivered_data.should include("hello")
+      expect(delivered_keys).to include(queue_name)
+      expect(delivered_data).to include("hello")
 
-      ch.queue(queue_name, :auto_delete => true, :durable => false).message_count.should == 0
+      expect(ch.queue(queue_name, :auto_delete => true, :durable => false).message_count).to eq 0
 
       ch.close
     end
@@ -154,7 +154,7 @@ describe Bunny::Queue, "#subscribe" do
         end
 
         sleep 0.7
-        q.message_count.should be > 50
+        expect(q.message_count).to be > 50
 
         t = Thread.new do
           ch = connection.create_channel
@@ -167,10 +167,10 @@ describe Bunny::Queue, "#subscribe" do
         t.abort_on_exception = true
         sleep 0.5
 
-        delivered_keys.should include(queue_name)
-        delivered_data.should include("hello")
+        expect(delivered_keys).to include(queue_name)
+        expect(delivered_data).to include("hello")
 
-        ch.queue(queue_name, :auto_delete => true, :durable => false).message_count.should == 0
+        expect(ch.queue(queue_name, :auto_delete => true, :durable => false).message_count).to eq 0
 
         ch.close
       end
@@ -212,10 +212,10 @@ describe Bunny::Queue, "#subscribe" do
       x.publish("hello", :routing_key => queue_name)
 
       sleep 0.7
-      delivered_keys.should include(queue_name)
-      delivered_data.should include("hello")
+      expect(delivered_keys).to include(queue_name)
+      expect(delivered_data).to include("hello")
 
-      ch.queue(queue_name).message_count.should == 0
+      expect(ch.queue(queue_name).message_count).to eq 0
 
       ch.queue_delete(queue_name)
       ch.close
@@ -249,7 +249,7 @@ describe Bunny::Queue, "#subscribe" do
         x.publish("hello", :routing_key => queue_name)
         sleep 0.5
 
-        caught.message.should == queue_name
+        expect(caught.message).to eq queue_name
 
         ch.close
       end
@@ -301,9 +301,9 @@ describe Bunny::Queue, "#subscribe" do
         end
 
         sleep 1.0
-        delivery_tags.should == SortedSet.new(Range.new(1, 100).to_a)
+        expect(delivery_tags).to eq SortedSet.new(Range.new(1, 100).to_a)
 
-        ch.queue(queue_name, :auto_delete => true, :durable => false).message_count.should == 0
+        expect(ch.queue(queue_name, :auto_delete => true, :durable => false).message_count).to eq 0
 
         ch.close
       end
@@ -333,9 +333,9 @@ describe Bunny::Queue, "#subscribe" do
         end
 
         sleep 1.5
-        delivery_tags.should == SortedSet.new(Range.new(1, 100).to_a)
+        expect(delivery_tags).to eq SortedSet.new(Range.new(1, 100).to_a)
 
-        ch.queue(queue_name, :auto_delete => true, :durable => false).message_count.should == 0
+        expect(ch.queue(queue_name, :auto_delete => true, :durable => false).message_count).to eq 0
 
         ch.close
       end

@@ -19,12 +19,12 @@ describe Bunny::Queue, "bound to an exchange" do
 
     x.publish("")
     sleep 0.3
-    q.message_count.should == 1
+    expect(q.message_count).to eq 1
 
     q.unbind(x)
 
     x.publish("")
-    q.message_count.should == 1
+    expect(q.message_count).to eq 1
   end
 end
 

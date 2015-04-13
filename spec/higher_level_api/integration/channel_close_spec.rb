@@ -15,9 +15,9 @@ describe Bunny::Channel, "when closed" do
     ch = connection.create_channel
     n = ch.number
 
-    ch.should be_open
+    expect(ch).to be_open
     ch.close
-    ch.should be_closed
+    expect(ch).to be_closed
 
     # a new channel with the same id can be created
     connection.create_channel(n)

@@ -41,8 +41,8 @@ unless ENV["CI"]
       end
 
       sleep 2.0
-      q1.message_count.should be > 100
-      q2.message_count.should be > 100
+      expect(q1.message_count).to be > 100
+      expect(q2.message_count).to be > 100
 
       ch.close
     end

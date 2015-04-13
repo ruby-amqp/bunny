@@ -8,13 +8,13 @@ describe Bunny::VersionedDeliveryTag, "#stale?" do
 
   context "when delivery tag version < provided version" do
     it "returns true" do
-      subject.stale?(2).should be_true
+      expect(subject.stale?(2)).to eq true
     end
   end
 
   context "when delivery tag version = provided version" do
     it "returns false" do
-      subject.stale?(1).should be_false
+      expect(subject.stale?(1)).to eq false
     end
   end
 
@@ -22,7 +22,7 @@ describe Bunny::VersionedDeliveryTag, "#stale?" do
     it "returns true" do
       # this scenario is unrealistic but we still can
       # unit test it. MK.
-      subject.stale?(0).should be_false
+      expect(subject.stale?(0)).to eq false
     end
   end
 end

@@ -18,7 +18,7 @@ describe Bunny::Concurrent::Condition do
         t.abort_on_exception = true
 
         condition.wait
-        xs.should == [:notified]
+        expect(xs).to eq [:notified]
       end
     end
   end
@@ -45,7 +45,7 @@ describe Bunny::Concurrent::Condition do
         sleep 0.25
         condition.notify
         sleep 0.5
-        xs.should satisfy { |ys| ys.size == 1 && (ys.include?(:notified1) || ys.include?(:notified2)) }
+        expect(xs).to satisfy { |ys| ys.size == 1 && (ys.include?(:notified1) || ys.include?(:notified2)) }
       end
     end
   end
@@ -74,7 +74,7 @@ describe Bunny::Concurrent::Condition do
         n.times do |i|
           item = "notified#{i + 1}".to_sym
 
-          @xs.should include(item)
+          expect(@xs).to include item
         end
       end
     end

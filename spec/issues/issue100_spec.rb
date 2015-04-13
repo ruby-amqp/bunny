@@ -2,18 +2,17 @@ require "spec_helper"
 
 unless ENV["CI"]
   describe Bunny::Channel, "#basic_publish" do
-    let(:connection) do
-      c = Bunny.new(:user     => "bunny_gem",
-                    :password => "bunny_password",
-                    :vhost    => "bunny_testbed",
-                    :write_timeout => 0,
-                    :read_timeout => 0)
-      c.start
-      c
+    before :all do
+      @connection = Bunny.new(:user     => "bunny_gem",
+                              :password => "bunny_password",
+                              :vhost    => "bunny_testbed",
+                              :write_timeout => 0,
+                              :read_timeout => 0)
+      @connection.start
     end
 
     after :all do
-      connection.close if connection.open?
+      @connection.close if @connection.open?
     end
 
 
@@ -22,7 +21,7 @@ unless ENV["CI"]
       let(:m) { 10 }
 
       it "successfully publishers them all" do
-        ch = connection.create_channel
+        ch = @connection.create_channel
 
         q  = ch.queue("", :exclusive => true)
         x  = ch.default_exchange
