@@ -1,7 +1,7 @@
 language: ruby
 bundler_args: --without development
 before_script: "./bin/ci/before_build"
-script: "bundle exec rspec -cfs spec"
+script: "bundle exec rspec -cf documentation spec"
 rvm:
   - "2.1.0"
   - "2.0"
