@@ -435,5 +435,10 @@ describe Bunny::Session do
 
       conn.close
     end
+
+    it "doesn't reassign the logger's progname attribute" do
+      expect(logger).not_to receive(:progname=)
+      described_class.new(:hostname => "localhost", :logger => logger)
+    end
   end
 end
