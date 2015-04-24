@@ -144,10 +144,11 @@ module Bunny
       @user            = self.username_from(opts)
       @pass            = self.password_from(opts)
       @vhost           = self.vhost_from(opts)
-      @logfile         = opts[:log_file] || opts[:logfile] || STDOUT
       @threaded        = opts.fetch(:threaded, true)
 
-      @logger          = opts.fetch(:logger, init_logger(opts[:log_level] || ENV["BUNNY_LOG_LEVEL"] || Logger::WARN))
+      log_file         = opts[:log_file] || opts[:logfile] || STDOUT
+      log_level        = opts[:log_level] || ENV["BUNNY_LOG_LEVEL"] || Logger::WARN
+      @logger          = opts.fetch(:logger, init_default_logger(log_file, log_level))
 
       # should automatic recovery from network failures be used?
       @automatically_recover = if opts[:automatically_recover].nil? && opts[:automatic_recovery].nil?
@@ -1108,8 +1109,8 @@ module Bunny
         @transport.close rescue nil # Let's make sure the previous transport socket is closed
         @transport = Transport.new(self, host, @port, @opts.merge(:session_thread => @origin_thread))
 
-        # Reset the cached progname for the logger
-        @logger.progname = to_s if @logger.respond_to?(:progname)
+        # Reset the cached progname for the logger only when no logger was provided
+        @default_logger.progname = self.to_s
 
         @transport
       else
@@ -1162,12 +1163,13 @@ module Bunny
     end
 
     # @private
-    def init_logger(level)
-      lgr          = ::Logger.new(@logfile)
-      lgr.level    = normalize_log_level(level)
-      lgr.progname = self.to_s
-
-      lgr
+    def init_default_logger(logfile, level)
+      @default_logger = begin
+                          lgr = ::Logger.new(logfile)
+                          lgr.level    = normalize_log_level(level)
+                          lgr.progname = self.to_s
+                          lgr
+                        end
     end
 
     # @private
