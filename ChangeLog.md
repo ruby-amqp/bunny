@@ -1,5 +1,11 @@
 ## Changes between Bunny 1.7.0 and 1.8.0
 
+### Logger output remains consistent.
+
+Setting the `@logger.progname` attribute changes the output of the logger.
+This is not expected behaviour when the client provides a custom logger.
+Behaviour remains unchainged when the internally initialized logger is used.
+
 ### prefetch_count is Limited to 65535
 
 Since `basic.qos`'s `prefetch_count` field is of type `short` in the protocol,
