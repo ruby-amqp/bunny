@@ -1,10 +1,13 @@
 ## Changes between Bunny 1.7.0 and 1.7.1
 
-### Logger output remains consistent.
+### Logger Output Remains Consistent
 
 Setting the `@logger.progname` attribute changes the output of the logger.
 This is not expected behaviour when the client provides a custom logger.
 Behaviour remains unchainged when the internally initialized logger is used.
+
+Contributed by Justin Carter.
+
 
 ## Changes between Bunny 1.6.0 and 1.7.0
 
