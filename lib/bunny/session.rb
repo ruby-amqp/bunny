@@ -289,7 +289,7 @@ module Bunny
 
           self.initialize_transport
 
-          @logger.warn "Retrying connection on next host in line: #{@transport.host}:#{@transport.port}"
+          @logger.warn "Will try to connect to the next endpoint in line: #{@transport.host}:#{@transport.port}"
 
           return self.start
         rescue
