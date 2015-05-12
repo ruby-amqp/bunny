@@ -284,11 +284,8 @@ module Bunny
           self.start_reader_loop if threaded?
 
         rescue TCPConnectionFailed => e
-
           @logger.warn e.message
-
           self.initialize_transport
-
           @logger.warn "Will try to connect to the next endpoint in line: #{@transport.host}:#{@transport.port}"
 
           return self.start
@@ -296,7 +293,6 @@ module Bunny
           @status_mutex.synchronize { @status = :not_connected }
           raise
         end
-
       rescue HostListDepleted
         self.reset_host_index
         @status_mutex.synchronize { @status = :not_connected }
