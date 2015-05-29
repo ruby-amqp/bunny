@@ -14,19 +14,6 @@ require "rabbitmq/http/client"
 require "amq/protocol/version"
 puts "Using Ruby #{RUBY_VERSION}, amq-protocol #{AMQ::Protocol::VERSION}"
 
-#
-# Ruby version-specific
-#
-
-case RUBY_VERSION
-when "1.8.7" then
-  class Array
-    alias sample choice
-  end
-when "1.8.6" then
-  raise "Ruby 1.8.6 is not supported. Sorry, pal. Time to move on beyond One True Ruby. Yes, time flies by."
-end
-
 module RabbitMQ
   module Control
 

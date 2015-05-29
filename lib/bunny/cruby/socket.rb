@@ -6,27 +6,24 @@ module Bunny
   #
   # Heavily inspired by Dalli by Mike Perham.
   # @private
-  class Socket < TCPSocket
+  module Socket
     attr_accessor :options
 
-    # IO::WaitReadable is 1.9+ only
-    READ_RETRY_EXCEPTION_CLASSES = [Errno::EAGAIN, Errno::EWOULDBLOCK]
-    READ_RETRY_EXCEPTION_CLASSES << IO::WaitReadable if IO.const_defined?(:WaitReadable)
-
-    # IO::WaitWritable is 1.9+ only
-    WRITE_RETRY_EXCEPTION_CLASSES = [Errno::EAGAIN, Errno::EWOULDBLOCK]
-    WRITE_RETRY_EXCEPTION_CLASSES << IO::WaitWritable if IO.const_defined?(:WaitWritable)
+    READ_RETRY_EXCEPTION_CLASSES = [Errno::EAGAIN, Errno::EWOULDBLOCK, IO::WaitReadable]
+    WRITE_RETRY_EXCEPTION_CLASSES = [Errno::EAGAIN, Errno::EWOULDBLOCK, IO::WaitWritable]
 
     def self.open(host, port, options = {})
-      Timeout.timeout(options[:connect_timeout], ClientTimeout) do
-        sock = new(host, port)
-        if ::Socket.constants.include?('TCP_NODELAY') || ::Socket.constants.include?(:TCP_NODELAY)
-          sock.setsockopt(::Socket::IPPROTO_TCP, ::Socket::TCP_NODELAY, true)
-        end
-        sock.setsockopt(::Socket::SOL_SOCKET, ::Socket::SO_KEEPALIVE, true) if options.fetch(:keepalive, true)
-        sock.options = {:host => host, :port => port}.merge(options)
-        sock
+      socket = ::Socket.tcp(host, port, nil, nil,
+                            connect_timeout: options[:connect_timeout])
+      if ::Socket.constants.include?('TCP_NODELAY') || ::Socket.constants.include?(:TCP_NODELAY)
+        socket.setsockopt(::Socket::IPPROTO_TCP, ::Socket::TCP_NODELAY, true)
       end
+      socket.setsockopt(::Socket::SOL_SOCKET, ::Socket::SO_KEEPALIVE, true) if options.fetch(:keepalive, true)
+      socket.extend self
+      socket.options = { :host => host, :port => port }.merge(options)
+      socket
+    rescue Errno::ETIMEDOUT
+      raise ClientTimeout
     end
 
     # Reads given number of bytes with an optional timeout
