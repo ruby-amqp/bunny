@@ -9,13 +9,8 @@ module Bunny
   module Socket
     attr_accessor :options
 
-    # IO::WaitReadable is 1.9+ only
-    READ_RETRY_EXCEPTION_CLASSES = [Errno::EAGAIN, Errno::EWOULDBLOCK]
-    READ_RETRY_EXCEPTION_CLASSES << IO::WaitReadable if IO.const_defined?(:WaitReadable)
-
-    # IO::WaitWritable is 1.9+ only
-    WRITE_RETRY_EXCEPTION_CLASSES = [Errno::EAGAIN, Errno::EWOULDBLOCK]
-    WRITE_RETRY_EXCEPTION_CLASSES << IO::WaitWritable if IO.const_defined?(:WaitWritable)
+    READ_RETRY_EXCEPTION_CLASSES = [Errno::EAGAIN, Errno::EWOULDBLOCK, IO::WaitReadable]
+    WRITE_RETRY_EXCEPTION_CLASSES = [Errno::EAGAIN, Errno::EWOULDBLOCK, IO::WaitWritable]
 
     def self.open(host, port, options = {})
       socket = ::Socket.tcp(host, port, nil, nil,
