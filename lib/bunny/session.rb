@@ -46,11 +46,7 @@ module Bunny
     CONNECT_TIMEOUT   = Transport::DEFAULT_CONNECTION_TIMEOUT
 
     # @private
-    DEFAULT_CONTINUATION_TIMEOUT = if RUBY_VERSION.to_f < 1.9
-                                     8000
-                                   else
-                                     4000
-                                   end
+    DEFAULT_CONTINUATION_TIMEOUT = 4000
 
     # RabbitMQ client metadata
     DEFAULT_CLIENT_PROPERTIES = {
