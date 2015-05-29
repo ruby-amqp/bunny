@@ -1,4 +1,12 @@
-## Changes between Bunny 1.7.0 and 1.8.0
+## Changes between Bunny 1.7.0 and 2.0.0
+
+Bunny `2.0` doesn't have any breaking API changes
+but drops Ruby 1.8 and 1.9 (both EOL'ed) support,
+hence the version.
+
+### Minimum Required Ruby Version is 2.0
+
+Bunny `2.0` requires Ruby 2.0 or later.
 
 ### Reduced Timeout Use
 
