@@ -19,8 +19,6 @@ extend Module.new {
   end
 }
 
-gem "SystemTimer", "~> 1.2.3", :platform => :ruby_18
-
 gem "rake", ">= 10.0.4"
 gem "effin_utf8"
 
