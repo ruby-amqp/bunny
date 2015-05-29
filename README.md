@@ -48,12 +48,14 @@ Specific examples:
 
 Modern Bunny versions support
 
- * CRuby 2.2, 2.1, 2.0, 1.9.3, and 1.8.7
+ * CRuby 2.2, 2.1, 2.0
  * Rubinius 2.0+
 
 Bunny works sufficiently well on JRuby but there are known
 JRuby bugs that cause high CPU burn. JRuby users should
 use [March Hare](http://rubymarchhare.info).
+
+Bunny `1.7.x` was the last version to support CRuby 1.9.3 and 1.8.7
 
 
 ## Supported RabbitMQ Versions
