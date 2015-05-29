@@ -1,5 +1,13 @@
 ## Changes between Bunny 1.7.0 and 1.8.0
 
+### Reduced Timeout Use
+
+`Bunny::ContinuationQueue#poll` no longer relies on Ruby's `Timeout` which has
+numerous issues, including starting a new "interruptor" thread per operation,
+which is far from efficient.
+
+Contributed by Joe Eli McIlvain.
+
 ### Logger Output Remains Consistent
 
 Setting the `@logger.progname` attribute changes the output of the logger.
