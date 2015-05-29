@@ -14,7 +14,7 @@ Bunny `2.0` requires Ruby 2.0 or later.
 numerous issues, including starting a new "interruptor" thread per operation,
 which is far from efficient.
 
-Contributed by Joe Eli McIlvain.
+Contributed by Joe Eli McIlvain and Carl Hörberg.
 
 ### Logger Output Remains Consistent
 
