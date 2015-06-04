@@ -753,7 +753,7 @@ module Bunny
     #
     # @see http://rubybunny.info/articles/queues.html Queues and Consumers guide
     # @api public
-    def basic_ack(delivery_tag, multiple)
+    def basic_ack(delivery_tag, multiple = false)
       raise_if_no_longer_open!
       @connection.send_frame(AMQ::Protocol::Basic::Ack.encode(@id, delivery_tag, multiple))
 

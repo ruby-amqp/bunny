@@ -205,4 +205,26 @@ describe Bunny::Channel, "#basic_ack" do
     end
   end
 
+  context "with a valid (known) delivery tag (multiple = default)" do
+    it "acknowledges a message" do
+      ch = connection.create_channel
+      q  = ch.queue("bunny.basic.ack.manual-acks", :exclusive => true)
+      x  = ch.default_exchange
+
+      x.publish("bunneth", :routing_key => q.name)
+      x.publish("bunneth", :routing_key => q.name)
+      sleep 0.5
+      expect(q.message_count).to eq 2
+      delivery_details_1, _properties, _content = q.pop(:manual_ack => true)
+      delivery_details_2, _properties, _content = q.pop(:manual_ack => true)
+
+      ch.basic_ack(delivery_details_2.delivery_tag.to_i)
+      ch.close
+
+      ch = connection.create_channel
+      q  = ch.queue("bunny.basic.ack.manual-acks", :exclusive => true)
+      expect(q.message_count).to eq 1
+      ch.close
+    end
+  end
 end
