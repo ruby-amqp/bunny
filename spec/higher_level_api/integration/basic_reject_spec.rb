@@ -43,8 +43,11 @@ describe Bunny::Channel, "#reject" do
 
       ch.reject(delivery_info.delivery_tag, false)
       sleep(0.5)
-      expect(q.message_count).to eq 0
+      ch.close
 
+      ch = connection.create_channel
+      q  = ch.queue("bunny.basic.reject.with-requeue-false", :exclusive => true)
+      expect(q.message_count).to eq 0
       ch.close
     end
   end
