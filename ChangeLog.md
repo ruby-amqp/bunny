@@ -16,6 +16,14 @@ which is far from efficient.
 
 Contributed by Joe Eli McIlvain and Carl Hörberg.
 
+### Bunny::Channel#basic_ack and Related Methods Improvements
+
+`Bunny::Channel#basic_ack`, `Bunny::Channel#basic_nack`, and `Bunny::Channel#basic_reject`
+now adjust delivery tags between connection recoveries, as well as have a default value for
+the second argument.
+
+Contributed by Wayne Conrad.
+
 ### Logger Output Remains Consistent
 
 Setting the `@logger.progname` attribute changes the output of the logger.
