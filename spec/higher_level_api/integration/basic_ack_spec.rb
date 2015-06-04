@@ -23,8 +23,11 @@ describe Bunny::Channel, "#ack" do
       delivery_details, properties, content = q.pop(:manual_ack => true)
 
       ch.ack(delivery_details.delivery_tag, true)
-      expect(q.message_count).to eq 0
+      ch.close
 
+      ch = connection.create_channel
+      q  = ch.queue("bunny.basic.ack.manual-acks", :exclusive => true)
+      expect(q.message_count).to eq 0
       ch.close
     end
   end
@@ -90,8 +93,11 @@ describe Bunny::Channel, "#ack" do
       $stderr = orig_stderr
 
       ch.ack(delivery_details.delivery_tag, true)
-      expect(q.message_count).to eq 0
+      ch.close
 
+      ch = connection.create_channel
+      q  = ch.queue("bunny.basic.ack.manual-acks", :exclusive => true)
+      expect(q.message_count).to eq 0
       ch.close
     end
   end
