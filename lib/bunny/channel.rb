@@ -752,7 +752,6 @@ module Bunny
     #   ch.basic_ack(delivery_info.delivery_tag.to_i, true)
     #
     # @see http://rubybunny.info/articles/queues.html Queues and Consumers guide
-    # @see #basic_ack_known_delivery_tag
     # @api public
     def basic_ack(delivery_tag, multiple)
       raise_if_no_longer_open!
