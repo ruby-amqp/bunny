@@ -707,7 +707,7 @@ module Bunny
     # @see Bunny::Channel#basic_nack
     # @see http://rubybunny.info/articles/queues.html Queues and Consumers guide
     # @api public
-    def basic_reject(delivery_tag, requeue)
+    def basic_reject(delivery_tag, requeue = false)
       raise_if_no_longer_open!
       @connection.send_frame(AMQ::Protocol::Basic::Reject.encode(@id, delivery_tag, requeue))
 

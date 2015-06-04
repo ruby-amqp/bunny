@@ -127,4 +127,26 @@ describe Bunny::Channel, "#basic_reject" do
       ch.close
     end
   end
+
+  context "with requeue = default" do
+    it "rejects a message" do
+      ch = connection.create_channel
+      q  = ch.queue("bunny.basic.reject.with-requeue-false", :exclusive => true)
+      x  = ch.default_exchange
+
+      x.publish("bunneth", :routing_key => q.name)
+      sleep(0.5)
+      expect(q.message_count).to eq 1
+      delivery_info, _, _ = q.pop(:manual_ack => true)
+
+      ch.basic_reject(delivery_info.delivery_tag.to_i)
+      sleep(0.5)
+      ch.close
+
+      ch = connection.create_channel
+      q  = ch.queue("bunny.basic.reject.with-requeue-false", :exclusive => true)
+      expect(q.message_count).to eq 0
+      ch.close
+    end
+  end
 end
