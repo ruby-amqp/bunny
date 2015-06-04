@@ -468,9 +468,7 @@ module Bunny
     # @see http://rubybunny.info/articles/queues.html Queues and Consumers guide
     # @api public
     def reject(delivery_tag, requeue = false)
-      guarding_against_stale_delivery_tags(delivery_tag) do
-        basic_reject(delivery_tag.to_i, requeue)
-      end
+      basic_reject(delivery_tag.to_i, requeue)
     end
 
     # Acknowledges a message. Acknowledged messages are completely removed from the queue.
@@ -481,9 +479,7 @@ module Bunny
     # @see http://rubybunny.info/articles/queues.html Queues and Consumers guide
     # @api public
     def ack(delivery_tag, multiple = false)
-      guarding_against_stale_delivery_tags(delivery_tag) do
-        basic_ack(delivery_tag.to_i, multiple)
-      end
+      basic_ack(delivery_tag.to_i, multiple)
     end
     alias acknowledge ack
 
@@ -498,9 +494,7 @@ module Bunny
     # @see http://rubybunny.info/articles/queues.html Queues and Consumers guide
     # @api public
     def nack(delivery_tag, multiple = false, requeue = false)
-      guarding_against_stale_delivery_tags(delivery_tag) do
-        basic_nack(delivery_tag.to_i, multiple, requeue)
-      end
+      basic_nack(delivery_tag.to_i, multiple, requeue)
     end
 
     # @endgroup
@@ -707,11 +701,13 @@ module Bunny
     # @see Bunny::Channel#basic_nack
     # @see http://rubybunny.info/articles/queues.html Queues and Consumers guide
     # @api public
-    def basic_reject(delivery_tag, requeue)
-      raise_if_no_longer_open!
-      @connection.send_frame(AMQ::Protocol::Basic::Reject.encode(@id, delivery_tag, requeue))
+    def basic_reject(delivery_tag, requeue = false)
+      guarding_against_stale_delivery_tags(delivery_tag) do
+        raise_if_no_longer_open!
+        @connection.send_frame(AMQ::Protocol::Basic::Reject.encode(@id, delivery_tag, requeue))
 
-      nil
+        nil
+      end
     end
 
     # Acknowledges a delivery (message).
@@ -727,7 +723,7 @@ module Bunny
     #   ch    = conn.create_channel
     #   q.subscribe do |delivery_info, properties, payload|
     #     # requeue the message
-    #     ch.basic_ack(delivery_info.delivery_tag)
+    #     ch.basic_ack(delivery_info.delivery_tag.to_i)
     #   end
     #
     # @example Ack a message fetched via basic.get
@@ -737,7 +733,7 @@ module Bunny
     #   ch    = conn.create_channel
     #   # we assume the queue exists and has messages
     #   delivery_info, properties, payload = ch.basic_get("bunny.examples.queue3", :manual_ack => true)
-    #   ch.basic_ack(delivery_info.delivery_tag)
+    #   ch.basic_ack(delivery_info.delivery_tag.to_i)
     #
     # @example Ack multiple messages fetched via basic.get
     #   conn  = Bunny.new
@@ -749,16 +745,17 @@ module Bunny
     #   _, _, payload2 = ch.basic_get("bunny.examples.queue3", :manual_ack => true)
     #   delivery_info, properties, payload3 = ch.basic_get("bunny.examples.queue3", :manual_ack => true)
     #   # ack all fetched messages up to payload3
-    #   ch.basic_ack(delivery_info.delivery_tag, true)
+    #   ch.basic_ack(delivery_info.delivery_tag.to_i, true)
     #
     # @see http://rubybunny.info/articles/queues.html Queues and Consumers guide
-    # @see #basic_ack_known_delivery_tag
     # @api public
-    def basic_ack(delivery_tag, multiple)
-      raise_if_no_longer_open!
-      @connection.send_frame(AMQ::Protocol::Basic::Ack.encode(@id, delivery_tag, multiple))
+    def basic_ack(delivery_tag, multiple = false)
+      guarding_against_stale_delivery_tags(delivery_tag) do
+        raise_if_no_longer_open!
+        @connection.send_frame(AMQ::Protocol::Basic::Ack.encode(@id, delivery_tag, multiple))
 
-      nil
+        nil
+      end
     end
 
     # Rejects or requeues messages just like {Bunny::Channel#basic_reject} but can do so
@@ -815,13 +812,15 @@ module Bunny
     # @see http://rubybunny.info/articles/extensions.html RabbitMQ Extensions guide
     # @api public
     def basic_nack(delivery_tag, multiple = false, requeue = false)
-      raise_if_no_longer_open!
-      @connection.send_frame(AMQ::Protocol::Basic::Nack.encode(@id,
-          delivery_tag,
-          multiple,
-          requeue))
+      guarding_against_stale_delivery_tags(delivery_tag) do
+        raise_if_no_longer_open!
+        @connection.send_frame(AMQ::Protocol::Basic::Nack.encode(@id,
+                                                                 delivery_tag,
+                                                                 multiple,
+                                                                 requeue))
 
-      nil
+        nil
+      end
     end
 
     # Registers a consumer for queue. Delivered messages will be handled with the block
