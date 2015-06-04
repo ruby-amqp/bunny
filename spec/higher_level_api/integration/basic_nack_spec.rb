@@ -27,9 +27,12 @@ describe Bunny::Channel, "#nack" do
 
       subject.nack(delivery_info.delivery_tag, false, false)
       sleep(0.5)
-      expect(q.message_count).to eq 0
-
       subject.close
+
+      ch = connection.create_channel
+      q = ch.queue("bunny.basic.nack.with-requeue-false", :exclusive => true)
+      expect(q.message_count).to eq 0
+      ch.close
     end
   end
 
