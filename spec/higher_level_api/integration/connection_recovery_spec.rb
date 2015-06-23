@@ -52,6 +52,16 @@ unless ENV["CI"]
       end
     end
 
+    def with_recovery_attempts_limited_to(attempts = 3, &block)
+      c = Bunny.new(:recover_from_connection_close => true, :network_recovery_interval => 0.2, :recovery_attempts => attempts)
+      begin
+        c.start
+        block.call(c)
+      ensure
+        c.close
+      end
+    end
+
     def ensure_queue_recovery(ch, q)
       q.purge
       x = ch.default_exchange
@@ -351,6 +361,15 @@ unless ENV["CI"]
         qs.each do |q|
           ch.queue_declare(q.name, :passive => true)
         end
+      end
+    end
+
+    it "tries to recover for a given number of attempts" do
+      with_recovery_attempts_limited_to(1) do |c|
+        close_all_connections!
+        expect(c).to receive(:start).exactly(2).times.and_raise(Bunny::TCPConnectionFailed.new("test"))
+
+        wait_for_recovery
       end
     end
   end
