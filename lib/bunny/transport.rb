@@ -20,10 +20,10 @@ module Bunny
     #
 
     # Default TCP connection timeout
-    DEFAULT_CONNECTION_TIMEOUT = 25.0
+    DEFAULT_CONNECTION_TIMEOUT = 30.0
 
-    DEFAULT_READ_TIMEOUT  = 5.0
-    DEFAULT_WRITE_TIMEOUT = 5.0
+    DEFAULT_READ_TIMEOUT  = 30.0
+    DEFAULT_WRITE_TIMEOUT = 30.0
 
     attr_reader :session, :host, :port, :socket, :connect_timeout, :read_timeout, :write_timeout, :disconnect_timeout
     attr_reader :tls_context
