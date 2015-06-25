@@ -673,7 +673,7 @@ module Bunny
 
     # @private
     def should_retry_recovery?
-      @recovery_attempts.nil? || @recovery_attempts > 0
+      @recovery_attempts.nil? || @recovery_attempts > 1
     end
 
     # @private

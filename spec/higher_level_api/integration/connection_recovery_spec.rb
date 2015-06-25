@@ -365,7 +365,7 @@ unless ENV["CI"]
     end
 
     it "tries to recover for a given number of attempts" do
-      with_recovery_attempts_limited_to(1) do |c|
+      with_recovery_attempts_limited_to(2) do |c|
         close_all_connections!
         expect(c).to receive(:start).exactly(2).times.and_raise(Bunny::TCPConnectionFailed.new("test"))
 
