@@ -564,7 +564,7 @@ module Bunny
         opts[:mandatory],
         false,
         @connection.frame_max)
-      @connection.send_frameset_without_timeout(frames, self)
+      @connection.send_frameset(frames, self)
 
       self
     end

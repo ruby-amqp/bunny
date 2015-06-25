@@ -46,7 +46,7 @@ module Bunny
     CONNECT_TIMEOUT   = Transport::DEFAULT_CONNECTION_TIMEOUT
 
     # @private
-    DEFAULT_CONTINUATION_TIMEOUT = 4000
+    DEFAULT_CONTINUATION_TIMEOUT = 15000
 
     # RabbitMQ client metadata
     DEFAULT_CLIENT_PROPERTIES = {
@@ -894,7 +894,9 @@ module Bunny
       # If we synchronize on the channel, however, this is both thread safe and pretty fine-grained
       # locking. Note that "single frame" methods do not need this kind of synchronization. MK.
       channel.synchronize do
-        frames.each { |frame| self.send_frame(frame, false) }
+        # see rabbitmq/rabbitmq-server#156
+        data = frames.reduce("") { |acc, frame| acc << frame.encode }
+        @transport.write(data)
         signal_activity!
       end
     end # send_frameset(frames)
