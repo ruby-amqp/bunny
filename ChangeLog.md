@@ -8,6 +8,15 @@ hence the version.
 
 Bunny `2.0` requires Ruby 2.0 or later.
 
+## Non-Blocking Writes
+
+Bunny now uses non-blocking socket writes, uses a reduced
+number of writes for message publishing (frames are batched
+into a single write), and handles TCP back pressure from
+RabbitMQ better.
+
+Contributed by Irina Bednova and Michael Klishin.
+
 ### Reduced Timeout Use
 
 `Bunny::ContinuationQueue#poll` no longer relies on Ruby's `Timeout` which has
@@ -15,6 +24,14 @@ numerous issues, including starting a new "interruptor" thread per operation,
 which is far from efficient.
 
 Contributed by Joe Eli McIlvain and Carl Hörberg.
+
+### Capped Number of Connection Recovery Attempts
+
+`:recovery_attempts` is a new option that limits the number of
+connection recovery attempts performed by Bunny. `nil` means
+"no limit".
+
+Contributed by Irina Bednova.
 
 ### Bunny::Channel#basic_ack and Related Methods Improvements
 
