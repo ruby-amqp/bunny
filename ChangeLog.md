@@ -55,6 +55,14 @@ Since `basic.qos`'s `prefetch_count` field is of type `short` in the protocol,
 Bunny must enforce its maximum allowed value to `2^16 - 1` to avoid
 confusing issues due to overflow.
 
+### Consumer Prefetch Global Flag Supported
+
+Recent RabbitMQ versions support `basic.qos` `global` flag, controlling whether
+`prefetch` applies per-consumer or per-channel. Bunny `Channel#prefetch` now
+allows flag to be set as optional param-2, with the same default behaviour as
+before (per-consumer).
+
+Contributed by tiredpixel.
 
 
 ## Changes between Bunny 1.6.0 and 1.7.0
