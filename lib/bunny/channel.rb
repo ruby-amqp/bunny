@@ -156,6 +156,8 @@ module Bunny
 
     # @return [Integer] active basic.qos prefetch value
     attr_reader :prefetch_count
+    # @return [Integer] active basic.qos prefetch global mode
+    attr_reader :prefetch_global
 
     DEFAULT_CONTENT_TYPE = "application/octet-stream".freeze
     SHORTSTR_LIMIT = 255
@@ -429,11 +431,20 @@ module Bunny
     # have to acknowledge or reject one of the previously consumed messages
     #
     # @param [Integer] prefetch_count Prefetch (QoS setting) for this channel
+    # @param [Boolean] global
+    #   Whether to use global mode for prefetch:
+    #   - +false+: per-consumer
+    #   - +true+:  per-channel
+    #   Note that the default value (+false+) hasn't actually changed, but
+    #   previous documentation described that as meaning per-channel and
+    #   unsupported in RabbitMQ, whereas it now actually appears to mean
+    #   per-consumer and supported
+    #   (https://www.rabbitmq.com/consumer-prefetch.html).
     # @see http://rubybunny.info/articles/exchanges.html Exchanges and Publishing guide
     # @see http://rubybunny.info/articles/queues.html Queues and Consumers guide
     # @api public
-    def prefetch(count)
-      self.basic_qos(count, false)
+    def prefetch(count, global = false)
+      self.basic_qos(count, global)
     end
 
     # Flow control. When set to false, RabbitMQ will stop delivering messages on this
@@ -624,7 +635,15 @@ module Bunny
     #
     # @param [Integer] prefetch_count How many messages can consumers on this channel be given at a time
     #                                 (before they have to acknowledge or reject one of the earlier received messages)
-    # @param [Boolean] global (false) Ignored, as it is not supported by RabbitMQ
+    # @param [Boolean] global
+    #   Whether to use global mode for prefetch:
+    #   - +false+: per-consumer
+    #   - +true+:  per-channel
+    #   Note that the default value (+false+) hasn't actually changed, but
+    #   previous documentation described that as meaning per-channel and
+    #   unsupported in RabbitMQ, whereas it now actually appears to mean
+    #   per-consumer and supported
+    #   (https://www.rabbitmq.com/consumer-prefetch.html).
     # @return [AMQ::Protocol::Basic::QosOk] RabbitMQ response
     # @see Bunny::Channel#prefetch
     # @see http://rubybunny.info/articles/queues.html Queues and Consumers guide
@@ -641,7 +660,8 @@ module Bunny
       end
       raise_if_continuation_resulted_in_a_channel_error!
 
-      @prefetch_count = count
+      @prefetch_count  = count
+      @prefetch_global = global
 
       @last_basic_qos_ok
     end
@@ -1486,7 +1506,7 @@ module Bunny
     #
     # @api plugin
     def recover_prefetch_setting
-      basic_qos(@prefetch_count) if @prefetch_count
+      basic_qos(@prefetch_count, @prefetch_global) if @prefetch_count
     end
 
     # Recovers publisher confirms mode. Used by the Automatic Network Failure

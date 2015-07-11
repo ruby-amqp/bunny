@@ -172,6 +172,7 @@ unless ENV["CI"]
         ch = c.create_channel
         ch.prefetch(11)
         expect(ch.prefetch_count).to eq 11
+        expect(ch.prefetch_global).to be false
         close_all_connections!
         sleep 0.1
         expect(c).not_to be_open
@@ -179,9 +180,26 @@ unless ENV["CI"]
         wait_for_recovery
         expect(ch).to be_open
         expect(ch.prefetch_count).to eq 11
+        expect(ch.prefetch_global).to be false
       end
     end
 
+    it "recovers basic.qos prefetch global setting" do
+      with_open do |c|
+        ch = c.create_channel
+        ch.prefetch(42, true)
+        expect(ch.prefetch_count).to eq 42
+        expect(ch.prefetch_global).to be true
+        close_all_connections!
+        sleep 0.1
+        expect(c).not_to be_open
+
+        wait_for_recovery
+        expect(ch).to be_open
+        expect(ch.prefetch_count).to eq 42
+        expect(ch.prefetch_global).to be true
+      end
+    end
 
     it "recovers publisher confirms setting" do
       with_open do |c|
