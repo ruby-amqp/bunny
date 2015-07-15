@@ -20,7 +20,7 @@ module Qrack
     CONNECT_TIMEOUT = 5.0
     RETRY_DELAY     = 10.0
 
-    attr_reader   :status, :host, :vhost, :port, :logging, :spec, :heartbeat
+    attr_reader   :status, :host, :vhost, :port, :logging, :spec, :heartbeat, :frame_max
     attr_accessor :channel, :logfile, :exchanges, :queues, :channels, :message_in, :message_out, :connecting
 
     # Temporary hack to make Bunny 0.7 work with port number in AMQP URL.
@@ -142,6 +142,9 @@ module Qrack
       end
 
       method = frame.payload
+      # at this point, we can receive a channel or connection close, which we need to check for
+      check_returned_message(method)
+
       header = next_payload
 
       # If maximum frame size is smaller than message payload body then message

@@ -61,10 +61,10 @@ describe 'Queue' do
     q.unbind(exch, :nowait => true).should == :unbind_ok
   end
 
-  it "should raise an error if unbinding from a non-existent exchange" do
+  it "should not raise an error if unbinding from a non-existent exchange" do
     q = @b.queue('test1')
-    lambda {q.unbind('bogus')}.should raise_error(Bunny::ForcedChannelCloseError)
-    @b.channel.active.should == false
+    q.unbind('bogus').should == :unbind_ok
+    @b.channel.active.should == true
   end
 
   it "should be able to unbind from an exchange" do
@@ -155,10 +155,10 @@ describe 'Queue' do
     q.purge.should == :purge_ok
   end
 
-  it "should raise an error when delete fails" do
+  it "should not close the connections when deleting a non existent queue" do
     q = @b.queue('test1')
-    lambda {q.delete(:queue => 'bogus')}.should raise_error(Bunny::ForcedChannelCloseError)
-    @b.channel.active.should == false
+    q.delete(:queue => 'bogus').should == :delete_ok
+    @b.channel.active.should == true
   end
 
   it "should pass correct block parameters through on subscribe" do

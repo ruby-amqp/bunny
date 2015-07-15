@@ -1,6 +1,6 @@
 # encoding: utf-8
 
-source :rubygems
+source 'https://rubygems.org'
 
 # Use local clones if possible.
 # If you want to use your local copy, just symlink it to vendor.
@@ -30,6 +30,8 @@ group :development do
   gem "RedCloth",  :platform => :mri
 
   gem "changelog"
+
+  gem "byebug"
 end
 
 group :test do

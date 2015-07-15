@@ -189,6 +189,8 @@ Exchange
       method = frame.payload
 
       if method.is_a?(Qrack::Protocol::Connection::Tune)
+        @frame_max = method.frame_max if method.frame_max > 0 && method.frame_max < @frame_max
+        @channel_max = method.channel_max if method.channel_max > 0 && method.channel_max < @channel_max
         send_frame(Qrack::Protocol::Connection::TuneOk.new( :channel_max => @channel_max, :frame_max => @frame_max, :heartbeat => @heartbeat))
       end
 
@@ -460,6 +462,12 @@ using the Commit or Rollback methods.
 
       # return confirmation
       :select_ok
+    end
+
+    protected
+
+    def check_returned_message(method)
+      check_response(method, Qrack::Protocol::Basic::Return, "Expected a returned message")
     end
 
     private

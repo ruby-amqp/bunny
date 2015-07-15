@@ -161,7 +161,13 @@ nil
           :priority      => 0
         }.merge(opts)
       )
-      out << Qrack::Transport::Body.new(data)
+
+      limit = @client.frame_max - 8
+      i = 0
+      while i < data.bytesize
+        out << Qrack::Transport::Body.new(data.byteslice(i, limit))
+        i += limit
+      end
 
       client.send_frame(*out)
     end
