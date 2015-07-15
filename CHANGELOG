@@ -1,3 +1,11 @@
+= Version 0.7.10
+
+ * handle messages larger than frame_max correctly
+
+= Version 0.7.9
+
+ * parse a few more AMQ datatypes (related to federation plugin)
+
 = Version 0.7.8
 
  * test suite cleanup (eliminated some race conditions related to queue.message_count)
