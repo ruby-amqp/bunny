@@ -104,6 +104,16 @@ describe 'Queue' do
     msg.should == lg_msg
   end
 
+  it "should be able to send and receive messages where body length is an exact multiple of frame_max minus framing bytes" do
+    limit = @b.frame_max-8
+    q = @b.queue('test1')
+    lg_msg = 'a' * (5*limit)
+    expect_deprecation_warning_for_publishing_on_queue(q)
+    q.publish(lg_msg)
+    msg = q.pop[:payload]
+    msg.should == lg_msg
+  end
+
   it "should be able call a block when popping a message" do
     q = @b.queue('test1')
     expect_deprecation_warning_for_publishing_on_queue(q)
