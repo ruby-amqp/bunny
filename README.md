@@ -194,10 +194,14 @@ contributing failing test cases.
 
 ### Running the Specs
 
-The cleanest way to get the specs running is by starting a clean rabbitmq server
-node on your machine specifically for the bunny specs.
+The specs require RabbitMQ to be running locally with a specific set of vhosts
+and users. RabbitMQ can be provisioned and started any that's convenient to you
+as long as it has a suitable TLS keys configuration and management plugin enabled.
+Make sure you have a recent version of RabbitMQ (> `3.5.3`).
 
-Make sure you have a recent version of RabbitMQ (> 3.4) and run the following command
+You can also start a clean RabbitMQ server
+node on your machine specifically for the bunny specs.
+To do so, run the following command
 from the base directory of the gem:
 
 ```
@@ -206,16 +210,16 @@ RABBITMQ_NODENAME=bunny RABBITMQ_CONFIG_FILE=./spec/config/rabbitmq RABBITMQ_ENA
 
 The specs use the RabbitMQ management plugin and require a TLS port to be available. The config files in the spec/config directory enable these.
 
-Next up you'll need to prepare your node for the specs (Only once):
+Next up you'll need to prepare your node for the specs (just once):
 
 ```
 RABBITMQ_NODENAME=bunny ./bin/ci/before_build
 ```
 
-And then run the specs:
+And then run the core integration suite:
 
 ```
-RABBITMQ_NODENAME=bunny rspec
+RABBITMQ_NODENAME=bunny CI=true rspec
 ```
 
 ## Other Ruby RabbitMQ Clients
