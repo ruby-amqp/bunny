@@ -2,5 +2,5 @@
 
 module Bunny
   # @return [String] Version of the library
-  VERSION = "2.0.0.rc3.pre"
+  VERSION = "2.0.0"
 end
