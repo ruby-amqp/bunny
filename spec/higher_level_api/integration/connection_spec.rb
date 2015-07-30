@@ -19,7 +19,6 @@ describe Bunny::Session do
       end
     end
 
-
     it "handles amqp:// URIs w/o path part" do
       session = described_class.new("amqp://127.0.0.1")
       session.start
@@ -31,7 +30,6 @@ describe Bunny::Session do
 
       session.close
     end
-
 
     context "when URI ends in a slash" do
       it "parses vhost as an empty string" do
@@ -49,9 +47,6 @@ describe Bunny::Session do
       end
     end
   end
-
-
-
 
   context "initialized with all defaults" do
     it "provides a way to fine tune socket options" do
@@ -223,7 +218,6 @@ describe Bunny::Session do
     end
   end
 
-
   context "initialized with :host => 127.0.0.1 and non-default credentials" do
     after :each do
       subject.close if subject.open?
@@ -276,7 +270,6 @@ describe Bunny::Session do
     end
   end
 
-
   context "initialized with :host => 127.0.0.1 and non-default credentials (take 2)" do
     after :each do
       subject.close if subject.open?
@@ -324,8 +317,6 @@ describe Bunny::Session do
     end
   end
 
-
-
   context "initialized with :host => 127.0.0.1 and non-default credentials (take 2)" do
     after :each do
       subject.close if subject.open?
@@ -362,8 +353,6 @@ describe Bunny::Session do
     end
   end
 
-
-
   context "initialized with :host => 127.0.0.1 and INVALID credentials" do
     let(:host)     { "127.0.0.1" }
     # see ./bin/ci/before_build
@@ -389,7 +378,6 @@ describe Bunny::Session do
       expect(subject.password).to eq password
     end
   end
-
 
   context "initialized with unreachable host or port" do
     it "fails to connect" do
@@ -421,7 +409,6 @@ describe Bunny::Session do
       expect(subject).not_to be_open
     end
   end
-
 
   context "initialized with a custom logger object" do
     let(:io)      { StringIO.new }
