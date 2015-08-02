@@ -5,7 +5,8 @@ module Bunny
     # TCP socket extension that uses Socket#readpartial to avoid excessive CPU
     # burn after some time. See issue #165.
     # @private
-    class Socket < Bunny::Socket
+    module Socket
+      include Bunny::Socket
 
       # Reads given number of bytes with an optional timeout
       #
