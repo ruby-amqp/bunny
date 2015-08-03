@@ -1,3 +1,20 @@
+## Changes between Bunny 2.0.0 and 2.1.0
+
+### Explicit Ruby 2.0 Requirement
+
+Bunny now requires Ruby 2.0 in the gemspec.
+
+Contributed by Carl Hörberg.
+
+### JRuby Fix
+
+Bunny runs again on JRuby. Note that
+JRuby users are strongly advised to use March Hare instead.
+
+Contributed by Teodor Pripoae.
+
+
+
 ## Changes between Bunny 1.7.0 and 2.0.0
 
 Bunny `2.0` doesn't have any breaking API changes
