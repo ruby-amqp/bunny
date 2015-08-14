@@ -49,7 +49,6 @@ Specific examples:
 Modern Bunny versions support
 
  * CRuby 2.2, 2.1, 2.0
- * Rubinius 2.0+
 
 Bunny works sufficiently well on JRuby but there are known
 JRuby bugs that cause high CPU burn. JRuby users should
