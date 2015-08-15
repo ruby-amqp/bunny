@@ -21,16 +21,10 @@ Gem::Specification.new do |s|
     "Michael S. Klishin",
     "Stefan Kaes"]
 
-  s.email = [
-    "Y2VsbGRlZUBnbWFpbC5jb20=\n",
-    "ZXJpY0A1c3RvcHMuY29t\n",
-    "c3Rhc3RueUAxMDFpZGVhcy5jeg==\n",
-    "bWljaGFlbEBub3ZlbWJlcmFpbi5jb20=\n",
-    "c2thZXNAcmFpbHNleHByZXNzLmRl\n"].
-    map { |mail| Base64.decode64(mail) }
+  s.email = ["michael.s.klishin@gmail.com"]
 
   # Dependencies
-  s.add_dependency "amq-protocol", ">= 1.9.2"
+  s.add_dependency "amq-protocol", ">= 2.0.0"
 
   # Files.
   s.has_rdoc = true
