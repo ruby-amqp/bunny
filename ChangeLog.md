@@ -1,5 +1,25 @@
 ## Changes between Bunny 2.0.0 and 2.1.0
 
+Bunny 2.1.0 has an **important breaking change**. It is highly
+advised that 2.1.0 is not mixed with earlier versions of Bunny
+in case your applications include **integers in message headers**.
+
+### Integer Value Serialisation in Headers
+
+Integer values in headers are now serialised as signed 64-bit integers. Previously
+they were serialised as 32-bit unsigned integers, causing both underflows
+and overflows.
+
+It is highly
+advised that 2.1.0 is not mixed with earlier versions of Bunny
+in case your applications include integers in message headers.
+
+If that's not the case, Bunny 2.1 will integeroperate with any version
+starting with 0.9.0 just fine. Popular clients in other languages
+(e.g. Java and .NET) can interoperate with Bunny 2.1.0 without
+issues.
+
+
 ### Explicit Ruby 2.0 Requirement
 
 Bunny now requires Ruby 2.0 in the gemspec.
