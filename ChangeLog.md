@@ -8,15 +8,15 @@ in case your applications include **integers in message headers**.
 
 Integer values in headers are now serialised as signed 64-bit integers. Previously
 they were serialised as 32-bit unsigned integers, causing both underflows
-and overflows.
+and overflows: incorrect values were observed by consumers.
 
 It is highly
 advised that 2.1.0 is not mixed with earlier versions of Bunny
 in case your applications include integers in message headers.
 
-If that's not the case, Bunny 2.1 will integeroperate with any version
+If that's not the case, Bunny 2.1 will integeroperate with any earlier version
 starting with 0.9.0 just fine. Popular clients in other languages
-(e.g. Java and .NET) can interoperate with Bunny 2.1.0 without
+(e.g. Java and .NET) will interoperate with Bunny 2.1.0 without
 issues.
 
 
