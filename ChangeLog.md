@@ -1,3 +1,8 @@
+## Changes between Bunny 2.1.0 and 2.2.0
+
+No changes yet.
+
+
 ## Changes between Bunny 2.0.0 and 2.1.0
 
 Bunny 2.1.0 has an **important breaking change**. It is highly
