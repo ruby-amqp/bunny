@@ -1,7 +1,10 @@
 ## Changes between Bunny 2.1.0 and 2.2.0
 
-No changes yet.
+### Add :addresses to connect options
 
+Before this the connection options only allowed multiple hosts, an
+address is a combination of a host and a port. This makes it possible to
+specify different hosts with different ports.
 
 ## Changes between Bunny 2.0.0 and 2.1.0
 
