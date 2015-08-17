@@ -19,7 +19,6 @@ describe Bunny::Session do
       end
     end
 
-
     it "handles amqp:// URIs w/o path part" do
       session = described_class.new("amqp://127.0.0.1")
       session.start
@@ -31,7 +30,6 @@ describe Bunny::Session do
 
       session.close
     end
-
 
     context "when URI ends in a slash" do
       it "parses vhost as an empty string" do
@@ -49,9 +47,6 @@ describe Bunny::Session do
       end
     end
   end
-
-
-
 
   context "initialized with all defaults" do
     it "provides a way to fine tune socket options" do
@@ -156,7 +151,7 @@ describe Bunny::Session do
       let(:hosts)   { [host] }
       let(:subject) { described_class.new(:hosts => hosts) }
 
-      it "uses hostname = localhost" do
+      it "uses hostname = 192.168.1.10" do
         expect(subject.host).to eq host
         expect(subject.hostname).to eq host
       end
@@ -168,6 +163,58 @@ describe Bunny::Session do
       it "uses username = guest" do
         expect(subject.username).to eq username
         expect(subject.user).to eq username
+      end
+    end
+
+    context "initialized with :addresses => [...]" do
+      after :each do
+        subject.close if subject.open?
+      end
+
+      let(:host)      { "192.168.1.10" }
+      let(:port)      { 5673 }
+      let(:address)   { "#{host}:#{port}" }
+      let(:addresses) { [address] }
+      let(:subject)   { described_class.new(:addresses => addresses) }
+
+      it "uses hostname = 192.168.1.10" do
+        expect(subject.host).to eq host
+        expect(subject.hostname).to eq host
+      end
+
+      it "uses port 5673" do
+        expect(subject.port).to eq port
+      end
+
+      it "uses username = guest" do
+        expect(subject.username).to eq username
+        expect(subject.user).to eq username
+      end
+    end
+
+    context "initialized with conflicting hosts and addresses" do
+      let(:host)      { "192.168.1.10" }
+      let(:port)      { 5673 }
+      let(:address)   { "#{host}:#{port}" }
+      let(:io)        { StringIO.new }
+      let(:logger)    { ::Logger.new(io) }
+
+      it "raises an argument error when there is are hosts and an address" do
+        expect { described_class.new(addresses: [address], hosts: [host]) }.to raise_error(ArgumentError)
+      end
+
+      it "logs a warning when there is a single host and an array" do
+        described_class.new(addresses: [address], host: host, logger: logger)
+        expect(io.string).to include 'WARN -- : The connection options contain '\
+          'both a host and an array of hosts, the single host is ignored.'
+      end
+
+      it "converts hosts in addresses to addresses" do
+        strategy = Proc.new { |addresses| addresses }
+        session = described_class.new(addresses: [address,host ], hosts_shuffle_strategy: strategy)
+        strategy = Proc.new { |addresses| addresses }
+
+        expect(session.to_s).to include 'addresses=[192.168.1.10:5673,192.168.1.10:5672]'
       end
     end
 
@@ -223,7 +270,6 @@ describe Bunny::Session do
     end
   end
 
-
   context "initialized with :host => 127.0.0.1 and non-default credentials" do
     after :each do
       subject.close if subject.open?
@@ -276,7 +322,6 @@ describe Bunny::Session do
     end
   end
 
-
   context "initialized with :host => 127.0.0.1 and non-default credentials (take 2)" do
     after :each do
       subject.close if subject.open?
@@ -324,8 +369,6 @@ describe Bunny::Session do
     end
   end
 
-
-
   context "initialized with :host => 127.0.0.1 and non-default credentials (take 2)" do
     after :each do
       subject.close if subject.open?
@@ -362,8 +405,6 @@ describe Bunny::Session do
     end
   end
 
-
-
   context "initialized with :host => 127.0.0.1 and INVALID credentials" do
     let(:host)     { "127.0.0.1" }
     # see ./bin/ci/before_build
@@ -389,7 +430,6 @@ describe Bunny::Session do
       expect(subject.password).to eq password
     end
   end
-
 
   context "initialized with unreachable host or port" do
     it "fails to connect" do
@@ -421,7 +461,6 @@ describe Bunny::Session do
       expect(subject).not_to be_open
     end
   end
-
 
   context "initialized with a custom logger object" do
     let(:io)      { StringIO.new }

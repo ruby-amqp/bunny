@@ -95,6 +95,7 @@ module Bunny
     #
     # @option connection_string_or_opts [String] :host ("127.0.0.1") Hostname or IP address to connect to
     # @option connection_string_or_opts [Array<String>] :hosts (["127.0.0.1"]) list of hostname or IP addresses to select hostname from when connecting
+    # @option connection_string_or_opts [Array<String>] :addresses (["127.0.0.1:5672"]) list of addresses to select hostname and port from when connecting
     # @option connection_string_or_opts [Integer] :port (5672) Port RabbitMQ listens on
     # @option connection_string_or_opts [String] :username ("guest") Username
     # @option connection_string_or_opts [String] :password ("guest") Password
@@ -135,10 +136,9 @@ module Bunny
       @default_hosts_shuffle_strategy = Proc.new { |hosts| hosts.shuffle }
 
       @opts            = opts
-      @hosts           = self.hostnames_from(opts)
-      @host_index      = 0
+      @addresses       = self.addresses_from(opts)
+      @address_index   = 0
 
-      @port            = self.port_from(opts)
       @user            = self.username_from(opts)
       @pass            = self.password_from(opts)
       @vhost           = self.vhost_from(opts)
@@ -147,6 +147,8 @@ module Bunny
       log_file         = opts[:log_file] || opts[:logfile] || STDOUT
       log_level        = opts[:log_level] || ENV["BUNNY_LOG_LEVEL"] || Logger::WARN
       @logger          = opts.fetch(:logger, init_default_logger(log_file, log_level))
+
+      validate_connection_options(opts)
 
       # should automatic recovery from network failures be used?
       @automatically_recover = if opts[:automatically_recover].nil? && opts[:automatic_recovery].nil?
@@ -183,7 +185,7 @@ module Bunny
       # the non-reentrant Ruby mutexes. MK.
       @transport_mutex     = @mutex_impl.new
       @status_mutex        = @mutex_impl.new
-      @host_index_mutex    = @mutex_impl.new
+      @address_index_mutex = @mutex_impl.new
 
       @channels            = Hash.new
 
@@ -191,6 +193,16 @@ module Bunny
 
       self.reset_continuations
       self.initialize_transport
+    end
+
+    def validate_connection_options(options)
+      if options[:hosts] && options[:addresses]
+        raise ArgumentError, "Connection options can't contain hosts and addresses at the same time"
+      end
+
+      if (options[:host] || options[:hostname]) && (options[:hosts] || options[:addresses])
+        @logger.warn "The connection options contain both a host and an array of hosts, the single host is ignored."
+      end
     end
 
     # @return [String] RabbitMQ hostname (or IP address) used
@@ -223,11 +235,15 @@ module Bunny
     end
 
     def host
-      @transport ? @transport.host : @hosts[@host_index]
+      @transport ? @transport.host : host_from_address(@addresses[@address_index])
     end
 
-    def reset_host_index
-      @host_index_mutex.synchronize { @host_index = 0 }
+    def port
+      @transport ? @transport.port : port_from_address(@addresses[@address_index])
+    end
+
+    def reset_address_index
+      @address_index_mutex.synchronize { @address_index = 0 }
     end
 
     # @private
@@ -293,7 +309,7 @@ module Bunny
           raise
         end
       rescue HostListDepleted
-        self.reset_host_index
+        self.reset_address_index
         @status_mutex.synchronize { @status = :not_connected }
         raise TCPConnectionFailedForAllHosts
       end
@@ -659,7 +675,7 @@ module Bunny
           recover_channels
         end
       rescue HostListDepleted
-        reset_host_index
+        reset_address_index
         retry
       rescue TCPConnectionFailedForAllHosts, TCPConnectionFailed, AMQ::Protocol::EmptyResponseError => e
         @logger.warn "TCP connection failed, reconnecting in #{@network_recovery_interval} seconds"
@@ -744,10 +760,23 @@ module Bunny
     end
 
     # @private
-    def hostnames_from(options)
-      options.fetch(:hosts_shuffle_strategy, @default_hosts_shuffle_strategy).call(
-        [ options[:hosts] || options[:host] || options[:hostname] || DEFAULT_HOST ].flatten
-      )
+    def addresses_from(options)
+      shuffle_strategy = options.fetch(:hosts_shuffle_strategy, @default_hosts_shuffle_strategy)
+
+      addresses = options[:host] || options[:hostname] || options[:addresses] ||
+        options[:hosts] || ["#{DEFAULT_HOST}:#{port_from(options)}"]
+      addresses = [addresses] unless addresses.is_a? Array
+
+      addresses.map! do |address|
+        host_with_port?(address) ? address : "#{address}:#{port_from(@opts)}"
+      end
+
+      shuffle_strategy.call addresses
+    end
+
+    # @private
+    def host_with_port?(address)
+      address.include? ':'
     end
 
     # @private
@@ -759,6 +788,16 @@ module Bunny
                  end
 
       options.fetch(:port, fallback)
+    end
+
+    # @private
+    def host_from_address(address)
+      address.split(":")[0]
+    end
+
+    # @private
+    def port_from_address(address)
+      address.split(":")[1].to_i
     end
 
     # @private
@@ -946,7 +985,7 @@ module Bunny
     # @api public
     def to_s
       oid = ("0x%x" % (self.object_id << 1))
-      "#<#{self.class.name}:#{oid} #{@user}@#{host}:#{@port}, vhost=#{@vhost}, hosts=[#{@hosts.join(',')}]>"
+      "#<#{self.class.name}:#{oid} #{@user}@#{host}:#{port}, vhost=#{@vhost}, addresses=[#{@addresses.join(',')}]>"
     end
 
     def inspect
@@ -1109,10 +1148,14 @@ module Bunny
 
     # @private
     def initialize_transport
-      if host = @hosts[ @host_index ]
-        @host_index_mutex.synchronize { @host_index += 1 }
+      if address = @addresses[ @address_index ]
+        @address_index_mutex.synchronize { @address_index += 1 }
         @transport.close rescue nil # Let's make sure the previous transport socket is closed
-        @transport = Transport.new(self, host, @port, @opts.merge(:session_thread => @origin_thread))
+        @transport = Transport.new(self,
+                                   host_from_address(address),
+                                   port_from_address(address),
+                                   @opts.merge(:session_thread => @origin_thread)
+                                  )
 
         # Reset the cached progname for the logger only when no logger was provided
         @default_logger.progname = self.to_s
