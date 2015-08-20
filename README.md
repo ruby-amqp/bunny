@@ -87,7 +87,7 @@ backwards compatible as possible but within reason.
 To install Bunny with RubyGems:
 
 ```
-gem install bunny
+gem install bunny --version 1.7.1
 ```
 
 ### Bundler Dependency
@@ -95,7 +95,7 @@ gem install bunny
 To use Bunny in a project managed with Bundler:
 
 ``` ruby
-gem "bunny", "~> 1.4.0"
+gem "bunny", "~> 1.7.1"
 ```
 
 
