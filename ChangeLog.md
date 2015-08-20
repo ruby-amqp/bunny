@@ -1,5 +1,12 @@
 ## Changes between Bunny 1.7.0 and 1.7.1
 
+### amq-protocol Dependendency Locked to 1.9.x
+
+Since `amq-protocol` 2.0 requires Ruby 2.0 or later, 1.7.x versions of Bunny
+must use `1.9.2`.
+
+GH issue: [#336](https://github.com/ruby-amqp/bunny/issues/336).
+
 ### Logger Output Remains Consistent
 
 Setting the `@logger.progname` attribute changes the output of the logger.
