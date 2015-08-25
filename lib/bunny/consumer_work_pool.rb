@@ -42,6 +42,14 @@ module Bunny
       @running
     end
 
+    def backlog
+      @queue.length
+    end
+
+    def busy?
+      !@queue.empty?
+    end
+
     def shutdown
       @running = false
 
