@@ -165,7 +165,7 @@ module Bunny
     # @param [Bunny::Session] connection AMQP 0.9.1 connection
     # @param [Integer] id Channel id, pass nil to make Bunny automatically allocate it
     # @param [Bunny::ConsumerWorkPool] work_pool Thread pool for delivery processing, by default of size 1
-    def initialize(connection = nil, id = nil, work_pool = ConsumerWorkPool.new(1))
+    def initialize(connection = nil, id = nil, work_pool = ConsumerWorkPool.new(1,10))
       @connection = connection
       @logger     = connection.logger
       @id         = id || @connection.next_channel_id
@@ -230,10 +230,10 @@ module Bunny
     # {Bunny::Queue}, {Bunny::Exchange} and {Bunny::Consumer} instances.
     # @api public
     def close
-      @connection.close_channel(self)
-      @status = :closed
       @work_pool.shutdown
       maybe_kill_consumer_work_pool!
+      @connection.close_channel(self)
+      @status = :closed
     end
 
     # @return [Boolean] true if this channel is open, false otherwise

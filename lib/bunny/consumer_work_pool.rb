@@ -16,10 +16,14 @@ module Bunny
     attr_reader :threads
     attr_reader :size
 
-    def initialize(size = 1)
+    def initialize(size = 1, shutdown_timeout=nil)
       @size  = size
       @queue = ::Queue.new
       @paused = false
+      # Attributes to handle clean reliable shutdown of the workpool
+      @shutdown_timeout = shutdown_timeout
+      @shutdown_mutex = Mutex.new
+      @shutdown_conditional = ConditionalVariable.new
     end
 
 
@@ -57,6 +61,9 @@ module Bunny
         submit do |*args|
           throw :terminate
         end
+      end
+      @shutdown_mutex.synchronize do
+        @shutdown_conditional.wait(@shutdown_mutex,@shutdown_timeout)
       end
     end
 
@@ -98,6 +105,9 @@ module Bunny
             $stderr.puts e.message
           end
         end
+      end
+      @shutdown_mutex.synchronize do
+        @shutdown_conditional.signal unless busy?
       end
     end
   end
