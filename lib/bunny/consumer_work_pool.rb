@@ -22,8 +22,8 @@ module Bunny
       @paused = false
       # Attributes to handle clean reliable shutdown of the workpool
       @shutdown_timeout = shutdown_timeout
-      @shutdown_mutex = Mutex.new
-      @shutdown_conditional = ConditionalVariable.new
+      @shutdown_mutex = ::Mutex.new
+      @shutdown_conditional = ::ConditionalVariable.new
     end
 
 
