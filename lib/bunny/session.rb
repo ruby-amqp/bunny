@@ -114,8 +114,9 @@ module Bunny
     # @option connection_string_or_opts [IO, String] :log_file The file or path to use when creating a logger.  Defaults to STDOUT.
     # @option connection_string_or_opts [IO, String] :logfile DEPRECATED: use :log_file instead.  The file or path to use when creating a logger.  Defaults to STDOUT.
     # @option connection_string_or_opts [Integer] :log_level The log level to use when creating a logger.  Defaults to LOGGER::WARN
-    # @option connection_string_or_opts [Boolean] :automatically_recover Should automatically recover from network failures?
-    # @option connection_string_or_opts [Integer] :recovery_attempts Max number of recovery attempts
+    # @option connection_string_or_opts [Boolean] :automatically_recover (true) Should automatically recover from network failures?
+    # @option connection_string_or_opts [Integer] :recovery_attempts (nil) Max number of recovery attempts, nil means forever, 0 means never
+    # @option connection_string_or_opts [Boolean] :recover_from_connection_close (true) Recover from server-sent connection.close
     #
     # @option optz [String] :auth_mechanism ("PLAIN") Authentication mechanism, PLAIN or EXTERNAL
     # @option optz [String] :locale ("PLAIN") Locale RabbitMQ should use
@@ -158,7 +159,7 @@ module Bunny
                                end
       @recovery_attempts     = opts[:recovery_attempts]
       @network_recovery_interval = opts.fetch(:network_recovery_interval, DEFAULT_NETWORK_RECOVERY_INTERVAL)
-      @recover_from_connection_close = opts.fetch(:recover_from_connection_close, false)
+      @recover_from_connection_close = opts.fetch(:recover_from_connection_close, true)
       # in ms
       @continuation_timeout   = opts.fetch(:continuation_timeout, DEFAULT_CONTINUATION_TIMEOUT)
 
