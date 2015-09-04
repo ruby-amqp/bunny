@@ -19,6 +19,7 @@ module Bunny
     def initialize(size = 1)
       @size  = size
       @queue = ::Queue.new
+      @paused = false
     end
 
 
@@ -41,6 +42,14 @@ module Bunny
       @running
     end
 
+    def backlog
+      @queue.length
+    end
+
+    def busy?
+      !@queue.empty?
+    end
+
     def shutdown
       @running = false
 
@@ -57,12 +66,12 @@ module Bunny
 
     def pause
       @running = false
-
-      @threads.each { |t| t.stop }
+      @paused = true
     end
 
     def resume
       @running = true
+      @paused = false
 
       @threads.each { |t| t.run }
     end
@@ -78,6 +87,7 @@ module Bunny
     def run_loop
       catch(:terminate) do
         loop do
+          Thread.stop if @paused
           callable = @queue.pop
 
           begin

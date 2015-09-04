@@ -1,4 +1,39 @@
+## Changes between Bunny 2.1.0 and 2.2.0
+
+### Add :addresses to connect options
+
+Before this the connection options only allowed multiple hosts, an
+address is a combination of a host and a port. This makes it possible to
+specify different hosts with different ports.
+
+### Recover from connection.close by default
+
+Bunny will now try to reconnect also when server sent connection.close is
+received, e.g. when a server is restarting (but also when the connection is
+force closed by the server). This is in-line with how many other clients behave.
+The old default was `recover_from_connection_close: false`.
+
 ## Changes between Bunny 2.0.0 and 2.1.0
+
+Bunny 2.1.0 has an **important breaking change**. It is highly
+advised that 2.1.0 is not mixed with earlier versions of Bunny
+in case your applications include **integers in message headers**.
+
+### Integer Value Serialisation in Headers
+
+Integer values in headers are now serialised as signed 64-bit integers. Previously
+they were serialised as 32-bit unsigned integers, causing both underflows
+and overflows: incorrect values were observed by consumers.
+
+It is highly
+advised that 2.1.0 is not mixed with earlier versions of Bunny
+in case your applications include integers in message headers.
+
+If that's not the case, Bunny 2.1 will integeroperate with any earlier version
+starting with 0.9.0 just fine. Popular clients in other languages
+(e.g. Java and .NET) will interoperate with Bunny 2.1.0 without
+issues.
+
 
 ### Explicit Ruby 2.0 Requirement
 

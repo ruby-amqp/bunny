@@ -68,14 +68,6 @@ Bunny `1.4.x` and earlier supports RabbitMQ 2.x and 3.x.
 Bunny is a mature library (started in early 2009) with
 a stable public API.
 
-Before version 0.9, **a lot** of functionality was missing.  Version
-0.9 can be considered to be a "second birthday" for Bunny as it was
-rewritten from scratch with over a dozen of preview releases over the
-course of about a year.
-
-We (the maintainers) made our best effort to keep the new version as
-backwards compatible as possible but within reason.
-
 
 ## Installation & Bundler Dependency
 
@@ -96,7 +88,7 @@ gem install bunny
 To use Bunny in a project managed with Bundler:
 
 ``` ruby
-gem "bunny", ">= 2.0.1"
+gem "bunny", ">= 2.1.0"
 ```
 
 
