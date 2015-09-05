@@ -6,12 +6,17 @@ Before this the connection options only allowed multiple hosts, an
 address is a combination of a host and a port. This makes it possible to
 specify different hosts with different ports.
 
+Contributed by Bart van Zon (Tele2).
+
 ### Recover from connection.close by default
 
 Bunny will now try to reconnect also when server sent connection.close is
 received, e.g. when a server is restarting (but also when the connection is
 force closed by the server). This is in-line with how many other clients behave.
 The old default was `recover_from_connection_close: false`.
+
+Contributed by Carl Hörberg (CloudAMQP).
+
 
 ## Changes between Bunny 2.0.0 and 2.1.0
 
