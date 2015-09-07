@@ -292,7 +292,7 @@ module Bunny
     end
 
     def post_initialize_socket
-      @socket = if uses_tls?
+      @socket = if uses_tls? and !@socket.is_a?(Bunny::SSLSocketImpl)
                   wrap_in_tls_socket(@socket)
                 else
                   @socket
