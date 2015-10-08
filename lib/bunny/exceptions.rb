@@ -69,7 +69,7 @@ module Bunny
       m = case e
           when String then
             e
-          when Exception then
+          when ::Exception then
             e.message
           end
       if hostname && port
