@@ -467,7 +467,7 @@ describe Bunny::Session do
     let(:logger)  { ::Logger.new(io) }
 
     it "uses provided logger" do
-      conn = described_class.new(:hostname => "localhost", :logger => logger)
+      conn = described_class.new(:logger => logger)
       conn.start
 
       expect(io.string.length).to be > 100
@@ -477,7 +477,7 @@ describe Bunny::Session do
 
     it "doesn't reassign the logger's progname attribute" do
       expect(logger).not_to receive(:progname=)
-      described_class.new(:hostname => "localhost", :logger => logger)
+      described_class.new(:logger => logger)
     end
   end
 end
