@@ -1,3 +1,15 @@
+## Changes between Bunny 2.2.0 and 2.3.0
+
+### No TLS Socket Double-init
+
+Makes sure that TLS sockets are not double-initialized.
+
+GH issue: [#345](https://github.com/ruby-amqp/bunny/issues/345).
+
+Contributed by Carl Hörberg.
+
+
+
 ## Changes between Bunny 2.1.0 and 2.2.0
 
 ### Add :addresses to connect options
