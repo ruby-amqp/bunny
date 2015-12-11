@@ -63,28 +63,34 @@ unless ENV["CI"]
     end
 
     def ensure_queue_recovery(ch, q)
+      ch.confirm_select
       q.purge
       x = ch.default_exchange
       x.publish("msg", :routing_key => q.name)
+      ch.wait_for_confirms
       sleep 0.5
       expect(q.message_count).to eq 1
       q.purge
     end
 
-    def ensure_queue_binding_recovery(x, q, routing_key = "")
+    def ensure_queue_binding_recovery(ch, x, q, routing_key = "")
+      ch.confirm_select
       q.purge
       x.publish("msg", :routing_key => routing_key)
+      ch.wait_for_confirms
       sleep 0.5
       expect(q.message_count).to eq 1
       q.purge
     end
 
     def ensure_exchange_binding_recovery(ch, source, destination, routing_key = "")
+      ch.confirm_select
       q  = ch.queue("", :exclusive => true)
       q.bind(destination, :routing_key => routing_key)
 
       source.publish("msg", :routing_key => routing_key)
-      sleep 1
+      ch.wait_for_confirms
+      sleep 0.5
       expect(q.message_count).to eq 1
       q.delete
     end
@@ -274,7 +280,7 @@ unless ENV["CI"]
 
         wait_for_recovery
         expect(ch).to be_open
-        ensure_queue_binding_recovery(x, q)
+        ensure_queue_binding_recovery(ch, x, q)
       end
     end
 
