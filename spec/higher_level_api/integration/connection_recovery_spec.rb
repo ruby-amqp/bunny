@@ -84,6 +84,7 @@ unless ENV["CI"]
       q.bind(destination, :routing_key => routing_key)
 
       source.publish("msg", :routing_key => routing_key)
+      sleep 1
       expect(q.message_count).to eq 1
       q.delete
     end
