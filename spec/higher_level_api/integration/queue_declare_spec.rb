@@ -136,6 +136,34 @@ describe Bunny::Queue do
   end
 
 
+  context "when queue is declared with priorities" do
+    let(:args) do
+      {"x-max-priority" => 5}
+    end
+
+    it "enables priority implementation" do
+      ch   = connection.create_channel
+      ch.confirm_select
+
+      q = ch.queue("bunny.tests.queues.with-arguments.priority", :arguments => args, :exclusive => true)
+      expect(q.arguments).to eq args
+
+      q.publish("xyzzy")
+      ch.wait_for_confirms
+      sleep 0.1
+
+      # this test only does sanity checking,
+      # without trying to actually test prioritisation.
+      #
+      # added to guard against issues such as
+      # https://github.com/rabbitmq/rabbitmq-server/issues/488
+      expect(q.message_count).to eq 1
+
+      ch.close
+    end
+  end
+
+
   describe "#queue_exists?" do
     context "when a queue exists" do
       it "returns true" do
