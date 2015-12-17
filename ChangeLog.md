@@ -1,3 +1,11 @@
+## Changes between Bunny 2.2.1 and 2.2.2
+
+### amq-protocol Update
+
+Minimum `amq-protocol` version is now `2.0.1` which includes
+bug fixes.
+
+
 ## Changes between Bunny 2.2.0 and 2.2.1
 
 ### No TLS Socket Double-init
