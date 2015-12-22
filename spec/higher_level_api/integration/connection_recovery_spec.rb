@@ -355,10 +355,11 @@ unless ENV["CI"]
           end
         end
         close_all_connections!
-        sleep 0.1
+        sleep 0.5
         expect(c).not_to be_open
 
         wait_for_recovery
+        sleep 1
         expect(ch).to be_open
 
         expect(q.consumer_count).to eq n
