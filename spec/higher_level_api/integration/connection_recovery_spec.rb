@@ -355,7 +355,7 @@ unless ENV["CI"]
           end
         end
         close_all_connections!
-        sleep 0.5
+        sleep 0.1
         expect(c).not_to be_open
 
         wait_for_recovery
@@ -378,7 +378,7 @@ unless ENV["CI"]
           qs << ch.queue("", :exclusive => true)
         end
         close_all_connections!
-        sleep 0.5
+        sleep 0.1
         expect(c).not_to be_open
 
         wait_for_recovery
