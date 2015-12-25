@@ -6,8 +6,6 @@ rvm:
   - "2.2"
   - "2.1"
   - "2.0"
-  - "jruby"
-  - "rbx"
 notifications:
   email: michael@rabbitmq.com
 services:
@@ -15,8 +13,3 @@ services:
 branches:
   only:
     - master
-    - 1.4.x-stable
-matrix:
-  allow_failures:
-    - rvm: rbx
-    - rvm: jruby
