@@ -3,7 +3,7 @@ bundler_args: --without development
 before_script: "./bin/ci/before_build"
 script: "bundle exec rspec -cf documentation spec"
 rvm:
-  - "2.3"
+  - "2.3.0"
   - "2.2"
   - "2.1"
   - "2.0"
@@ -16,8 +16,3 @@ services:
 branches:
   only:
     - master
-    - 1.4.x-stable
-matrix:
-  allow_failures:
-    - rvm: rbx
-    - rvm: jruby
