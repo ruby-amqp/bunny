@@ -4,13 +4,10 @@ before_script: "./bin/ci/before_build"
 script: "bundle exec rspec -cf documentation spec"
 rvm:
   - "2.3.0"
-  - "2.2"
-  - "2.1"
-  - "2.0"
-  - "jruby"
-  - "rbx"
+  - "2.2.2"
 notifications:
   email: michael@rabbitmq.com
+sudo: false
 services:
   - rabbitmq
 branches:
