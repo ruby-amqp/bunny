@@ -9,9 +9,7 @@ rvm:
   - "2.2.2"
 notifications:
   email: michael@rabbitmq.com
-sudo: no
+sudo: required
 branches:
   only:
     - master
-env:
-  - "PATH=/tmp/rabbitmq/sbin:$PATH RABBITMQCTL=/tmp/rabbitmq/sbin/rabbitmqctl RABBITMQ_PLUGINS=/tmp/rabbitmq/sbin/rabbitmq-plugins"

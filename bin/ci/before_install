@@ -1,5 +1,7 @@
 #!/usr/bin/env sh
 
+sudo apt-get -y purge rabbitmq-server
+
 VERSION="3.6.0"
 TARBALL="rabbitmq-server-generic-unix-$VERSION.tar.xz"
 TARGET="/tmp/rabbitmq"
