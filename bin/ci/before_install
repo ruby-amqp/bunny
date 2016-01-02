@@ -1,0 +1,21 @@
+#!/usr/bin/env sh
+
+VERSION="3.6.0"
+TARBALL="rabbitmq-server-generic-unix-$VERSION.tar.xz"
+TARGET="/tmp/rabbitmq"
+
+rm -rf TARGET
+
+cd /tmp
+wget -O $TARBALL "http://www.rabbitmq.com/releases/rabbitmq-server/v$VERSION/$TARBALL"
+tar xf $TARBALL
+
+ln -s "rabbitmq_server-$VERSION" TARGET
+cd $TARGET
+
+export PATH=/tmp/rabbitmq/sbin:$PATH
+
+rabbitmq-server &
+sleep 3
+rabbitmqctl status
+echo "Started RabbitMQ under $TARGET"
