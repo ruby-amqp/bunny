@@ -11,3 +11,5 @@ sudo: required
 branches:
   only:
     - master
+services:
+  - rabbitmq
