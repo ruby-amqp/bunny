@@ -4,20 +4,21 @@ sudo apt-get -y purge rabbitmq-server
 
 VERSION="3.6.0"
 TARBALL="rabbitmq-server-generic-unix-$VERSION.tar.xz"
-TARGET="/tmp/rabbitmq"
+TARGET="$HOME/rabbitmq"
 
-rm -rf TARGET
+rm -rf $TARGET
 
-cd /tmp
+cd $HOME
 wget -O $TARBALL "http://www.rabbitmq.com/releases/rabbitmq-server/v$VERSION/$TARBALL"
 tar xf $TARBALL
 
-ln -s "rabbitmq_server-$VERSION" TARGET
+ln -s "rabbitmq_server-$VERSION" $TARGET
 cd $TARGET
 
-export PATH=/tmp/rabbitmq/sbin:$PATH
+SBIN="$HOME/rabbitmq/sbin"
+export PATH=$SBIN:$PATH
 
-rabbitmq-server &
+$SBIN/rabbitmq-server &
 sleep 3
-rabbitmqctl status
+$SBIN/rabbitmqctl status
 echo "Started RabbitMQ under $TARGET"
