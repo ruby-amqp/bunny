@@ -15,6 +15,7 @@ tar xf $TARBALL
 ln -s "rabbitmq_server-$VERSION" $TARGET
 cd $TARGET
 
+echo "Hostname is $(hostname), $(hostname -f)"
 pwd
 ls
 
