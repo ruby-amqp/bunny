@@ -13,3 +13,5 @@ sudo: required
 branches:
   only:
     - master
+env:
+  - RABBITMQCTL="$HOME/rabbitmq/sbin/rabbitmqctl" RABBITMQ_PLUGINS="$HOME/rabbitmq/sbin/rabbitmq-plugins"
