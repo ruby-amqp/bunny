@@ -15,10 +15,12 @@ tar xf $TARBALL
 ln -s "rabbitmq_server-$VERSION" $TARGET
 cd $TARGET
 
-SBIN="$HOME/rabbitmq/sbin"
-export PATH=$SBIN:$PATH
+pwd
+ls
 
-$SBIN/rabbitmq-server &
-sleep 3
+SBIN="$HOME/rabbitmq/sbin"
+
+$SBIN/rabbitmq-server -detached
+sleep 10
 $SBIN/rabbitmqctl status
 echo "Started RabbitMQ under $TARGET"
