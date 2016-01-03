@@ -1,9 +1,7 @@
 language: ruby
-before_install: "./bin/ci/before_install"
 bundler_args: --without development
 before_script: "./bin/ci/before_build"
 script: "bundle exec rspec -cf documentation spec"
-after_script: "/tmp/rabbitmq/sbin/rabbitmqctl stop"
 rvm:
   - "2.3.0"
   - "2.2.2"
@@ -13,5 +11,3 @@ sudo: required
 branches:
   only:
     - master
-env:
-  - RABBITMQCTL=/home/travis/rabbitmq/sbin/rabbitmqctl RABBITMQ_PLUGINS=/home/travis/rabbitmq/sbin/rabbitmq-plugins
