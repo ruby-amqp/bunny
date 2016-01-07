@@ -4,6 +4,8 @@
 require "rubygems"
 require "bunny"
 
+STDOUT.sync = true
+
 puts "=> Subscribing for messages using explicit acknowledgements model"
 puts
 
