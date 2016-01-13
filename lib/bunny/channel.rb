@@ -705,7 +705,7 @@ module Bunny
     #
     #   ch    = conn.create_channel
     #   q.subscribe do |delivery_info, properties, payload|
-    #     # requeue the message
+    #     # reject the message
     #     ch.basic_reject(delivery_info.delivery_tag, false)
     #   end
     #
