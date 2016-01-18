@@ -260,7 +260,10 @@ describe Bunny::Queue, "#subscribe" do
       let(:queue_name) { "bunny.basic_consume#{rand}" }
 
       it "uses exception handler" do
+        caughts = []
         t = Thread.new do
+          allow(connection.logger).to receive(:error) { |x| caughts << x }
+
           ch = connection.create_channel
           q  = ch.queue(queue_name, :auto_delete => true, :durable => false)
 
@@ -275,6 +278,8 @@ describe Bunny::Queue, "#subscribe" do
         x  = ch.default_exchange
         5.times { x.publish("hello", :routing_key => queue_name) }
         sleep 1.5
+
+        expect(caughts.size).to eq(5)
 
         ch.close
       end
