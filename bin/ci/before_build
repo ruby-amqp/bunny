@@ -1,11 +1,10 @@
 #!/usr/bin/env ruby
 
-$nodename = ENV.fetch("RABBITMQ_NODENAME", "rabbit")
 $ctl      = ENV.fetch("RABBITMQCTL",       "sudo rabbitmqctl")
 $plugins  = ENV.fetch("RABBITMQ_PLUGINS",  "sudo rabbitmq-plugins")
 
 def rabbit_control(args)
-  command = "#{$ctl} -n #{$nodename} #{args}"
+  command = "#{$ctl} #{args}"
   system command
 end
 
