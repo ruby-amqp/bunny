@@ -158,9 +158,9 @@ Other documentation guides are available at [rubybunny.info](http://rubybunny.in
 to also join the [RabbitMQ mailing list](https://groups.google.com/forum/#!forum/rabbitmq-users) mailing list. Feel free to ask any questions that you may have.
 
 
-### IRC
+## Continuous Integration
 
-For more immediate help, please join `#rabbitmq` on `irc.freenode.net`.
+[![Build Status](https://travis-ci.org/ruby-amqp/bunny.png)](https://travis-ci.org/ruby-amqp/bunny/)
 
 
 ### News & Announcements on Twitter
