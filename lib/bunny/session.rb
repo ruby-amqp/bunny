@@ -86,7 +86,7 @@ module Bunny
     attr_reader :mechanism
     # @return [Logger]
     attr_reader :logger
-    # @return [Integer] Timeout for blocking protocol operations (queue.declare, queue.bind, etc), in milliseconds. Default is 4000.
+    # @return [Integer] Timeout for blocking protocol operations (queue.declare, queue.bind, etc), in milliseconds. Default is 15000.
     attr_reader :continuation_timeout
 
 
@@ -107,7 +107,7 @@ module Bunny
     # @option connection_string_or_opts [String] :tls_key (nil) Path to client TLS/SSL private key file (.pem)
     # @option connection_string_or_opts [Array<String>] :tls_ca_certificates Array of paths to TLS/SSL CA files (.pem), by default detected from OpenSSL configuration
     # @option connection_string_or_opts [String] :verify_peer (true) Whether TLS peer verification should be performed
-    # @option connection_string_or_opts [Integer] :continuation_timeout (4000) Timeout for client operations that expect a response (e.g. {Bunny::Queue#get}), in milliseconds.
+    # @option connection_string_or_opts [Integer] :continuation_timeout (15000) Timeout for client operations that expect a response (e.g. {Bunny::Queue#get}), in milliseconds.
     # @option connection_string_or_opts [Integer] :connection_timeout (5) Timeout in seconds for connecting to the server.
     # @option connection_string_or_opts [Proc] :hosts_shuffle_strategy A Proc that reorders a list of host strings, defaults to Array#shuffle
     # @option connection_string_or_opts [Logger] :logger The logger.  If missing, one is created using :log_file and :log_level.
