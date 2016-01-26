@@ -1488,7 +1488,7 @@ module Bunny
     #
     # @api plugin
     def recover_from_network_failure
-      @logger.debug "Recovering channel #{@id} after network failure"
+      @logger.debug { "Recovering channel #{@id} after network failure" }
       release_all_continuations
 
       recover_prefetch_setting
@@ -1544,7 +1544,7 @@ module Bunny
     # @api plugin
     def recover_queues
       @queues.values.dup.each do |q|
-        @logger.debug "Recovering queue #{q.name}"
+        @logger.debug { "Recovering queue #{q.name}" }
         q.recover_from_network_failure
       end
     end
@@ -1616,7 +1616,7 @@ module Bunny
 
     # @private
     def handle_method(method)
-      @logger.debug "Channel#handle_frame on channel #{@id}: #{method.inspect}"
+      @logger.debug { "Channel#handle_frame on channel #{@id}: #{method.inspect}" }
       case method
       when AMQ::Protocol::Queue::DeclareOk then
         @continuations.push(method)
