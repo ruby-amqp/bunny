@@ -547,7 +547,7 @@ module Bunny
     #
     # @private
     def handle_frame(ch_number, method)
-      @logger.debug "Session#handle_frame on #{ch_number}: #{method.inspect}"
+      @logger.debug { "Session#handle_frame on #{ch_number}: #{method.inspect}" }
       case method
       when AMQ::Protocol::Channel::OpenOk then
         @continuations.push(method)
@@ -1049,7 +1049,7 @@ module Bunny
                               else
                                 negotiate_value(@client_heartbeat, connection_tune.heartbeat)
                               end
-      @logger.debug "Heartbeat interval negotiation: client = #{@client_heartbeat}, server = #{connection_tune.heartbeat}, result = #{@heartbeat}"
+      @logger.debug { "Heartbeat interval negotiation: client = #{@client_heartbeat}, server = #{connection_tune.heartbeat}, result = #{@heartbeat}" }
       @logger.info "Heartbeat interval used (in seconds): #{@heartbeat}"
 
       # We set the read_write_timeout to twice the heartbeat value
@@ -1069,9 +1069,9 @@ module Bunny
       end
 
       @transport.send_frame(AMQ::Protocol::Connection::TuneOk.encode(@channel_max, @frame_max, @heartbeat))
-      @logger.debug "Sent connection.tune-ok with heartbeat interval = #{@heartbeat}, frame_max = #{@frame_max}, channel_max = #{@channel_max}"
+      @logger.debug { "Sent connection.tune-ok with heartbeat interval = #{@heartbeat}, frame_max = #{@frame_max}, channel_max = #{@channel_max}" }
       @transport.send_frame(AMQ::Protocol::Connection::Open.encode(self.vhost))
-      @logger.debug "Sent connection.open with vhost = #{self.vhost}"
+      @logger.debug { "Sent connection.open with vhost = #{self.vhost}" }
 
       frame2 = begin
                  fr = @transport.read_next_frame
