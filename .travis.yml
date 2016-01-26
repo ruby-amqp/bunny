@@ -1,5 +1,6 @@
 language: ruby
 bundler_args: --without development
+cache: bundler
 before_script: "./bin/ci/before_build"
 script: "bundle exec rspec -cf documentation spec"
 rvm:
