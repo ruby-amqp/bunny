@@ -1,4 +1,17 @@
-## Changes between Bunny 2.2.1 and 2.2.2
+## Changes between Bunny 2.2.2 and 2.2.3 (unreleased)
+
+### Explicit Transport Closure on Recovery
+
+Bunny now will explicitly close previosly used transport before starting
+connection recovery.
+
+GitHub issue: [#377](https://github.com/ruby-amqp/bunny/pull/377).
+
+Contributed by bkanhoopla.
+
+
+
+## Changes between Bunny 2.2.1 and 2.2.2 (Dec 17th, 2015)
 
 ### amq-protocol Update
 
