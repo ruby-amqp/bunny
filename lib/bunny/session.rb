@@ -636,6 +636,7 @@ module Bunny
             @channels.each do |n, ch|
               ch.maybe_kill_consumer_work_pool!
             end
+            @reader_loop.stop if @reader_loop
             maybe_shutdown_heartbeat_sender
 
             recover_from_network_failure
