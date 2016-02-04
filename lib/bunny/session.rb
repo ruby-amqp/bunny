@@ -86,7 +86,7 @@ module Bunny
     attr_reader :mechanism
     # @return [Logger]
     attr_reader :logger
-    # @return [Integer] Timeout for blocking protocol operations (queue.declare, queue.bind, etc), in milliseconds. Default is 4000.
+    # @return [Integer] Timeout for blocking protocol operations (queue.declare, queue.bind, etc), in milliseconds. Default is 15000.
     attr_reader :continuation_timeout
 
 
@@ -107,7 +107,7 @@ module Bunny
     # @option connection_string_or_opts [String] :tls_key (nil) Path to client TLS/SSL private key file (.pem)
     # @option connection_string_or_opts [Array<String>] :tls_ca_certificates Array of paths to TLS/SSL CA files (.pem), by default detected from OpenSSL configuration
     # @option connection_string_or_opts [String] :verify_peer (true) Whether TLS peer verification should be performed
-    # @option connection_string_or_opts [Integer] :continuation_timeout (4000) Timeout for client operations that expect a response (e.g. {Bunny::Queue#get}), in milliseconds.
+    # @option connection_string_or_opts [Integer] :continuation_timeout (15000) Timeout for client operations that expect a response (e.g. {Bunny::Queue#get}), in milliseconds.
     # @option connection_string_or_opts [Integer] :connection_timeout (5) Timeout in seconds for connecting to the server.
     # @option connection_string_or_opts [Proc] :hosts_shuffle_strategy A Proc that reorders a list of host strings, defaults to Array#shuffle
     # @option connection_string_or_opts [Logger] :logger The logger.  If missing, one is created using :log_file and :log_level.
@@ -547,7 +547,7 @@ module Bunny
     #
     # @private
     def handle_frame(ch_number, method)
-      @logger.debug "Session#handle_frame on #{ch_number}: #{method.inspect}"
+      @logger.debug { "Session#handle_frame on #{ch_number}: #{method.inspect}" }
       case method
       when AMQ::Protocol::Channel::OpenOk then
         @continuations.push(method)
@@ -636,6 +636,7 @@ module Bunny
             @channels.each do |n, ch|
               ch.maybe_kill_consumer_work_pool!
             end
+            @reader_loop.stop if @reader_loop
             maybe_shutdown_heartbeat_sender
 
             recover_from_network_failure
@@ -1049,7 +1050,7 @@ module Bunny
                               else
                                 negotiate_value(@client_heartbeat, connection_tune.heartbeat)
                               end
-      @logger.debug "Heartbeat interval negotiation: client = #{@client_heartbeat}, server = #{connection_tune.heartbeat}, result = #{@heartbeat}"
+      @logger.debug { "Heartbeat interval negotiation: client = #{@client_heartbeat}, server = #{connection_tune.heartbeat}, result = #{@heartbeat}" }
       @logger.info "Heartbeat interval used (in seconds): #{@heartbeat}"
 
       # We set the read_write_timeout to twice the heartbeat value
@@ -1069,9 +1070,9 @@ module Bunny
       end
 
       @transport.send_frame(AMQ::Protocol::Connection::TuneOk.encode(@channel_max, @frame_max, @heartbeat))
-      @logger.debug "Sent connection.tune-ok with heartbeat interval = #{@heartbeat}, frame_max = #{@frame_max}, channel_max = #{@channel_max}"
+      @logger.debug { "Sent connection.tune-ok with heartbeat interval = #{@heartbeat}, frame_max = #{@frame_max}, channel_max = #{@channel_max}" }
       @transport.send_frame(AMQ::Protocol::Connection::Open.encode(self.vhost))
-      @logger.debug "Sent connection.open with vhost = #{self.vhost}"
+      @logger.debug { "Sent connection.open with vhost = #{self.vhost}" }
 
       frame2 = begin
                  fr = @transport.read_next_frame

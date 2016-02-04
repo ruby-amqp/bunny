@@ -458,8 +458,8 @@ but prone man-in-the-middle attacks. Please set :verify_peer => true in producti
           cert_inlines.push(cert)
         end
       end
-      @logger.debug "Using CA certificates at #{cert_files.join(', ')}"
-      @logger.debug "Using #{cert_inlines.count} inline CA certificates"
+      @logger.debug { "Using CA certificates at #{cert_files.join(', ')}" }
+      @logger.debug { "Using #{cert_inlines.count} inline CA certificates" }
       if certs.empty?
         @logger.error "No CA certificates found, add one with :tls_ca_certificates"
       end

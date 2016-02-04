@@ -8,6 +8,12 @@ GH issue: [#345](https://github.com/ruby-amqp/bunny/issues/345).
 
 Contributed by Carl Hörberg.
 
+### Lazily Evaluated Debug Log Strings
+
+GH issue: [#375](https://github.com/ruby-amqp/bunny/pull/375)
+
+Contributed by Omer Katz.
+
 
 
 ## Changes between Bunny 2.1.0 and 2.2.0
