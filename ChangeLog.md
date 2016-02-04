@@ -1,5 +1,14 @@
 ## Changes between Bunny 2.2.0 and 2.3.0
 
+### Explicit Transport Closure on Recovery
+
+Bunny now will explicitly close previosly used transport before starting
+connection recovery.
+
+GitHub issue: [#377](https://github.com/ruby-amqp/bunny/pull/377).
+
+Contributed by bkanhoopla.
+
 ### No TLS Socket Double-init
 
 Makes sure that TLS sockets are not double-initialized.
