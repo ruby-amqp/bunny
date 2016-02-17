@@ -935,7 +935,7 @@ module Bunny
       end
     end
 
-    # Sends multiple frames, one by one. For thread safety this method takes a channel
+    # Sends multiple frames, in one go. For thread safety this method takes a channel
     # object and synchronizes on it.
     #
     # @private
