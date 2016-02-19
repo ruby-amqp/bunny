@@ -696,9 +696,6 @@ module Bunny
 
     # @private
     def recover_channels
-      # default channel is reopened right after connection
-      # negotiation is completed, so make sure we do not try to open
-      # it twice. MK.
       @channels.each do |n, ch|
         ch.open
 
