@@ -618,14 +618,14 @@ module Bunny
       # implementation (and even more correct and convenient ones, such as wait/notify, should
       # we implement them). So we return a triple of nils immediately which apps should be
       # able to handle anyway as "got no message, no need to act". MK.
-      @last_basic_get_response = if @connection.open?
-                                   wait_on_basic_get_continuations
-                                 else
-                                   [nil, nil, nil]
-                                 end
+      last_basic_get_response = if @connection.open?
+                                  wait_on_basic_get_continuations
+                                else
+                                  [nil, nil, nil]
+                                end
 
       raise_if_continuation_resulted_in_a_channel_error!
-      @last_basic_get_response
+      last_basic_get_response
     end
 
     # prefetch_count is of type short in the protocol. MK.
