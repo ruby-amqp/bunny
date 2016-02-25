@@ -32,6 +32,7 @@ module Bunny
 
       @size.times do
         t = Thread.new(&method(:run_loop))
+        t.abort_on_exception = true
         @threads << t
       end
 
