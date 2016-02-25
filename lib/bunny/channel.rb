@@ -1555,7 +1555,7 @@ module Bunny
     # @api plugin
     def recover_consumers
       unless @consumers.empty?
-        @work_pool = ConsumerWorkPool.new(@work_pool.size)
+        @work_pool = ConsumerWorkPool.new(@work_pool.size, @work_pool.abort_on_exception)
         @work_pool.start
       end
       @consumers.values.dup.each do |c|
