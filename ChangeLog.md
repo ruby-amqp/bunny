@@ -1,4 +1,12 @@
-## Changes between Bunny 2.2.0 and 2.3.0
+## Changes between Bunny 2.2.0 and 2.3.0 (Feb 26th, 2016)
+
+### Thread#abort_on_exception Setting for Consumer Work Pool Threads
+
+`Bunny::Session#create_channel` now supports a 3rd argument that,
+when set to `true`, makes consumer work pool threads to have
+`Thread#abort_on_exception` set on them.
+
+Contributed by Seamus Abshere.
 
 ### Explicit Transport Closure on Recovery
 
@@ -25,7 +33,7 @@ Contributed by Omer Katz.
 
 
 
-## Changes between Bunny 2.1.0 and 2.2.0
+## Changes between Bunny 2.1.0 and 2.2.0 (Sep 6th, 2015)
 
 ### Add :addresses to connect options
 
