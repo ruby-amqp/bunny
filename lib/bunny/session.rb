@@ -88,6 +88,7 @@ module Bunny
     attr_reader :logger
     # @return [Integer] Timeout for blocking protocol operations (queue.declare, queue.bind, etc), in milliseconds. Default is 15000.
     attr_reader :continuation_timeout
+    attr_reader :network_recovery_interval
 
 
     # @param [String, Hash] connection_string_or_opts Connection string or a hash of connection options
@@ -330,14 +331,14 @@ module Bunny
     # opened (this operation is very fast and inexpensive).
     #
     # @return [Bunny::Channel] Newly opened channel
-    def create_channel(n = nil, consumer_pool_size = 1)
+    def create_channel(n = nil, consumer_pool_size = 1, consumer_pool_abort_on_exception = false)
       raise ArgumentError, "channel number 0 is reserved in the protocol and cannot be used" if 0 == n
 
       @channel_mutex.synchronize do
         if n && (ch = @channels[n])
           ch
         else
-          ch = Bunny::Channel.new(self, n, ConsumerWorkPool.new(consumer_pool_size || 1))
+          ch = Bunny::Channel.new(self, n, ConsumerWorkPool.new(consumer_pool_size || 1, consumer_pool_abort_on_exception))
           ch.open
           ch
         end

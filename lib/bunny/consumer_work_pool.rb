@@ -15,9 +15,11 @@ module Bunny
 
     attr_reader :threads
     attr_reader :size
+    attr_reader :abort_on_exception
 
-    def initialize(size = 1)
+    def initialize(size = 1, abort_on_exception = false)
       @size  = size
+      @abort_on_exception = abort_on_exception
       @queue = ::Queue.new
       @paused = false
     end
@@ -32,6 +34,7 @@ module Bunny
 
       @size.times do
         t = Thread.new(&method(:run_loop))
+        t.abort_on_exception = true if abort_on_exception
         @threads << t
       end
 
