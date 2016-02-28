@@ -6,6 +6,8 @@
 when set to `true`, makes consumer work pool threads to have
 `Thread#abort_on_exception` set on them.
 
+GH issue: [#382](https://github.com/ruby-amqp/bunny/pull/382)
+
 Contributed by Seamus Abshere.
 
 ### Explicit Transport Closure on Recovery
