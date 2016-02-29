@@ -259,9 +259,9 @@ describe Bunny::Session do
           :password => "bunny_password",
           :vhost    => "bunny_testbed",
           :tls                   => true,
-          :tls_cert              => "spec/tls/client_cert.pem",
+          :tls_cert              => "spec/tls/client_certificate.pem",
           :tls_key               => "spec/tls/client_key.pem",
-          :tls_ca_certificates   => ["./spec/tls/cacert.pem"])
+          :tls_ca_certificates   => ["./spec/tls/ca_certificate.pem"])
       end
 
       it "uses TLS port" do
