@@ -250,7 +250,7 @@ module Bunny
 
       if block
         if properties
-          di = GetResponse.new(get_response, properties, @channel)
+          di = GetResponse.new(get_response, @channel)
           mp = MessageProperties.new(properties)
 
           block.call(di, mp, content)
@@ -259,7 +259,7 @@ module Bunny
         end
       else
         if properties
-          di = GetResponse.new(get_response, properties, @channel)
+          di = GetResponse.new(get_response, @channel)
           mp = MessageProperties.new(properties)
           [di, mp, content]
         else

@@ -20,7 +20,7 @@ module Bunny
     attr_reader :channel
 
     # @private
-    def initialize(get_ok, consumer, channel)
+    def initialize(get_ok, channel)
       @get_ok = get_ok
       @hash          = {
         :delivery_tag => @get_ok.delivery_tag,
