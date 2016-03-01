@@ -37,7 +37,6 @@ module Bunny
       @channel          = channel
       @name             = name
       @options          = self.class.add_default_options(name, opts)
-      @consumers        = Hash.new
 
       @durable          = @options[:durable]
       @exclusive        = @options[:exclusive]
