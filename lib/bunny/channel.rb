@@ -1415,7 +1415,6 @@ module Bunny
       Bunny::Timeout.timeout(wait_on_continuations_timeout, ClientTimeout) do
         @last_confirm_select_ok = wait_on_continuations
       end
-      @confirm_mode = true
       raise_if_continuation_resulted_in_a_channel_error!
       @last_confirm_select_ok
     end
