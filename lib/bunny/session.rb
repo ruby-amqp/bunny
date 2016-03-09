@@ -138,17 +138,22 @@ module Bunny
       @default_hosts_shuffle_strategy = Proc.new { |hosts| hosts.shuffle }
 
       @opts            = opts
+      log_file         = opts[:log_file] || opts[:logfile] || STDOUT
+      log_level        = opts[:log_level] || ENV["BUNNY_LOG_LEVEL"] || Logger::WARN
+      # we might need to log a warning about ill-formatted IPv6 address but
+      # progname includes hostname, so init like this first
+      @logger          = opts.fetch(:logger, init_default_logger_without_progname(log_file, log_level))
+
       @addresses       = self.addresses_from(opts)
       @address_index   = 0
+
+      # re-init, see above
+      @logger          = opts.fetch(:logger, init_default_logger(log_file, log_level))
 
       @user            = self.username_from(opts)
       @pass            = self.password_from(opts)
       @vhost           = self.vhost_from(opts)
       @threaded        = opts.fetch(:threaded, true)
-
-      log_file         = opts[:log_file] || opts[:logfile] || STDOUT
-      log_level        = opts[:log_level] || ENV["BUNNY_LOG_LEVEL"] || Logger::WARN
-      @logger          = opts.fetch(:logger, init_default_logger(log_file, log_level))
 
       validate_connection_options(opts)
 
@@ -775,11 +780,6 @@ module Bunny
     end
 
     # @private
-    def host_with_port?(address)
-      address.include? ':'
-    end
-
-    # @private
     def port_from(options)
       fallback = if options[:tls] || options[:ssl]
                    AMQ::Protocol::TLS_PORT
@@ -791,13 +791,60 @@ module Bunny
     end
 
     # @private
+    def host_with_port?(address)
+      # we need to handle cases such as [2001:db8:85a3:8d3:1319:8a2e:370:7348]:5671
+      last_colon                  = address.rindex(":")
+      last_closing_square_bracket = address.rindex("]")
+
+      if last_closing_square_bracket.nil?
+        address.include?(":")
+      else
+        last_closing_square_bracket < last_colon
+      end
+    end
+
+    # @private
     def host_from_address(address)
-      address.split(":")[0]
+      # we need to handle cases such as [2001:db8:85a3:8d3:1319:8a2e:370:7348]:5671
+      last_colon                  = address.rindex(":")
+      last_closing_square_bracket = address.rindex("]")
+
+      if last_closing_square_bracket.nil?
+        parts = address.split(":")
+        # this looks like an unquoted IPv6 address, so emit a warning
+        if parts.size > 2
+          @logger.warn "Address #{address} looks like an unquoted IPv6 address. Make sure you quote IPv6 addresses like so: [2001:db8:85a3:8d3:1319:8a2e:370:7348]"
+        end
+        return parts[0]
+      end
+
+      if last_closing_square_bracket < last_colon
+        # there is a port
+        address[0, last_colon]
+      elsif last_closing_square_bracket > last_colon
+        address
+      end
     end
 
     # @private
     def port_from_address(address)
-      address.split(":")[1].to_i
+      # we need to handle cases such as [2001:db8:85a3:8d3:1319:8a2e:370:7348]:5671
+      last_colon                  = address.rindex(":")
+      last_closing_square_bracket = address.rindex("]")
+
+      if last_closing_square_bracket.nil?
+        parts = address.split(":")
+        # this looks like an unquoted IPv6 address, so emit a warning
+        if parts.size > 2
+          @logger.warn "Address #{address} looks like an unquoted IPv6 address. Make sure you quote IPv6 addresses like so: [2001:db8:85a3:8d3:1319:8a2e:370:7348]"
+        end
+        return parts[1].to_i
+      end
+
+      if last_closing_square_bracket < last_colon
+        # there is a port
+        address[(last_colon + 1)..-1].to_i
+      end
     end
 
     # @private
@@ -1216,6 +1263,15 @@ module Bunny
                           lgr = ::Logger.new(logfile)
                           lgr.level    = normalize_log_level(level)
                           lgr.progname = self.to_s
+                          lgr
+                        end
+    end
+
+    # @private
+    def init_default_logger_without_progname(logfile, level)
+      @default_logger = begin
+                          lgr = ::Logger.new(logfile)
+                          lgr.level    = normalize_log_level(level)
                           lgr
                         end
     end

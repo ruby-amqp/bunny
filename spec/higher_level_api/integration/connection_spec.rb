@@ -192,6 +192,83 @@ describe Bunny::Session do
       end
     end
 
+    context "initialized with :addresses => [...] with quoted IPv6 hostnames" do
+      after :each do
+        subject.close if subject.open?
+      end
+
+      let(:host)      { "[2001:db8:85a3:8d3:1319:8a2e:370:7348]" }
+      let(:port)      { 5673 }
+      let(:address)   { "#{host}:#{port}" }
+      let(:addresses) { [address] }
+      let(:subject)   { described_class.new(:addresses => addresses) }
+
+      it "uses correct hostname" do
+        expect(subject.host).to eq host
+        expect(subject.hostname).to eq host
+      end
+
+      it "uses port 5673" do
+        expect(subject.port).to eq port
+      end
+
+      it "uses username = guest" do
+        expect(subject.username).to eq username
+        expect(subject.user).to eq username
+      end
+    end
+
+    context "initialized with :addresses => [...] with quoted IPv6 hostnames without ports" do
+      after :each do
+        subject.close if subject.open?
+      end
+
+      let(:host)      { "[2001:db8:85a3:8d3:1319:8a2e:370:7348]" }
+      let(:address)   { host }
+      let(:addresses) { [address] }
+      let(:subject)   { described_class.new(:addresses => addresses) }
+
+      it "uses correct hostname" do
+        expect(subject.host).to eq host
+        expect(subject.hostname).to eq host
+      end
+
+      it "uses port 5672" do
+        expect(subject.port).to eq 5672
+      end
+
+      it "uses username = guest" do
+        expect(subject.username).to eq username
+        expect(subject.user).to eq username
+      end
+    end
+
+    context "initialized with :addresses => [...] with an quoted IPv6 hostnames" do
+      after :each do
+        subject.close if subject.open?
+      end
+
+      let(:host)      { "2001:db8:85a3:8d3:1319:8a2e:370:7348" }
+      let(:port)      { 5673 }
+      let(:address)   { "#{host}:#{port}" }
+      let(:addresses) { [address] }
+      let(:subject)   { described_class.new(:addresses => addresses) }
+
+      it "fails to correctly parse the host (and emits a warning)" do
+        expect(subject.host).to eq "2001"
+        expect(subject.hostname).to eq "2001"
+      end
+
+      it "fails to correctly parse the port (and emits a warning)" do
+        expect(subject.port).to eq 0
+      end
+
+      it "uses username = guest" do
+        expect(subject.username).to eq username
+        expect(subject.user).to eq username
+      end
+    end
+
     context "initialized with conflicting hosts and addresses" do
       let(:host)      { "192.168.1.10" }
       let(:port)      { 5673 }
