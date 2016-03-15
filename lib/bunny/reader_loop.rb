@@ -33,7 +33,7 @@ module Bunny
         begin
           break if @mutex.synchronize { @stopping || @stopped || @network_is_down }
           run_once
-        rescue AMQ::Protocol::EmptyResponseError, IOError, SystemCallError => e
+        rescue AMQ::Protocol::EmptyResponseError, IOError, SystemCallError, Timeout::Error => e
           break if terminate? || @session.closing? || @session.closed?
 
           log_exception(e)
