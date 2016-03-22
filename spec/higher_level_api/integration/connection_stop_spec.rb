@@ -52,7 +52,7 @@ describe Bunny::Session do
 
   describe "that recovers from connection.close" do
     it "can be closed" do
-      c  = Bunny.new(:automatically_recover => false, :recover_from_connection_close => true, :network_recovery_interval => 0.2)
+      c  = Bunny.new(:automatically_recover => true, :recover_from_connection_close => true, :network_recovery_interval => 0.2)
       c.start
       ch = c.create_channel
 
