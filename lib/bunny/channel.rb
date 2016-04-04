@@ -649,8 +649,8 @@ module Bunny
     # @see http://rubybunny.info/articles/queues.html Queues and Consumers guide
     # @api public
     def basic_qos(count, global = false)
-      raise ArgumentError.new("prefetch count must be a positive integer, given: #{prefetch_count}") if count < 0
-      raise ArgumentError.new("prefetch count must be no greater than #{MAX_PREFETCH_COUNT}, given: #{prefetch_count}") if count > MAX_PREFETCH_COUNT
+      raise ArgumentError.new("prefetch count must be a positive integer, given: #{count}") if count < 0
+      raise ArgumentError.new("prefetch count must be no greater than #{MAX_PREFETCH_COUNT}, given: #{count}") if count > MAX_PREFETCH_COUNT
       raise_if_no_longer_open!
 
       @connection.send_frame(AMQ::Protocol::Basic::Qos.encode(@id, 0, count, global))
