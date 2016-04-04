@@ -427,26 +427,6 @@ module Bunny
 
     # @group QoS and Flow Control
 
-    # Sets how many messages will be given to consumers on this channel before they
-    # have to acknowledge or reject one of the previously consumed messages
-    #
-    # @param [Integer] prefetch_count Prefetch (QoS setting) for this channel
-    # @param [Boolean] global
-    #   Whether to use global mode for prefetch:
-    #   - +false+: per-consumer
-    #   - +true+:  per-channel
-    #   Note that the default value (+false+) hasn't actually changed, but
-    #   previous documentation described that as meaning per-channel and
-    #   unsupported in RabbitMQ, whereas it now actually appears to mean
-    #   per-consumer and supported
-    #   (https://www.rabbitmq.com/consumer-prefetch.html).
-    # @see http://rubybunny.info/articles/exchanges.html Exchanges and Publishing guide
-    # @see http://rubybunny.info/articles/queues.html Queues and Consumers guide
-    # @api public
-    def prefetch(count, global = false)
-      self.basic_qos(count, global)
-    end
-
     # Flow control. When set to false, RabbitMQ will stop delivering messages on this
     # channel.
     #
@@ -665,6 +645,7 @@ module Bunny
 
       @last_basic_qos_ok
     end
+    alias prefetch basic_qos
 
     # Redeliver unacknowledged messages
     #
