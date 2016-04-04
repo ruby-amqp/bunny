@@ -1,3 +1,23 @@
+## Changes between Bunny 2.3.0 and 2.4.0 (unreleased)
+
+### Support (Quoted) IPv6 Addresses in Address Lists
+
+GitHub issue: [#383](https://github.com/ruby-amqp/bunny/issues/383).
+
+Contributed by Jeremy Heiler.
+
+### Transport#read_fully Doesn't Try to Recover
+
+Since transport is replaced by a recovering connection
+anyway, and this produces confusing errors up the stack.
+
+GitHub issue: [#359](https://github.com/ruby-amqp/bunny/issues/359)
+
+Contributed by Donal McBreen.
+
+
+
+
 ## Changes between Bunny 2.2.0 and 2.3.0 (Feb 26th, 2016)
 
 ### Thread#abort_on_exception Setting for Consumer Work Pool Threads
