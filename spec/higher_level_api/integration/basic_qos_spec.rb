@@ -36,7 +36,10 @@ describe Bunny::Channel, "#prefetch" do
       ch = connection.create_channel
       expect {
         ch.prefetch(100_000)
-      }.to raise_error(ArgumentError)
+      }.to raise_error(
+        ArgumentError,
+        "prefetch count must be no greater than #{Bunny::Channel::MAX_PREFETCH_COUNT}, given: 100000"
+      )
     end
   end
 
@@ -45,7 +48,10 @@ describe Bunny::Channel, "#prefetch" do
       ch = connection.create_channel
       expect {
         ch.prefetch(-2)
-      }.to raise_error(ArgumentError)
+      }.to raise_error(
+        ArgumentError,
+        "prefetch count must be a positive integer, given: -2"
+      )
     end
   end
 end
