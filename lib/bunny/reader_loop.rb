@@ -92,11 +92,11 @@ module Bunny
     end
 
     def stopped?
-      @mutex.synchronize { @stopped = true }
+      @mutex.synchronize { @stopped }
     end
 
     def stopping?
-      @mutex.synchronize { @stopping = true }
+      @mutex.synchronize { @stopping }
     end
 
     def terminate_with(e)
