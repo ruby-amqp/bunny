@@ -366,7 +366,7 @@ module Bunny
     # @see http://rubybunny.info/articles/exchanges.html Exchanges and Publishing guide
     # @api public
     def default_exchange
-      self.direct(AMQ::Protocol::EMPTY_STRING, :no_declare => true)
+      Exchange.default(self)
     end
 
     # Declares a headers exchange or looks it up in the cache of previously
