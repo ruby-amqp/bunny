@@ -179,7 +179,7 @@ module Bunny
       @channel_max        = @client_channel_max
       @client_heartbeat   = self.heartbeat_from(opts)
 
-      @client_properties   = opts[:properties] || DEFAULT_CLIENT_PROPERTIES
+      @client_properties   = DEFAULT_CLIENT_PROPERTIES.merge(opts.fetch(:properties, {}))
       @mechanism           = opts.fetch(:auth_mechanism, "PLAIN")
       @credentials_encoder = credentials_encoder_for(@mechanism)
       @locale              = @opts.fetch(:locale, DEFAULT_LOCALE)
