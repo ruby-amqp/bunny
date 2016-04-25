@@ -15,7 +15,11 @@ GitHub issue: [#359](https://github.com/ruby-amqp/bunny/issues/359)
 
 Contributed by Donal McBreen.
 
+### Client-Provided Session `:properties` Merged with Defaults
 
+Client-Provided Session `:properties` will now be merged with defaults
+instead of replacing them. This makes it much more convenient to
+override a single key.
 
 
 ## Changes between Bunny 2.2.0 and 2.3.0 (Feb 26th, 2016)
