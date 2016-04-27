@@ -1,7 +1,7 @@
 ## Pre-requisites
 
-The project uses Bundler for dependency management and requires RabbitMQ `3.4+` to be running
-locally. Prior to running the tests, configure the RabbitMQ permissions
+The project uses Bundler for dependency management and requires RabbitMQ `3.5+` to be running
+locally with the `rabbitmq-management` and `rabbitmq_consistent_hash_exchange` plugins enabled. Prior to running the tests, configure the RabbitMQ permissions
 by running `./bin/ci/before_script`. Make
 sure you have those two installed and then run tests:
 
