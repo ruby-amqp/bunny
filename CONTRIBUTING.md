@@ -6,7 +6,11 @@ by running `./bin/ci/before_script`. Make
 sure you have those two installed and then run tests:
 
     bundle install
-    bundle exec rspec -cfd spec/    
+    bundle exec rspec -cfd spec/
+    
+It is possible to run only integration and regression tests but exclude unit and stress tests:
+
+    CI=true bundle exec rspec -c spec/higher_level_api/ spec/lower_level_api spec/issues && bundle exec rspec -c spec/higher_level_api/integration/connection_recovery_spec.rb
 
 ## Pull Requests
 
