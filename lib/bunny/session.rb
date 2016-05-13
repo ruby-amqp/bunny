@@ -125,12 +125,12 @@ module Bunny
     # @see http://rubybunny.info/articles/connecting.html Connecting to RabbitMQ guide
     # @see http://rubybunny.info/articles/tls.html TLS/SSL guide
     # @api public
-    def initialize(connection_string_or_opts = Hash.new, optz = Hash.new)
-      opts = case (ENV["RABBITMQ_URL"] || connection_string_or_opts)
+    def initialize(connection_string_or_opts = ENV['RABBITMQ_URL'], optz = Hash.new)
+      opts = case (connection_string_or_opts)
              when nil then
                Hash.new
              when String then
-               self.class.parse_uri(ENV["RABBITMQ_URL"] || connection_string_or_opts)
+               self.class.parse_uri(connection_string_or_opts)
              when Hash then
                connection_string_or_opts
              end.merge(optz)

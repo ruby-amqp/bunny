@@ -58,7 +58,7 @@ module Bunny
   # @see http://rubybunny.info/articles/getting_started.html
   # @see http://rubybunny.info/articles/connecting.html
   # @api public
-  def self.new(connection_string_or_opts = {}, opts = {}, &block)
+  def self.new(connection_string_or_opts = ENV['RABBITMQ_URL'], opts = {}, &block)
     if connection_string_or_opts.respond_to?(:keys) && opts.empty?
       opts = connection_string_or_opts
     end
@@ -70,7 +70,7 @@ module Bunny
   end
 
 
-  def self.run(connection_string_or_opts = {}, opts = {}, &block)
+  def self.run(connection_string_or_opts = ENV['RABBITMQ_URL'], opts = {}, &block)
     raise ArgumentError, 'Bunny#run requires a block' unless block
 
     client = Session.new(connection_string_or_opts, opts)
