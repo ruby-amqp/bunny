@@ -13,20 +13,16 @@ unless ENV["CI"]
     end
 
     let(:concurrency) { 24 }
-    let(:rate)        { 1_000 }
+    let(:rate)        { 2_000 }
 
     it "successfully finish publishing" do
-      ch = @connection.create_channel
-
-      q    = ch.queue("", :exclusive => true)
       body = "сообщение"
-
-      # let the queue name be sent back by RabbitMQ
-      sleep 0.25
 
       chs  = {}
       concurrency.times do |i|
-        chs[i] = @connection.create_channel
+        ch     = @connection.create_channel
+        ch.confirm_select
+        chs[i] = ch
       end
 
       ts = []
@@ -34,14 +30,13 @@ unless ENV["CI"]
       concurrency.times do |i|
         t = Thread.new do
           cht = chs[i]
-          x   = ch.default_exchange
+          x   = cht.default_exchange
 
-          5.times do |i|
-            rate.times do
-              x.publish(body, :routing_key => q.name)
-            end
-            puts "Published #{(i + 1) * rate} messages..."
+          rate.times do
+            x.publish(body)
           end
+          puts "Published #{rate} messages..."
+          cht.wait_for_confirms
         end
         t.abort_on_exception = true
 
