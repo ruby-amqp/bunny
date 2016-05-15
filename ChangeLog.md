@@ -1,3 +1,18 @@
+## Changes between Bunny 2.3.1 and 2.3.2 (unreleased)
+
+### More Predictable RABBITMQ_URL Handling
+
+`RABBITMQ_URL` no longer will be used if any other
+connection options are provided. This makes it possible
+to use `RABBITMQ_URL` for some connections and options
+for others in a single OS process.
+
+GitHub issue: [#403](https://github.com/ruby-amqp/bunny/pull/403)
+
+Contributed by Jimmy Petersen.
+
+
+
 ## Changes between Bunny 2.3.0 and 2.3.1 (Apr 4th, 2016)
 
 ### Support (Quoted) IPv6 Addresses in Address Lists
