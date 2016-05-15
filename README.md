@@ -182,37 +182,6 @@ are using, provide recent RabbitMQ log file contents if possible, and
 try to explain what behavior you expected and why. Bonus points for
 contributing failing test cases.
 
-
-### Running the Specs
-
-The specs require RabbitMQ to be running locally with a specific set of vhosts
-and users. RabbitMQ can be provisioned and started any that's convenient to you
-as long as it has a suitable TLS keys configuration and management plugin enabled.
-Make sure you have a recent version of RabbitMQ (> `3.5.3`).
-
-You can also start a clean RabbitMQ server
-node on your machine specifically for the bunny specs.
-To do so, run the following command
-from the base directory of the gem:
-
-```
-RABBITMQ_NODENAME=bunny RABBITMQ_CONFIG_FILE=./spec/config/rabbitmq RABBITMQ_ENABLED_PLUGINS_FILE=./spec/config/enabled_plugins rabbitmq-server
-```
-
-The specs use the RabbitMQ management plugin and require a TLS port to be available. The config files in the spec/config directory enable these.
-
-Next up you'll need to prepare your node for the specs (just once):
-
-```
-RABBITMQ_NODENAME=bunny ./bin/ci/before_build
-```
-
-And then run the core integration suite:
-
-```
-RABBITMQ_NODENAME=bunny CI=true rspec
-```
-
 ## Other Ruby RabbitMQ Clients
 
 The other widely used Ruby RabbitMQ client is [March Hare](http://rubymarchhare.info) (JRuby-only).
