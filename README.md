@@ -221,22 +221,8 @@ It's a mature library that require RabbitMQ 3.3.x or later.
 
 ## Contributing
 
-First, clone the repository and run
-
-    bundle install --binstubs
-
-then set up RabbitMQ vhosts with
-
-    ./bin/ci/before_build
-
-(if needed, set `RABBITMQCTL` env variable to point to `rabbitmqctl` you want to use)
-
-and then run tests with
-
-    CI=true ./bin/rspec -cf documentation spec
-
-After that create a branch and make your changes on it. Once you are done with your changes and all tests pass, submit a pull request
-on GitHub.
+See [CONTRIBUTING.md](./CONTRIBUTING.md) for more information
+about running various test suites.
 
 
 ## License
