@@ -21,6 +21,17 @@ Client-Provided Session `:properties` will now be merged with defaults
 instead of replacing them. This makes it much more convenient to
 override a single key.
 
+### More Predictable RABBITMQ_URL Handling
+
+`RABBITMQ_URL` no longer will be used if any other
+connection options are provided. This makes it possible
+to use `RABBITMQ_URL` for some connections and options
+for others in a single OS process.
+
+GitHub issue: [#403](https://github.com/ruby-amqp/bunny/pull/403)
+
+Contributed by Jimmy Petersen.
+
 
 ## Changes between Bunny 2.2.0 and 2.3.0 (Feb 26th, 2016)
 
