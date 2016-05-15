@@ -21,7 +21,7 @@ unless ENV["CI"]
       let(:colors) { ["red", "blue", "white"] }
 
       let(:n) { 32 }
-      let(:m) { 1000 }
+      let(:m) { 5000 }
 
       it "successfully drain all queues" do
         ch0  = @connection.create_channel
