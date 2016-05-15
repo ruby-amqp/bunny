@@ -3,11 +3,15 @@
 The project uses Bundler for dependency management and requires RabbitMQ `3.5+` to be running
 locally with the `rabbitmq-management` and `rabbitmq_consistent_hash_exchange` plugins enabled. Prior to running the tests, configure the RabbitMQ permissions
 by running `./bin/ci/before_script`. Make
-sure you have those two installed and then run tests:
+sure you have those two installed and then run integration tests:
 
     bundle install
-    bundle exec rspec -cfd spec/
+    rake integration
     
+It is possible to run all tests:
+
+    bundle exec rspec -c
+
 It is possible to run only integration and regression tests but exclude unit and stress tests:
 
     CI=true bundle exec rspec -c spec/higher_level_api/ spec/lower_level_api spec/issues && bundle exec rspec -c spec/higher_level_api/integration/connection_recovery_spec.rb
