@@ -13,7 +13,7 @@ unless ENV["CI"]
     end
 
     let(:concurrency) { 24 }
-    let(:rate)        { 2_000 }
+    let(:rate)        { 5_000 }
 
     it "successfully finish publishing" do
       body = "сообщение"
@@ -46,6 +46,8 @@ unless ENV["CI"]
       ts.each do |t|
         t.join
       end
+
+      chs.each { |_, ch| ch.close }
     end
   end
 end
