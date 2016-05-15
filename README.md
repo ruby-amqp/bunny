@@ -186,14 +186,18 @@ contributing failing test cases.
 ### Running the Specs
 
 The specs require RabbitMQ to be running locally with a specific set of vhosts
-and users. RabbitMQ can be provisioned and started any that's convenient to you
+and users. RabbitMQ can be provisioned and started any way that's convenient to you
 as long as it has a suitable TLS keys configuration and management plugin enabled.
 Make sure you have a recent version of RabbitMQ (> `3.5.3`).
 
 You can also start a clean RabbitMQ server
 node on your machine specifically for the bunny specs.
-To do so, run the following command
-from the base directory of the gem:
+This can be done either by using a locally installed RabbitMQ server or by
+running a RabbitMQ server in a Docker container.
+
+#### Using a locally installed RabbitMQ server
+
+Run the following command from the base directory of the gem:
 
 ```
 RABBITMQ_NODENAME=bunny RABBITMQ_CONFIG_FILE=./spec/config/rabbitmq RABBITMQ_ENABLED_PLUGINS_FILE=./spec/config/enabled_plugins rabbitmq-server
@@ -213,6 +217,24 @@ And then run the core integration suite:
 RABBITMQ_NODENAME=bunny CI=true rspec
 ```
 
+#### Running a RabbitMQ server in a Docker container
+
+First off you have to install Docker (>= 1.9). See https://docs.docker.com/engine/installation/
+
+After Docker has been installed (and the `docker` command is available on your command line path), run
+
+    ./bin/ci/start_rabbitmq.sh
+
+The first time you do this, it will take some time, since it has to download everything it needs
+to build the Docker image.
+
+The RabbitMQ server will run in the foreground in the terminal where you started it. You can stop
+it by pressing CTRL+C.
+
+Now (in another terminal) run the specs:
+
+    CI=true rspec
+
 ## Other Ruby RabbitMQ Clients
 
 The other widely used Ruby RabbitMQ client is [March Hare](http://rubymarchhare.info) (JRuby-only).
@@ -225,11 +247,15 @@ First, clone the repository and run
 
     bundle install --binstubs
 
-then set up RabbitMQ vhosts with
+then either set up your locally installed RabbitMQ server vhosts with
 
     ./bin/ci/before_build
 
 (if needed, set `RABBITMQCTL` env variable to point to `rabbitmqctl` you want to use)
+
+or start a RabbitMQ server in a Docker container with (requires Docker - see https://docs.docker.com/engine/installation/)
+
+    ./bin/ci/start_rabbitmq.sh
 
 and then run tests with
 
