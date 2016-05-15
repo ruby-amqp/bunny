@@ -257,12 +257,8 @@ or start a RabbitMQ server in a Docker container with (requires Docker - see htt
 
     ./bin/ci/start_rabbitmq.sh
 
-and then run tests with
-
-    CI=true ./bin/rspec -cf documentation spec
-
-After that create a branch and make your changes on it. Once you are done with your changes and all tests pass, submit a pull request
-on GitHub.
+See [CONTRIBUTING.md](./CONTRIBUTING.md) for more information
+about running various test suites.
 
 
 ## License
