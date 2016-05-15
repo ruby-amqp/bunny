@@ -24,9 +24,10 @@ unless ENV["CI"]
       let(:m) { 1000 }
 
       it "successfully drain all queues" do
-        ch   = @connection.create_channel
+        ch0  = @connection.create_channel
+        ch0.confirm_select
         body = "абвг"
-        x    = ch.topic("bunny.stress.concurrent.consumers.topic", :durable => true)
+        x    = ch0.topic("bunny.stress.concurrent.consumers.topic", :durable => true)
 
         chs  = {}
         n.times do |i|
@@ -54,14 +55,16 @@ unless ENV["CI"]
             x.publish(body, :routing_key => colors.sample)
           end
           puts "Published #{(i + 1) * m} messages..."
+          ch0.wait_for_confirms
         end
 
         while any_not_drained?(qs)
           sleep 1.0
         end
-        puts "Drained all the queues..."
+        puts "Drained all queues, winding down..."
 
-        ch.close
+        ch0.close
+        chs.each { |_, ch| ch.close }
       end
     end
   end
