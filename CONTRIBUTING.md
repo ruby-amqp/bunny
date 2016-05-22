@@ -44,7 +44,7 @@ First off you have to [install Docker](https://docs.docker.com/engine/installati
 
 After Docker has been installed (and the `docker` command is available on your command line path), run
 
-    ./bin/ci/start_rabbitmq.sh
+    ./bin/ci/start_rabbitmq
 
 The first time you do this, it will take some time, since it has to download everything it needs
 to build the Docker image.
