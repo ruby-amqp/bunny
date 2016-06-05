@@ -6,6 +6,7 @@ script: "bundle exec rspec -cf documentation spec"
 rvm:
   - "2.3.0"
   - "2.2.2"
+  - "rbx-3.36"
 notifications:
   email: michael@rabbitmq.com
 services:
