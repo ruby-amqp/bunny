@@ -1,4 +1,3 @@
-require 'celluloid/current'
 require 'celluloid/test'
 require 'celluloid/io'
 require 'spec_helper'
