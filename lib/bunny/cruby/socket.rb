@@ -21,6 +21,11 @@ module Bunny
       socket.setsockopt(::Socket::SOL_SOCKET, ::Socket::SO_KEEPALIVE, true) if options.fetch(:keepalive, true)
       socket.extend self
       socket.options = { :host => host, :port => port }.merge(options)
+
+      if defined? Celluloid::IO && Celluloid::IO.evented?
+        socket = Celluloid::IO::Socket.try_convert(socket)
+      end
+
       socket
     rescue Errno::ETIMEDOUT
       raise ClientTimeout
