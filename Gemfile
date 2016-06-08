@@ -29,6 +29,7 @@ group :development do
   gem "ruby-prof", :platform => :mri
 
   gem "json",      :platform => :ruby_18
+  gem "celluloid"
   gem "celluloid-io"
 end
 
