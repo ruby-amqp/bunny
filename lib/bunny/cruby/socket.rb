@@ -22,8 +22,8 @@ module Bunny
       socket.extend self
       socket.options = { :host => host, :port => port }.merge(options)
 
-      if defined? Celluloid::IO && Celluloid::IO.evented?
-        socket = Celluloid::IO::Socket.try_convert(socket)
+      if defined? ::Celluloid::IO && ::Celluloid::IO.evented?
+        socket = ::Celluloid::IO::Socket.try_convert(socket)
       end
 
       socket
