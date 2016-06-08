@@ -13,19 +13,19 @@ module Bunny
     WRITE_RETRY_EXCEPTION_CLASSES = [Errno::EAGAIN, Errno::EWOULDBLOCK, IO::WaitWritable]
 
     def self.open(host, port, options = {})
-      socket = ::Socket.tcp(host, port, nil, nil,
-                            connect_timeout: options[:connect_timeout])
+      if defined? ::Celluloid::IO
+        socket = ::Celluloid::IO::TCPSocket.new(host, port, nil, nil) if ::Celluloid::IO.evented?
+      else
+        socket = ::Socket.tcp(host, port, nil, nil,
+                              connect_timeout: options[:connect_timeout])
+      end
+
       if ::Socket.constants.include?('TCP_NODELAY') || ::Socket.constants.include?(:TCP_NODELAY)
         socket.setsockopt(::Socket::IPPROTO_TCP, ::Socket::TCP_NODELAY, true)
       end
       socket.setsockopt(::Socket::SOL_SOCKET, ::Socket::SO_KEEPALIVE, true) if options.fetch(:keepalive, true)
       socket.extend self
       socket.options = { :host => host, :port => port }.merge(options)
-
-      if defined? ::Celluloid::IO
-        socket = ::Celluloid::IO::Socket.try_convert(socket) if ::Celluloid::IO.evented?
-      end
-
       socket
     rescue Errno::ETIMEDOUT
       raise ClientTimeout
