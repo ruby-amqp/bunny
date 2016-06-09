@@ -1,5 +1,14 @@
 ## Changes between Bunny 2.3.0 and 2.4.0 (unreleased)
 
+### Unconfirmed Delivery Tag Set Reset on Network Recovery
+
+Channels will now reset their unconfirmed delivery tag set after
+recovery.
+
+GitHub issue: [#406](https://github.com/ruby-amqp/bunny/pull/406)
+
+Contributed by Bill Ruddock.
+
 ### Support (Quoted) IPv6 Addresses in Address Lists
 
 GitHub issue: [#383](https://github.com/ruby-amqp/bunny/issues/383).
