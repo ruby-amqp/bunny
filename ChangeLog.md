@@ -1,4 +1,9 @@
-## Changes between Bunny 2.3.0 and 2.4.0 (unreleased)
+## Changes between Bunny 2.4.0 and 2.5.0 (unreleased)
+
+No changes yet.
+
+
+## Changes between Bunny 2.3.0 and 2.4.0 (June 11th, 2016)
 
 ### Unconfirmed Delivery Tag Set Reset on Network Recovery
 
