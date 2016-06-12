@@ -6,12 +6,13 @@ describe "Connection recovery" do
 
   def close_all_connections!
     http_client.list_connections.each do |conn_info|
-      begin
-        http_client.close_connection(conn_info.name)
-      rescue Bunny::ConnectionForced
-        # This is not a problem, but the specs intermittently believe it is.
-      end
+      close_ignoring_permitted_exceptions(conn_info.name)
     end
+  end
+
+  def close_ignoring_permitted_exceptions(connection_name)
+    http_client.close_connection(connection_name)
+  rescue Bunny::ConnectionForced
   end
 
   def wait_for_recovery
