@@ -4,100 +4,6 @@ require "rabbitmq/http/client"
 describe "Connection recovery" do
   let(:http_client) { RabbitMQ::HTTP::Client.new("http://127.0.0.1:15672") }
 
-  def close_all_connections!
-    http_client.list_connections.each do |conn_info|
-      close_ignoring_permitted_exceptions(conn_info.name)
-    end
-  end
-
-  def close_ignoring_permitted_exceptions(connection_name)
-    http_client.close_connection(connection_name)
-  rescue Bunny::ConnectionForced
-  end
-
-  def wait_for_recovery
-    sleep 1.5
-  end
-
-  def with_open(c = Bunny.new(:network_recovery_interval => 0.2, :recover_from_connection_close => true), &block)
-    begin
-      c.start
-      block.call(c)
-    ensure
-      c.close
-    end
-  end
-
-  def with_open_multi_host( c = Bunny.new( :hosts => ["127.0.0.1", "localhost"],
-                                           :network_recovery_interval => 0.2,
-                                           :recover_from_connection_close => true), &block)
-    begin
-      c.start
-      block.call(c)
-    ensure
-      c.close
-    end
-  end
-
-  def with_open_multi_broken_host( c = Bunny.new( :hosts => ["broken", "127.0.0.1", "localhost"],
-                                           :hosts_shuffle_strategy => Proc.new { |hosts| hosts }, # We do not shuffle for these tests so we always hit the broken host
-                                           :network_recovery_interval => 0.2,
-                                           :recover_from_connection_close => true), &block)
-    begin
-      c.start
-      block.call(c)
-    ensure
-      c.close
-    end
-  end
-
-  def with_recovery_attempts_limited_to(attempts = 3, &block)
-    c = Bunny.new(:recover_from_connection_close => true, :network_recovery_interval => 0.2, :recovery_attempts => attempts)
-    begin
-      c.start
-      block.call(c)
-    ensure
-      c.close
-    end
-  end
-
-  def ensure_queue_recovery(ch, q)
-    ch.confirm_select
-    q.purge
-    x = ch.default_exchange
-    x.publish("msg", :routing_key => q.name)
-    ch.wait_for_confirms
-    sleep 0.5
-    expect(q.message_count).to eq 1
-    q.purge
-  end
-
-  def ensure_queue_binding_recovery(ch, x, q, routing_key = "")
-    ch.confirm_select
-    q.purge
-    x.publish("msg", :routing_key => routing_key)
-    ch.wait_for_confirms
-    sleep 0.5
-    expect(q.message_count).to eq 1
-    q.purge
-  end
-
-  def ensure_exchange_binding_recovery(ch, source, destination, routing_key = "")
-    ch.confirm_select
-    q  = ch.queue("", :exclusive => true)
-    q.bind(destination, :routing_key => routing_key)
-
-    source.publish("msg", :routing_key => routing_key)
-    ch.wait_for_confirms
-    sleep 0.5
-    expect(q.message_count).to eq 1
-    q.delete
-  end
-
-  #
-  # Examples
-  #
-
   it "reconnects after grace period" do
     with_open do |c|
       close_all_connections!
@@ -397,5 +303,95 @@ describe "Connection recovery" do
 
       wait_for_recovery
     end
+  end
+
+  def close_all_connections!
+    http_client.list_connections.each do |conn_info|
+      close_ignoring_permitted_exceptions(conn_info.name)
+    end
+  end
+
+  def close_ignoring_permitted_exceptions(connection_name)
+    http_client.close_connection(connection_name)
+  rescue Bunny::ConnectionForced
+  end
+
+  def wait_for_recovery
+    sleep 1.5
+  end
+
+  def with_open(c = Bunny.new(:network_recovery_interval => 0.2, :recover_from_connection_close => true), &block)
+    begin
+      c.start
+      block.call(c)
+    ensure
+      c.close
+    end
+  end
+
+  def with_open_multi_host( c = Bunny.new( :hosts => ["127.0.0.1", "localhost"],
+                                           :network_recovery_interval => 0.2,
+                                           :recover_from_connection_close => true), &block)
+    begin
+      c.start
+      block.call(c)
+    ensure
+      c.close
+    end
+  end
+
+  def with_open_multi_broken_host( c = Bunny.new( :hosts => ["broken", "127.0.0.1", "localhost"],
+                                           :hosts_shuffle_strategy => Proc.new { |hosts| hosts }, # We do not shuffle for these tests so we always hit the broken host
+                                           :network_recovery_interval => 0.2,
+                                           :recover_from_connection_close => true), &block)
+    begin
+      c.start
+      block.call(c)
+    ensure
+      c.close
+    end
+  end
+
+  def with_recovery_attempts_limited_to(attempts = 3, &block)
+    c = Bunny.new(:recover_from_connection_close => true, :network_recovery_interval => 0.2, :recovery_attempts => attempts)
+    begin
+      c.start
+      block.call(c)
+    ensure
+      c.close
+    end
+  end
+
+  def ensure_queue_recovery(ch, q)
+    ch.confirm_select
+    q.purge
+    x = ch.default_exchange
+    x.publish("msg", :routing_key => q.name)
+    ch.wait_for_confirms
+    sleep 0.5
+    expect(q.message_count).to eq 1
+    q.purge
+  end
+
+  def ensure_queue_binding_recovery(ch, x, q, routing_key = "")
+    ch.confirm_select
+    q.purge
+    x.publish("msg", :routing_key => routing_key)
+    ch.wait_for_confirms
+    sleep 0.5
+    expect(q.message_count).to eq 1
+    q.purge
+  end
+
+  def ensure_exchange_binding_recovery(ch, source, destination, routing_key = "")
+    ch.confirm_select
+    q  = ch.queue("", :exclusive => true)
+    q.bind(destination, :routing_key => routing_key)
+
+    source.publish("msg", :routing_key => routing_key)
+    ch.wait_for_confirms
+    sleep 0.5
+    expect(q.message_count).to eq 1
+    q.delete
   end
 end
