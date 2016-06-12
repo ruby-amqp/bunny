@@ -191,17 +191,28 @@ describe "Connection recovery" do
 
   it "recovers exchange bindings" do
     with_open do |c|
-      ch = c.create_channel
-      x  = ch.fanout("amq.fanout")
-      x2 = ch.fanout("bunny.tests.recovery.fanout")
-      x2.bind(x)
+      ch          = c.create_channel
+      source      = ch.fanout("amq.fanout")
+      destination = ch.fanout("bunny.tests.recovery.fanout")
+      routing_key = ""
+
+      destination.bind(source)
       close_all_connections!
       sleep 0.1
       expect(c).not_to be_open
 
       wait_for_recovery
       expect(ch).to be_open
-      ensure_exchange_binding_recovery(ch, x, x2)
+
+      ch.confirm_select
+      q  = ch.queue("", :exclusive => true)
+      q.bind(destination, :routing_key => routing_key)
+
+      source.publish("msg", :routing_key => routing_key)
+      ch.wait_for_confirms
+      sleep 0.5
+      expect(q.message_count).to eq 1
+      q.delete
     end
   end
 
@@ -381,17 +392,5 @@ describe "Connection recovery" do
     sleep 0.5
     expect(q.message_count).to eq 1
     q.purge
-  end
-
-  def ensure_exchange_binding_recovery(ch, source, destination, routing_key = "")
-    ch.confirm_select
-    q  = ch.queue("", :exclusive => true)
-    q.bind(destination, :routing_key => routing_key)
-
-    source.publish("msg", :routing_key => routing_key)
-    ch.wait_for_confirms
-    sleep 0.5
-    expect(q.message_count).to eq 1
-    q.delete
   end
 end
