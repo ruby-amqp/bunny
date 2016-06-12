@@ -2,7 +2,6 @@ require "spec_helper"
 require "rabbitmq/http/client"
 
 describe "Connection recovery" do
-  let(:connection)  {  }
   let(:http_client) { RabbitMQ::HTTP::Client.new("http://127.0.0.1:15672") }
 
   def close_all_connections!
