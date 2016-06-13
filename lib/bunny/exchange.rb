@@ -214,7 +214,6 @@ module Bunny
 
     # @private
     def recover_from_network_failure
-      # puts "Recovering exchange #{@name} from network failure"
       declare! unless predefined?
     end
 
