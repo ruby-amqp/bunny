@@ -189,30 +189,31 @@ describe "Connection recovery" do
     end
   end
 
-  it "recovers exchange bindings" do
+  it "recovers exchanges and their bindings" do
     with_open do |c|
       ch          = c.create_channel
-      source      = ch.fanout("amq.fanout")
-      destination = ch.fanout("bunny.tests.recovery.fanout")
-      routing_key = ""
+      source      = ch.fanout("source.exchange.recovery.example", auto_delete: true)
+      destination = ch.fanout("destination.exchange.recovery.example", auto_delete: true)
 
       destination.bind(source)
-      close_all_connections!
-      sleep 0.1
-      expect(c).not_to be_open
 
-      wait_for_recovery
-      expect(ch).to be_open
+      # Exchanges won't get auto-deleted on connection loss unless they have
+      # had an exclusive queue bound to them.
+      dst_queue   = ch.queue("", exclusive: true)
+      dst_queue.bind(destination, routing_key: "")
+
+      src_queue   = ch.queue("", exclusive: true)
+      src_queue.bind(source, routing_key: "")
+
+      close_all_connections!
+
+      wait_on_loss_and_recovery_of { exchange_names_in_vhost("/").include?(source.name) }
 
       ch.confirm_select
-      q  = ch.queue("", :exclusive => true)
-      q.bind(destination, :routing_key => routing_key)
 
-      source.publish("msg", :routing_key => routing_key)
+      source.publish("msg", routing_key: "")
       ch.wait_for_confirms
-      sleep 0.5
-      expect(q.message_count).to eq 1
-      q.delete
+      expect(dst_queue.message_count).to eq 1
     end
   end
 
@@ -316,6 +317,10 @@ describe "Connection recovery" do
     end
   end
 
+  def exchange_names_in_vhost(vhost)
+    http_client.list_exchanges(vhost).map {|e| e["name"]}
+  end
+
   def close_all_connections!
     http_client.list_connections.each do |conn_info|
       close_ignoring_permitted_exceptions(conn_info.name)
@@ -329,6 +334,23 @@ describe "Connection recovery" do
 
   def wait_for_recovery
     sleep 1.5
+  end
+
+  def wait_on_loss_and_recovery_of(&probe)
+    poll_while probe
+    poll_until probe
+  end
+
+  def poll_while(probe)
+    Timeout::timeout(30) {
+      sleep 0.1 while probe[]
+    }
+  end
+
+  def poll_until(probe)
+    Timeout::timeout(30) {
+      sleep 0.1 until probe[]
+    }
   end
 
   def with_open(c = Bunny.new(:network_recovery_interval => 0.2, :recover_from_connection_close => true), &block)

@@ -82,6 +82,8 @@ module Bunny
       @internal         = @options[:internal]
       @arguments        = @options[:arguments]
 
+      @bindings         = Set.new
+
       declare! unless opts[:no_declare] || predeclared? || (@name == AMQ::Protocol::EMPTY_STRING)
 
       @channel.register_exchange(self)
@@ -171,6 +173,7 @@ module Bunny
     # @api public
     def bind(source, opts = {})
       @channel.exchange_bind(source, self, opts)
+      @bindings.add(source: source, opts: opts)
 
       self
     end
@@ -191,6 +194,7 @@ module Bunny
     # @api public
     def unbind(source, opts = {})
       @channel.exchange_unbind(source, self, opts)
+      @bindings.delete(source: source, opts: opts)
 
       self
     end
@@ -217,6 +221,9 @@ module Bunny
     # @private
     def recover_from_network_failure
       declare! unless @options[:no_declare] ||predefined?
+      @bindings.each do |b|
+        bind(b[:source], b[:opts])
+      end
     end
 
 
