@@ -1,3 +1,5 @@
+require 'amq/protocol'
+
 module Bunny
   # Represents AMQP 0.9.1 exchanges.
   #
