@@ -13,12 +13,13 @@ module Bunny
     WRITE_RETRY_EXCEPTION_CLASSES = [Errno::EAGAIN, Errno::EWOULDBLOCK, IO::WaitWritable]
 
     def self.open(host, port, options = {})
-      socket = ::Socket.tcp(host, port, nil, nil,
+      @socket_impl = options.fetch(:socket_impl, ::Socket)
+      socket = @socket_impl.tcp(host, port, nil, nil,
                             connect_timeout: options[:connect_timeout])
-      if ::Socket.constants.include?('TCP_NODELAY') || ::Socket.constants.include?(:TCP_NODELAY)
-        socket.setsockopt(::Socket::IPPROTO_TCP, ::Socket::TCP_NODELAY, true)
+      if @socket_impl.constants.include?('TCP_NODELAY') || @socket_impl.constants.include?(:TCP_NODELAY)
+        socket.setsockopt(@socket_impl::IPPROTO_TCP, @socket_impl::TCP_NODELAY, true)
       end
-      socket.setsockopt(::Socket::SOL_SOCKET, ::Socket::SO_KEEPALIVE, true) if options.fetch(:keepalive, true)
+      socket.setsockopt(@socket_impl::SOL_SOCKET, @socket_impl::SO_KEEPALIVE, true) if options.fetch(:keepalive, true)
       socket.extend self
       socket.options = { :host => host, :port => port }.merge(options)
       socket
