@@ -668,30 +668,28 @@ module Bunny
 
     # @private
     def recover_from_network_failure
-      begin
-        sleep @network_recovery_interval
-        @logger.debug "About to start connection recovery..."
+      sleep @network_recovery_interval
+      @logger.debug "About to start connection recovery..."
 
-        self.initialize_transport
+      self.initialize_transport
 
-        @logger.warn "Retrying connection on next host in line: #{@transport.host}:#{@transport.port}"
-        self.start
+      @logger.warn "Retrying connection on next host in line: #{@transport.host}:#{@transport.port}"
+      self.start
 
-        if open?
-          @recovering_from_network_failure = false
+      if open?
+        @recovering_from_network_failure = false
 
-          recover_channels
-        end
-      rescue HostListDepleted
-        reset_address_index
-        retry
-      rescue TCPConnectionFailedForAllHosts, TCPConnectionFailed, AMQ::Protocol::EmptyResponseError => e
-        @logger.warn "TCP connection failed, reconnecting in #{@network_recovery_interval} seconds"
-        sleep @network_recovery_interval
-        if should_retry_recovery?
-          @recovery_attempts -= 1 if @recovery_attempts
-          retry if recoverable_network_failure?(e)
-        end
+        recover_channels
+      end
+    rescue HostListDepleted
+      reset_address_index
+      retry
+    rescue TCPConnectionFailedForAllHosts, TCPConnectionFailed, AMQ::Protocol::EmptyResponseError => e
+      @logger.warn "TCP connection failed, reconnecting in #{@network_recovery_interval} seconds"
+      sleep @network_recovery_interval
+      if should_retry_recovery?
+        @recovery_attempts -= 1 if @recovery_attempts
+        retry if recoverable_network_failure?(e)
       end
     end
 
