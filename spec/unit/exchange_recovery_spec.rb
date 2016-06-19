@@ -1,5 +1,5 @@
-require_relative '../../../lib/bunny/channel'
-require_relative '../../../lib/bunny/exchange'
+require_relative '../../lib/bunny/channel'
+require_relative '../../lib/bunny/exchange'
 
 module Bunny
   describe Exchange do
@@ -22,11 +22,11 @@ module Bunny
         dst.bind(src2, routing_key: "def")
         dst.bind(src2, routing_key: "ghi")
         dst.bind(src3, routing_key: "jkl")
-        dst.bind(src3, routing_key: "jkl", arguments: ["foo", "bar"])
+        dst.bind(src3, routing_key: "jkl", arguments: {"key": "value"})
 
         allow(ch).to receive(:exchange_unbind).twice
         dst.unbind(src2, routing_key: "def")
-        dst.unbind(src3, routing_key: "jkl", arguments: ["foo", "bar"])
+        dst.unbind(src3, routing_key: "jkl", arguments: {"key": "value"})
 
         expect(ch).to receive(:exchange_bind).with(src1, dst, routing_key: "abc")
         expect(ch).to receive(:exchange_bind).with(src2, dst, routing_key: "ghi")
