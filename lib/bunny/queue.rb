@@ -341,7 +341,7 @@ module Bunny
       # TODO: inject and use logger
       # puts "Recovering queue #{@name}"
       begin
-        declare!
+        declare! unless @options[:no_declare]
 
         @channel.register_queue(self)
       rescue Exception => e
