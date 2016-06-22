@@ -180,6 +180,39 @@ describe "Connection recovery" do
     end
   end
 
+  # this is a simplistic test that primarily execises the code path from #412
+  it "recovers exchanges that were declared with passive = true" do
+    with_open do |c|
+      ch          = c.create_channel
+      ch2         = c.create_channel
+      source      = ch.fanout("source.exchange.recovery.example", auto_delete: true)
+      destination = ch.fanout("destination.exchange.recovery.example", auto_delete: true)
+
+      source2      = ch2.fanout("source.exchange.recovery.example", no_declare: true)
+      destination2 = ch2.fanout("destination.exchange.recovery.example", no_declare: true)
+
+      destination.bind(source)
+
+      # Exchanges won't get auto-deleted on connection loss unless they have
+      # had an exclusive queue bound to them.
+      dst_queue   = ch.queue("", exclusive: true)
+      dst_queue.bind(destination, routing_key: "")
+
+      src_queue   = ch.queue("", exclusive: true)
+      src_queue.bind(source, routing_key: "")
+
+      close_all_connections!
+
+      wait_on_loss_and_recovery_of { exchange_names_in_vhost("/").include?(source.name) }
+
+      ch2.confirm_select
+
+      source2.publish("msg", routing_key: "")
+      ch2.wait_for_confirms
+      expect(dst_queue.message_count).to eq 1
+    end
+  end
+
   it "recovers allocated channel ids" do
     with_open do |c|
       q = "queue#{Time.now.to_i}"
