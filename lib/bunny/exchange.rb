@@ -220,7 +220,7 @@ module Bunny
 
     # @private
     def recover_from_network_failure
-      declare! unless predefined?
+      declare! unless opts[:no_declare] || predeclared?
 
       @bindings.each do |b|
         bind(b[:source], b[:opts])
