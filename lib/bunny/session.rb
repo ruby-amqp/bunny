@@ -108,6 +108,7 @@ module Bunny
     # @option connection_string_or_opts [String] :tls_key (nil) Path to client TLS/SSL private key file (.pem)
     # @option connection_string_or_opts [Array<String>] :tls_ca_certificates Array of paths to TLS/SSL CA files (.pem), by default detected from OpenSSL configuration
     # @option connection_string_or_opts [String] :verify_peer (true) Whether TLS peer verification should be performed
+    # @option connection_string_or_opts [Keyword] :tls_version (negotiated) What TLS version should be used (:TLSv1, :TLSv1_1, or :TLSv1_2)
     # @option connection_string_or_opts [Integer] :continuation_timeout (15000) Timeout for client operations that expect a response (e.g. {Bunny::Queue#get}), in milliseconds.
     # @option connection_string_or_opts [Integer] :connection_timeout (5) Timeout in seconds for connecting to the server.
     # @option connection_string_or_opts [Proc] :hosts_shuffle_strategy A Proc that reorders a list of host strings, defaults to Array#shuffle
