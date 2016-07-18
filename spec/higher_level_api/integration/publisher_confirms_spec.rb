@@ -60,6 +60,18 @@ describe Bunny::Channel do
           }.not_to raise_error
 
         end
+
+        it "raises an error when called on a closed channel" do
+          ch = connection.create_channel
+
+          ch.confirm_select
+
+          ch.close
+
+          expect {
+            ch.wait_for_confirms
+          }.to raise_error(Bunny::ChannelAlreadyClosed)
+        end
       end
 
       context "when some of the messages get nacked" do
