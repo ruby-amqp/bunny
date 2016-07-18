@@ -1783,6 +1783,8 @@ module Bunny
 
     # @private
     def wait_on_confirms_continuations
+      raise_if_no_longer_open!
+
       if @connection.threaded
         t = Thread.current
         @threads_waiting_on_confirms_continuations << t
