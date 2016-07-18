@@ -55,7 +55,7 @@ it by pressing CTRL+C.
 ### Running Test Suites
 
 Prior to running the tests, configure the RabbitMQ permissions
-by running `./bin/ci/before_script`. The script uses `rabbitmqctl` and `rabbitmq-plugins`
+by running `./bin/ci/before_build`. The script uses `rabbitmqctl` and `rabbitmq-plugins`
 to set up RabbitMQ in a way that Bunny test suites expect. Two environment variables,
 `RABBITMQCTL` and `RABBITMQ_PLUGINS`, are available to control what `rabbitmqctl` and
 `rabbitmq-plugins` commands will be used. By default they are taken from `PATH`
