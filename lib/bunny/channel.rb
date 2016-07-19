@@ -1790,11 +1790,9 @@ module Bunny
         @threads_waiting_on_confirms_continuations << t
 
         begin
-          outstanding_confirms = false
-          @unconfirmed_set_mutex.synchronize do
-            outstanding_confirms = !@unconfirmed_set.empty?
+          while @unconfirmed_set_mutex.synchronize { !@unconfirmed_set.empty? }
+            @confirms_continuations.poll(@connection.continuation_timeout)
           end
-          @confirms_continuations.poll(@connection.continuation_timeout) if outstanding_confirms
         ensure
           @threads_waiting_on_confirms_continuations.delete(t)
         end
