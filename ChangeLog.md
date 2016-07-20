@@ -1,3 +1,8 @@
+## Changes between Bunny 2.5.0 and 2.6.0 (unreleased)
+
+No changes yet.
+
+
 ## Changes between Bunny 2.4.0 and 2.5.0 (July 20th, 2016)
 
 ### Exchange Bindings are Now Correctly Recovered
