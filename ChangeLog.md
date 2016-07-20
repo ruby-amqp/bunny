@@ -24,6 +24,17 @@ Contributed by Dimitar Dimitrov.
 Queue recovery now respects the `:no_declare` option.
 
 
+### `Bunny::Channel#wait_for_confirms` Throws Early
+
+`Bunny::Channel#wait_for_confirms` now throws an exception
+early when invoked on a closed channel.
+
+GitHub issue: [#428](https://github.com/ruby-amqp/bunny/pull/428).
+
+Contributed by Dimitar Dimitrov.
+
+
+
 ## Changes between Bunny 2.3.0 and 2.4.0 (June 11th, 2016)
 
 ### Unconfirmed Delivery Tag Set Reset on Network Recovery
