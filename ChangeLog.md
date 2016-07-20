@@ -1,6 +1,11 @@
-## Changes between Bunny 2.4.0 and 2.5.0 (unreleased)
+## Changes between Bunny 2.5.0 and 2.5.1 (unreleased)
 
 No changes yet.
+
+
+## Changes between Bunny 2.4.0 and 2.5.0 (July 20th, 2016)
+
+TBD
 
 
 ## Changes between Bunny 2.3.0 and 2.4.0 (June 11th, 2016)
