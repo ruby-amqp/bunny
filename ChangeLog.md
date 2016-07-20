@@ -5,7 +5,23 @@ No changes yet.
 
 ## Changes between Bunny 2.4.0 and 2.5.0 (July 20th, 2016)
 
-TBD
+### Exchange Bindings are Now Correctly Recovered
+
+GitHub issue: [#410](https://github.com/ruby-amqp/bunny/issues/410)
+
+Contributed by Andrew Bruce.
+
+
+### `Bunny::Channel#wait_for_confirms` Awaits While There're Outstanding Unconfirmed Messages
+
+GitHub issue: [#424](https://github.com/ruby-amqp/bunny/issues/424)
+
+Contributed by Dimitar Dimitrov.
+
+
+### Queue Recovery Respects the `:no_declare` Option
+
+Queue recovery now respects the `:no_declare` option.
 
 
 ## Changes between Bunny 2.3.0 and 2.4.0 (June 11th, 2016)
