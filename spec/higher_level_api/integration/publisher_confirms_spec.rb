@@ -124,6 +124,59 @@ describe Bunny::Channel do
     end
 
     include_examples "publish confirms"
+
+    it "returns only when all confirmations for publishes are received" do
+      ch = connection.create_channel
+
+      operations_log = []
+      operations_log_mutex = Mutex.new
+      acks_received = Queue.new
+
+      log_acks = proc do |tag, _, is_nack|
+        operations_log_mutex.synchronize do
+          operation = "#{'n' if is_nack}ack_#{tag}"
+          operations_log << operation unless operations_log.include?(operation)
+        end
+        acks_received << true
+      end
+
+      ch.confirm_select(log_acks)
+
+      x = ch.default_exchange
+      q = ch.temporary_queue
+
+      x.publish('msg', routing_key: q.name)
+
+      # wait for the confirmation to arrive
+      acks_received.pop
+
+      # artificially simulate a slower ack. the test should work properly even
+      # without this patch, but it's here just to be sure we catch it.
+      def (x.channel).handle_ack_or_nack(delivery_tag_before_offset, multiple, nack)
+        sleep 0.1
+        super
+      end
+
+      x.publish('msg', routing_key: q.name)
+      x.publish('msg', routing_key: q.name)
+
+      if x.wait_for_confirms
+        operations_log_mutex.synchronize do
+          operations_log << 'all_confirmed'
+        end
+      end
+
+      # wait for all the confirmations to arrive
+      acks_received.pop
+      acks_received.pop
+
+      expect(operations_log).to eq([
+        'ack_1',
+        'ack_2',
+        'ack_3',
+        'all_confirmed',
+      ])
+    end
   end
 
   context "with a single-threaded connection" do
