@@ -59,7 +59,7 @@ Bunny `1.7.x` was the last version to support CRuby 1.9.3 and 1.8.7
 
 ## Supported RabbitMQ Versions
 
-Bunny `1.5.0` (including previews) and later versions only support RabbitMQ `3.3+`.
+Bunny `1.5.0` and later versions only support RabbitMQ `3.3+`.
 Bunny `1.4.x` and earlier supports RabbitMQ 2.x and 3.x.
 
 
