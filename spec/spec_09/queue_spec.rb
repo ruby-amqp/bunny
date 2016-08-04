@@ -163,6 +163,19 @@ describe 'Queue' do
     message_count(q).should == 5
     q.purge.should == :purge_ok
   end
+  
+  it "should stop subscription when there are no more messages to read and flag is set" do
+    q = @b.queue('test1')
+    @b.qos()
+    10.times { @default_exchange.publish('Yet another test message', :key => 'test1') }
+    message_count(q).should == 10
+    
+    Timeout::timeout(5) do
+      q.subscribe(:ack => true, :break_when_empty => true)
+      message_count(q).should == 0
+      q.purge.should == :purge_ok
+    end
+  end
 
   it "should not close the connections when deleting a non existent queue" do
     q = @b.queue('test1')

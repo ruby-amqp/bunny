@@ -10,7 +10,7 @@ module Qrack
   # @deprecated
   class Subscription
 
-    attr_accessor :consumer_tag, :delivery_tag, :message_max, :timeout, :ack, :exclusive
+    attr_accessor :consumer_tag, :delivery_tag, :message_max, :timeout, :ack, :exclusive, :break_when_empty
     attr_reader :client, :queue, :message_count
 
     def initialize(client, queue, opts = {})
@@ -25,6 +25,9 @@ module Qrack
 
       # If a consumer tag is not passed in the server will generate one
       @consumer_tag = opts[:consumer_tag] || nil
+      
+      # In a subscription loop, stop listening if there are no more messages in the queue
+      @break_when_empty = opts[:break_when_empty] || nil
 
       # Ignore the :nowait option if passed, otherwise program will hang waiting for a
       # response from the server causing an error.
@@ -58,7 +61,8 @@ module Qrack
         begin
           method = client.next_method(:timeout => timeout)
         rescue Qrack::FrameTimeout
-          queue.unsubscribe
+          # Stop consuming messages
+          queue.unsubscribe()
           break
         end
 
@@ -84,9 +88,17 @@ module Qrack
         if (!message_max.nil? and message_count == message_max)
           # Stop consuming messages
           queue.unsubscribe()
+          
           # Acknowledge receipt of the final message
           queue.ack() if @ack
+          
           # Quit the loop
+          break
+        elsif(@break_when_empty && queue.message_count == 0)
+          # Stop consuming messages
+          queue.unsubscribe()
+          
+          queue.ack() if @ack
           break
         end
 
