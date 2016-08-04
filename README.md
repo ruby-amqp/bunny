@@ -1,4 +1,6 @@
 # Bunny, a Ruby RabbitMQ Client
+[![Gem Version](https://badge.fury.io/rb/bunny.png)](http://badge.fury.io/rb/bunny)
+[![Build Status](https://travis-ci.org/ruby-amqp/bunny.png)](https://travis-ci.org/ruby-amqp/bunny/)
 
 Bunny is a RabbitMQ client that focuses on ease of use. It
 is feature complete, supports all recent RabbitMQ features and does not
@@ -70,10 +72,6 @@ a stable public API.
 
 
 ## Installation & Bundler Dependency
-
-### Most Recent Release
-
-[![Gem Version](https://badge.fury.io/rb/bunny.png)](http://badge.fury.io/rb/bunny)
 
 ### With Rubygems
 
