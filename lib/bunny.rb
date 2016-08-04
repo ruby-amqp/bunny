@@ -19,6 +19,7 @@ module Bunny
   class ServerDownError < StandardError; end
   class UnsubscribeError < StandardError; end
   class AcknowledgementError < StandardError; end
+  class RejectionError < StandardError; end
 
   # Returns the Bunny version number
 
