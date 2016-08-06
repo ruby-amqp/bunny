@@ -64,7 +64,7 @@ module Bunny
     end
 
     def join(timeout = nil)
-      @threads.each { |t| t.join(timeout) }
+      (@threads || []).each { |t| t.join(timeout) }
     end
 
     def pause
@@ -82,7 +82,7 @@ module Bunny
     def kill
       @running = false
 
-      @threads.each { |t| t.kill }
+      (@threads || []).each { |t| t.kill }
     end
 
     protected
