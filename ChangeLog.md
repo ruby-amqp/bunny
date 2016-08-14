@@ -1,6 +1,6 @@
 ## Changes between Bunny 2.5.0 and 2.5.1 (unreleased)
 
-### More Defensive Consumer Work Pool Shutdown
+### More Defensive Consumer Work Pool
 
 `Bunny::ConsumerWorkPool#join` and `Bunny::ConsumerWorkPool#pause`
 no longer fails with a `NoMethodError` on nil when executed
