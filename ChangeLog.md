@@ -1,4 +1,9 @@
-## Changes between Bunny 2.5.0 and 2.5.1 (unreleased)
+## Changes between Bunny 2.5.1 and 2.5.2 (unreleased)
+
+No changes yet.
+
+
+## Changes between Bunny 2.5.0 and 2.5.1 (August 15th, 2016)
 
 ### More Defensive Consumer Work Pool
 
