@@ -44,6 +44,8 @@ Contributed by Dimitar Dimitrov.
 
 ## Changes between Bunny 2.3.0 and 2.4.0 (June 11th, 2016)
 
+**This release includes minor breaking API changes**.
+
 ### Unconfirmed Delivery Tag Set Reset on Network Recovery
 
 Channels will now reset their unconfirmed delivery tag set after
@@ -75,6 +77,8 @@ instead of replacing them. This makes it much more convenient to
 override a single key.
 
 ### More Predictable RABBITMQ_URL Handling
+
+**This is a breaking API change**.
 
 `RABBITMQ_URL` no longer will be used if any other
 connection options are provided. This makes it possible
