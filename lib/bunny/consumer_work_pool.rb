@@ -65,7 +65,7 @@ module Bunny
         end
       end
 
-      return unless wait_for_workers
+      return unless wait_for_workers && @shutdown_timeout
 
       @shutdown_mutex.synchronize do
         @shutdown_conditional.wait(@shutdown_mutex, @shutdown_timeout)

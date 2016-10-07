@@ -73,4 +73,37 @@ describe Bunny::Consumer, "#cancel" do
       expect(delivered_data).to be_empty
     end
   end
+
+  context "with a worker pool shutdown timeout configured" do
+    let(:queue_name) { "bunny.queues.#{rand}" }
+
+    it "allows the existing message to be complate processing" do
+      delivered_data = []
+      consumer       = nil
+
+      t = Thread.new do
+        ch         = connection.create_channel(nil, 1, false, 5)
+        q          = ch.queue(queue_name, :auto_delete => true, :durable => false)
+
+        consumer   = Bunny::Consumer.new(ch, q)
+        consumer.on_delivery do |_, _, payload|
+          sleep 2
+          delivered_data << payload
+        end
+
+        q.subscribe_with(consumer, :block => false)
+      end
+      t.abort_on_exception = true
+      sleep 1.0
+
+      ch = connection.create_channel
+      ch.default_exchange.publish("", :routing_key => queue_name)
+      sleep 0.7
+
+      consumer.cancel
+      sleep 1.0
+
+      expect(delivered_data).to_not be_empty
+    end
+  end
 end
