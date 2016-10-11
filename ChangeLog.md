@@ -1,5 +1,26 @@
 ## Changes between Bunny 2.5.0 and 2.6.0 (unreleased)
 
+### Graceful Shutdown of Consumers
+
+Consumer work pool will now allow for a grace period before stopping
+pool threads so that delivery processing in progress can have a chance to finish.
+
+GitHub issue: [#437](https://github.com/ruby-amqp/bunny/pull/437)
+
+Contributed by Stefan Sedich.
+
+### `Bunny::Channel#wait_for_confirms` Now Throws When Used on a Closed Channel
+
+GitHub issue: [#428](https://github.com/ruby-amqp/bunny/pull/428)
+
+Contributed by Dimitar Dimitrov.
+
+### Race Condition Eliminated in `Bunny::Channel#wait_for_confirms`
+
+GitHub issue: [#424](https://github.com/ruby-amqp/bunny/issues/424)
+
+Contributed by Dimitar Dimitrov.
+
 ### More Defensive Consumer Work Pool
 
 `Bunny::ConsumerWorkPool#join` and `Bunny::ConsumerWorkPool#pause`
