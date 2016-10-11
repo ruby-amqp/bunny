@@ -952,7 +952,7 @@ module Bunny
         @last_basic_cancel_ok = wait_on_continuations
       end
 
-      maybe_kill_consumer_work_pool! unless any_consumers?
+      @work_pool.shutdown(true) unless any_consumers?
 
       @last_basic_cancel_ok
     end

@@ -17,9 +17,12 @@ module Bunny
     attr_reader :size
     attr_reader :abort_on_exception
 
-    def initialize(size = 1, abort_on_exception = false)
+    def initialize(size = 1, abort_on_exception = false, shutdown_timeout = 60)
       @size  = size
       @abort_on_exception = abort_on_exception
+      @shutdown_timeout = shutdown_timeout
+      @shutdown_mutex = ::Mutex.new
+      @shutdown_conditional = ::ConditionVariable.new
       @queue = ::Queue.new
       @paused = false
     end
@@ -53,13 +56,19 @@ module Bunny
       !@queue.empty?
     end
 
-    def shutdown
+    def shutdown(wait_for_workers = false)
       @running = false
 
       @size.times do
         submit do |*args|
           throw :terminate
         end
+      end
+
+      return unless wait_for_workers && @shutdown_timeout
+
+      @shutdown_mutex.synchronize do
+        @shutdown_conditional.wait(@shutdown_mutex, @shutdown_timeout)
       end
     end
 
@@ -101,6 +110,10 @@ module Bunny
             $stderr.puts e.message
           end
         end
+      end
+
+      @shutdown_mutex.synchronize do
+        @shutdown_conditional.signal unless busy?
       end
     end
   end
