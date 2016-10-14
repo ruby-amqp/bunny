@@ -8,8 +8,9 @@ rvm:
   - "2.2.2"
 notifications:
   email: michael@rabbitmq.com
-services:
-  - rabbitmq
+sudo: required
 branches:
   only:
     - master
+services:
+  - rabbitmq
