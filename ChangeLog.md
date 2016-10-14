@@ -1,4 +1,11 @@
-## Changes between Bunny 2.5.0 and 2.6.0 (unreleased)
+## Changes between Bunny 2.6.0 and 2.6.1 (unreleased)
+
+No changes yet.
+
+
+
+
+## Changes between Bunny 2.5.0 and 2.6.0 (October 15th, 2016)
 
 ### Graceful Shutdown of Consumers
 
