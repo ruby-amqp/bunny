@@ -97,8 +97,10 @@ describe Bunny::Consumer, "#cancel" do
       sleep 1.0
 
       ch = connection.create_channel
+      ch.confirm_select
       ch.default_exchange.publish("", :routing_key => queue_name)
-      sleep 0.7
+      ch.wait_for_confirms
+      sleep 0.5
 
       consumer.cancel
       sleep 1.0
@@ -126,8 +128,10 @@ describe Bunny::Consumer, "#cancel" do
       sleep 1.0
 
       ch = connection.create_channel
+      ch.confirm_select
       ch.default_exchange.publish("", :routing_key => queue_name)
-      sleep 0.7
+      ch.wait_for_confirms
+      sleep 0.5
 
       consumer.cancel
       sleep 1.0

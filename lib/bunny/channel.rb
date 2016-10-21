@@ -952,7 +952,9 @@ module Bunny
         @last_basic_cancel_ok = wait_on_continuations
       end
 
-      @work_pool.shutdown(true) unless any_consumers?
+      # reduces thread usage for channels that don't have any
+      # consumers
+      @work_pool.shutdown(true) unless self.any_consumers?
 
       @last_basic_cancel_ok
     end
