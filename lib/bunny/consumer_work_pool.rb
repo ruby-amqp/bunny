@@ -57,6 +57,7 @@ module Bunny
     end
 
     def shutdown(wait_for_workers = false)
+      was_running = running?
       @running = false
 
       @size.times do
@@ -65,7 +66,7 @@ module Bunny
         end
       end
 
-      return unless wait_for_workers && @shutdown_timeout
+      return if !(wait_for_workers && @shutdown_timeout && was_running)
 
       @shutdown_mutex.synchronize do
         @shutdown_conditional.wait(@shutdown_mutex, @shutdown_timeout)
