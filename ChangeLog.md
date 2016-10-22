@@ -1,8 +1,12 @@
 ## Changes between Bunny 2.6.0 and 2.7.0 (unreleased)
 
-No changes yet.
+### Bunny::ConsumerWorkPool#shutdown Terminates Early When It's Safe to Do So
 
+`Bunny::ConsumerWorkPool#shutdown(true)` waited for consumer shutdown
+even if the pool wasn't active (there were no consumers on its
+channel).
 
+GitHub issue: [#438](https://github.com/ruby-amqp/bunny/issues/438).
 
 
 ## Changes between Bunny 2.5.0 and 2.6.0 (October 15th, 2016)
