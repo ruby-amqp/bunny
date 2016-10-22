@@ -1,3 +1,9 @@
+## Changes between Bunny 2.6.1 and 2.6.2 (unreleased)
+
+No changes yet.
+
+
+
 ## Changes between Bunny 2.6.0 and 2.6.1 (October 23rd, 2016)
 
 ### Bunny::ConsumerWorkPool#shutdown Terminates Early When It's Safe to Do So
