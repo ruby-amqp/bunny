@@ -96,7 +96,7 @@ unless ENV["CI"]
     let(:connection) do
       c = Bunny.new("amqps://bunny_gem:bunny_password@127.0.0.1/bunny_testbed",
         :tls_ca_certificates   => ["./spec/tls/ca_certificate.pem"],
-        :verify_peer           => false)
+        :verify_peer           => verify_peer)
       c.start
       c
     end
@@ -105,7 +105,27 @@ unless ENV["CI"]
       connection.close
     end
 
-    include_examples "successful TLS connection"
+    context "peer verification is off" do
+      let(:verify_peer) { false }
+
+      include_examples "successful TLS connection"
+
+      it "sends the SNI details" do
+        # https://github.com/ruby-amqp/bunny/issues/440
+        expect(connection.transport.socket.hostname).to eq "127.0.0.1"
+      end
+    end
+
+    context "peer verification is on" do
+      let(:verify_peer) { true }
+
+      include_examples "successful TLS connection"
+
+      it "sends the SNI details" do
+        # https://github.com/ruby-amqp/bunny/issues/440
+        expect(connection.transport.socket.hostname).to eq "127.0.0.1"
+      end
+    end
   end
 
 
