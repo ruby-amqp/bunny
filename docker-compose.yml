@@ -16,5 +16,3 @@ services:
       - 15672:15672
     volumes:
       - ./spec:/spec:ro
-      # TLS assets are referenced with relative paths, if we tidy then to absolute we can remove this
-      - ./spec/tls:/var/lib/rabbitmq/spec/tls:ro
