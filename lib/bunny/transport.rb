@@ -364,6 +364,11 @@ module Bunny
       raise "cannot wrap a socket into TLS socket, @tls_context is nil. This is a Bunny bug." unless @tls_context
 
       s = Bunny::SSLSocketImpl.new(socket, @tls_context)
+
+      # always set the SNI server name if possible since RFC 3546 and RFC 6066 both state
+      # that TLS clients supporting the extensions can talk to TLS servers that do not
+      s.hostname = @host if s.respond_to? :hostname
+
       s.sync_close = true
       s
     end
