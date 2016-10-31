@@ -21,3 +21,5 @@ debug/*
 *.dump
 deploy.docs.sh
 .ruby-version
+.idea
+*.srl
