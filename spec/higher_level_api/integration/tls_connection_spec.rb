@@ -112,7 +112,7 @@ unless ENV["CI"]
 
       it "sends the SNI details" do
         # https://github.com/ruby-amqp/bunny/issues/440
-        expect(connection.transport.socket.hostname).to eq "127.0.0.1"
+        expect(connection.transport.socket.hostname).to_not be_empty
       end
     end
 
@@ -123,7 +123,7 @@ unless ENV["CI"]
 
       it "sends the SNI details" do
         # https://github.com/ruby-amqp/bunny/issues/440
-        expect(connection.transport.socket.hostname).to eq "127.0.0.1"
+        expect(connection.transport.socket.hostname).to_not be_empty
       end
     end
   end
