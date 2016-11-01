@@ -12,3 +12,5 @@ RUN apt-get -q update && \
 COPY docker-entrypoint.sh /
 
 ENTRYPOINT /docker-entrypoint.sh
+
+EXPOSE 5671 5672 15672
