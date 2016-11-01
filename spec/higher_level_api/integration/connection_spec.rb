@@ -352,7 +352,7 @@ describe Bunny::Session do
         it "sends the SNI details" do
           # https://github.com/ruby-amqp/bunny/issues/440
           subject.start
-          expect(subject.transport.socket.hostname).to eq("127.0.0.1")
+          expect(subject.transport.socket.hostname).to_not be_empty
         end
       end
 
@@ -361,12 +361,6 @@ describe Bunny::Session do
 
         it "uses TLS port" do
           expect(subject.port).to eq tls_port
-        end
-
-        it "sends the SNI details" do
-          # https://github.com/ruby-amqp/bunny/issues/440
-          subject.start
-          expect(subject.transport.socket.hostname).to eq("127.0.0.1")
         end
       end
     end
