@@ -367,7 +367,7 @@ module Bunny
 
       # always set the SNI server name if possible since RFC 3546 and RFC 6066 both state
       # that TLS clients supporting the extensions can talk to TLS servers that do not
-      s.hostname = @host if s.respond_to? :hostname
+      s.hostname = (@host) if s.respond_to? :hostname
 
       s.sync_close = true
       s
