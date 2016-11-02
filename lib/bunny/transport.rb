@@ -92,7 +92,7 @@ module Bunny
     end
 
     def connected?
-      :not_connected == @status && open?
+      :connected == @status && open?
     end
 
     def configure_socket(&block)
