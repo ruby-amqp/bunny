@@ -31,7 +31,7 @@ unless ENV["CI"]
   end
 
   def local_hostname
-    ENV.fetch("RABBITMQ_HOSTNAME", "127.0.0.1")
+    ENV.fetch("BUNNY_RABBITMQ_HOSTNAME", "127.0.0.1")
   end
 
   context "initialized with :tls => true" do
