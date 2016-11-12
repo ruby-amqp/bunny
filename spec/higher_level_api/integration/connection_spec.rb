@@ -329,41 +329,6 @@ describe Bunny::Session do
         expect(subject.port).to eq tls_port
       end
     end
-
-    context "initialized with :tls => true" do
-      let(:subject) do
-        described_class.new(:user     => "bunny_gem",
-          :password => "bunny_password",
-          :vhost    => "bunny_testbed",
-          :tls                   => true,
-          :verify_peer           => verify_peer,
-          :tls_cert              => "spec/tls/client_certificate.pem",
-          :tls_key               => "spec/tls/client_key.pem",
-          :tls_ca_certificates   => ["./spec/tls/ca_certificate.pem"])
-      end
-
-      context "peer verification is off" do
-        let(:verify_peer) { false }
-
-        it "uses TLS port" do
-          expect(subject.port).to eq tls_port
-        end
-
-        it "sends the SNI details" do
-          # https://github.com/ruby-amqp/bunny/issues/440
-          subject.start
-          expect(subject.transport.socket.hostname).to_not be_empty
-        end
-      end
-
-      context "peer verification is on" do
-        let(:verify_peer) { true }
-
-        it "uses TLS port" do
-          expect(subject.port).to eq tls_port
-        end
-      end
-    end
   end
 
   context "initialized with :host => 127.0.0.1 and non-default credentials" do
