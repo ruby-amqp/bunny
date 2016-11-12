@@ -30,7 +30,7 @@ unless ENV["CI"]
     let!(:topic) { 'bunny.stress.concurrent.confirms.topic' }
     let!(:x) { ch_pub.topic(topic, :durable => true) }
     let!(:q) do
-      ch_sub.queue('', :durable => true).tap do |q|
+      ch_sub.queue('bunny.stress.publisher_confirms', :durable => true).tap do |q|
         q.bind(x.name, :routing_key => routing_key)
         q.purge
       end

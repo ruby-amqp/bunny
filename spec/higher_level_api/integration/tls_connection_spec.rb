@@ -30,6 +30,44 @@ unless ENV["CI"]
     end
   end
 
+  def local_hostname
+    ENV.fetch("RABBITMQ_HOSTNAME", "127.0.0.1")
+  end
+
+  context "initialized with :tls => true" do
+    let(:subject) do
+      Bunny.new(:user     => "bunny_gem",
+        :password => "bunny_password",
+        :vhost    => "bunny_testbed",
+        :tls                   => true,
+        :verify_peer           => verify_peer,
+        :tls_cert              => "spec/tls/client_certificate.pem",
+        :tls_key               => "spec/tls/client_key.pem",
+        :tls_ca_certificates   => ["./spec/tls/ca_certificate.pem"])
+    end
+
+    context "peer verification is off" do
+      let(:verify_peer) { false }
+
+      it "uses TLS port" do
+        expect(subject.port).to eq AMQ::Protocol::TLS_PORT
+      end
+
+      it "sends the SNI details" do
+        # https://github.com/ruby-amqp/bunny/issues/440
+        subject.start
+        expect(subject.transport.socket.hostname).to_not be_empty
+      end
+    end
+
+    context "peer verification is on" do
+      let(:verify_peer) { true }
+
+      it "uses TLS port" do
+        expect(subject.port).to eq AMQ::Protocol::TLS_PORT
+      end
+    end
+  end
 
   describe "TLS connection to RabbitMQ with client certificates" do
     let(:connection) do
@@ -75,7 +113,7 @@ unless ENV["CI"]
 
   describe "TLS connection to RabbitMQ with a connection string" do
     let(:connection) do
-      c = Bunny.new("amqps://bunny_gem:bunny_password@127.0.0.1/bunny_testbed",
+      c = Bunny.new("amqps://bunny_gem:bunny_password@#{local_hostname}/bunny_testbed",
         :tls_cert              => "spec/tls/client_certificate.pem",
         :tls_key               => "spec/tls/client_key.pem",
         :tls_ca_certificates   => ["./spec/tls/ca_certificate.pem"],
@@ -94,7 +132,7 @@ unless ENV["CI"]
 
   describe "TLS connection to RabbitMQ with a connection string and w/o client certificate and key" do
     let(:connection) do
-      c = Bunny.new("amqps://bunny_gem:bunny_password@127.0.0.1/bunny_testbed",
+      c = Bunny.new("amqps://bunny_gem:bunny_password@#{local_hostname}/bunny_testbed",
         :tls_ca_certificates   => ["./spec/tls/ca_certificate.pem"],
         :verify_peer           => verify_peer)
       c.start
