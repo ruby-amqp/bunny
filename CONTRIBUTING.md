@@ -24,7 +24,14 @@ Run the following command from the base directory of the gem:
 RABBITMQ_NODENAME=bunny RABBITMQ_CONFIG_FILE=./spec/config/rabbitmq RABBITMQ_ENABLED_PLUGINS_FILE=./spec/config/enabled_plugins rabbitmq-server
 ```
 
-The specs use the RabbitMQ management plugin and require a TLS port to be available. The config files in the spec/config directory enable these.
+The specs use the RabbitMQ management plugin and require a TLS port to
+be available. The config files in the spec/config directory enable
+these. TLS (x509 PEM) certificates include a hostname-specific fields,
+the tests allow for expecting hostname overriding using the `BUNNY_RABBITMQ_HOSTNAME`
+environment variables (default value is `127.0.0.1`).
+
+Server, CA and client certificates can be found under `spec/tls`. They are supposed to be
+generated with [tls-gen](github.com/michaelklishin/tls-gen) or similar in the target environment.
 
 Next up you'll need to prepare your node for the specs (just once):
 
