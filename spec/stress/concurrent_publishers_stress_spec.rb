@@ -13,7 +13,7 @@ unless ENV["CI"]
     end
 
     let(:concurrency) { 24 }
-    let(:rate)        { 5_000 }
+    let(:messages)    { 5_000 }
 
     it "successfully finish publishing" do
       body = "сообщение"
@@ -32,10 +32,10 @@ unless ENV["CI"]
           cht = chs[i]
           x   = cht.default_exchange
 
-          rate.times do
+          messages.times do
             x.publish(body)
           end
-          puts "Published #{rate} messages..."
+          puts "Published #{messages} messages..."
           cht.wait_for_confirms
         end
         t.abort_on_exception = true
