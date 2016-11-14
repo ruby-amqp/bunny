@@ -93,7 +93,7 @@ describe Bunny::Channel, "#basic_consume" do
 
       expect(ch.queue(queue_name, :auto_delete => true, :durable => false).message_count).to eq 0
 
-      ch.close      
+      ch.close
     end
   end
 end
