@@ -276,7 +276,6 @@ module Bunny
     # @see http://rubybunny.info/articles/connecting.html
     # @api public
     def start
-
       return self if connected?
 
       @status_mutex.synchronize { @status = :connecting }
@@ -286,9 +285,7 @@ module Bunny
       self.reset_continuations
 
       begin
-
         begin
-
           # close existing transport if we have one,
           # to not leak sockets
           @transport.maybe_initialize_socket
@@ -496,16 +493,18 @@ module Bunny
 
     # @private
     def open_channel(ch)
-      n = ch.number
-      self.register_channel(ch)
+      @channel_mutex.synchronize do
+        n = ch.number
+        self.register_channel(ch)
 
-      @transport_mutex.synchronize do
-        @transport.send_frame(AMQ::Protocol::Channel::Open.encode(n, AMQ::Protocol::EMPTY_STRING))
+        @transport_mutex.synchronize do
+          @transport.send_frame(AMQ::Protocol::Channel::Open.encode(n, AMQ::Protocol::EMPTY_STRING))
+        end
+        @last_channel_open_ok = wait_on_continuations
+        raise_if_continuation_resulted_in_a_connection_error!
+
+        @last_channel_open_ok
       end
-      @last_channel_open_ok = wait_on_continuations
-      raise_if_continuation_resulted_in_a_connection_error!
-
-      @last_channel_open_ok
     end
 
     # @private
@@ -525,8 +524,10 @@ module Bunny
 
     # @private
     def close_all_channels
-      @channels.reject {|n, ch| n == 0 || !ch.open? }.each do |_, ch|
-        Bunny::Timeout.timeout(@transport.disconnect_timeout, ClientTimeout) { ch.close }
+      @channel_mutex.synchronize do
+        @channels.reject {|n, ch| n == 0 || !ch.open? }.each do |_, ch|
+          Bunny::Timeout.timeout(@transport.disconnect_timeout, ClientTimeout) { ch.close }
+        end
       end
     end
 
@@ -640,8 +641,10 @@ module Bunny
           @recovering_from_network_failure = true
           if recoverable_network_failure?(exception)
             @logger.warn "Recovering from a network failure..."
-            @channels.each do |n, ch|
-              ch.maybe_kill_consumer_work_pool!
+            @channel_mutex.synchronize do
+              @channels.each do |n, ch|
+                ch.maybe_kill_consumer_work_pool!
+              end
             end
             @reader_loop.stop if @reader_loop
             maybe_shutdown_heartbeat_sender
@@ -701,10 +704,12 @@ module Bunny
 
     # @private
     def recover_channels
-      @channels.each do |n, ch|
-        ch.open
+      @channel_mutex.synchronize do
+        @channels.each do |n, ch|
+          ch.open
 
-        ch.recover_from_network_failure
+          ch.recover_from_network_failure
+        end
       end
     end
 
