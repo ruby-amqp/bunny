@@ -776,11 +776,11 @@ module Bunny
         options[:hosts] || ["#{DEFAULT_HOST}:#{port_from(options)}"]
       addresses = [addresses] unless addresses.is_a? Array
 
-      addresses.map! do |address|
+      addrs = addresses.map do |address|
         host_with_port?(address) ? address : "#{address}:#{port_from(@opts)}"
       end
 
-      shuffle_strategy.call addresses
+      shuffle_strategy.call(addrs)
     end
 
     # @private
