@@ -10,7 +10,7 @@ unless ENV["CI"]
         :recover_from_connection_close => true,
         :network_recovery_interval => 0.2,
         :recovery_attempts => 3,
-        :continuation_timeout => 3_000)
+        :continuation_timeout => 15_000)
       @connection.start
     end
 
