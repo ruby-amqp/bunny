@@ -52,11 +52,15 @@ unless ENV["CI"]
     end
 
     after do
-      unless ch_sub.closed?
-        q.delete
-        ch_sub.close
+      begin
+        unless ch_sub.closed?
+          q.delete
+          ch_sub.close
+        end
+        ch_pub.close unless ch_pub.closed?
+      rescue ::Timeout::Error => _
+        # ignore, we are cleaning up
       end
-      ch_pub.close unless ch_pub.closed?
     end
 
     it "successfully publish and consume all messages" do
