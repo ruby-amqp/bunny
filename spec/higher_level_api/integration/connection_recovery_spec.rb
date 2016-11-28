@@ -270,7 +270,7 @@ describe "Connection recovery" do
   end
 
   it "recovers all consumers" do
-    n = 1024
+    n = 32
 
     with_open do |c|
       ch = c.create_channel
@@ -286,7 +286,7 @@ describe "Connection recovery" do
   end
 
   it "recovers all queues" do
-    n = 256
+    n = 32
 
     qs = []
 
