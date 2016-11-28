@@ -255,15 +255,18 @@ describe "Connection recovery" do
       delivered = false
 
       ch = c.create_channel
+      ch.confirm_select
       q  = ch.queue("", :exclusive => true)
       q.subscribe do |_, _, _|
         delivered = true
       end
+      sleep 0.2
       close_all_connections!
       wait_on_loss_and_recovery_of { connections.any? }
       expect(ch).to be_open
 
       q.publish("")
+      ch.wait_for_confirms
 
       poll_until { delivered }
     end
@@ -355,14 +358,14 @@ describe "Connection recovery" do
   end
 
   def poll_while(&probe)
-    Timeout::timeout(10) {
-      sleep 0.1 while probe[]
+    Timeout.timeout(20) {
+      sleep 0.1 while probe.call
     }
   end
 
   def poll_until(&probe)
-    Timeout::timeout(10) {
-      sleep 0.1 until probe[]
+    Timeout.timeout(20) {
+      sleep 0.1 until probe.call
     }
   end
 
