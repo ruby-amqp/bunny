@@ -260,7 +260,6 @@ describe "Connection recovery" do
       q.subscribe do |_, _, _|
         delivered = true
       end
-      sleep 0.2
       close_all_connections!
       wait_on_loss_and_recovery_of { connections.any? }
       expect(ch).to be_open
@@ -342,6 +341,11 @@ describe "Connection recovery" do
   end
 
   def close_all_connections!
+    # let whatever actions were taken before
+    # this call a chance to propagate, e.g. to make
+    # sure that connections are accounted for in the
+    # stats DB. MK.
+    sleep 1.05
     connections.each do |conn_info|
       close_ignoring_permitted_exceptions(conn_info.name)
     end
