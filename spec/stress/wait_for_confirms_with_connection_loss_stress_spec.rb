@@ -69,17 +69,12 @@ unless ENV["CI"]
         ids_received = Set.new
         message_count = nil
 
-        sub = Thread.new do
-          begin
-            q.subscribe do |delivery_info, meta, payload|
-              subscriber_mutex.synchronize do
-                ids_received << payload.to_i
-                message_count = q.message_count
-              end
-            end
+        q.subscribe do |delivery_info, meta, payload|
+          subscriber_mutex.synchronize do
+            ids_received << payload.to_i
+            message_count = q.message_count
           end
         end
-        sub.abort_on_exception = true
 
         pub = Thread.new do
           rate.times do |i|
@@ -118,9 +113,8 @@ unless ENV["CI"]
         puts "Drained queue, winding down..."
 
         q.delete
-        ch_pub.close
-        ch_sub.close
-        sub.kill
+        ch_pub.close if ch_pub.open?
+        ch_sub.close if ch_sub.open?
 
         expect(ch_pub.unconfirmed_set).to be_empty
 
