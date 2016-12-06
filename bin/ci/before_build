@@ -40,3 +40,7 @@ rabbit_control 'set_permissions -p bunny_testbed bunny_reader "^---$" "^---$" ".
 
 # requires RabbitMQ 3.0+
 # rabbit_plugins 'enable rabbitmq_management'
+
+# Reduce retention policy for faster publishing of stats
+rabbit_control "eval 'supervisor2:terminate_child(rabbit_mgmt_sup_sup, rabbit_mgmt_sup), application:set_env(rabbitmq_management,       sample_retention_policies, [{global, [{605, 1}]}, {basic, [{605, 1}]}, {detailed, [{10, 1}]}]), rabbit_mgmt_sup_sup:start_child().'"
+rabbit_control "eval 'supervisor2:terminate_child(rabbit_mgmt_agent_sup_sup, rabbit_mgmt_agent_sup), application:set_env(rabbitmq_management_agent, sample_retention_policies, [{global, [{605, 1}]}, {basic, [{605, 1}]}, {detailed, [{10, 1}]}]), rabbit_mgmt_agent_sup_sup:start_child().'"

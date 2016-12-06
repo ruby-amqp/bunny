@@ -344,8 +344,13 @@ describe "Connection recovery" do
     # let whatever actions were taken before
     # this call a chance to propagate, e.g. to make
     # sure that connections are accounted for in the
-    # stats DB. MK.
-    sleep 1.05
+    # stats DB.
+    #
+    # See bin/ci/before_build for management plugin
+    # pre-configuration.
+    #
+    # MK.
+    sleep 1.1
     connections.each do |conn_info|
       close_ignoring_permitted_exceptions(conn_info.name)
     end

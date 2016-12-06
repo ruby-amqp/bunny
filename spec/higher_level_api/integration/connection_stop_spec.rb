@@ -4,6 +4,16 @@ describe Bunny::Session do
   let(:http_client) { RabbitMQ::HTTP::Client.new("http://127.0.0.1:15672") }
 
   def close_connection(client_port)
+    # let whatever actions were taken before
+    # this call a chance to propagate, e.g. to make
+    # sure that connections are accounted for in the
+    # stats DB.
+    #
+    # See bin/ci/before_build for management plugin
+    # pre-configuration.
+    #
+    # MK.
+    sleep 1.1
     c = http_client.
       list_connections.
       find   { |conn_info| conn_info.peer_port.to_i == client_port }
@@ -12,11 +22,11 @@ describe Bunny::Session do
   end
 
   def wait_for_recovery
-    sleep 0.5
+    sleep 1.5
   end
 
   it "can be closed" do
-    c  = Bunny.new(:automatically_recover => false)
+    c  = Bunny.new(automatically_recover: false)
     c.start
     ch = c.create_channel
 
@@ -26,7 +36,7 @@ describe Bunny::Session do
   end
 
   it "can be closed twice (Session#close is idempotent)" do
-    c  = Bunny.new(:automatically_recover => false)
+    c  = Bunny.new(automatically_recover: false)
     c.start
     ch = c.create_channel
 
@@ -39,7 +49,7 @@ describe Bunny::Session do
 
   describe "in a single threaded mode" do
     it "can be closed" do
-      c  = Bunny.new(:automatically_recover => false, :threaded => false)
+      c  = Bunny.new(automatically_recover: false, threaded: false)
       c.start
       ch = c.create_channel
 
@@ -52,13 +62,13 @@ describe Bunny::Session do
 
   describe "that recovers from connection.close" do
     it "can be closed" do
-      c  = Bunny.new(:automatically_recover => true, :recover_from_connection_close => true, :network_recovery_interval => 0.2)
+      c  = Bunny.new(automatically_recover: true, recover_from_connection_close: true, network_recovery_interval: 0.2)
       c.start
       ch = c.create_channel
 
       expect(c).to be_open
       close_connection(c.local_port)
-      sleep 0.2
+      sleep 1.1
       expect(c).not_to be_open
 
       wait_for_recovery
