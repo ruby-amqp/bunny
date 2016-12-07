@@ -54,7 +54,7 @@ module Bunny
             @network_is_down = true
             @session_thread.raise(Bunny::NetworkFailure.new("caught an unexpected exception in the network loop: #{e.message}", e))
           end
-        rescue Errno::EBADF => ebadf
+        rescue Errno::EBADF => _ebadf
           break if terminate?
           # ignored, happens when we loop after the transport has already been closed
           @mutex.synchronize { @stopping = true }
