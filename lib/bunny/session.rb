@@ -759,7 +759,7 @@ module Bunny
         shut_down_all_consumer_work_pools!
         maybe_shutdown_reader_loop
         maybe_shutdown_heartbeat_sender
-      rescue ShutdownSignal => sse
+      rescue ShutdownSignal => _sse
         # no-op
       rescue Exception => e
         @logger.warn "Caught an exception when cleaning up after receiving connection.close: #{e.message}"
@@ -1150,7 +1150,7 @@ module Bunny
           begin
             shut_down_all_consumer_work_pools!
             maybe_shutdown_reader_loop
-          rescue ShutdownSignal => sse
+          rescue ShutdownSignal => _sse
             # no-op
           rescue Exception => e
             @logger.warn "Caught an exception when cleaning up after receiving connection.close: #{e.message}"
