@@ -66,9 +66,10 @@ describe Bunny::Session do
       c.start
       ch = c.create_channel
 
+      sleep 1.5
       expect(c).to be_open
       close_connection(c.local_port)
-      sleep 1.1
+      sleep 0.1
       expect(c).not_to be_open
 
       wait_for_recovery
