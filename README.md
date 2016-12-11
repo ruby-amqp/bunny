@@ -73,7 +73,7 @@ a stable public API.
 
 ### Most Recent Release
 
-[![Gem Version](https://badge.fury.io/rb/bunny.png)](http://badge.fury.io/rb/bunny)
+[![Gem Version](https://badge.fury.io/rb/bunny.svg)](http://badge.fury.io/rb/bunny)
 
 ### With Rubygems
 
