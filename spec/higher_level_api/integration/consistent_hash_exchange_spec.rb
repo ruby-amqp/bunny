@@ -3,8 +3,8 @@ require "spec_helper"
 
 describe "x-consistent-hash exchange" do
   let(:connection) do
-    c = Bunny.new(:user => "bunny_gem", :password => "bunny_password", :vhost => "bunny_testbed",
-      :automatically_recover => true)
+    c = Bunny.new(user: "bunny_gem", password: "bunny_password", vhost: "bunny_testbed",
+      automatically_recover: true)
     c.start
     c
   end
@@ -31,12 +31,12 @@ describe "x-consistent-hash exchange" do
       # enable it with
       #
       # $ [sudo] rabbitmq-plugins enable rabbitmq_consistent_hash_exchange
-      x    = ch.exchange("bunny.stress.concurrent.consumers", :type => "x-consistent-hash", :durable => true)
+      x    = ch.exchange("bunny.examples.exchanges.x-consistent-hash", type: "x-consistent-hash", durable: true)
 
       qs = []
 
-      q1 = ch.queue("", :exclusive => true).bind(x, :routing_key => "5")
-      q2 = ch.queue("", :exclusive => true).bind(x, :routing_key => "5")
+      q1 = ch.queue("", exclusive: true).bind(x, routing_key: "5")
+      q2 = ch.queue("", exclusive: true).bind(x, routing_key: "5")
 
       sleep 1.0
 
@@ -47,10 +47,11 @@ describe "x-consistent-hash exchange" do
         puts "Published #{(i + 1) * m} tiny messages..."
       end
 
-      sleep 2.0
+      sleep 4.0
       expect(q1.message_count).to be > 100
       expect(q2.message_count).to be > 100
 
+      x.delete
       ch.close
     else
       skip "x-consistent-hash exchange type isn't available"
