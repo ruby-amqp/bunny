@@ -10,6 +10,17 @@ RSpec::Core::RakeTask.new(:integration) do |t|
   t.rspec_opts = "--format progress"
 end
 
+RSpec::Core::RakeTask.new(:integration_without_recovery) do |t|
+  # same as :integration but excludes client connection recovery tests.
+  # useful for sanity checking edge RabbitMQ builds, for instance.
+  t.pattern    = ["spec/higher_level_api/integration", "spec/lower_level_api/integration", "spec/issues"].
+    map { |dir| Dir.glob(File.join(dir, "**", "*_spec.rb")) }.reduce(&:+) -
+    ["spec/higher_level_api/integration/tls_connection_spec.rb",
+     "spec/higher_level_api/integration/connection_recovery_spec.rb"]
+
+  t.rspec_opts = "--format progress"
+end
+
 RSpec::Core::RakeTask.new(:unit) do |t|
   t.pattern    = Dir.glob("spec/unit/**/*_spec.rb")
 
