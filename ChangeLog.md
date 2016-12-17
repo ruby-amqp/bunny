@@ -8,6 +8,12 @@ channel).
 
 GitHub issue: [#438](https://github.com/ruby-amqp/bunny/issues/438).
 
+### Do Not Modify Host Arrays
+
+Bunny now can work with frozen host arrays.
+
+GitHub issue: [#446](https://github.com/ruby-amqp/bunny/issues/446)
+
 
 ## Changes between Bunny 2.5.0 and 2.6.0 (October 15th, 2016)
 
