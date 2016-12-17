@@ -1,6 +1,15 @@
-## Changes between Bunny 2.6.1 and 2.6.2 (unreleased)
+## Changes between Bunny 2.6.2 and 2.6.3 (unreleased)
 
 No changes yet.
+
+
+## Changes between Bunny 2.6.1 and 2.6.2 (December 17th, 2016)
+
+### Do Not Modify Host Arrays
+
+Bunny now can work with frozen host arrays.
+
+GitHub issue: [#446](https://github.com/ruby-amqp/bunny/issues/446)
 
 
 
