@@ -167,9 +167,7 @@ to also join the [RabbitMQ mailing list](https://groups.google.com/forum/#!forum
 
 To subscribe for announcements of releases, important changes and so on, please follow [@rubyamqp](https://twitter.com/#!/rubyamqp) on Twitter.
 
-More detailed announcements can be found in the blogs
-
-* [RabbitMQ Ruby clients blog](http://blog.rubyrabbitmq.info)
+More detailed announcements can be found in the[RabbitMQ Ruby clients blog](http://blog.rubyrabbitmq.info).
 
 
 ### Reporting Issues
