@@ -209,7 +209,7 @@ module Bunny
       end
 
       if (options[:host] || options[:hostname]) && (options[:hosts] || options[:addresses])
-        @logger.warn "The connection options contain both a host and an array of hosts, the single host is ignored."
+        @logger.warn "Connection options contain both a host and an array of hosts (addresses), please pick one."
       end
     end
 
