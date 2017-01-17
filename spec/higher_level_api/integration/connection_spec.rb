@@ -282,8 +282,7 @@ describe Bunny::Session do
 
       it "logs a warning when there is a single host and an array" do
         described_class.new(addresses: [address], host: host, logger: logger)
-        expect(io.string).to include 'WARN -- : The connection options contain '\
-          'both a host and an array of hosts, the single host is ignored.'
+        expect(io.string).to match(/both a host and an array of hosts/)
       end
 
       it "converts hosts in addresses to addresses" do
