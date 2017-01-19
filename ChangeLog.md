@@ -8,6 +8,12 @@ channel).
 
 GitHub issue: [#438](https://github.com/ruby-amqp/bunny/issues/438).
 
+
+### Retry on new Ruby 2.1+ variations of `EAGAIN`, `EWOULDBLOCK`
+
+GitHub issue: [#456](https://github.com/ruby-amqp/bunny/issues/456)
+
+
 ### Do Not Modify Host Arrays
 
 Bunny now can work with frozen host arrays.
