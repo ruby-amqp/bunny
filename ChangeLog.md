@@ -1,6 +1,13 @@
-## Changes between Bunny 2.6.2 and 2.6.3 (unreleased)
+## Changes between Bunny 2.6.3 and 2.6.4 (unreleased)
 
 No changes yet.
+
+
+## Changes between Bunny 2.6.2 and 2.6.3 (January 19th, 2016)
+
+### Retry on new Ruby 2.1+ variations of `EAGAIN`, `EWOULDBLOCK`
+
+GitHub issue: [#456](https://github.com/ruby-amqp/bunny/issues/456)
 
 
 ## Changes between Bunny 2.6.1 and 2.6.2 (December 17th, 2016)
