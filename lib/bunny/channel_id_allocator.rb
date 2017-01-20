@@ -25,7 +25,7 @@ module Bunny
 
     # Returns next available channel id. This method is thread safe.
     #
-    # @return [Fixnum]
+    # @return [Integer]
     # @api public
     # @see ChannelManager#release_channel_id
     # @see ChannelManager#reset_channel_id_allocator
@@ -37,7 +37,7 @@ module Bunny
 
     # Releases previously allocated channel id. This method is thread safe.
     #
-    # @param [Fixnum] i Channel id to release
+    # @param [Integer] i Channel id to release
     # @api public
     # @see ChannelManager#next_channel_id
     # @see ChannelManager#reset_channel_id_allocator
@@ -51,7 +51,7 @@ module Bunny
     # Returns true if given channel id has been previously allocated and not yet released.
     # This method is thread safe.
     #
-    # @param [Fixnum] i Channel id to check
+    # @param [Integer] i Channel id to check
     # @return [Boolean] true if given channel id has been previously allocated and not yet released
     # @api public
     # @see ChannelManager#next_channel_id
