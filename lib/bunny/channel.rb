@@ -1975,7 +1975,7 @@ module Bunny
     def guarding_against_stale_delivery_tags(tag, &block)
       case tag
         # if a fixnum was passed, execute unconditionally. MK.
-      when Fixnum then
+      when Integer then
         block.call
         # versioned delivery tags should be checked to avoid
         # sending out stale (invalid) tags after channel was reopened
