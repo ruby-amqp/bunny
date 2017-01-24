@@ -1384,7 +1384,7 @@ module Bunny
     # @see #nacked_set
     # @see http://rubybunny.info/articles/extensions.html RabbitMQ Extensions guide
     # @api public
-    def confirm_select(callback=nil)
+    def confirm_select(callback = nil)
       raise_if_no_longer_open!
 
       if @next_publish_seq_no == 0
