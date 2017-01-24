@@ -25,38 +25,38 @@ unless ENV["CI"]
     end
 
     it "distributes messages between queues bound with the same routing key" do
-        if exchange_plugin_available
-            ch   = connection.create_channel
-            body = "сообщение"
-            # requires the consistent hash exchange plugin,
-            # enable it with
-            #
-            # $ [sudo] rabbitmq-plugins enable rabbitmq_consistent_hash_exchange
-            x    = ch.exchange("bunny.examples.exchanges.x-consistent-hash", type: "x-consistent-hash", durable: true)
+      if exchange_plugin_available
+        ch   = connection.create_channel
+        body = "сообщение"
+        # requires the consistent hash exchange plugin,
+        # enable it with
+        #
+        # $ [sudo] rabbitmq-plugins enable rabbitmq_consistent_hash_exchange
+        x    = ch.exchange("bunny.examples.exchanges.x-consistent-hash", type: "x-consistent-hash", durable: true)
 
-            qs = []
+        qs = []
 
-            q1 = ch.queue("", exclusive: true).bind(x, routing_key: "5")
-            q2 = ch.queue("", exclusive: true).bind(x, routing_key: "5")
+        q1 = ch.queue("", exclusive: true).bind(x, routing_key: "5")
+        q2 = ch.queue("", exclusive: true).bind(x, routing_key: "5")
 
-            sleep 1.0
+        sleep 1.0
 
-            5.times do |i|
-                m.times do
-                    x.publish(body, :routing_key => list.sample)
-                end
-                puts "Published #{(i + 1) * m} tiny messages..."
-            end
+        5.times do |i|
+          m.times do
+            x.publish(body, :routing_key => list.sample)
+          end
+          puts "Published #{(i + 1) * m} tiny messages..."
+        end
 
-            sleep 4.0
-            expect(q1.message_count).to be > 100
-            expect(q2.message_count).to be > 100
+        sleep 4.0
+        expect(q1.message_count).to be > 100
+        expect(q2.message_count).to be > 100
 
-            x.delete
-            ch.close
-        else
-            skip "x-consistent-hash exchange type isn't available"
-        end # if
+        x.delete
+        ch.close
+      else
+        skip "x-consistent-hash exchange type isn't available"
+      end # if
     end # it
   end
 end
