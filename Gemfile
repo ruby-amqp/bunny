@@ -32,8 +32,8 @@ group :development do
 end
 
 group :test do
-  gem "rspec", "~> 3.4.0"
-  gem "rabbitmq_http_api_client", "~> 1.6.0"
+  gem "rspec", "~> 3.5.4"
+  gem "rabbitmq_http_api_client", "~> 1.8.0"
 end
 
 gemspec
