@@ -2,7 +2,7 @@ require "spec_helper"
 
 describe Bunny::Queue do
   let(:connection) do
-    c = Bunny.new(:user => "bunny_gem", :password => "bunny_password", :vhost => "bunny_testbed")
+    c = Bunny.new(user: "bunny_gem", password: "bunny_password", vhost: "bunny_testbed")
     c.start
     c
   end
@@ -142,10 +142,13 @@ describe Bunny::Queue do
     end
 
     it "enables priority implementation" do
-      ch   = connection.create_channel
+      c = Bunny.new(user: "bunny_gem", password: "bunny_password", vhost: "bunny_testbed")
+      c.start
+
+      ch   = c.create_channel
       ch.confirm_select
 
-      q = ch.queue("bunny.tests.queues.with-arguments.priority", :arguments => args, :exclusive => true)
+      q = ch.queue("bunny.tests.queues.with-arguments.priority #{rand}", arguments: args, exclusive: true)
       expect(q.arguments).to eq args
 
       q.publish("xyzzy")
