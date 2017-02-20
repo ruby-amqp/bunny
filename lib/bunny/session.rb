@@ -119,6 +119,7 @@ module Bunny
     # @option connection_string_or_opts [Boolean] :automatically_recover (true) Should automatically recover from network failures?
     # @option connection_string_or_opts [Integer] :recovery_attempts (nil) Max number of recovery attempts, nil means forever, 0 means never
     # @option connection_string_or_opts [Boolean] :recover_from_connection_close (true) Recover from server-sent connection.close
+    # @option connection_string_or_opts [Socket] :socket_impl (::Socket) The socket class the transport will use to communicate with RabbitMQ
     #
     # @option optz [String] :auth_mechanism ("PLAIN") Authentication mechanism, PLAIN or EXTERNAL
     # @option optz [String] :locale ("PLAIN") Locale RabbitMQ should use
