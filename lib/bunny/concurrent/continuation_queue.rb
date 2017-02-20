@@ -28,13 +28,17 @@ module Bunny
         timeout = timeout_in_ms ? timeout_in_ms / 1000.0 : nil
 
         @lock.synchronize do
-          if @q.empty?
-            @cond.wait(@lock, timeout)
-            raise ::Timeout::Error if @q.empty?
+          timeout_strikes_at = Time.now.utc + (timeout || 0)
+          while @q.empty?
+            wait = if timeout
+                     timeout_strikes_at - Time.now.utc
+                   else
+                     nil
+                   end
+            @cond.wait(@lock, wait)
+            raise ::Timeout::Error if wait && Time.now.utc >= timeout_strikes_at
           end
           item = @q.shift
-          @cond.signal
-
           item
         end
       end
