@@ -127,8 +127,8 @@ describe "Connection recovery" do
     end
   end
 
-  # a very simplistic test for queues inspired by #412
-  it "recovers client-named queues declared with passive = true" do
+  # a very simplistic test for queues inspired by #422
+  it "recovers client-named queues declared with no_declare: true" do
     with_open do |c|
       ch  = c.create_channel
       ch2 = c.create_channel
@@ -147,6 +147,26 @@ describe "Connection recovery" do
     end
   end
 
+  # a test for #422
+  it "recovers client-named queues declared with passive: true" do
+    with_open do |c|
+      ch  = c.create_channel
+      ch2 = c.create_channel
+
+      n   = rand
+      s   = "bunny.tests.recovery.client-named#{n}"
+
+      q   = ch.queue(s)
+      q2  = ch2.queue(s, passive: true)
+
+      close_all_connections!
+      wait_for_recovery_with { connections.any? }
+      expect(ch).to be_open
+      ensure_queue_recovery(ch, q)
+      ensure_queue_recovery(ch, q2)
+      q.delete
+    end
+  end
 
   it "recovers server-named queues" do
     with_open do |c|
@@ -191,12 +211,40 @@ describe "Connection recovery" do
       close_all_connections!
 
       wait_for_recovery_with { exchange_names_in_vhost("/").include?(source.name) }
-
       ch.confirm_select
 
       source.publish("msg", routing_key: "")
       ch.wait_for_confirms
       expect(dst_queue.message_count).to eq 1
+      destination.delete
+    end
+  end
+
+  it "recovers passively declared exchanges and their bindings" do
+    with_open do |c|
+      ch          = c.create_channel
+      source      = ch.fanout("amq.fanout", passive: true)
+      destination = ch.fanout("destination.exchange.recovery.example", auto_delete: true)
+
+      destination.bind(source)
+
+      # Exchanges won't get auto-deleted on connection loss unless they have
+      # had an exclusive queue bound to them.
+      dst_queue   = ch.queue("", exclusive: true)
+      dst_queue.bind(destination, routing_key: "")
+
+      src_queue   = ch.queue("", exclusive: true)
+      src_queue.bind(source, routing_key: "")
+
+      close_all_connections!
+
+      wait_for_recovery_with { exchange_names_in_vhost("/").include?(source.name) }
+      ch.confirm_select
+
+      source.publish("msg", routing_key: "")
+      ch.wait_for_confirms
+      expect(dst_queue.message_count).to eq 1
+      destination.delete
     end
   end
 
@@ -343,7 +391,8 @@ describe "Connection recovery" do
 
   def close_ignoring_permitted_exceptions(connection_name)
     http_client.close_connection(connection_name)
-  rescue Bunny::ConnectionForced
+  rescue Bunny::ConnectionForced, Faraday::ResourceNotFound
+    # ignored
   end
 
   def wait_for_recovery_with(&probe)
