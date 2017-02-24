@@ -32,7 +32,7 @@ describe "Connection recovery" do
       ch1 = c.create_channel
       ch2 = c.create_channel
       close_all_connections!
-      poll_until { channels.count.zero? }
+      sleep 1.0
       poll_until { channels.count == 2 }
       expect(ch1).to be_open
       expect(ch2).to be_open
@@ -44,7 +44,7 @@ describe "Connection recovery" do
       ch1 = c.create_channel
       ch2 = c.create_channel
       close_all_connections!
-      poll_until { channels.count.zero? }
+      sleep 1.0
       poll_until { channels.count == 2 }
       expect(ch1).to be_open
       expect(ch2).to be_open
@@ -56,7 +56,7 @@ describe "Connection recovery" do
       ch1 = c.create_channel
       ch2 = c.create_channel
       close_all_connections!
-      poll_until { channels.count.zero? }
+      sleep 1.0
       poll_until { channels.count == 2 }
       expect(ch1).to be_open
       expect(ch2).to be_open
