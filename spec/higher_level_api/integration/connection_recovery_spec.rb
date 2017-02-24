@@ -3,27 +3,27 @@ require "rabbitmq/http/client"
 
 describe "Connection recovery" do
   let(:http_client) { RabbitMQ::HTTP::Client.new("http://127.0.0.1:15672") }
-  let(:logger) { Logger.new($stderr).tap {|logger| logger.level = Logger::FATAL} }
+  let(:logger) { Logger.new($stderr).tap {|logger| logger.level = Logger::INFO} }
   let(:recovery_interval) { 0.2 }
 
   it "reconnects after grace period" do
     with_open do |c|
       close_all_connections!
-      wait_on_loss_and_recovery_of { connections.any? }
+      wait_for_recovery_with { connections.any? }
     end
   end
 
   it "reconnects after grace period (with multiple hosts)" do
     with_open_multi_host do |c|
       close_all_connections!
-      wait_on_loss_and_recovery_of { connections.any? }
+      wait_for_recovery_with { connections.any? }
     end
   end
 
   it "reconnects after grace period (with multiple hosts, including a broken one)" do
     with_open_multi_broken_host do |c|
       close_all_connections!
-      wait_on_loss_and_recovery_of { connections.any? }
+      wait_for_recovery_with { connections.any? }
     end
   end
 
@@ -70,7 +70,7 @@ describe "Connection recovery" do
       expect(ch.prefetch_count).to eq 11
       expect(ch.prefetch_global).to be false
       close_all_connections!
-      wait_on_loss_and_recovery_of { connections.any? }
+      wait_for_recovery_with { connections.any? }
       expect(ch).to be_open
       expect(ch.prefetch_count).to eq 11
       expect(ch.prefetch_global).to be false
@@ -84,7 +84,7 @@ describe "Connection recovery" do
       expect(ch.prefetch_count).to eq 42
       expect(ch.prefetch_global).to be true
       close_all_connections!
-      wait_on_loss_and_recovery_of { connections.any? }
+      wait_for_recovery_with { connections.any? }
       expect(ch).to be_open
       expect(ch.prefetch_count).to eq 42
       expect(ch.prefetch_global).to be true
@@ -97,7 +97,7 @@ describe "Connection recovery" do
       ch.confirm_select
       expect(ch).to be_using_publisher_confirms
       close_all_connections!
-      wait_on_loss_and_recovery_of { connections.any? }
+      wait_for_recovery_with { connections.any? }
       expect(ch).to be_open
       expect(ch).to be_using_publisher_confirms
     end
@@ -109,7 +109,7 @@ describe "Connection recovery" do
       ch.tx_select
       expect(ch).to be_using_tx
       close_all_connections!
-      wait_on_loss_and_recovery_of { connections.any? }
+      wait_for_recovery_with { connections.any? }
       expect(ch).to be_open
       expect(ch).to be_using_tx
     end
@@ -120,7 +120,7 @@ describe "Connection recovery" do
       ch = c.create_channel
       q  = ch.queue("bunny.tests.recovery.client-named#{rand}")
       close_all_connections!
-      wait_on_loss_and_recovery_of { connections.any? }
+      wait_for_recovery_with { connections.any? }
       expect(ch).to be_open
       ensure_queue_recovery(ch, q)
       q.delete
@@ -140,7 +140,7 @@ describe "Connection recovery" do
       q2  = ch2.queue(s, no_declare: true)
 
       close_all_connections!
-      wait_on_loss_and_recovery_of { connections.any? }
+      wait_for_recovery_with { connections.any? }
       expect(ch).to be_open
       ensure_queue_recovery(ch, q)
       q.delete
@@ -153,7 +153,7 @@ describe "Connection recovery" do
       ch = c.create_channel
       q  = ch.queue("", :exclusive => true)
       close_all_connections!
-      wait_on_loss_and_recovery_of { connections.any? }
+      wait_for_recovery_with { connections.any? }
       expect(ch).to be_open
       ensure_queue_recovery(ch, q)
     end
@@ -166,7 +166,7 @@ describe "Connection recovery" do
       q  = ch.queue("", :exclusive => true)
       q.bind(x)
       close_all_connections!
-      wait_on_loss_and_recovery_of { connections.any? }
+      wait_for_recovery_with { connections.any? }
       expect(ch).to be_open
       ensure_queue_binding_recovery(ch, x, q)
     end
@@ -190,7 +190,7 @@ describe "Connection recovery" do
 
       close_all_connections!
 
-      wait_on_loss_and_recovery_of { exchange_names_in_vhost("/").include?(source.name) }
+      wait_for_recovery_with { exchange_names_in_vhost("/").include?(source.name) }
 
       ch.confirm_select
 
@@ -223,7 +223,7 @@ describe "Connection recovery" do
 
       close_all_connections!
 
-      wait_on_loss_and_recovery_of { exchange_names_in_vhost("/").include?(source.name) }
+      wait_for_recovery_with { exchange_names_in_vhost("/").include?(source.name) }
 
       ch2.confirm_select
 
@@ -239,7 +239,7 @@ describe "Connection recovery" do
       10.times { c.create_channel }
       expect(c.queue_exists?(q)).to eq false
       close_all_connections!
-      wait_on_loss_and_recovery_of { channels.any? }
+      wait_for_recovery_with { channels.any? }
       # make sure the connection isn't closed shortly after
       # due to "second 'channel.open' seen". MK.
       expect(c).to be_open
@@ -261,7 +261,7 @@ describe "Connection recovery" do
         delivered = true
       end
       close_all_connections!
-      wait_on_loss_and_recovery_of { connections.any? }
+      wait_for_recovery_with { connections.any? }
       expect(ch).to be_open
 
       q.publish("")
@@ -279,7 +279,7 @@ describe "Connection recovery" do
       q  = ch.queue("", :exclusive => true)
       n.times { q.subscribe { |_, _, _| } }
       close_all_connections!
-      wait_on_loss_and_recovery_of { connections.any? }
+      wait_for_recovery_with { connections.any? }
       expect(ch).to be_open
       sleep 0.5
 
@@ -299,7 +299,7 @@ describe "Connection recovery" do
         qs << ch.queue("", :exclusive => true)
       end
       close_all_connections!
-      wait_on_loss_and_recovery_of { queue_names.include?(qs.first.name) }
+      wait_for_recovery_with { queue_names.include?(qs.first.name) }
       sleep 0.5
       expect(ch).to be_open
 
@@ -313,10 +313,10 @@ describe "Connection recovery" do
     pending "Need a fix for https://github.com/ruby-amqp/bunny/issues/408"
     with_recovery_attempts_limited_to(2) do |c|
       close_all_connections!
-      wait_on_loss_and_recovery_of { connections.any? }
+      wait_for_recovery_with { connections.any? }
 
       close_all_connections!
-      wait_on_loss_and_recovery_of { connections.any? }
+      wait_for_recovery_with { connections.any? }
 
       close_all_connections!
       sleep(recovery_interval + 0.5)
@@ -361,8 +361,7 @@ describe "Connection recovery" do
   rescue Bunny::ConnectionForced
   end
 
-  def wait_on_loss_and_recovery_of(&probe)
-    poll_while &probe
+  def wait_for_recovery_with(&probe)
     poll_until &probe
   end
 
