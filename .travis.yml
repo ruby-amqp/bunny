@@ -2,9 +2,10 @@ language: ruby
 bundler_args: --without development
 cache: bundler
 before_script: "./bin/ci/before_build"
-script: "bundle exec rspec -cf documentation spec"
+script: "bundle exec rake integration"
 rvm:
-  - "2.3.0"
+  - "2.4.0"
+  - "2.3.3"
   - "2.2.2"
 notifications:
   email: michael@rabbitmq.com
@@ -13,3 +14,5 @@ services:
 branches:
   only:
     - master
+env:
+  - CI=true
