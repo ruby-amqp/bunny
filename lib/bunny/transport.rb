@@ -419,7 +419,7 @@ certificate, connection upgrade will fail!
       if !@verify_peer
         @logger.warn <<-MSG
 Using TLS but peer hostname verification is disabled. This is convenient for local development
-but prone to man-in-the-middle attacks. Please set :verify_peer => true in production!
+but prone to man-in-the-middle attacks. Please set verify_peer: true in production!
         MSG
       end
 
