@@ -1,5 +1,22 @@
 ## Changes between Bunny 2.6.0 and 2.7.0 (unreleased)
 
+### Recovery Attempt Counting Strategy Changed
+
+Previous behehavior is not unreasonable but is not what many users and
+even RabbitMQ team members come to expect. Therefore it can be
+considered a bug.
+
+Previously a reconnection counter was preserved between successful
+recoveries. This made the integration test that uses server-sent
+connection.close possible.
+
+With this change, the counter is reset after successful reconnection
+but there's an option to go back to the original behavior. We also do
+a hell of a lot more logging.
+
+GitHub issue: [#408](https://github.com/ruby-amqp/bunny/issues/408)
+
+
 ### Bunny::ConsumerWorkPool#shutdown Terminates Early When It's Safe to Do So
 
 `Bunny::ConsumerWorkPool#shutdown(true)` waited for consumer shutdown

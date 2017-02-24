@@ -117,8 +117,9 @@ module Bunny
     # @option connection_string_or_opts [IO, String] :logfile DEPRECATED: use :log_file instead.  The file or path to use when creating a logger.  Defaults to STDOUT.
     # @option connection_string_or_opts [Integer] :log_level The log level to use when creating a logger.  Defaults to LOGGER::WARN
     # @option connection_string_or_opts [Boolean] :automatically_recover (true) Should automatically recover from network failures?
-    # @option connection_string_or_opts [Integer] :recovery_attempts (nil) Max number of recovery attempts, nil means forever, 0 means never
-    # @option connection_string_or_opts [Boolean] :recover_from_connection_close (true) Recover from server-sent connection.close
+    # @option connection_string_or_opts [Integer] :recovery_attempts (nil) Max number of recovery attempts, nil means forever
+    # @option connection_string_or_opts [Integer] :reset_recovery_attempts_after_reconnection (true) Should recovery attempt counter be reset after successful reconnection? When set to false, the attempt counter will last through the entire lifetime of the connection object.
+    # @option connection_string_or_opts [Boolean] :recover_from_connection_close (true) Should this connection recover after receiving a server-sent connection.close (e.g. connection was force closed)?
     #
     # @option optz [String] :auth_mechanism ("PLAIN") Authentication mechanism, PLAIN or EXTERNAL
     # @option optz [String] :locale ("PLAIN") Locale RabbitMQ should use
@@ -164,7 +165,13 @@ module Bunny
                                else
                                  opts[:automatically_recover] || opts[:automatic_recovery]
                                end
-      @recovery_attempts     = opts[:recovery_attempts]
+      @max_recovery_attempts = opts[:recovery_attempts]
+      @recovery_attempts     = @max_recovery_attempts
+      # When this is set, connection attempts won't be reset after
+      # successful reconnection. Some find this behavior more sensible
+      # than the per-failure attempt counter. MK.
+      @reset_recovery_attempt_counter_after_reconnection = opts.fetch(:reset_recovery_attempts_after_reconnection, true)
+
       @network_recovery_interval = opts.fetch(:network_recovery_interval, DEFAULT_NETWORK_RECOVERY_INTERVAL)
       @recover_from_connection_close = opts.fetch(:recover_from_connection_close, true)
       # in ms
@@ -640,7 +647,7 @@ module Bunny
         begin
           @recovering_from_network_failure = true
           if recoverable_network_failure?(exception)
-            @logger.warn "Recovering from a network failure..."
+            announce_network_failure_recovery
             @channel_mutex.synchronize do
               @channels.each do |n, ch|
                 ch.maybe_kill_consumer_work_pool!
@@ -651,7 +658,7 @@ module Bunny
 
             recover_from_network_failure
           else
-            # TODO: investigate if we can be a bit smarter here. MK.
+            @logger.error "Exception #{exception.message} is considered unrecoverable..."
           end
         ensure
           @recovering_from_network_failure = false
@@ -661,7 +668,8 @@ module Bunny
 
     # @private
     def recoverable_network_failure?(exception)
-      # TODO: investigate if we can be a bit smarter here. MK.
+      # No reasonably smart strategy was suggested in a few years.
+      # So just recover unconditionally. MK.
       true
     end
 
@@ -671,9 +679,18 @@ module Bunny
     end
 
     # @private
+    def announce_network_failure_recovery
+      if recovery_attempts_limited?
+        @logger.warn "Will recover from a network failure (#{@recovery_attempts} out of #{@max_recovery_attempts} left)..."
+      else
+        @logger.warn "Will recover from a network failure (no retry limit)..."
+      end
+    end
+
+    # @private
     def recover_from_network_failure
       sleep @network_recovery_interval
-      @logger.debug "About to start connection recovery..."
+      @logger.debug "Will attempt connection recovery..."
 
       self.initialize_transport
 
@@ -681,7 +698,16 @@ module Bunny
       self.start
 
       if open?
+
         @recovering_from_network_failure = false
+        @logger.debug "Connection is now open"
+        if @reset_recovery_attempt_counter_after_reconnection
+          @logger.debug "Resetting recovery attempt counter after successful reconnection"
+          reset_recovery_attempt_counter!
+        else
+          @logger.debug "Not resetting recovery attempt counter after successful reconnection, as configured"
+        end
+        reset_recovery_attempt_counter!
 
         recover_channels
       end
@@ -692,14 +718,36 @@ module Bunny
       @logger.warn "TCP connection failed, reconnecting in #{@network_recovery_interval} seconds"
       sleep @network_recovery_interval
       if should_retry_recovery?
-        @recovery_attempts -= 1 if @recovery_attempts
-        retry if recoverable_network_failure?(e)
+        decrement_recovery_attemp_counter!
+        if recoverable_network_failure?(e)
+          announce_network_failure_recovery
+          retry
+        end
+      else
+        @logger.error "Ran out of recovery attempts (limit set to #{@max_recovery_attempts})"
       end
     end
 
     # @private
+    def recovery_attempts_limited?
+      !!@max_recovery_attempts
+    end
+
+    # @private
     def should_retry_recovery?
-      @recovery_attempts.nil? || @recovery_attempts > 1
+      !recovery_attempts_limited? || @recovery_attempts > 1
+    end
+
+    # @private
+    def decrement_recovery_attemp_counter!
+      @recovery_attempts -= 1 if @recovery_attempts
+      @logger.debug "#{@recovery_attempts} recovery attempts left"
+      @recovery_attempts
+    end
+
+    # @private
+    def reset_recovery_attempt_counter!
+      @recovery_attempts = @max_recovery_attempts
     end
 
     # @private
