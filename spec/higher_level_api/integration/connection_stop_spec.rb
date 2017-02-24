@@ -62,15 +62,16 @@ describe Bunny::Session do
 
   describe "that recovers from connection.close" do
     it "can be closed" do
-      c  = Bunny.new(automatically_recover: true, recover_from_connection_close: true, network_recovery_interval: 0.2)
+      c  = Bunny.new(automatically_recover: true,
+        recover_from_connection_close: true,
+        network_recovery_interval: 0.2)
       c.start
       ch = c.create_channel
 
       sleep 1.5
       expect(c).to be_open
+      sleep 1.5
       close_connection(c.local_port)
-      sleep 0.1
-      expect(c).not_to be_open
 
       wait_for_recovery
       expect(c).to be_open
