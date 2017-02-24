@@ -211,12 +211,40 @@ describe "Connection recovery" do
       close_all_connections!
 
       wait_for_recovery_with { exchange_names_in_vhost("/").include?(source.name) }
-
       ch.confirm_select
 
       source.publish("msg", routing_key: "")
       ch.wait_for_confirms
       expect(dst_queue.message_count).to eq 1
+      destination.delete
+    end
+  end
+
+  it "recovers passively declared exchanges and their bindings" do
+    with_open do |c|
+      ch          = c.create_channel
+      source      = ch.fanout("amq.fanout", passive: true)
+      destination = ch.fanout("destination.exchange.recovery.example", auto_delete: true)
+
+      destination.bind(source)
+
+      # Exchanges won't get auto-deleted on connection loss unless they have
+      # had an exclusive queue bound to them.
+      dst_queue   = ch.queue("", exclusive: true)
+      dst_queue.bind(destination, routing_key: "")
+
+      src_queue   = ch.queue("", exclusive: true)
+      src_queue.bind(source, routing_key: "")
+
+      close_all_connections!
+
+      wait_for_recovery_with { exchange_names_in_vhost("/").include?(source.name) }
+      ch.confirm_select
+
+      source.publish("msg", routing_key: "")
+      ch.wait_for_confirms
+      expect(dst_queue.message_count).to eq 1
+      destination.delete
     end
   end
 
@@ -351,7 +379,8 @@ describe "Connection recovery" do
 
   def close_ignoring_permitted_exceptions(connection_name)
     http_client.close_connection(connection_name)
-  rescue Bunny::ConnectionForced
+  rescue Bunny::ConnectionForced, Faraday::ResourceNotFound
+    # ignored
   end
 
   def wait_for_recovery_with(&probe)
