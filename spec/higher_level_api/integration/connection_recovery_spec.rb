@@ -3,7 +3,7 @@ require "rabbitmq/http/client"
 
 describe "Connection recovery" do
   let(:http_client) { RabbitMQ::HTTP::Client.new("http://127.0.0.1:15672") }
-  let(:logger) { Logger.new($stderr).tap {|logger| logger.level = Logger::INFO} }
+  let(:logger) { Logger.new($stderr).tap {|logger| logger.level = ENV["BUNNY_LOG_LEVEL"] || Logger::WARN } }
   let(:recovery_interval) { 0.2 }
 
   it "reconnects after grace period" do
@@ -307,21 +307,6 @@ describe "Connection recovery" do
     end
   end
 
-  it "tries to recover for a given number of attempts" do
-    pending "Need a fix for https://github.com/ruby-amqp/bunny/issues/408"
-    with_recovery_attempts_limited_to(2) do |c|
-      close_all_connections!
-      wait_for_recovery_with { connections.any? }
-
-      close_all_connections!
-      wait_for_recovery_with { connections.any? }
-
-      close_all_connections!
-      sleep(recovery_interval + 0.5)
-      expect(connections).to be_empty
-    end
-  end
-
   def exchange_names_in_vhost(vhost)
     http_client.list_exchanges(vhost).map {|e| e["name"]}
   end
@@ -387,14 +372,6 @@ describe "Connection recovery" do
                   hosts_shuffle_strategy: Proc.new { |hosts| hosts }, # We do not shuffle for these tests so we always hit the broken host
                   network_recovery_interval: recovery_interval,
                   recover_from_connection_close: true,
-                  logger: logger)
-    with_open(c, &block)
-  end
-
-  def with_recovery_attempts_limited_to(attempts = 3, &block)
-    c = Bunny.new(recover_from_connection_close: true,
-                  network_recovery_interval: recovery_interval,
-                  recovery_attempts: attempts,
                   logger: logger)
     with_open(c, &block)
   end
