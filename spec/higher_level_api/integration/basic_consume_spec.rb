@@ -3,7 +3,7 @@ require "set"
 
 describe Bunny::Queue, "#subscribe" do
   let(:connection) do
-    c = Bunny.new(:user => "bunny_gem", :password => "bunny_password", :vhost => "bunny_testbed")
+    c = Bunny.new(username: "bunny_gem", password: "bunny_password", vhost: "bunny_testbed")
     c.start
     c
   end
@@ -21,8 +21,8 @@ describe Bunny::Queue, "#subscribe" do
 
       t = Thread.new do
         ch = connection.create_channel
-        q = ch.queue(queue_name, :auto_delete => true, :durable => false)
-        q.subscribe(:exclusive => false, :manual_ack => false) do |delivery_info, properties, payload|
+        q = ch.queue(queue_name, auto_delete: true, durable: false)
+        q.subscribe(exclusive: false, :manual_ack => false) do |delivery_info, properties, payload|
           delivered_keys << delivery_info.routing_key
           delivered_data << payload
         end
@@ -32,13 +32,13 @@ describe Bunny::Queue, "#subscribe" do
 
       ch = connection.create_channel
       x  = ch.default_exchange
-      x.publish("hello", :routing_key => queue_name)
+      x.publish("hello", routing_key: queue_name)
 
       sleep 0.7
       expect(delivered_keys).to include(queue_name)
       expect(delivered_data).to include("hello")
 
-      expect(ch.queue(queue_name, :auto_delete => true, :durable => false).message_count).to eq 0
+      expect(ch.queue(queue_name, auto_delete: true, durable: false).message_count).to eq 0
 
       ch.close
     end
@@ -50,8 +50,8 @@ describe Bunny::Queue, "#subscribe" do
         delivery_tags = SortedSet.new
 
         cch = connection.create_channel
-        q = cch.queue(queue_name, :auto_delete => true, :durable => false)
-        q.subscribe(:exclusive => false, :manual_ack => false) do |delivery_info, properties, payload|
+        q = cch.queue(queue_name, auto_delete: true, durable: false)
+        q.subscribe(exclusive: false, :manual_ack => false) do |delivery_info, properties, payload|
           delivery_tags << delivery_info.delivery_tag
         end
         sleep 0.5
@@ -59,13 +59,13 @@ describe Bunny::Queue, "#subscribe" do
         ch = connection.create_channel
         x  = ch.default_exchange
         100.times do
-          x.publish("hello", :routing_key => queue_name)
+          x.publish("hello", routing_key: queue_name)
         end
 
         sleep 1.0
         expect(delivery_tags).to eq SortedSet.new(Range.new(1, 100).to_a)
 
-        expect(ch.queue(queue_name, :auto_delete => true, :durable => false).message_count).to eq 0
+        expect(ch.queue(queue_name, auto_delete: true, durable: false).message_count).to eq 0
 
         ch.close
       end
@@ -79,10 +79,10 @@ describe Bunny::Queue, "#subscribe" do
         delivery_tags = SortedSet.new
 
         cch = connection.create_channel
-        q   = cch.queue(queue_name, :auto_delete => true, :durable => false)
+        q   = cch.queue(queue_name, auto_delete: true, durable: false)
 
         7.times do
-          q.subscribe(:exclusive => false, :manual_ack => false) do |delivery_info, properties, payload|
+          q.subscribe(exclusive: false, :manual_ack => false) do |delivery_info, properties, payload|
             delivery_tags << delivery_info.delivery_tag
           end
         end
@@ -91,13 +91,13 @@ describe Bunny::Queue, "#subscribe" do
         ch = connection.create_channel
         x  = ch.default_exchange
         100.times do
-          x.publish("hello", :routing_key => queue_name)
+          x.publish("hello", routing_key: queue_name)
         end
 
         sleep 1.5
         expect(delivery_tags).to eq SortedSet.new(Range.new(1, 100).to_a)
 
-        expect(ch.queue(queue_name, :auto_delete => true, :durable => false).message_count).to eq 0
+        expect(ch.queue(queue_name, auto_delete: true, durable: false).message_count).to eq 0
 
         ch.close
       end
@@ -113,8 +113,8 @@ describe Bunny::Queue, "#subscribe" do
 
       t = Thread.new do
         ch = connection.create_channel
-        q = ch.queue(queue_name, :auto_delete => true, :durable => false)
-        q.subscribe(:exclusive => false, :manual_ack => true) do |delivery_info, properties, payload|
+        q = ch.queue(queue_name, auto_delete: true, durable: false)
+        q.subscribe(exclusive: false, :manual_ack => true) do |delivery_info, properties, payload|
           delivered_keys << delivery_info.routing_key
           delivered_data << payload
 
@@ -126,13 +126,13 @@ describe Bunny::Queue, "#subscribe" do
 
       ch = connection.create_channel
       x  = ch.default_exchange
-      x.publish("hello", :routing_key => queue_name)
+      x.publish("hello", routing_key: queue_name)
 
       sleep 0.7
       expect(delivered_keys).to include(queue_name)
       expect(delivered_data).to include("hello")
 
-      expect(ch.queue(queue_name, :auto_delete => true, :durable => false).message_count).to eq 0
+      expect(ch.queue(queue_name, auto_delete: true, durable: false).message_count).to eq 0
 
       ch.close
     end
@@ -147,10 +147,10 @@ describe Bunny::Queue, "#subscribe" do
         delivered_data = []
 
         ch = connection.create_channel
-        q  = ch.queue(queue_name, :auto_delete => true, :durable => false)
+        q  = ch.queue(queue_name, auto_delete: true, durable: false)
         x  = ch.default_exchange
         100.times do
-          x.publish("hello", :routing_key => queue_name)
+          x.publish("hello", routing_key: queue_name)
         end
 
         sleep 0.7
@@ -158,8 +158,8 @@ describe Bunny::Queue, "#subscribe" do
 
         t = Thread.new do
           ch = connection.create_channel
-          q = ch.queue(queue_name, :auto_delete => true, :durable => false)
-          q.subscribe(:exclusive => false, :manual_ack => false) do |delivery_info, properties, payload|
+          q = ch.queue(queue_name, auto_delete: true, durable: false)
+          q.subscribe(exclusive: false, :manual_ack => false) do |delivery_info, properties, payload|
             delivered_keys << delivery_info.routing_key
             delivered_data << payload
           end
@@ -170,7 +170,7 @@ describe Bunny::Queue, "#subscribe" do
         expect(delivered_keys).to include(queue_name)
         expect(delivered_data).to include("hello")
 
-        expect(ch.queue(queue_name, :auto_delete => true, :durable => false).message_count).to eq 0
+        expect(ch.queue(queue_name, auto_delete: true, durable: false).message_count).to eq 0
 
         ch.close
       end
@@ -189,17 +189,17 @@ describe Bunny::Queue, "#subscribe" do
         ch = connection.create_channel
         q  = ch.queue(queue_name)
 
-        c1  = q.subscribe(:exclusive => false, :manual_ack => false, :block => false) do |delivery_info, properties, payload|
+        c1  = q.subscribe(exclusive: false, :manual_ack => false, :block => false) do |delivery_info, properties, payload|
         end
         c1.cancel
 
-        c2  = q.subscribe(:exclusive => false, :manual_ack => false, :block => false) do |delivery_info, properties, payload|
+        c2  = q.subscribe(exclusive: false, :manual_ack => false, :block => false) do |delivery_info, properties, payload|
           delivered_keys << delivery_info.routing_key
           delivered_data << payload
         end
         c2.cancel
 
-        q.subscribe(:exclusive => false, :manual_ack => false, :block => true) do |delivery_info, properties, payload|
+        q.subscribe(exclusive: false, :manual_ack => false, :block => true) do |delivery_info, properties, payload|
           delivered_keys << delivery_info.routing_key
           delivered_data << payload
         end
@@ -209,7 +209,7 @@ describe Bunny::Queue, "#subscribe" do
 
       ch = connection.create_channel
       x  = ch.default_exchange
-      x.publish("hello", :routing_key => queue_name)
+      x.publish("hello", routing_key: queue_name)
 
       sleep 0.7
       expect(delivered_keys).to include(queue_name)
@@ -231,13 +231,13 @@ describe Bunny::Queue, "#subscribe" do
         caught = nil
         t = Thread.new do
           ch = connection.create_channel
-          q  = ch.queue(queue_name, :auto_delete => true, :durable => false)
+          q  = ch.queue(queue_name, auto_delete: true, durable: false)
 
           ch.on_uncaught_exception do |e, consumer|
             caught = e
           end
 
-          q.subscribe(:exclusive => false, :manual_ack => false) do |delivery_info, properties, payload|
+          q.subscribe(exclusive: false, :manual_ack => false) do |delivery_info, properties, payload|
             raise RuntimeError.new(queue_name)
           end
         end
@@ -246,7 +246,7 @@ describe Bunny::Queue, "#subscribe" do
 
         ch     = connection.create_channel
         x  = ch.default_exchange
-        x.publish("hello", :routing_key => queue_name)
+        x.publish("hello", routing_key: queue_name)
         sleep 0.5
 
         expect(caught.message).to eq queue_name
@@ -265,9 +265,9 @@ describe Bunny::Queue, "#subscribe" do
           allow(connection.logger).to receive(:error) { |x| caughts << x }
 
           ch = connection.create_channel
-          q  = ch.queue(queue_name, :auto_delete => true, :durable => false)
+          q  = ch.queue(queue_name, auto_delete: true, durable: false)
 
-          q.subscribe(:exclusive => false, :manual_ack => false) do |delivery_info, properties, payload|
+          q.subscribe(exclusive: false, :manual_ack => false) do |delivery_info, properties, payload|
             raise RuntimeError.new(queue_name)
           end
         end
@@ -276,7 +276,7 @@ describe Bunny::Queue, "#subscribe" do
 
         ch     = connection.create_channel
         x  = ch.default_exchange
-        5.times { x.publish("hello", :routing_key => queue_name) }
+        5.times { x.publish("hello", routing_key: queue_name) }
         sleep 1.5
 
         expect(caughts.size).to eq(5)
@@ -293,8 +293,8 @@ describe Bunny::Queue, "#subscribe" do
         delivery_tags = SortedSet.new
 
         cch = connection.create_channel
-        q = cch.queue(queue_name, :auto_delete => true, :durable => false)
-        q.subscribe(:exclusive => false, :manual_ack => false) do |delivery_info, properties, payload|
+        q = cch.queue(queue_name, auto_delete: true, durable: false)
+        q.subscribe(exclusive: false, :manual_ack => false) do |delivery_info, properties, payload|
           delivery_tags << delivery_info.delivery_tag
         end
         sleep 0.5
@@ -302,13 +302,13 @@ describe Bunny::Queue, "#subscribe" do
         ch = connection.create_channel
         x  = ch.default_exchange
         100.times do
-          x.publish("hello", :routing_key => queue_name)
+          x.publish("hello", routing_key: queue_name)
         end
 
         sleep 1.0
         expect(delivery_tags).to eq SortedSet.new(Range.new(1, 100).to_a)
 
-        expect(ch.queue(queue_name, :auto_delete => true, :durable => false).message_count).to eq 0
+        expect(ch.queue(queue_name, auto_delete: true, durable: false).message_count).to eq 0
 
         ch.close
       end
@@ -322,10 +322,10 @@ describe Bunny::Queue, "#subscribe" do
         delivery_tags = SortedSet.new
 
         cch = connection.create_channel
-        q   = cch.queue(queue_name, :auto_delete => true, :durable => false)
+        q   = cch.queue(queue_name, auto_delete: true, durable: false)
 
         7.times do
-          q.subscribe(:exclusive => false, :manual_ack => false) do |delivery_info, properties, payload|
+          q.subscribe(exclusive: false, :manual_ack => false) do |delivery_info, properties, payload|
             delivery_tags << delivery_info.delivery_tag
           end
         end
@@ -334,13 +334,13 @@ describe Bunny::Queue, "#subscribe" do
         ch = connection.create_channel
         x  = ch.default_exchange
         100.times do
-          x.publish("hello", :routing_key => queue_name)
+          x.publish("hello", routing_key: queue_name)
         end
 
         sleep 1.5
         expect(delivery_tags).to eq SortedSet.new(Range.new(1, 100).to_a)
 
-        expect(ch.queue(queue_name, :auto_delete => true, :durable => false).message_count).to eq 0
+        expect(ch.queue(queue_name, auto_delete: true, durable: false).message_count).to eq 0
 
         ch.close
       end

@@ -2,7 +2,7 @@ require "spec_helper"
 
 describe Bunny::Exchange, "#publish" do
   let(:connection) do
-    c = Bunny.new(:user => "bunny_gem", :password => "bunny_password", :vhost => "bunny_testbed")
+    c = Bunny.new(username: "bunny_gem", password: "bunny_password", vhost: "bunny_testbed")
     c.start
     c
   end
@@ -22,7 +22,7 @@ describe Bunny::Exchange, "#publish" do
         returned << content
       end
 
-      x.publish("xyzzy", :routing_key => rand.to_s, :mandatory => true)
+      x.publish("xyzzy", routing_key: rand.to_s, :mandatory => true)
       sleep 0.5
 
       expect(returned).to include("xyzzy")

@@ -2,7 +2,7 @@ require "spec_helper"
 
 describe "A message" do
   let(:connection) do
-    c = Bunny.new(:user => "bunny_gem", :password => "bunny_password", :vhost => "bunny_testbed")
+    c = Bunny.new(username: "bunny_gem", password: "bunny_password", vhost: "bunny_testbed")
     c.start
     c
   end
@@ -15,9 +15,9 @@ describe "A message" do
     ch   = connection.create_channel
     x    = ch.fanout("amq.fanout")
     dlx  = ch.fanout("bunny.tests.dlx.exchange")
-    q    = ch.queue("", :exclusive => true, :arguments => {"x-dead-letter-exchange" => dlx.name}).bind(x)
+    q    = ch.queue("", exclusive: true, arguments: {"x-dead-letter-exchange" => dlx.name}).bind(x)
     # dead letter queue
-    dlq  = ch.queue("", :exclusive => true).bind(dlx)
+    dlq  = ch.queue("", exclusive: true).bind(dlx)
 
     x.publish("")
     sleep 0.2
@@ -41,9 +41,9 @@ describe "A message" do
     ch   = connection.create_channel
     x    = ch.fanout("amq.fanout")
     dlx  = ch.fanout("bunny.tests.dlx.exchange")
-    q    = ch.queue("", :exclusive => true, :arguments => {"x-dead-letter-exchange" => dlx.name, "x-message-ttl" => 100}).bind(x)
+    q    = ch.queue("", exclusive: true, arguments: {"x-dead-letter-exchange" => dlx.name, "x-message-ttl" => 100}).bind(x)
     # dead letter queue
-    dlq  = ch.queue("", :exclusive => true).bind(dlx)
+    dlq  = ch.queue("", exclusive: true).bind(dlx)
 
     x.publish("")
     sleep 0.2
@@ -58,9 +58,9 @@ describe "A message" do
     ch   = connection.create_channel
     x    = ch.fanout("amq.fanout")
     dlx  = ch.fanout("bunny.tests.dlx.exchange")
-    q    = ch.queue("", :exclusive => true, :arguments => {"x-dead-letter-exchange" => dlx.name, "x-message-ttl" => 100}).bind(x)
+    q    = ch.queue("", exclusive: true, arguments: {"x-dead-letter-exchange" => dlx.name, "x-message-ttl" => 100}).bind(x)
     # dead letter queue
-    dlq  = ch.queue("", :exclusive => true).bind(dlx)
+    dlq  = ch.queue("", exclusive: true).bind(dlx)
 
     x.publish("")
     sleep 0.2

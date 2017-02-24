@@ -2,7 +2,7 @@ require "spec_helper"
 
 describe Bunny::Consumer, "#cancel" do
   let(:connection) do
-    c = Bunny.new(:user => "bunny_gem", :password => "bunny_password", :vhost => "bunny_testbed")
+    c = Bunny.new(username: "bunny_gem", password: "bunny_password", vhost: "bunny_testbed")
     c.start
     c
   end
@@ -19,7 +19,7 @@ describe Bunny::Consumer, "#cancel" do
 
       t = Thread.new do
         ch         = connection.create_channel
-        q          = ch.queue(queue_name, :auto_delete => true, :durable => false)
+        q          = ch.queue(queue_name, auto_delete: true, durable: false)
         consumer = q.subscribe(:block => false) do |_, _, payload|
           delivered_data << payload
         end
@@ -34,7 +34,7 @@ describe Bunny::Consumer, "#cancel" do
       sleep 0.5
 
       ch = connection.create_channel
-      ch.default_exchange.publish("", :routing_key => queue_name)
+      ch.default_exchange.publish("", routing_key: queue_name)
 
       sleep 0.7
       expect(delivered_data).to be_empty
@@ -51,7 +51,7 @@ describe Bunny::Consumer, "#cancel" do
 
       t = Thread.new do
         ch         = connection.create_channel
-        q          = ch.queue(queue_name, :auto_delete => true, :durable => false)
+        q          = ch.queue(queue_name, auto_delete: true, durable: false)
 
         consumer   = Bunny::Consumer.new(ch, q)
         consumer.on_delivery do |_, _, payload|
@@ -67,7 +67,7 @@ describe Bunny::Consumer, "#cancel" do
       sleep 1.0
 
       ch = connection.create_channel
-      ch.default_exchange.publish("", :routing_key => queue_name)
+      ch.default_exchange.publish("", routing_key: queue_name)
 
       sleep 0.7
       expect(delivered_data).to be_empty
@@ -83,7 +83,7 @@ describe Bunny::Consumer, "#cancel" do
 
       t = Thread.new do
         ch         = connection.create_channel(nil, 1, false, 5)
-        q          = ch.queue(queue_name, :auto_delete => true, :durable => false)
+        q          = ch.queue(queue_name, auto_delete: true, durable: false)
 
         consumer   = Bunny::Consumer.new(ch, q)
         consumer.on_delivery do |_, _, payload|
@@ -98,7 +98,7 @@ describe Bunny::Consumer, "#cancel" do
 
       ch = connection.create_channel
       ch.confirm_select
-      ch.default_exchange.publish("", :routing_key => queue_name)
+      ch.default_exchange.publish("", routing_key: queue_name)
       ch.wait_for_confirms
       sleep 0.5
 
@@ -114,7 +114,7 @@ describe Bunny::Consumer, "#cancel" do
 
       t = Thread.new do
         ch         = connection.create_channel(nil, 1, false, 1)
-        q          = ch.queue(queue_name, :auto_delete => true, :durable => false)
+        q          = ch.queue(queue_name, auto_delete: true, durable: false)
 
         consumer   = Bunny::Consumer.new(ch, q)
         consumer.on_delivery do |_, _, payload|
@@ -129,7 +129,7 @@ describe Bunny::Consumer, "#cancel" do
 
       ch = connection.create_channel
       ch.confirm_select
-      ch.default_exchange.publish("", :routing_key => queue_name)
+      ch.default_exchange.publish("", routing_key: queue_name)
       ch.wait_for_confirms
       sleep 0.5
 

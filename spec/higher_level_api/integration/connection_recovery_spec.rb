@@ -171,7 +171,7 @@ describe "Connection recovery" do
   it "recovers server-named queues" do
     with_open do |c|
       ch = c.create_channel
-      q  = ch.queue("", :exclusive => true)
+      q  = ch.queue("", exclusive: true)
       close_all_connections!
       wait_for_recovery_with { connections.any? }
       expect(ch).to be_open
@@ -183,7 +183,7 @@ describe "Connection recovery" do
     with_open do |c|
       ch = c.create_channel
       x  = ch.fanout("amq.fanout")
-      q  = ch.queue("", :exclusive => true)
+      q  = ch.queue("", exclusive: true)
       q.bind(x)
       close_all_connections!
       wait_for_recovery_with { connections.any? }
@@ -305,7 +305,7 @@ describe "Connection recovery" do
       delivered = false
 
       ch = c.create_channel
-      q  = ch.queue("", :exclusive => true)
+      q  = ch.queue("", exclusive: true)
       q.subscribe do |_, _, _|
         delivered = true
       end
@@ -324,7 +324,7 @@ describe "Connection recovery" do
 
     with_open do |c|
       ch = c.create_channel
-      q  = ch.queue("", :exclusive => true)
+      q  = ch.queue("", exclusive: true)
       n.times { q.subscribe { |_, _, _| } }
       close_all_connections!
       wait_for_recovery_with { connections.any? }
@@ -344,7 +344,7 @@ describe "Connection recovery" do
       ch = c.create_channel
 
       n.times do
-        qs << ch.queue("", :exclusive => true)
+        qs << ch.queue("", exclusive: true)
       end
       close_all_connections!
       wait_for_recovery_with { queue_names.include?(qs.first.name) }
