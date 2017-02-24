@@ -223,6 +223,8 @@ describe "Connection recovery" do
   it "recovers passively declared exchanges and their bindings" do
     with_open do |c|
       ch          = c.create_channel
+      ch.confirm_select
+
       source      = ch.fanout("amq.fanout", passive: true)
       destination = ch.fanout("destination.exchange.recovery.example", auto_delete: true)
 
@@ -238,11 +240,11 @@ describe "Connection recovery" do
 
       close_all_connections!
 
-      wait_for_recovery_with { exchange_names_in_vhost("/").include?(source.name) }
-      ch.confirm_select
+      wait_for_recovery_with { connections.any? }
 
       source.publish("msg", routing_key: "")
       ch.wait_for_confirms
+
       expect(dst_queue.message_count).to eq 1
       destination.delete
     end
