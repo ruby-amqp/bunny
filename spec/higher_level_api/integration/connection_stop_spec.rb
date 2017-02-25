@@ -16,9 +16,9 @@ describe Bunny::Session do
     sleep 1.1
     c = http_client.
       list_connections.
-      find   { |conn_info| conn_info.peer_port.to_i == client_port }
+      find   { |conn_info| conn_info && conn_info.peer_port.to_i == client_port }
 
-    http_client.close_connection(c.name)
+    http_client.close_connection(c.name) if c
   end
 
   def wait_for_recovery
