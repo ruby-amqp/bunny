@@ -2,7 +2,7 @@ require "spec_helper"
 
 describe Bunny::Channel, "#nack" do
   let(:connection) do
-    c = Bunny.new(:user => "bunny_gem", :password => "bunny_password", :vhost => "bunny_testbed")
+    c = Bunny.new(username: "bunny_gem", password: "bunny_password", vhost: "bunny_testbed")
     c.start
     c
   end
@@ -17,10 +17,10 @@ describe Bunny::Channel, "#nack" do
 
   context "with requeue = false" do
     it "rejects a message" do
-      q = subject.queue("bunny.basic.nack.with-requeue-false", :exclusive => true)
+      q = subject.queue("bunny.basic.nack.with-requeue-false", exclusive: true)
       x = subject.default_exchange
 
-      x.publish("bunneth", :routing_key => q.name)
+      x.publish("bunneth", routing_key: q.name)
       sleep(0.5)
       expect(q.message_count).to eq 1
       delivery_info, _, content = q.pop(:manual_ack => true)
@@ -30,7 +30,7 @@ describe Bunny::Channel, "#nack" do
       subject.close
 
       ch = connection.create_channel
-      q = ch.queue("bunny.basic.nack.with-requeue-false", :exclusive => true)
+      q = ch.queue("bunny.basic.nack.with-requeue-false", exclusive: true)
       expect(q.message_count).to eq 0
       ch.close
     end
@@ -38,11 +38,11 @@ describe Bunny::Channel, "#nack" do
 
   context "with multiple = true" do
     it "rejects multiple messages" do
-q = subject.queue("bunny.basic.nack.with-requeue-true-multi-true", :exclusive => true)
+q = subject.queue("bunny.basic.nack.with-requeue-true-multi-true", exclusive: true)
       x = subject.default_exchange
 
       3.times do
-        x.publish("bunneth", :routing_key => q.name)
+        x.publish("bunneth", routing_key: q.name)
       end
       sleep(0.5)
       expect(q.message_count).to eq 3
@@ -61,10 +61,10 @@ q = subject.queue("bunny.basic.nack.with-requeue-true-multi-true", :exclusive =>
 
   context "with an invalid (random) delivery tag" do
     it "causes a channel-level error" do
-      q = subject.queue("bunny.basic.nack.unknown-delivery-tag", :exclusive => true)
+      q = subject.queue("bunny.basic.nack.unknown-delivery-tag", exclusive: true)
       x = subject.default_exchange
 
-      x.publish("bunneth", :routing_key => q.name)
+      x.publish("bunneth", routing_key: q.name)
       sleep(0.25)
       expect(q.message_count).to eq 1
       _, _, content = q.pop(:manual_ack => true)

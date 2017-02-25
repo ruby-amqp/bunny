@@ -2,7 +2,7 @@ require "spec_helper"
 
 describe Bunny::Queue, "#subscribe" do
   let(:connection) do
-    c = Bunny.new(:user => "bunny_gem", :password => "bunny_password", :vhost => "bunny_testbed")
+    c = Bunny.new(username: "bunny_gem", password: "bunny_password", vhost: "bunny_testbed")
     c.start
     c
   end
@@ -20,8 +20,8 @@ describe Bunny::Queue, "#subscribe" do
 
     t = Thread.new do
       ch = connection.create_channel
-      q = ch.queue(queue_name, :auto_delete => true, :durable => false)
-      q.subscribe(:exclusive => true, :manual_ack => false) do |delivery_info, properties, payload|
+      q = ch.queue(queue_name, auto_delete: true, durable: false)
+      q.subscribe(exclusive: true, :manual_ack => false) do |delivery_info, properties, payload|
         metadata = properties
         envelope = delivery_info
       end
@@ -32,7 +32,7 @@ describe Bunny::Queue, "#subscribe" do
     ch = connection.create_channel
     x  = ch.default_exchange
     x.publish("hello",
-              :routing_key => queue_name,
+              routing_key: queue_name,
               :app_id      => "bunny.example",
               :priority    => 8,
               :type        => "kinda.checkin",

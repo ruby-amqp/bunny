@@ -316,12 +316,28 @@ describe Bunny::Session do
     context "initialized with :ssl => true" do
       let(:subject) do
         described_class.new(:user     => "bunny_gem",
-          :password => "bunny_password",
+          password: "bunny_password",
           :vhost    => "bunny_testbed",
           :ssl                   => true,
           :ssl_cert              => "spec/tls/client_cert.pem",
           :ssl_key               => "spec/tls/client_key.pem",
           :ssl_ca_certificates   => ["./spec/tls/cacert.pem"])
+      end
+
+      it "uses TLS port" do
+        expect(subject.port).to eq tls_port
+      end
+    end
+
+    context "initialized with :tls => true" do
+      let(:subject) do
+        described_class.new(:user     => "bunny_gem",
+          password: "bunny_password",
+          :vhost    => "bunny_testbed",
+          :tls                   => true,
+          :tls_cert              => "spec/tls/client_certificate.pem",
+          :tls_key               => "spec/tls/client_key.pem",
+          :tls_ca_certificates   => ["./spec/tls/ca_certificate.pem"])
       end
 
       it "uses TLS port" do
@@ -342,7 +358,7 @@ describe Bunny::Session do
     let(:vhost)    { "bunny_testbed" }
 
     subject do
-      described_class.new(:hostname => host, :username => username, :password => password, :virtual_host => vhost)
+      described_class.new(:hostname => host, username: username, password: password, :virtual_host => vhost)
     end
 
     it "successfully connects" do
@@ -394,7 +410,7 @@ describe Bunny::Session do
     let(:vhost)    { "bunny_testbed" }
 
     subject do
-      described_class.new(:hostname => host, :user => username, :pass => password, :vhost => vhost)
+      described_class.new(:hostname => host, username: username, :pass => password, vhost: vhost)
     end
 
     it "successfully connects" do
@@ -442,7 +458,7 @@ describe Bunny::Session do
     let(:interval) { 1 }
 
     subject do
-      described_class.new(:hostname => host, :user => username, :pass => password, :vhost => vhost, :heartbeat_interval => interval)
+      described_class.new(:hostname => host, username: username, :pass => password, vhost: vhost, :heartbeat_interval => interval)
     end
 
     it "successfully connects" do
@@ -473,7 +489,7 @@ describe Bunny::Session do
     let(:vhost)    { "___sd89aysd98789" }
 
     subject do
-      described_class.new(:hostname => host, :user => username, :pass => password, :vhost => vhost)
+      described_class.new(:hostname => host, username: username, :pass => password, vhost: vhost)
     end
 
     it "fails to connect" do

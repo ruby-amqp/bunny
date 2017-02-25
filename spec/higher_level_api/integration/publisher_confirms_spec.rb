@@ -16,11 +16,11 @@ describe Bunny::Channel do
         ch.confirm_select
         expect(ch).to be_using_publisher_confirmations
 
-        q  = ch.queue("", :exclusive => true)
+        q  = ch.queue("", exclusive: true)
         x  = ch.default_exchange
 
         n.times do
-          x.publish("xyzzy", :routing_key => q.name)
+          x.publish("xyzzy", routing_key: q.name)
         end
 
         expect(ch.next_publish_seq_no).to eq n + 1
@@ -41,11 +41,11 @@ describe Bunny::Channel do
           ch.confirm_select
           expect(ch).to be_using_publisher_confirmations
 
-          q  = ch.queue("", :exclusive => true)
+          q  = ch.queue("", exclusive: true)
           x  = ch.default_exchange
 
           n.times do
-            x.publish("xyzzy", :routing_key => q.name)
+            x.publish("xyzzy", routing_key: q.name)
           end
 
           expect(ch.next_publish_seq_no).to eq n + 1
@@ -82,11 +82,11 @@ describe Bunny::Channel do
           ch.confirm_select
           expect(ch).to be_using_publisher_confirmations
 
-          q  = ch.queue("", :exclusive => true)
+          q  = ch.queue("", exclusive: true)
           x  = ch.default_exchange
 
           n.times do
-            x.publish("xyzzy", :routing_key => q.name)
+            x.publish("xyzzy", routing_key: q.name)
           end
 
           #be sneaky to simulate a nack
@@ -118,7 +118,7 @@ describe Bunny::Channel do
 
   context "with a multi-threaded connection" do
     let(:connection) do
-      c = Bunny.new(:user => "bunny_gem", :password => "bunny_password", :vhost => "bunny_testbed", :continuation_timeout => 10000)
+      c = Bunny.new(username: "bunny_gem", password: "bunny_password", vhost: "bunny_testbed", :continuation_timeout => 10000)
       c.start
       c
     end
@@ -181,7 +181,7 @@ describe Bunny::Channel do
 
   context "with a single-threaded connection" do
     let(:connection) do
-      c = Bunny.new(:user => "bunny_gem", :password => "bunny_password", :vhost => "bunny_testbed", :continuation_timeout => 10000, :threaded => false)
+      c = Bunny.new(username: "bunny_gem", password: "bunny_password", vhost: "bunny_testbed", :continuation_timeout => 10000, :threaded => false)
       c.start
       c
     end

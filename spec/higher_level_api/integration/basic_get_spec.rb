@@ -2,7 +2,7 @@ require "spec_helper"
 
 describe Bunny::Queue, "#pop" do
   let(:connection) do
-    c = Bunny.new(:user => "bunny_gem", :password => "bunny_password", :vhost => "bunny_testbed",
+    c = Bunny.new(username: "bunny_gem", password: "bunny_password", vhost: "bunny_testbed",
                   :automatically_recover => false)
     c.start
     c
@@ -16,11 +16,11 @@ describe Bunny::Queue, "#pop" do
     it "fetches a messages which is automatically acknowledged" do
       ch = connection.create_channel
 
-      q  = ch.queue("", :exclusive => true)
+      q  = ch.queue("", exclusive: true)
       x  = ch.default_exchange
 
       msg = "xyzzy"
-      x.publish(msg, :routing_key => q.name)
+      x.publish(msg, routing_key: q.name)
 
       sleep(0.5)
       get_ok, properties, content = q.pop
@@ -41,7 +41,7 @@ describe Bunny::Queue, "#pop" do
     it "returns an empty response" do
       ch = connection.create_channel
 
-      q  = ch.queue("", :exclusive => true)
+      q  = ch.queue("", exclusive: true)
       q.purge
 
       get_empty, properties, content = q.pop

@@ -55,7 +55,7 @@ describe Bunny::Queue do
     it "declares it as durable" do
       ch   = connection.create_channel
 
-      q = ch.queue("bunny.tests.queues.durable", :durable => true)
+      q = ch.queue("bunny.tests.queues.durable", durable: true)
       expect(q).to be_durable
       expect(q).not_to be_auto_delete
       expect(q).not_to be_exclusive
@@ -71,7 +71,7 @@ describe Bunny::Queue do
     it "declares it as exclusive" do
       ch   = connection.create_channel
 
-      q = ch.queue("bunny.tests.queues.exclusive", :exclusive => true)
+      q = ch.queue("bunny.tests.queues.exclusive", exclusive: true)
       expect(q).to be_exclusive
       expect(q).not_to be_durable
       q.delete
@@ -85,7 +85,7 @@ describe Bunny::Queue do
     it "declares it as auto-delete" do
       ch   = connection.create_channel
 
-      q = ch.queue("bunny.tests.queues.auto-delete", :auto_delete => true)
+      q = ch.queue("bunny.tests.queues.auto-delete", auto_delete: true)
       expect(q).to be_auto_delete
       expect(q).not_to be_exclusive
       expect(q).not_to be_durable
@@ -101,10 +101,10 @@ describe Bunny::Queue do
     it "raises an exception" do
       ch   = connection.create_channel
 
-      q = ch.queue("bunny.tests.queues.auto-delete", :auto_delete => true, :durable => false)
+      q = ch.queue("bunny.tests.queues.auto-delete", auto_delete: true, durable: false)
       expect {
         # force re-declaration
-        ch.queue_declare("bunny.tests.queues.auto-delete", :auto_delete => false, :durable => true)
+        ch.queue_declare("bunny.tests.queues.auto-delete", auto_delete: false, durable: true)
       }.to raise_error(Bunny::PreconditionFailed)
 
       expect(ch).to be_closed
@@ -121,7 +121,7 @@ describe Bunny::Queue do
     it "causes all messages in it to have a TTL" do
       ch   = connection.create_channel
 
-      q = ch.queue("bunny.tests.queues.with-arguments.ttl", :arguments => args, :exclusive => true)
+      q = ch.queue("bunny.tests.queues.with-arguments.ttl", arguments:  args, exclusive: true)
       expect(q.arguments).to eq args
 
       q.publish("xyzzy")
@@ -199,7 +199,7 @@ describe Bunny::Queue do
       it "causes the queue to be bounded" do
         ch   = connection.create_channel
 
-        q = ch.queue("bunny.tests.queues.with-arguments.max-length", :arguments => args, :exclusive => true)
+        q = ch.queue("bunny.tests.queues.with-arguments.max-length", arguments:  args, exclusive: true)
         expect(q.arguments).to eq args
 
         (n * 10).times do
