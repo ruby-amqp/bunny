@@ -48,7 +48,7 @@ Specific examples:
 
 Modern Bunny versions support
 
- * CRuby 2.0 through 2.3
+ * CRuby 2.0 through 2.4
 
 Bunny works sufficiently well on JRuby but there are known
 JRuby bugs in versions prior to JRuby 9000 that cause high CPU burn. JRuby users should
@@ -88,7 +88,7 @@ gem install bunny
 To use Bunny in a project managed with Bundler:
 
 ``` ruby
-gem "bunny", ">= 2.5.1"
+gem "bunny", ">= 2.6.3"
 ```
 
 
