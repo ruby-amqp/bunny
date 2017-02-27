@@ -10,8 +10,9 @@ unless ENV["CI"]
     end
 
     after :all do
-      @connection1.close if @connection1.open?
-      @connection2.close if @connection2.open?
+      [@connection1, @connection2].select { |c| !!c }.each do |c|
+        c.close if c.open?
+      end
     end
 
 
