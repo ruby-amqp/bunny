@@ -31,8 +31,9 @@ describe "Connection recovery" do
     with_open do |c|
       ch1 = c.create_channel
       ch2 = c.create_channel
+      sleep 1.5
       close_all_connections!
-      sleep 1.0
+      sleep 0.5
       poll_until { channels.count == 2 }
       expect(ch1).to be_open
       expect(ch2).to be_open
@@ -43,8 +44,9 @@ describe "Connection recovery" do
     with_open_multi_host do |c|
       ch1 = c.create_channel
       ch2 = c.create_channel
+      sleep 1.5
       close_all_connections!
-      sleep 1.0
+      sleep 0.5
       poll_until { channels.count == 2 }
       expect(ch1).to be_open
       expect(ch2).to be_open
@@ -55,8 +57,9 @@ describe "Connection recovery" do
     with_open_multi_broken_host do |c|
       ch1 = c.create_channel
       ch2 = c.create_channel
+      sleep 1.5
       close_all_connections!
-      sleep 1.0
+      sleep 0.5
       poll_until { channels.count == 2 }
       expect(ch1).to be_open
       expect(ch2).to be_open
@@ -69,7 +72,9 @@ describe "Connection recovery" do
       ch.prefetch(11)
       expect(ch.prefetch_count).to eq 11
       expect(ch.prefetch_global).to be false
+      sleep 1.5
       close_all_connections!
+      sleep 0.5
       wait_for_recovery_with { connections.any? }
       expect(ch).to be_open
       expect(ch.prefetch_count).to eq 11
@@ -83,7 +88,9 @@ describe "Connection recovery" do
       ch.prefetch(42, true)
       expect(ch.prefetch_count).to eq 42
       expect(ch.prefetch_global).to be true
+      sleep 1.5
       close_all_connections!
+      sleep 0.5
       wait_for_recovery_with { connections.any? }
       expect(ch).to be_open
       expect(ch.prefetch_count).to eq 42
@@ -96,7 +103,9 @@ describe "Connection recovery" do
       ch = c.create_channel
       ch.confirm_select
       expect(ch).to be_using_publisher_confirms
+      sleep 1.5
       close_all_connections!
+      sleep 0.5
       wait_for_recovery_with { connections.any? }
       expect(ch).to be_open
       expect(ch).to be_using_publisher_confirms
@@ -108,7 +117,9 @@ describe "Connection recovery" do
       ch = c.create_channel
       ch.tx_select
       expect(ch).to be_using_tx
+      sleep 1.5
       close_all_connections!
+      sleep 0.5
       wait_for_recovery_with { connections.any? }
       expect(ch).to be_open
       expect(ch).to be_using_tx
