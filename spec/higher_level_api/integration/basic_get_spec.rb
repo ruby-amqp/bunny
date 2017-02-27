@@ -3,7 +3,7 @@ require "spec_helper"
 describe Bunny::Queue, "#pop" do
   let(:connection) do
     c = Bunny.new(username: "bunny_gem", password: "bunny_password", vhost: "bunny_testbed",
-                  :automatically_recover => false)
+                  automatically_recover: false)
     c.start
     c
   end

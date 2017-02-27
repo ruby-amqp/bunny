@@ -2,7 +2,7 @@ require "spec_helper"
 
 describe "Registering 2nd exclusive consumer on queue" do
     before :all do
-    @connection = Bunny.new(:user => "bunny_gem", :password => "bunny_password", :vhost => "bunny_testbed")
+    @connection = Bunny.new(:user => "bunny_gem", password:  "bunny_password", :vhost => "bunny_testbed")
     @connection.start
   end
 
@@ -19,13 +19,13 @@ describe "Registering 2nd exclusive consumer on queue" do
     q1  = ch1.queue("", :auto_delete => true)
     q2  = ch2.queue(q1.name, :auto_delete => true, :passive => true)
 
-    c1  = q1.subscribe(:exclusive => true) do |_, _, payload|
+    c1  = q1.subscribe(exclusive: true) do |_, _, payload|
       xs << payload
     end
     sleep 0.1
 
     expect do
-      q2.subscribe(:exclusive => true) do |_, _, _|
+      q2.subscribe(exclusive: true) do |_, _, _|
       end
     end.to raise_error(Bunny::AccessRefused)
 

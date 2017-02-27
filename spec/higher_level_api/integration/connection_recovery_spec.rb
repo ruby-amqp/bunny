@@ -352,7 +352,7 @@ describe "Connection recovery" do
       expect(ch).to be_open
 
       qs.each do |q|
-        ch.queue_declare(q.name, :passive => true)
+        ch.queue_declare(q.name, passive: true)
       end
     end
   end

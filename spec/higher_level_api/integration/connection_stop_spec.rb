@@ -16,7 +16,7 @@ describe Bunny::Session do
   end
 
   it "can be closed" do
-    c  = Bunny.new(:automatically_recover => false)
+    c  = Bunny.new(automatically_recover: false)
     c.start
     ch = c.create_channel
 
@@ -26,7 +26,7 @@ describe Bunny::Session do
   end
 
   it "can be closed twice (Session#close is idempotent)" do
-    c  = Bunny.new(:automatically_recover => false)
+    c  = Bunny.new(automatically_recover: false)
     c.start
     ch = c.create_channel
 
@@ -39,7 +39,7 @@ describe Bunny::Session do
 
   describe "in a single threaded mode" do
     it "can be closed" do
-      c  = Bunny.new(:automatically_recover => false, :threaded => false)
+      c  = Bunny.new(automatically_recover: false, threaded: false)
       c.start
       ch = c.create_channel
 

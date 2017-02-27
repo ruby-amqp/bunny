@@ -36,7 +36,7 @@ describe Bunny::Queue, "#subscribe" do
         ch = consumer_connection.create_channel
         # this connection is read only, use passive declare to only get
         # a reference to the queue
-        q  = ch.queue(queue_name, auto_delete: true, durable: false, :passive => true)
+        q  = ch.queue(queue_name, auto_delete: true, durable: false, passive: true)
         q.subscribe(exclusive: false) do |delivery_info, properties, payload|
           delivered_keys << delivery_info.routing_key
           delivered_data << payload

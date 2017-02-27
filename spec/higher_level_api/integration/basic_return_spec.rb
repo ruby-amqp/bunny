@@ -12,7 +12,7 @@ describe Bunny::Exchange, "#publish" do
   end
 
 
-  context "with :mandatory => true and a bad [no routes] routing key" do
+  context "with mandatory: true and a bad [no routes] routing key" do
     it "causes a message to be returned" do
       ch = connection.create_channel
       x  = ch.default_exchange
@@ -22,7 +22,7 @@ describe Bunny::Exchange, "#publish" do
         returned << content
       end
 
-      x.publish("xyzzy", routing_key: rand.to_s, :mandatory => true)
+      x.publish("xyzzy", routing_key: rand.to_s, mandatory: true)
       sleep 0.5
 
       expect(returned).to include("xyzzy")
