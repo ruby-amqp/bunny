@@ -20,7 +20,7 @@ describe "Published message" do
       q.bind(x)
 
       rk = "a" * 254
-      x.publish("xyzzy", routing_key: rk, :persistent => true)
+      x.publish("xyzzy", routing_key: rk, persistent: true)
 
       sleep(1)
       expect(q.message_count).to eq 1
@@ -42,7 +42,7 @@ describe "Published message" do
       q.bind(x)
 
       rk = "a" * 255
-      x.publish("xyzzy", routing_key: rk, :persistent => true)
+      x.publish("xyzzy", routing_key: rk, persistent: true)
 
       sleep(1)
       expect(q.message_count).to eq 1
@@ -65,7 +65,7 @@ describe "Published message" do
 
       rk = "a" * 256
       expect do
-        x.publish("xyzzy", routing_key: rk, :persistent => true)
+        x.publish("xyzzy", routing_key: rk, persistent: true)
       end.to raise_error(ArgumentError)
 
       ch.close

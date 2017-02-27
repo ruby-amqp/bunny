@@ -5,7 +5,7 @@ unless ENV["CI"]
   describe "Message framing implementation" do
     let(:connection) do
       c = Bunny.new(:user     => "bunny_gem",
-        :password => "bunny_password",
+        password:  "bunny_password",
         :vhost    => "bunny_testbed",
         :port     => ENV.fetch("RABBITMQ_PORT", 5672))
       c.start
@@ -21,11 +21,11 @@ unless ENV["CI"]
       it "successfully frames the message" do
         ch = connection.create_channel
 
-        q  = ch.queue("", :exclusive => true)
+        q  = ch.queue("", exclusive: true)
         x  = ch.default_exchange
 
         as = ("a" * 272179)
-        x.publish(as, :routing_key => q.name, :persistent => true)
+        x.publish(as, routing_key:  q.name, persistent: true)
 
         sleep(1)
         expect(q.message_count).to eq 1

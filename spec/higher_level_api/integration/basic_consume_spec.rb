@@ -22,7 +22,7 @@ describe Bunny::Queue, "#subscribe" do
       t = Thread.new do
         ch = connection.create_channel
         q = ch.queue(queue_name, auto_delete: true, durable: false)
-        q.subscribe(exclusive: false, :manual_ack => false) do |delivery_info, properties, payload|
+        q.subscribe(exclusive: false, manual_ack: false) do |delivery_info, properties, payload|
           delivered_keys << delivery_info.routing_key
           delivered_data << payload
         end
@@ -51,7 +51,7 @@ describe Bunny::Queue, "#subscribe" do
 
         cch = connection.create_channel
         q = cch.queue(queue_name, auto_delete: true, durable: false)
-        q.subscribe(exclusive: false, :manual_ack => false) do |delivery_info, properties, payload|
+        q.subscribe(exclusive: false, manual_ack: false) do |delivery_info, properties, payload|
           delivery_tags << delivery_info.delivery_tag
         end
         sleep 0.5
@@ -82,7 +82,7 @@ describe Bunny::Queue, "#subscribe" do
         q   = cch.queue(queue_name, auto_delete: true, durable: false)
 
         7.times do
-          q.subscribe(exclusive: false, :manual_ack => false) do |delivery_info, properties, payload|
+          q.subscribe(exclusive: false, manual_ack: false) do |delivery_info, properties, payload|
             delivery_tags << delivery_info.delivery_tag
           end
         end
@@ -114,7 +114,7 @@ describe Bunny::Queue, "#subscribe" do
       t = Thread.new do
         ch = connection.create_channel
         q = ch.queue(queue_name, auto_delete: true, durable: false)
-        q.subscribe(exclusive: false, :manual_ack => true) do |delivery_info, properties, payload|
+        q.subscribe(exclusive: false, manual_ack: true) do |delivery_info, properties, payload|
           delivered_keys << delivery_info.routing_key
           delivered_data << payload
 
@@ -159,7 +159,7 @@ describe Bunny::Queue, "#subscribe" do
         t = Thread.new do
           ch = connection.create_channel
           q = ch.queue(queue_name, auto_delete: true, durable: false)
-          q.subscribe(exclusive: false, :manual_ack => false) do |delivery_info, properties, payload|
+          q.subscribe(exclusive: false, manual_ack: false) do |delivery_info, properties, payload|
             delivered_keys << delivery_info.routing_key
             delivered_data << payload
           end
@@ -189,17 +189,17 @@ describe Bunny::Queue, "#subscribe" do
         ch = connection.create_channel
         q  = ch.queue(queue_name)
 
-        c1  = q.subscribe(exclusive: false, :manual_ack => false, :block => false) do |delivery_info, properties, payload|
+        c1  = q.subscribe(exclusive: false, manual_ack: false, block: false) do |delivery_info, properties, payload|
         end
         c1.cancel
 
-        c2  = q.subscribe(exclusive: false, :manual_ack => false, :block => false) do |delivery_info, properties, payload|
+        c2  = q.subscribe(exclusive: false, manual_ack: false, block: false) do |delivery_info, properties, payload|
           delivered_keys << delivery_info.routing_key
           delivered_data << payload
         end
         c2.cancel
 
-        q.subscribe(exclusive: false, :manual_ack => false, :block => true) do |delivery_info, properties, payload|
+        q.subscribe(exclusive: false, manual_ack: false, block: true) do |delivery_info, properties, payload|
           delivered_keys << delivery_info.routing_key
           delivered_data << payload
         end
@@ -237,7 +237,7 @@ describe Bunny::Queue, "#subscribe" do
             caught = e
           end
 
-          q.subscribe(exclusive: false, :manual_ack => false) do |delivery_info, properties, payload|
+          q.subscribe(exclusive: false, manual_ack: false) do |delivery_info, properties, payload|
             raise RuntimeError.new(queue_name)
           end
         end
@@ -267,7 +267,7 @@ describe Bunny::Queue, "#subscribe" do
           ch = connection.create_channel
           q  = ch.queue(queue_name, auto_delete: true, durable: false)
 
-          q.subscribe(exclusive: false, :manual_ack => false) do |delivery_info, properties, payload|
+          q.subscribe(exclusive: false, manual_ack: false) do |delivery_info, properties, payload|
             raise RuntimeError.new(queue_name)
           end
         end
@@ -294,7 +294,7 @@ describe Bunny::Queue, "#subscribe" do
 
         cch = connection.create_channel
         q = cch.queue(queue_name, auto_delete: true, durable: false)
-        q.subscribe(exclusive: false, :manual_ack => false) do |delivery_info, properties, payload|
+        q.subscribe(exclusive: false, manual_ack: false) do |delivery_info, properties, payload|
           delivery_tags << delivery_info.delivery_tag
         end
         sleep 0.5
@@ -325,7 +325,7 @@ describe Bunny::Queue, "#subscribe" do
         q   = cch.queue(queue_name, auto_delete: true, durable: false)
 
         7.times do
-          q.subscribe(exclusive: false, :manual_ack => false) do |delivery_info, properties, payload|
+          q.subscribe(exclusive: false, manual_ack: false) do |delivery_info, properties, payload|
             delivery_tags << delivery_info.delivery_tag
           end
         end
