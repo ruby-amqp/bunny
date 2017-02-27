@@ -171,7 +171,7 @@ describe Bunny::Queue do
     context "when a queue exists" do
       it "returns true" do
         ch = connection.create_channel
-        q  = ch.queue("", :exlusive => true)
+        q  = ch.queue("", exlusive: true)
 
         expect(connection.queue_exists?(q.name)).to eq true
       end

@@ -20,7 +20,7 @@ describe Bunny::Channel, "#ack" do
       x.publish("bunneth", routing_key: q.name)
       sleep 0.5
       expect(q.message_count).to eq 1
-      delivery_details, properties, content = q.pop(:manual_ack => true)
+      delivery_details, properties, content = q.pop(manual_ack: true)
 
       ch.ack(delivery_details.delivery_tag, true)
       ch.close
@@ -42,8 +42,8 @@ describe Bunny::Channel, "#ack" do
       x.publish("bunneth", routing_key: q.name)
       sleep 0.5
       expect(q.message_count).to eq 2
-      delivery_details_1, _properties, _content = q.pop(:manual_ack => true)
-      delivery_details_2, _properties, _content = q.pop(:manual_ack => true)
+      delivery_details_1, _properties, _content = q.pop(manual_ack: true)
+      delivery_details_2, _properties, _content = q.pop(manual_ack: true)
 
       ch.ack(delivery_details_2.delivery_tag, true)
       ch.close
@@ -65,8 +65,8 @@ describe Bunny::Channel, "#ack" do
       x.publish("bunneth", routing_key: q.name)
       sleep 0.5
       expect(q.message_count).to eq 2
-      delivery_details_1, _properties, _content = q.pop(:manual_ack => true)
-      delivery_details_2, _properties, _content = q.pop(:manual_ack => true)
+      delivery_details_1, _properties, _content = q.pop(manual_ack: true)
+      delivery_details_2, _properties, _content = q.pop(manual_ack: true)
 
       ch.ack(delivery_details_2.delivery_tag, false)
       ch.close
@@ -84,7 +84,7 @@ describe Bunny::Channel, "#ack" do
       q  = ch.queue("bunny.basic.ack.manual-acks", exclusive: true)
       x  = ch.default_exchange
 
-      q.subscribe(:manual_ack => false) do |delivery_info, properties, payload|
+      q.subscribe(manual_ack: false) do |delivery_info, properties, payload|
         ch.ack(delivery_info.delivery_tag, false)
       end
 
@@ -105,7 +105,7 @@ describe Bunny::Channel, "#ack" do
       x.publish("bunneth", routing_key: q.name)
       sleep 0.5
       expect(q.message_count).to eq 1
-      _, _, content = q.pop(:manual_ack => true)
+      _, _, content = q.pop(manual_ack: true)
 
       ch.on_error do |ch, channel_close|
         @channel_close = channel_close
@@ -130,7 +130,7 @@ describe Bunny::Channel, "#ack" do
       orig_stderr = $stderr
       $stderr = StringIO.new
 
-      delivery_details, properties, content = q.pop(:ack => true)
+      delivery_details, properties, content = q.pop(ack: true)
 
       $stderr.rewind
       expect($stderr.string.chomp).to eq("[DEPRECATION] `:ack` is deprecated.  Please use `:manual_ack` instead.\n[DEPRECATION] `:ack` is deprecated.  Please use `:manual_ack` instead.")
@@ -169,8 +169,8 @@ describe Bunny::Channel, "#basic_ack" do
       x.publish("bunneth", routing_key: q.name)
       sleep 0.5
       expect(q.message_count).to eq 2
-      delivery_details_1, _properties, _content = q.pop(:manual_ack => true)
-      delivery_details_2, _properties, _content = q.pop(:manual_ack => true)
+      delivery_details_1, _properties, _content = q.pop(manual_ack: true)
+      delivery_details_2, _properties, _content = q.pop(manual_ack: true)
 
       ch.basic_ack(delivery_details_2.delivery_tag.to_i, true)
       ch.close
@@ -192,8 +192,8 @@ describe Bunny::Channel, "#basic_ack" do
       x.publish("bunneth", routing_key: q.name)
       sleep 0.5
       expect(q.message_count).to eq 2
-      delivery_details_1, _properties, _content = q.pop(:manual_ack => true)
-      delivery_details_2, _properties, _content = q.pop(:manual_ack => true)
+      delivery_details_1, _properties, _content = q.pop(manual_ack: true)
+      delivery_details_2, _properties, _content = q.pop(manual_ack: true)
 
       ch.basic_ack(delivery_details_2.delivery_tag.to_i, false)
       ch.close
@@ -215,8 +215,8 @@ describe Bunny::Channel, "#basic_ack" do
       x.publish("bunneth", routing_key: q.name)
       sleep 0.5
       expect(q.message_count).to eq 2
-      delivery_details_1, _properties, _content = q.pop(:manual_ack => true)
-      delivery_details_2, _properties, _content = q.pop(:manual_ack => true)
+      delivery_details_1, _properties, _content = q.pop(manual_ack: true)
+      delivery_details_2, _properties, _content = q.pop(manual_ack: true)
 
       ch.basic_ack(delivery_details_2.delivery_tag.to_i)
       ch.close

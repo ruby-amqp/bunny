@@ -21,7 +21,7 @@ describe Bunny::Queue, "#subscribe" do
     t = Thread.new do
       ch = connection.create_channel
       q = ch.queue(queue_name, auto_delete: true, durable: false)
-      q.subscribe(exclusive: true, :manual_ack => false) do |delivery_info, properties, payload|
+      q.subscribe(exclusive: true, manual_ack: false) do |delivery_info, properties, payload|
         metadata = properties
         envelope = delivery_info
       end
@@ -33,27 +33,27 @@ describe Bunny::Queue, "#subscribe" do
     x  = ch.default_exchange
     x.publish("hello",
               routing_key: queue_name,
-              :app_id      => "bunny.example",
-              :priority    => 8,
-              :type        => "kinda.checkin",
+              app_id: "bunny.example",
+              priority: 8,
+              type: "kinda.checkin",
               # headers table keys can be anything
-              :headers     => {
-                :coordinates => {
-                  :latitude  => 59.35,
-                  :longitude => 18.066667
+              headers: {
+                coordinates: {
+                  latitude: 59.35,
+                  longitude: 18.066667
                 },
-                :time         => @now,
-                :participants => 11,
-                :venue        => "Stockholm",
-                :true_field   => true,
-                :false_field  => false,
-                :nil_field    => nil,
-                :ary_field    => ["one", 2.0, 3, [{"abc" => 123}]]
+                time: @now,
+                participants: 11,
+                venue: "Stockholm",
+                true_field: true,
+                false_field: false,
+                nil_field: nil,
+                ary_field: ["one", 2.0, 3, [{"abc" => 123}]]
               },
-              :timestamp      => @now.to_i,
-              :reply_to       => "a.sender",
-              :correlation_id => "r-1",
-              :message_id     => "m-1")
+              timestamp: @now.to_i,
+              reply_to: "a.sender",
+              correlation_id: "r-1",
+              message_id: "m-1")
 
     sleep 0.7
 

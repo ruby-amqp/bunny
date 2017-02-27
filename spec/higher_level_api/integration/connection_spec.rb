@@ -78,7 +78,7 @@ describe Bunny::Session do
   unless ENV["CI"]
     context "initialized with TCP connection timeout = 5" do
       it "successfully connects" do
-        conn = described_class.new(:connection_timeout => 5)
+        conn = described_class.new(connection_timeout: 5)
         conn.start
         expect(conn).to be_connected
 
@@ -95,14 +95,14 @@ describe Bunny::Session do
       end
     end
 
-    context "initialized with :host => 127.0.0.1" do
+    context "initialized with hostname: 127.0.0.1" do
       after :each do
         subject.close if subject.open?
       end
 
       let(:host)  { "127.0.0.1" }
       subject do
-        described_class.new(:host => host)
+        described_class.new(hostname: host)
       end
 
       it "uses hostname = 127.0.0.1" do
@@ -119,13 +119,13 @@ describe Bunny::Session do
       end
     end
 
-    context "initialized with :hostname => localhost" do
+    context "initialized with hostname: localhost" do
       after :each do
         subject.close if subject.open?
       end
 
       let(:host)    { "localhost" }
-      let(:subject) { described_class.new(:hostname => host) }
+      let(:subject) { described_class.new(hostname: host) }
 
       it "uses hostname = localhost" do
         expect(subject.host).to eq host
@@ -142,14 +142,14 @@ describe Bunny::Session do
       end
     end
 
-    context "initialized with :hosts => [...]" do
+    context "initialized with a list of hosts" do
       after :each do
         subject.close if subject.open?
       end
 
       let(:host)    { "192.168.1.10" }
       let(:hosts)   { [host] }
-      let(:subject) { described_class.new(:hosts => hosts) }
+      let(:subject) { described_class.new(hosts: hosts) }
 
       it "uses hostname = 192.168.1.10" do
         expect(subject.host).to eq host
@@ -166,7 +166,7 @@ describe Bunny::Session do
       end
     end
 
-    context "initialized with :addresses => [...]" do
+    context "initialized with a list of addresses" do
       after :each do
         subject.close if subject.open?
       end
@@ -175,7 +175,7 @@ describe Bunny::Session do
       let(:port)      { 5673 }
       let(:address)   { "#{host}:#{port}" }
       let(:addresses) { [address] }
-      let(:subject)   { described_class.new(:addresses => addresses) }
+      let(:subject)   { described_class.new(addresses: addresses) }
 
       it "uses hostname = 192.168.1.10" do
         expect(subject.host).to eq host
@@ -192,7 +192,7 @@ describe Bunny::Session do
       end
     end
 
-    context "initialized with :addresses => [...] with quoted IPv6 hostnames" do
+    context "initialized with addresses: [...] with quoted IPv6 hostnames" do
       after :each do
         subject.close if subject.open?
       end
@@ -201,7 +201,7 @@ describe Bunny::Session do
       let(:port)      { 5673 }
       let(:address)   { "#{host}:#{port}" }
       let(:addresses) { [address] }
-      let(:subject)   { described_class.new(:addresses => addresses) }
+      let(:subject)   { described_class.new(addresses: addresses) }
 
       it "uses correct hostname" do
         expect(subject.host).to eq host
@@ -218,7 +218,7 @@ describe Bunny::Session do
       end
     end
 
-    context "initialized with :addresses => [...] with quoted IPv6 hostnames without ports" do
+    context "initialized with addresses: [...] with quoted IPv6 hostnames without ports" do
       after :each do
         subject.close if subject.open?
       end
@@ -226,7 +226,7 @@ describe Bunny::Session do
       let(:host)      { "[2001:db8:85a3:8d3:1319:8a2e:370:7348]" }
       let(:address)   { host }
       let(:addresses) { [address] }
-      let(:subject)   { described_class.new(:addresses => addresses) }
+      let(:subject)   { described_class.new(addresses: addresses) }
 
       it "uses correct hostname" do
         expect(subject.host).to eq host
@@ -243,7 +243,7 @@ describe Bunny::Session do
       end
     end
 
-    context "initialized with :addresses => [...] with an quoted IPv6 hostnames" do
+    context "initialized with addresses: [...] with an quoted IPv6 hostnames" do
       after :each do
         subject.close if subject.open?
       end
@@ -252,7 +252,7 @@ describe Bunny::Session do
       let(:port)      { 5673 }
       let(:address)   { "#{host}:#{port}" }
       let(:addresses) { [address] }
-      let(:subject)   { described_class.new(:addresses => addresses) }
+      let(:subject)   { described_class.new(addresses: addresses) }
 
       it "fails to correctly parse the host (and emits a warning)" do
         expect(subject.host).to eq "2001"
@@ -294,13 +294,13 @@ describe Bunny::Session do
       end
     end
 
-    context "initialized with :channel_max => 4096" do
+    context "initialized with channel_max: 4096" do
       after :each do
         subject.close if subject.open?
       end
 
       let(:channel_max) { 1024 }
-      let(:subject)     { described_class.new(:channel_max => channel_max) }
+      let(:subject)     { described_class.new(channel_max: channel_max) }
 
       # this assumes RabbitMQ has no lower value configured. In 3.2
       # it is 0 (no limit) by default and 1024 is still a fairly low value
@@ -313,15 +313,15 @@ describe Bunny::Session do
       end
     end
 
-    context "initialized with :ssl => true" do
+    context "initialized with ssl: true" do
       let(:subject) do
-        described_class.new(:user     => "bunny_gem",
+        described_class.new(username: "bunny_gem",
           password: "bunny_password",
-          :vhost    => "bunny_testbed",
-          :ssl                   => true,
-          :ssl_cert              => "spec/tls/client_cert.pem",
-          :ssl_key               => "spec/tls/client_key.pem",
-          :ssl_ca_certificates   => ["./spec/tls/cacert.pem"])
+          vhost: "bunny_testbed",
+          ssl:                 true,
+          ssl_cert:            "spec/tls/client_cert.pem",
+          ssl_key:             "spec/tls/client_key.pem",
+          ssl_ca_certificates: ["./spec/tls/cacert.pem"])
       end
 
       it "uses TLS port" do
@@ -329,15 +329,15 @@ describe Bunny::Session do
       end
     end
 
-    context "initialized with :tls => true" do
+    context "initialized with tls: true" do
       let(:subject) do
-        described_class.new(:user     => "bunny_gem",
+        described_class.new(username: "bunny_gem",
           password: "bunny_password",
-          :vhost    => "bunny_testbed",
-          :tls                   => true,
-          :tls_cert              => "spec/tls/client_certificate.pem",
-          :tls_key               => "spec/tls/client_key.pem",
-          :tls_ca_certificates   => ["./spec/tls/ca_certificate.pem"])
+          vhost: "bunny_testbed",
+          tls: true,
+          tls_cert: "spec/tls/client_certificate.pem",
+          tls_key: "spec/tls/client_key.pem",
+          tls_ca_certificates: ["./spec/tls/ca_certificate.pem"])
       end
 
       it "uses TLS port" do
@@ -346,7 +346,7 @@ describe Bunny::Session do
     end
   end
 
-  context "initialized with :host => 127.0.0.1 and non-default credentials" do
+  context "initialized with hostname: 127.0.0.1 and non-default credentials" do
     after :each do
       subject.close if subject.open?
     end
@@ -358,7 +358,7 @@ describe Bunny::Session do
     let(:vhost)    { "bunny_testbed" }
 
     subject do
-      described_class.new(:hostname => host, username: username, password: password, :virtual_host => vhost)
+      described_class.new(hostname: host, username: username, password: password, virtual_host: vhost)
     end
 
     it "successfully connects" do
@@ -398,7 +398,7 @@ describe Bunny::Session do
     end
   end
 
-  context "initialized with :host => 127.0.0.1 and non-default credentials (take 2)" do
+  context "initialized with hostname: 127.0.0.1 and non-default credentials (take 2)" do
     after :each do
       subject.close if subject.open?
     end
@@ -410,7 +410,7 @@ describe Bunny::Session do
     let(:vhost)    { "bunny_testbed" }
 
     subject do
-      described_class.new(:hostname => host, username: username, :pass => password, vhost: vhost)
+      described_class.new(hostname: host, username: username, password: password, vhost: vhost)
     end
 
     it "successfully connects" do
@@ -445,7 +445,7 @@ describe Bunny::Session do
     end
   end
 
-  context "initialized with :host => 127.0.0.1 and non-default credentials (take 2)" do
+  context "initialized with hostname: 127.0.0.1 and non-default credentials (take 2)" do
     after :each do
       subject.close if subject.open?
     end
@@ -458,7 +458,7 @@ describe Bunny::Session do
     let(:interval) { 1 }
 
     subject do
-      described_class.new(:hostname => host, username: username, :pass => password, vhost: vhost, :heartbeat_interval => interval)
+      described_class.new(hostname: host, username: username, password: password, vhost: vhost, heartbeat_interval: interval)
     end
 
     it "successfully connects" do
@@ -481,7 +481,7 @@ describe Bunny::Session do
     end
   end
 
-  context "initialized with :host => 127.0.0.1 and INVALID credentials" do
+  context "initialized with hostname: 127.0.0.1 and INVALID credentials" do
     let(:host)     { "127.0.0.1" }
     # see ./bin/ci/before_build
     let(:username) { "bunny_gem#{Time.now.to_i}" }
@@ -489,7 +489,7 @@ describe Bunny::Session do
     let(:vhost)    { "___sd89aysd98789" }
 
     subject do
-      described_class.new(:hostname => host, username: username, :pass => password, vhost: vhost)
+      described_class.new(hostname: host, username: username, password: password, vhost: vhost)
     end
 
     it "fails to connect" do
@@ -510,14 +510,14 @@ describe Bunny::Session do
   context "initialized with unreachable host or port" do
     it "fails to connect" do
       expect do
-        c = described_class.new(:port => 38000)
+        c = described_class.new(port: 38000)
         c.start
       end.to raise_error(Bunny::TCPConnectionFailed)
     end
 
     it "is not connected" do
       begin
-        c = described_class.new(:port => 38000)
+        c = described_class.new(port: 38000)
         c.start
       rescue Bunny::TCPConnectionFailed => e
         true
@@ -528,7 +528,7 @@ describe Bunny::Session do
 
     it "is not open" do
       begin
-        c = described_class.new(:port => 38000)
+        c = described_class.new(port: 38000)
         c.start
       rescue Bunny::TCPConnectionFailed => e
         true
@@ -543,7 +543,7 @@ describe Bunny::Session do
     let(:logger)  { ::Logger.new(io) }
 
     it "uses provided logger" do
-      conn = described_class.new(:logger => logger)
+      conn = described_class.new(logger: logger)
       conn.start
 
       expect(io.string.length).to be > 100
@@ -553,7 +553,7 @@ describe Bunny::Session do
 
     it "doesn't reassign the logger's progname attribute" do
       expect(logger).not_to receive(:progname=)
-      described_class.new(:logger => logger)
+      described_class.new(logger: logger)
     end
   end
 end

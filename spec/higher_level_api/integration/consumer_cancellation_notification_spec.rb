@@ -22,7 +22,7 @@ describe Bunny::Channel do
         ch2 = connection.create_channel
         q   = ch2.queue(queue_name, auto_delete: true)
 
-        q.subscribe(:on_cancellation => Proc.new { cancelled = true })
+        q.subscribe(on_cancellation: Proc.new { cancelled = true })
       end
       t.abort_on_exception = true
 
