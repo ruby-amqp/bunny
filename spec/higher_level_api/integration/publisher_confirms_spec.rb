@@ -118,7 +118,7 @@ describe Bunny::Channel do
 
   context "with a multi-threaded connection" do
     let(:connection) do
-      c = Bunny.new(username: "bunny_gem", password: "bunny_password", vhost: "bunny_testbed", :continuation_timeout => 10000)
+      c = Bunny.new(username: "bunny_gem", password: "bunny_password", vhost: "bunny_testbed", continuation_timeout: 10000)
       c.start
       c
     end
@@ -181,7 +181,7 @@ describe Bunny::Channel do
 
   context "with a single-threaded connection" do
     let(:connection) do
-      c = Bunny.new(username: "bunny_gem", password: "bunny_password", vhost: "bunny_testbed", :continuation_timeout => 10000, :threaded => false)
+      c = Bunny.new(username: "bunny_gem", password: "bunny_password", vhost: "bunny_testbed", continuation_timeout: 10000, threaded: false)
       c.start
       c
     end

@@ -2,10 +2,10 @@ require "spec_helper"
 
 describe "Message framing implementation" do
     before :all do
-    @connection = Bunny.new(:user     => "bunny_gem",
-                  :password => "bunny_password",
-                  :vhost    => "bunny_testbed",
-                  :port     => ENV.fetch("RABBITMQ_PORT", 5672))
+    @connection = Bunny.new(username: "bunny_gem",
+      password:  "bunny_password",
+      vhost: "bunny_testbed",
+      port: ENV.fetch("RABBITMQ_PORT", 5672))
     @connection.start
   end
 
@@ -19,11 +19,11 @@ describe "Message framing implementation" do
       it "successfully frames the message" do
         ch = @connection.create_channel
 
-        q  = ch.queue("", :exclusive => true)
+        q  = ch.queue("", exclusive: true)
         x  = ch.default_exchange
 
         body = IO.read("spec/issues/issue97_attachment.json")
-        x.publish(body, :routing_key => q.name, :persistent => true)
+        x.publish(body, routing_key: q.name, persistent: true)
 
         sleep(1)
         expect(q.message_count).to eq 1
@@ -39,11 +39,11 @@ describe "Message framing implementation" do
     it "successfully frames the message" do
       ch = @connection.create_channel
 
-      q  = ch.queue("", :exclusive => true)
+      q  = ch.queue("", exclusive: true)
       x  = ch.default_exchange
 
       as = ("a" * (1024 * 1024 * 4 + 2823777))
-      x.publish(as, :routing_key => q.name, :persistent => true)
+      x.publish(as, routing_key: q.name, persistent: true)
 
       sleep(1)
       expect(q.message_count).to eq 1
@@ -61,10 +61,10 @@ describe "Message framing implementation" do
     it "successfully publishes the message" do
       ch = @connection.create_channel
 
-      q  = ch.queue("", :exclusive => true)
+      q  = ch.queue("", exclusive: true)
       x  = ch.default_exchange
 
-      x.publish("", :routing_key => q.name, :persistent => true)
+      x.publish("", routing_key: q.name, persistent: true)
 
       sleep(1)
       expect(q.message_count).to eq 1
@@ -86,11 +86,11 @@ describe "Message framing implementation" do
     it "successfully frames the message" do
       ch = @connection.create_channel
 
-      q  = ch.queue("", :exclusive => true)
+      q  = ch.queue("", exclusive: true)
       x  = ch.default_exchange
 
       as = "a" * (1024 * 128 - 2)
-      x.publish(as, :routing_key => q.name, :persistent => true)
+      x.publish(as, routing_key:  q.name, persistent: true)
 
       sleep(1)
       expect(q.message_count).to eq 1
@@ -104,11 +104,11 @@ describe "Message framing implementation" do
     it "successfully frames the message" do
       ch = @connection.create_channel
 
-      q  = ch.queue("", :exclusive => true)
+      q  = ch.queue("", exclusive: true)
       x  = ch.default_exchange
 
       as = "a" * (1024 * 128 - 1)
-      x.publish(as, :routing_key => q.name, :persistent => true)
+      x.publish(as, routing_key:  q.name, persistent: true)
 
       sleep(1)
       expect(q.message_count).to eq 1
@@ -122,11 +122,11 @@ describe "Message framing implementation" do
     it "successfully frames the message" do
       ch = @connection.create_channel
 
-      q  = ch.queue("", :exclusive => true)
+      q  = ch.queue("", exclusive: true)
       x  = ch.default_exchange
 
       as = "a" * (1024 * 128)
-      x.publish(as, :routing_key => q.name, :persistent => true)
+      x.publish(as, routing_key:  q.name, persistent: true)
 
       sleep(1)
       expect(q.message_count).to eq 1
@@ -141,11 +141,11 @@ describe "Message framing implementation" do
     it "successfully frames the message" do
       ch = @connection.create_channel
 
-      q  = ch.queue("", :exclusive => true)
+      q  = ch.queue("", exclusive: true)
       x  = ch.default_exchange
 
       as = "a" * (1024 * 128 + 1)
-      x.publish(as, :routing_key => q.name, :persistent => true)
+      x.publish(as, routing_key:  q.name, persistent: true)
 
       sleep(1)
       expect(q.message_count).to eq 1
@@ -159,11 +159,11 @@ describe "Message framing implementation" do
     it "successfully frames the message" do
       ch = @connection.create_channel
 
-      q  = ch.queue("", :exclusive => true)
+      q  = ch.queue("", exclusive: true)
       x  = ch.default_exchange
 
       as = "a" * (1024 * 128 + 2)
-      x.publish(as, :routing_key => q.name, :persistent => true)
+      x.publish(as, routing_key:  q.name, persistent: true)
 
       sleep(1)
       expect(q.message_count).to eq 1

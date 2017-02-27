@@ -20,7 +20,7 @@ describe Bunny::Channel, "#reject" do
       x.publish("bunneth", routing_key: q.name)
       sleep(0.5)
       expect(q.message_count).to eq 1
-      delivery_info, _, _ = q.pop(:manual_ack => true)
+      delivery_info, _, _ = q.pop(manual_ack: true)
 
       ch.reject(delivery_info.delivery_tag, true)
       sleep(0.5)
@@ -39,7 +39,7 @@ describe Bunny::Channel, "#reject" do
       x.publish("bunneth", routing_key: q.name)
       sleep(0.5)
       expect(q.message_count).to eq 1
-      delivery_info, _, _ = q.pop(:manual_ack => true)
+      delivery_info, _, _ = q.pop(manual_ack: true)
 
       ch.reject(delivery_info.delivery_tag, false)
       sleep(0.5)
@@ -62,7 +62,7 @@ describe Bunny::Channel, "#reject" do
       x.publish("bunneth", routing_key: q.name)
       sleep(0.25)
       expect(q.message_count).to eq 1
-      _, _, content = q.pop(:manual_ack => true)
+      _, _, content = q.pop(manual_ack: true)
 
       ch.on_error do |ch, channel_close|
         @channel_close = channel_close
@@ -96,7 +96,7 @@ describe Bunny::Channel, "#basic_reject" do
       x.publish("bunneth", routing_key: q.name)
       sleep(0.5)
       expect(q.message_count).to eq 1
-      delivery_info, _, _ = q.pop(:manual_ack => true)
+      delivery_info, _, _ = q.pop(manual_ack: true)
 
       ch.basic_reject(delivery_info.delivery_tag.to_i, true)
       sleep(0.5)
@@ -115,7 +115,7 @@ describe Bunny::Channel, "#basic_reject" do
       x.publish("bunneth", routing_key: q.name)
       sleep(0.5)
       expect(q.message_count).to eq 1
-      delivery_info, _, _ = q.pop(:manual_ack => true)
+      delivery_info, _, _ = q.pop(manual_ack: true)
 
       ch.basic_reject(delivery_info.delivery_tag.to_i, false)
       sleep(0.5)
@@ -137,7 +137,7 @@ describe Bunny::Channel, "#basic_reject" do
       x.publish("bunneth", routing_key: q.name)
       sleep(0.5)
       expect(q.message_count).to eq 1
-      delivery_info, _, _ = q.pop(:manual_ack => true)
+      delivery_info, _, _ = q.pop(manual_ack: true)
 
       ch.basic_reject(delivery_info.delivery_tag.to_i)
       sleep(0.5)

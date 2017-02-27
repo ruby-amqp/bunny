@@ -88,7 +88,7 @@ describe Bunny::Exchange do
         expect(x).not_to be_durable
         expect(x).to be_auto_delete
 
-        ch.exchange(name, :type => :fanout, auto_delete: true)
+        ch.exchange(name, type: :fanout, auto_delete: true)
 
         x.delete
         ch.close
@@ -123,7 +123,7 @@ describe Bunny::Exchange do
         x    = ch.direct(name)
         expect(x.name).to eq name
 
-        ch.exchange(name, :type => :direct)
+        ch.exchange(name, type: :direct)
 
         x.delete
         ch.close
@@ -152,7 +152,7 @@ describe Bunny::Exchange do
         x    = ch.topic(name)
         expect(x.name).to eq name
 
-        ch.exchange(name, :type => :topic)
+        ch.exchange(name, type: :topic)
 
         x.delete
         ch.close
@@ -215,7 +215,7 @@ describe Bunny::Exchange do
   context "that is internal" do
     it "can be declared" do
       ch = connection.create_channel
-      x  = ch.fanout("bunny.tests.exchanges.internal", :internal => true)
+      x  = ch.fanout("bunny.tests.exchanges.internal", internal: true)
       expect(x).to be_internal
       x.delete
 

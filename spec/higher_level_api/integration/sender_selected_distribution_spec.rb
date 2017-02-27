@@ -21,7 +21,7 @@ describe "Sender-selected distribution" do
 
     n    = 10
     n.times do |i|
-      x.publish("Message #{i}", routing_key: "one", :headers => {"CC" => ["two", "three"]})
+      x.publish("Message #{i}", routing_key: "one", headers: {"CC" => ["two", "three"]})
     end
 
     sleep 0.5

@@ -2,7 +2,7 @@ require "spec_helper"
 
 describe Bunny::Channel, "#open" do
   before :all do
-    @connection = Bunny.new(:user => "bunny_gem", :password => "bunny_password", :vhost => "bunny_testbed")
+    @connection = Bunny.new(:user => "bunny_gem", password:  "bunny_password", :vhost => "bunny_testbed")
     @connection.start
   end
 
