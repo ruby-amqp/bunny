@@ -344,7 +344,7 @@ module Bunny
     # @return [Bunny::Channel] Newly opened channel
     def create_channel(n = nil, consumer_pool_size = 1, consumer_pool_abort_on_exception = false, consumer_pool_shutdown_timeout = 60)
       raise ArgumentError, "channel number 0 is reserved in the protocol and cannot be used" if 0 == n
-      raise ConnectionManuallyClosed if manually_closed?
+      raise ConnectionAlreadyClosed if manually_closed?
 
       @channel_mutex.synchronize do
         if n && (ch = @channels[n])
@@ -409,6 +409,7 @@ module Bunny
       @status_mutex.synchronize { @status == :closed }
     end
 
+    # @return [Boolean] true if this AMQP 0.9.1 connection has been programmatically closed
     def manually_closed?
       @status_mutex.synchronize { @manually_closed == true }
     end

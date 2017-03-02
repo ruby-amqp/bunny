@@ -25,26 +25,7 @@ describe Bunny::Session do
       it 'should raise an exception' do
         expect {
           connection.create_channel
-        }.to raise_error(Bunny::ConnectionManuallyClosed)
-      end
-    end
-
-    describe '#start' do
-      it 'should be possible to reopen it' do
-        connection.start
-        expect(connection.status).to eq :open
-      end
-    end
-
-    context 'and reopened' do
-      before :each do
-        connection.start
-      end
-
-      describe '#create_channel' do
-        it 'should create a new channel' do
-          expect(connection.create_channel).to be_kind_of(Bunny::Channel)
-        end
+        }.to raise_error(Bunny::ConnectionAlreadyClosed)
       end
     end
   end
