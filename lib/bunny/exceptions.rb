@@ -97,9 +97,9 @@ module Bunny
     end
   end
 
-  class ConnectionManuallyClosed < Exception
+  class ConnectionAlreadyClosed < Exception
     def initialize
-      super('Connection has been manually closed. Call #start to reopen it')
+      super('Connection has been already closed')
     end
   end
 
