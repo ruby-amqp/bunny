@@ -97,6 +97,12 @@ module Bunny
     end
   end
 
+  class ConnectionManuallyClosed < Exception
+    def initialize
+      super('Connection has been manually closed. Call #start to reopen it')
+    end
+  end
+
   class ShutdownSignal < Exception
   end
 
