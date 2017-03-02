@@ -97,6 +97,12 @@ module Bunny
     end
   end
 
+  class ConnectionAlreadyClosed < Exception
+    def initialize
+      super('Connection has been already closed')
+    end
+  end
+
   class ShutdownSignal < Exception
   end
 
