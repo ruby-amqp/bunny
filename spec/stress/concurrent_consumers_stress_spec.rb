@@ -4,8 +4,8 @@ require "spec_helper"
 unless ENV["CI"]
   describe "Concurrent consumers sharing a connection" do
     before :all do
-      @connection = Bunny.new(user: "bunny_gem", password: "bunny_password", vhost: "bunny_testbed",
-        automatic_recovery: false, continuation_timeout: 45000)
+      @connection = Bunny.new(username: "bunny_gem", password: "bunny_password", vhost: "bunny_testbed",
+                    automatic_recovery: false, continuation_timeout: 45000)
       @connection.start
     end
 
@@ -27,7 +27,7 @@ unless ENV["CI"]
         ch0  = @connection.create_channel
         ch0.confirm_select
         body = "абвг"
-        x    = ch0.topic("bunny.stress.concurrent.consumers.topic", :durable => true)
+        x    = ch0.topic("bunny.stress.concurrent.consumers.topic", durable: true)
 
         chs  = {}
         n.times do |i|
@@ -39,8 +39,8 @@ unless ENV["CI"]
           t = Thread.new do
             cht = chs[i]
 
-            q = cht.queue("", :exclusive => true)
-            q.bind(x.name, :routing_key => colors.sample).subscribe do |delivery_info, meta, payload|
+            q = cht.queue("", exclusive: true)
+            q.bind(x.name, routing_key: colors.sample).subscribe do |delivery_info, meta, payload|
               # no-op
             end
             qs << q
@@ -52,7 +52,7 @@ unless ENV["CI"]
 
         5.times do |i|
           m.times do
-            x.publish(body, :routing_key => colors.sample)
+            x.publish(body, routing_key: colors.sample)
           end
           puts "Published #{(i + 1) * m} messages..."
           ch0.wait_for_confirms
