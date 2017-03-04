@@ -13,7 +13,7 @@ unless defined?(JRUBY_VERSION) && !ENV["FORCE_JRUBY_RUN"]
 
     n.times do |i|
       it "can be closed (automatic recovery disabled, take #{i})" do
-        c  = Bunny.new(:automatically_recover => false)
+        c  = Bunny.new(automatically_recover: false)
         c.start
         ch = c.create_channel
 
@@ -25,7 +25,7 @@ unless defined?(JRUBY_VERSION) && !ENV["FORCE_JRUBY_RUN"]
 
     n.times do |i|
       it "can be closed (automatic recovery enabled, take #{i})" do
-        c  = Bunny.new(:automatically_recover => true)
+        c  = Bunny.new(automatically_recover: true)
         c.start
         ch = c.create_channel
 
@@ -38,7 +38,7 @@ unless defined?(JRUBY_VERSION) && !ENV["FORCE_JRUBY_RUN"]
     context "in the single threaded mode" do
       n.times do |i|
         it "can be closed (single threaded mode, take #{i})" do
-          c  = Bunny.new(:automatically_recover => false, :threaded => false)
+          c  = Bunny.new(automatically_recover: false, threaded: false)
           c.start
           ch = c.create_channel
 
