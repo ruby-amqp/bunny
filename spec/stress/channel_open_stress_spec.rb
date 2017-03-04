@@ -2,7 +2,7 @@ require "spec_helper"
 
 describe "Rapidly opening and closing lots of channels" do
   before :all do
-    @connection = Bunny.new(:automatic_recovery => false).tap do |c|
+    @connection = Bunny.new(automatic_recovery: false).tap do |c|
       c.start
     end
   end
@@ -42,7 +42,7 @@ describe "Rapidly opening and closing lots of channels" do
         n.times do
           t = Thread.new do
             ch1 = @connection.create_channel
-            q   = ch1.queue("", :exclusive => true)
+            q   = ch1.queue("", exclusive: true)
             q.delete
             ch1.close
 
@@ -69,7 +69,7 @@ describe "Rapidly opening and closing lots of channels" do
           t = Thread.new do
             3.times do
               ch = @connection.create_channel
-              x  = ch.topic('bunny.stress.topics.t2', :durable => false)
+              x  = ch.topic('bunny.stress.topics.t2', durable: false)
               ch.close
             end
           end

@@ -1,5 +1,12 @@
 ## Changes between Bunny 2.6.0 and 2.7.0 (unreleased)
 
+### `Bunny::ContinuationQueue#poll` Less Prone to Race Conditions
+
+`Bunny::ContinuationQueue#poll` was reworked with feedback from Joseph Wong.
+
+GitHub issue: [#462](https://github.com/ruby-amqp/bunny/issues/462)
+
+
 ### Recovery Attempt Counting Strategy Changed
 
 Previous behehavior is not unreasonable but is not what many users and
@@ -15,6 +22,12 @@ but there's an option to go back to the original behavior. We also do
 a hell of a lot more logging.
 
 GitHub issue: [#408](https://github.com/ruby-amqp/bunny/issues/408)
+
+### Opening a Channel on an Intentionally Closed Connection Immediately Raises an Exception
+
+Contributed by Alessandro Verlato.
+
+GitHub issue: [#465](https://github.com/ruby-amqp/bunny/issues/465)
 
 
 ### Bunny::ConsumerWorkPool#shutdown Terminates Early When It's Safe to Do So
@@ -36,6 +49,7 @@ GitHub issue: [#456](https://github.com/ruby-amqp/bunny/issues/456)
 Bunny now can work with frozen host arrays.
 
 GitHub issue: [#446](https://github.com/ruby-amqp/bunny/issues/446)
+
 
 
 ## Changes between Bunny 2.5.0 and 2.6.0 (October 15th, 2016)

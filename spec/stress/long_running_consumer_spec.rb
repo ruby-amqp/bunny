@@ -7,7 +7,9 @@ unless ENV["CI"]
 
   describe "Long running [relatively to heartbeat interval] consumer that never publishes" do
     before :all do
-      @connection = Bunny.new(:user => "bunny_gem", :password => "bunny_password", :vhost => "bunny_testbed", :automatic_recovery => false, :heartbeat_interval => 6)
+      @connection = Bunny.new(username: "bunny_gem",
+        password: "bunny_password", vhost: "bunny_testbed",
+        automatic_recovery: false, heartbeat_interval: 6)
       @connection.start
     end
 
@@ -15,7 +17,7 @@ unless ENV["CI"]
       @connection.close
     end
 
-    let(:target) { 512 * 1024 * 1024 }
+    let(:target) { 256 * 1024 * 1024 }
     let(:queue)  { "bunny.stress.long_running_consumer.#{Time.now.to_i}" }
 
     let(:rate) { 50 }
@@ -30,7 +32,7 @@ unless ENV["CI"]
         t  = 0
         ch = @connection.create_channel(nil, 6)
         begin
-          q  = ch.queue(queue, :exclusive => true)
+          q  = ch.queue(queue, exclusive: true)
 
           q.bind("amq.fanout").subscribe do |_, _, payload|
             t += payload.bytesize
@@ -45,7 +47,7 @@ unless ENV["CI"]
           end
         rescue Interrupt => e
           ch.maybe_kill_consumer_work_pool!
-          ch.close
+          ch.close rescue nil
         end
       end
       ct.abort_on_exception = true
@@ -68,7 +70,7 @@ unless ENV["CI"]
             sleep (s * rand)
           end
         rescue Interrupt => e
-          ch.close
+          ch.close rescue nil
         end
       end
       pt.abort_on_exception = true
