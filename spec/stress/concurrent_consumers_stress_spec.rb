@@ -5,7 +5,7 @@ unless ENV["CI"]
   describe "Concurrent consumers sharing a connection" do
     before :all do
       @connection = Bunny.new(username: "bunny_gem", password: "bunny_password", vhost: "bunny_testbed",
-                    automatic_recovery: false)
+                    automatic_recovery: false, continuation_timeout: 45000)
       @connection.start
     end
 
