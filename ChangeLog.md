@@ -1,16 +1,11 @@
-## Changes between Bunny 2.6.4 and 2.6.5 (unreleased)
-
-No changes yet.
-
-
-
-## Changes between Bunny 2.6.3 and 2.6.4 (March 4th, 2017)
+## Changes between Bunny 2.6.0 and 2.7.0 (unreleased)
 
 ### `Bunny::ContinuationQueue#poll` Less Prone to Race Conditions
 
 `Bunny::ContinuationQueue#poll` was reworked with feedback from Joseph Wong.
 
 GitHub issue: [#462](https://github.com/ruby-amqp/bunny/issues/462)
+
 
 ### Recovery Attempt Counting Strategy Changed
 
@@ -35,25 +30,6 @@ Contributed by Alessandro Verlato.
 GitHub issue: [#465](https://github.com/ruby-amqp/bunny/issues/465)
 
 
-## Changes between Bunny 2.6.2 and 2.6.3 (January 19th, 2016)
-
-### Retry on new Ruby 2.1+ variations of `EAGAIN`, `EWOULDBLOCK`
-
-GitHub issue: [#456](https://github.com/ruby-amqp/bunny/issues/456)
-
-
-## Changes between Bunny 2.6.1 and 2.6.2 (December 17th, 2016)
-
-### Do Not Modify Host Arrays
-
-Bunny now can work with frozen host arrays.
-
-GitHub issue: [#446](https://github.com/ruby-amqp/bunny/issues/446)
-
-
-
-## Changes between Bunny 2.6.0 and 2.6.1 (October 23rd, 2016)
-
 ### Bunny::ConsumerWorkPool#shutdown Terminates Early When It's Safe to Do So
 
 `Bunny::ConsumerWorkPool#shutdown(true)` waited for consumer shutdown
@@ -61,6 +37,18 @@ even if the pool wasn't active (there were no consumers on its
 channel).
 
 GitHub issue: [#438](https://github.com/ruby-amqp/bunny/issues/438).
+
+
+### Retry on new Ruby 2.1+ variations of `EAGAIN`, `EWOULDBLOCK`
+
+GitHub issue: [#456](https://github.com/ruby-amqp/bunny/issues/456)
+
+
+### Do Not Modify Host Arrays
+
+Bunny now can work with frozen host arrays.
+
+GitHub issue: [#446](https://github.com/ruby-amqp/bunny/issues/446)
 
 
 

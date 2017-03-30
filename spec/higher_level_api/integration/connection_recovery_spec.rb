@@ -316,6 +316,7 @@ describe "Connection recovery" do
       delivered = false
 
       ch = c.create_channel
+      ch.confirm_select
       q  = ch.queue("", exclusive: true)
       q.subscribe do |_, _, _|
         delivered = true
@@ -325,13 +326,14 @@ describe "Connection recovery" do
       expect(ch).to be_open
 
       q.publish("")
+      ch.wait_for_confirms
 
       poll_until { delivered }
     end
   end
 
   it "recovers all consumers" do
-    n = 1024
+    n = 32
 
     with_open do |c|
       ch = c.create_channel
@@ -347,7 +349,7 @@ describe "Connection recovery" do
   end
 
   it "recovers all queues" do
-    n = 256
+    n = 32
 
     qs = []
 
@@ -385,6 +387,16 @@ describe "Connection recovery" do
   end
 
   def close_all_connections!
+    # let whatever actions were taken before
+    # this call a chance to propagate, e.g. to make
+    # sure that connections are accounted for in the
+    # stats DB.
+    #
+    # See bin/ci/before_build for management plugin
+    # pre-configuration.
+    #
+    # MK.
+    sleep 1.1
     connections.each do |conn_info|
       close_ignoring_permitted_exceptions(conn_info.name)
     end
@@ -401,14 +413,14 @@ describe "Connection recovery" do
   end
 
   def poll_while(&probe)
-    Timeout::timeout(10) {
-      sleep 0.1 while probe[]
+    Timeout.timeout(20) {
+      sleep 0.1 while probe.call
     }
   end
 
   def poll_until(&probe)
-    Timeout::timeout(10) {
-      sleep 0.1 until probe[]
+    Timeout.timeout(20) {
+      sleep 0.1 until probe.call
     }
   end
 

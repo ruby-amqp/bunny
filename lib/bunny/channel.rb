@@ -308,7 +308,7 @@ module Bunny
     # @see http://rubybunny.info/articles/extensions.html RabbitMQ Extensions to AMQP 0.9.1 guide
     # @api public
     def fanout(name, opts = {})
-      Exchange.new(self, :fanout, name, opts)
+      find_exchange(name) || Exchange.new(self, :fanout, name, opts)
     end
 
     # Declares a direct exchange or looks it up in the cache of previously
@@ -326,7 +326,7 @@ module Bunny
     # @see http://rubybunny.info/articles/extensions.html RabbitMQ Extensions to AMQP 0.9.1 guide
     # @api public
     def direct(name, opts = {})
-      Exchange.new(self, :direct, name, opts)
+      find_exchange(name) || Exchange.new(self, :direct, name, opts)
     end
 
     # Declares a topic exchange or looks it up in the cache of previously
@@ -344,7 +344,7 @@ module Bunny
     # @see http://rubybunny.info/articles/extensions.html RabbitMQ Extensions to AMQP 0.9.1 guide
     # @api public
     def topic(name, opts = {})
-      Exchange.new(self, :topic, name, opts)
+      find_exchange(name) || Exchange.new(self, :topic, name, opts)
     end
 
     # Declares a headers exchange or looks it up in the cache of previously
@@ -362,7 +362,7 @@ module Bunny
     # @see http://rubybunny.info/articles/extensions.html RabbitMQ Extensions to AMQP 0.9.1 guide
     # @api public
     def headers(name, opts = {})
-      Exchange.new(self, :headers, name, opts)
+      find_exchange(name) || Exchange.new(self, :headers, name, opts)
     end
 
     # Provides access to the default exchange
@@ -1384,7 +1384,7 @@ module Bunny
     # @see #nacked_set
     # @see http://rubybunny.info/articles/extensions.html RabbitMQ Extensions guide
     # @api public
-    def confirm_select(callback=nil)
+    def confirm_select(callback = nil)
       raise_if_no_longer_open!
 
       if @next_publish_seq_no == 0

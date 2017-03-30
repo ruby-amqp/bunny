@@ -21,6 +21,8 @@ debug/*
 *.dump
 deploy.docs.sh
 .ruby-version
+.idea
+*.srl
 spec/tls/*.pem
 spec/tls/*.pem~
 spec/tls/*.p12
