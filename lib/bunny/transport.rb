@@ -4,7 +4,7 @@ require "monitor"
 
 begin
   require "openssl"
-rescue LoadError => le
+rescue LoadError => _le
   $stderr.puts "Could not load OpenSSL"
 end
 
@@ -92,7 +92,7 @@ module Bunny
     end
 
     def connected?
-      :not_connected == @status && open?
+      :connected == @status && open?
     end
 
     def configure_socket(&block)
@@ -263,7 +263,7 @@ module Bunny
           :connect_timeout => timeout)
 
         true
-      rescue SocketError, Timeout::Error => e
+      rescue SocketError, Timeout::Error => _e
         false
       ensure
         s.close if s
@@ -318,7 +318,7 @@ module Bunny
     def tls_certificate_from(opts)
       begin
         read_client_certificate!
-      rescue MissingTLSCertificateFile => e
+      rescue MissingTLSCertificateFile => _e
         inline_client_certificate_from(opts)
       end
     end
@@ -326,7 +326,7 @@ module Bunny
     def tls_key_from(opts)
       begin
         read_client_key!
-      rescue MissingTLSKeyFile => e
+      rescue MissingTLSKeyFile => _e
         inline_client_key_from(opts)
       end
     end
@@ -364,6 +364,11 @@ module Bunny
       raise "cannot wrap a socket into TLS socket, @tls_context is nil. This is a Bunny bug." unless @tls_context
 
       s = Bunny::SSLSocketImpl.new(socket, @tls_context)
+
+      # always set the SNI server name if possible since RFC 3546 and RFC 6066 both state
+      # that TLS clients supporting the extensions can talk to TLS servers that do not
+      s.hostname = @host if s.respond_to?(:hostname)
+
       s.sync_close = true
       s
     end

@@ -20,7 +20,7 @@ unless ENV["CI"]
     context "when publishing thousands of messages over 128K in size" do
       let(:colors) { ["red", "blue", "white"] }
 
-      let(:n) { 32 }
+      let(:n) { 16 }
       let(:m) { 5000 }
 
       it "successfully drain all queues" do

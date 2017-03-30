@@ -4,6 +4,16 @@ describe Bunny::Session do
   let(:http_client) { RabbitMQ::HTTP::Client.new("http://127.0.0.1:15672") }
 
   def close_connection(client_port)
+    # let whatever actions were taken before
+    # this call a chance to propagate, e.g. to make
+    # sure that connections are accounted for in the
+    # stats DB.
+    #
+    # See bin/ci/before_build for management plugin
+    # pre-configuration.
+    #
+    # MK.
+    sleep 1.1
     c = http_client.
       list_connections.
       find   { |conn_info| conn_info && conn_info.peer_port.to_i == client_port }
@@ -12,7 +22,7 @@ describe Bunny::Session do
   end
 
   def wait_for_recovery
-    sleep 0.5
+    sleep 1.5
   end
 
   it "can be closed" do
@@ -58,6 +68,7 @@ describe Bunny::Session do
       c.start
       ch = c.create_channel
 
+      sleep 1.5
       expect(c).to be_open
       sleep 1.5
       close_connection(c.local_port)

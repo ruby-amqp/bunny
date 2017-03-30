@@ -1,0 +1,18 @@
+version: '2'
+services:
+  rabbitmq:
+    build: ./docker
+    container_name: bunny_rabbitmq
+    environment:
+      RABBITMQ_NODENAME: bunny
+      # link to spec specific configuration
+      RABBITMQ_CONFIG_FILE: /spec/config/rabbitmq
+      RABBITMQ_ENABLED_PLUGINS_FILE: /spec/config/enabled_plugins
+      # send logs to stdout
+      RABBITMQ_LOGS: '-'
+      RABBITMQ_SASL_LOGS: '-'
+    ports:
+      - 5671-5672:5671-5672
+      - 15672:15672
+    volumes:
+      - ./spec:/spec:ro

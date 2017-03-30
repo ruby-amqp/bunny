@@ -98,17 +98,18 @@ describe Bunny::Exchange do
 
     context "when declared with a different set of attributes" do
       it "raises an exception" do
-        ch   = connection.create_channel
+        ch1   = connection.create_channel
+        ch2   = connection.create_channel
 
-        x = ch.fanout("bunny.tests.exchanges.fanout", auto_delete: true, durable: false)
+        x = ch1.fanout("bunny.tests.exchanges.fanout", auto_delete: true, durable: false)
         expect {
           # force re-declaration
-          ch.exchange_declare("bunny.tests.exchanges.fanout", :direct, auto_delete: false, durable: true)
+          ch2.exchange_declare("bunny.tests.exchanges.fanout", :direct, auto_delete: false, durable: true)
         }.to raise_error(Bunny::PreconditionFailed)
 
-        expect(ch).to be_closed
+        expect(ch2).to be_closed
         expect {
-          ch.fanout("bunny.tests.exchanges.fanout", auto_delete: true, durable: false)
+          ch2.fanout("bunny.tests.exchanges.fanout", auto_delete: true, durable: false)
         }.to raise_error(Bunny::ChannelAlreadyClosed)
       end
     end
