@@ -455,9 +455,9 @@ but prone to man-in-the-middle attacks. Please set verify_peer: true in producti
       cert_files = []
       cert_inlines = []
       certs.each do |cert|
-        # if it starts with / then it's a file path that may or may not
-        # exists (e.g. a default OpenSSL path). MK.
-        if File.readable?(cert) || cert =~ /^\//
+        # if it starts with / or C:/ then it's a file path that may or may not
+        # exist (e.g. a default OpenSSL path). MK.
+        if File.readable?(cert) || cert =~ /^([a-z]:?)?\//i
           cert_files.push(cert)
         else
           cert_inlines.push(cert)
