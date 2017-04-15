@@ -1,3 +1,9 @@
+## Changes between Bunny 2.6.5 and 2.6.6 (unreleased)
+
+No changes yet.
+
+
+
 ## Changes between Bunny 2.6.4 and 2.6.5 (April 15th, 2017)
 
 ### Absolute Windows File Paths are No Longer treated as Inline Certs
