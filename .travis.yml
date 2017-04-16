@@ -4,6 +4,7 @@ cache: bundler
 before_script: "./bin/ci/before_build"
 script: "bundle exec rake integration_without_recovery"
 rvm:
+  - ruby-head
   - "2.4.1"
   - "2.3.4"
   - "2.2.7"
