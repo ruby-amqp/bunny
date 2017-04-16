@@ -7,6 +7,10 @@ have any heavyweight dependencies.
 
 ## I Know What RabbitMQ and Bunny are, How Do I Get Started?
 
+[Click here for a video tutorial on how to use this gem:](http://devcasts.co/bunny-rails-gem-devcast)
+
+[![bunny-devcast](http://devcasts.co/wp-content/uploads/2014/03/bunny.png)](http://devcasts.co/bunny-rails-gem-devcast/)
+
 [Right here](http://rubybunny.info/articles/getting_started.html)!
 
 
