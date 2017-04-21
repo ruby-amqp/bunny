@@ -718,7 +718,6 @@ module Bunny
         else
           @logger.debug "Not resetting recovery attempt counter after successful reconnection, as configured"
         end
-        reset_recovery_attempt_counter!
 
         recover_channels
       end
@@ -727,7 +726,6 @@ module Bunny
       retry
     rescue TCPConnectionFailedForAllHosts, TCPConnectionFailed, AMQ::Protocol::EmptyResponseError => e
       @logger.warn "TCP connection failed, reconnecting in #{@network_recovery_interval} seconds"
-      sleep @network_recovery_interval
       if should_retry_recovery?
         decrement_recovery_attemp_counter!
         if recoverable_network_failure?(e)
