@@ -718,7 +718,6 @@ module Bunny
         else
           @logger.debug "Not resetting recovery attempt counter after successful reconnection, as configured"
         end
-        reset_recovery_attempt_counter!
 
         recover_channels
       end
