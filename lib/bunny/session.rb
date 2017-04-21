@@ -726,7 +726,6 @@ module Bunny
       retry
     rescue TCPConnectionFailedForAllHosts, TCPConnectionFailed, AMQ::Protocol::EmptyResponseError => e
       @logger.warn "TCP connection failed, reconnecting in #{@network_recovery_interval} seconds"
-      sleep @network_recovery_interval
       if should_retry_recovery?
         decrement_recovery_attemp_counter!
         if recoverable_network_failure?(e)
