@@ -37,11 +37,13 @@ describe Bunny::Session do
     def_exchange = channel.default_exchange
 
     # Redefine Bunny::Session#send_preamble
+    $_count = 0
     connection.define_singleton_method(:send_preamble) do
       logger.debug ' --->  Inside redefined :send_preamble'
       @transport.write(AMQ::Protocol::PREAMBLE)
-      sleep 6  # At least 5 seconds sleep on my machine
+      sleep 6 if $_count == 0  # At least 5 seconds sleep on my machine
       @logger.debug 'Sent protocol preamble'
+      $_count += 1
     end
 
     # Start a thread that publishes 1 message/sec
