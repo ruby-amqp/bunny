@@ -724,7 +724,7 @@ module Bunny
     rescue HostListDepleted
       reset_address_index
       retry
-    rescue TCPConnectionFailedForAllHosts, TCPConnectionFailed, AMQ::Protocol::EmptyResponseError => e
+    rescue TCPConnectionFailedForAllHosts, TCPConnectionFailed, AMQ::Protocol::EmptyResponseError, SystemCallError => e
       @logger.warn "TCP connection failed, reconnecting in #{@network_recovery_interval} seconds"
       if should_retry_recovery?
         decrement_recovery_attemp_counter!
