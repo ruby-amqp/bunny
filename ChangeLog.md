@@ -1,7 +1,12 @@
-## Changes between Bunny 2.6.5 and 2.6.6 (unreleased)
+## Changes between Bunny 2.6.5 and 2.6.6 (May 11th, 2017)
 
-No changes yet.
+### Connection Recovery Improvements
 
+System call exceptions now will trigger connection recovery.
+
+Contributed by Alessandro Verlato.
+
+GitHub issue: [#491](https://github.com/ruby-amqp/bunny/issues/491).
 
 
 ## Changes between Bunny 2.6.4 and 2.6.5 (April 15th, 2017)
