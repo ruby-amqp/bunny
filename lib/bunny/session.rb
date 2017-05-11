@@ -110,7 +110,9 @@ module Bunny
     # @option connection_string_or_opts [String] :verify_peer (true) Whether TLS peer verification should be performed
     # @option connection_string_or_opts [Keyword] :tls_version (negotiated) What TLS version should be used (:TLSv1, :TLSv1_1, or :TLSv1_2)
     # @option connection_string_or_opts [Integer] :continuation_timeout (15000) Timeout for client operations that expect a response (e.g. {Bunny::Queue#get}), in milliseconds.
-    # @option connection_string_or_opts [Integer] :connection_timeout (5) Timeout in seconds for connecting to the server.
+    # @option connection_string_or_opts [Integer] :connection_timeout (30) Timeout in seconds for connecting to the server.
+    # @option connection_string_or_opts [Integer] :read_timeout (30) Timeout in seconds for reading from the TCP socket to RabbitMQ.
+    # @option connection_string_or_opts [Integer] :write_timeout (30) Timeout in seconds for writing to the TCP socket to RabbitMQ. 0 means no timeout when writing to the TCP socket.
     # @option connection_string_or_opts [Proc] :hosts_shuffle_strategy A Proc that reorders a list of host strings, defaults to Array#shuffle
     # @option connection_string_or_opts [Logger] :logger The logger.  If missing, one is created using :log_file and :log_level.
     # @option connection_string_or_opts [IO, String] :log_file The file or path to use when creating a logger.  Defaults to STDOUT.
