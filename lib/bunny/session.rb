@@ -348,6 +348,7 @@ module Bunny
     def create_channel(n = nil, consumer_pool_size = 1, consumer_pool_abort_on_exception = false, consumer_pool_shutdown_timeout = 60)
       raise ArgumentError, "channel number 0 is reserved in the protocol and cannot be used" if 0 == n
       raise ConnectionAlreadyClosed if manually_closed?
+      raise RuntimeError, "this connection is not open. Was Bunny::Session#start invoked? Is automatic recovery enabled?" if !connected?
 
       @channel_mutex.synchronize do
         if n && (ch = @channels[n])
