@@ -70,6 +70,13 @@ Bunny now can work with frozen host arrays.
 GitHub issue: [#446](https://github.com/ruby-amqp/bunny/issues/446)
 
 
+### Support Windows SSL CA Cert File Paths
+
+Bunny now treats the default CA cert file paths as paths instead of inline certs.
+
+GitHub issue: [#492](https://github.com/ruby-amqp/bunny/issues/492)
+
+
 
 ## Changes between Bunny 2.5.0 and 2.6.0 (October 15th, 2016)
 
