@@ -1,4 +1,6 @@
 language: ruby
+sudo: false
+cache: bundler
 bundler_args: --without development
 cache: bundler
 before_script: "./bin/ci/before_build"
