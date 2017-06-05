@@ -31,6 +31,11 @@ group :development do
   gem "json",      :platform => :ruby_18
 end
 
+group :ci do
+  gem "celluloid"
+  gem "celluloid-io"
+end
+
 group :test do
   gem "rspec", "~> 3.5.0"
   gem "rabbitmq_http_api_client", "~> 1.8.0"
