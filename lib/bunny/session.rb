@@ -544,6 +544,11 @@ module Bunny
     end
 
     # @private
+    def find_channel(number)
+      @channel_mutex.synchronize { @channels[number] }
+    end
+
+    # @private
     def close_all_channels
       @channel_mutex.synchronize do
         @channels.reject {|n, ch| n == 0 || !ch.open? }.each do |_, ch|
@@ -609,15 +614,20 @@ module Bunny
         @unblock_callback.call(method) if @unblock_callback
       when AMQ::Protocol::Channel::Close then
         begin
-          ch = @channels[ch_number]
+          ch = find_channel(ch_number)
+          # this includes sending a channel.close-ok and
+          # potentially invoking a user-provided callback,
+          # avoid doing that while holding a mutex lock. MK.
           ch.handle_method(method)
         ensure
+          # synchronises on @channel_mutex under the hood
           self.unregister_channel(ch)
         end
       when AMQ::Protocol::Basic::GetEmpty then
-        @channels[ch_number].handle_basic_get_empty(method)
+        ch = find_channel(ch_number)
+        ch.handle_basic_get_empty(method)
       else
-        if ch = @channels[ch_number]
+        if ch = find_channel(ch_number)
           ch.handle_method(method)
         else
           @logger.warn "Channel #{ch_number} is not open on this connection!"
