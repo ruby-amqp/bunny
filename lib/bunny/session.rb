@@ -545,6 +545,11 @@ module Bunny
 
     # @private
     def find_channel(number)
+      @channels[number]
+    end
+
+    # @private
+    def synchronised_find_channel(number)
       @channel_mutex.synchronize { @channels[number] }
     end
 
@@ -614,7 +619,7 @@ module Bunny
         @unblock_callback.call(method) if @unblock_callback
       when AMQ::Protocol::Channel::Close then
         begin
-          ch = find_channel(ch_number)
+          ch = synchronised_find_channel(ch_number)
           # this includes sending a channel.close-ok and
           # potentially invoking a user-provided callback,
           # avoid doing that while holding a mutex lock. MK.
