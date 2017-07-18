@@ -1,15 +1,20 @@
-# https://github.com/travis-ci/travis-ci/wiki/.travis.yml-options
+language: ruby
 bundler_args: --without development
+cache: bundler
+before_script: "./bin/ci/before_build"
 script: "bundle exec rspec spec"
+dist: trusty
 rvm:
-  - 1.8.7
-  - ree
-  - 1.9.2
-  - 1.9.3
-  - rbx-2.0
+  - "2.4.1"
+  - "2.3.4"
+  - "2.2.7"
 notifications:
-  recipients:
-    - celldee@gmail.com
-    - jakub@rabbitmq.com
+  email:
     - skaes@railsexpress.de
-    - eric@5stops.com
+services:
+  - rabbitmq
+branches:
+  only:
+    - 0.7.x-stable
+env:
+  - CI=true
