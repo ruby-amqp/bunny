@@ -128,7 +128,7 @@ module Qrack
                          when 108 # 'l'
                            table.read(:longlong)
                          when 116 # 't'
-                           table.read(:octet)
+                           table.read(:octet) == 1
                          end
             end
 
@@ -210,6 +210,12 @@ module Qrack
                              when Hash
                                table.write(:octet, 70) # 'F'
                                table.write(:table, value)
+                             when TrueClass
+                               table.write(:octet, 116) # 't'
+                               table.write(:octet, 1)
+                             when FalseClass
+                               table.write(:octet, 116) # 't'
+                               table.write(:octet, 0)
                              end
 
                              table
