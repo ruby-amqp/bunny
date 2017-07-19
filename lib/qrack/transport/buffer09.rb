@@ -216,6 +216,8 @@ module Qrack
                              when FalseClass
                                table.write(:octet, 116) # 't'
                                table.write(:octet, 0)
+                             else
+                               raise Qrack::InvalidTypeError, "Cannot write table field for the type of #{value}"
                              end
 
                              table
