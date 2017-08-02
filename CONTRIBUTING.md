@@ -30,8 +30,10 @@ these. TLS (x509 PEM) certificates include a hostname-specific fields,
 the tests allow for expecting hostname overriding using the `BUNNY_RABBITMQ_HOSTNAME`
 environment variables (default value is `127.0.0.1`).
 
-Server, CA and client certificates can be found under `spec/tls`. They are supposed to be
-generated with [tls-gen](github.com/michaelklishin/tls-gen) or similar in the target environment.
+Server, CA and client certificates can be found under `spec/tls`.
+The location can be overridden via the `BUNNY_CERTIFICATE_DIR` environment variable.
+It is supposed to target [tls-gen](https://github.com/michaelklishin/tls-gen)'s basic profile
+output (result) directory on the host where specs are to be executed.
 
 Next up you'll need to prepare your node for the specs (just once):
 
