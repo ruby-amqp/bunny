@@ -193,13 +193,13 @@ unless ENV["CI"]
     include_examples "successful TLS connection"
   end
 
-  describe "TLS connection to RabbitMQ with tls_version TLSv1 specified" do
+  describe "TLS connection to RabbitMQ with tls_version TLSv1.1 specified" do
     let(:subject) do
       c = Bunny.new(username: "bunny_gem",
         password: "bunny_password",
         vhost: "bunny_testbed",
         tls: true,
-        tls_protocol: :TLSv1,
+        tls_protocol: :TLSv1_1,
         tls_ca_certificates: ["./spec/tls/ca_certificate.pem"],
         verify_peer: false)
       c.start
@@ -212,8 +212,8 @@ unless ENV["CI"]
 
     include_examples "successful TLS connection"
 
-    it "connects using TLSv1" do
-      expect(subject.transport.socket.ssl_version).to eq "TLSv1"
+    it "connects using TLSv1.1" do
+      expect(subject.transport.socket.ssl_version).to eq "TLSv1.1"
     end
   end
 end
