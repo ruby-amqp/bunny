@@ -2,6 +2,9 @@
 require "spec_helper"
 
 unless ENV["CI"]
+  CERTIFICATE_DIR=ENV.fetch("BUNNY_CERTIFICATE_DIR", "./spec/tls")
+  puts "Will use certificates from #{CERTIFICATE_DIR}"
+
   shared_examples_for "successful TLS connection" do
     it "succeeds" do
       expect(subject).to be_tls
@@ -42,9 +45,9 @@ unless ENV["CI"]
         :vhost    => "bunny_testbed",
         :tls                   => true,
         :verify_peer           => verify_peer,
-        :tls_cert              => "spec/tls/client_certificate.pem",
-        :tls_key               => "spec/tls/client_key.pem",
-        :tls_ca_certificates   => ["./spec/tls/ca_certificate.pem"])
+        :tls_cert              => "#{CERTIFICATE_DIR}/client_certificate.pem",
+        :tls_key               => "#{CERTIFICATE_DIR}/client_key.pem",
+        :tls_ca_certificates   => ["#{CERTIFICATE_DIR}/ca_certificate.pem"])
     end
 
     context "peer verification is off" do
@@ -80,9 +83,9 @@ unless ENV["CI"]
         password: "bunny_password",
         vhost: "bunny_testbed",
         tls: true,
-        tls_cert: "spec/tls/client_certificate.pem",
-        tls_key: "spec/tls/client_key.pem",
-        tls_ca_certificates: ["./spec/tls/ca_certificate.pem"],
+        tls_cert: "#{CERTIFICATE_DIR}/client_certificate.pem",
+        tls_key: "#{CERTIFICATE_DIR}/client_key.pem",
+        tls_ca_certificates: ["#{CERTIFICATE_DIR}/ca_certificate.pem"],
         verify_peer: false)
       c.start
       c
@@ -102,7 +105,7 @@ unless ENV["CI"]
         password: "bunny_password",
         vhost: "bunny_testbed",
         tls: true,
-        tls_ca_certificates: ["./spec/tls/ca_certificate.pem"],
+        tls_ca_certificates: ["#{CERTIFICATE_DIR}/ca_certificate.pem"],
         verify_peer: false)
       c.start
       c
@@ -119,9 +122,9 @@ unless ENV["CI"]
   describe "TLS connection to RabbitMQ with a connection string" do
     let(:subject) do
       c = Bunny.new("amqps://bunny_gem:bunny_password@#{local_hostname}/bunny_testbed",
-        tls_cert: "spec/tls/client_certificate.pem",
-        tls_key: "spec/tls/client_key.pem",
-        tls_ca_certificates: ["./spec/tls/ca_certificate.pem"],
+        tls_cert: "#{CERTIFICATE_DIR}/client_certificate.pem",
+        tls_key: "#{CERTIFICATE_DIR}/client_key.pem",
+        tls_ca_certificates: ["#{CERTIFICATE_DIR}/ca_certificate.pem"],
         verify_peer: false)
       c.start
       c
@@ -138,7 +141,7 @@ unless ENV["CI"]
   describe "TLS connection to RabbitMQ with a connection string and w/o client certificate and key" do
     let(:subject) do
       c = Bunny.new("amqps://bunny_gem:bunny_password@#{local_hostname}/bunny_testbed",
-        tls_ca_certificates: ["./spec/tls/ca_certificate.pem"],
+        tls_ca_certificates: ["#{CERTIFICATE_DIR}/ca_certificate.pem"],
         verify_peer: verify_peer)
       c.start
       c
@@ -178,9 +181,9 @@ unless ENV["CI"]
         password: "bunny_password",
         vhost: "bunny_testbed",
         tls: true,
-        tls_cert: File.read("./spec/tls/client_certificate.pem"),
-        tls_key: File.read("./spec/tls/client_key.pem"),
-        tls_ca_certificates: ["./spec/tls/ca_certificate.pem"],
+        tls_cert: File.read("#{CERTIFICATE_DIR}/client_certificate.pem"),
+        tls_key: File.read("#{CERTIFICATE_DIR}/client_key.pem"),
+        tls_ca_certificates: ["#{CERTIFICATE_DIR}/ca_certificate.pem"],
         verify_peer: false)
       c.start
       c
@@ -200,7 +203,7 @@ unless ENV["CI"]
         vhost: "bunny_testbed",
         tls: true,
         tls_protocol: :TLSv1_1,
-        tls_ca_certificates: ["./spec/tls/ca_certificate.pem"],
+        tls_ca_certificates: ["#{CERTIFICATE_DIR}/ca_certificate.pem"],
         verify_peer: false)
       c.start
       c
