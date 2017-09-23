@@ -54,3 +54,27 @@ describe Bunny::Queue, "#pop" do
     end
   end
 end
+
+
+describe Bunny::Channel, "#basic_get" do
+  let(:connection) do
+    c = Bunny.new(username: "bunny_gem", password: "bunny_password", vhost: "bunny_testbed",
+                  automatically_recover: false, continuation_timeout: 3000)
+    c.start
+    c
+  end
+
+  after :each do
+    connection.close if connection.open?
+  end
+
+  context "with a non-existent queue" do
+    it "throws a NOT_FOUND" do
+      ch = connection.create_channel
+
+      expect do
+        ch.basic_get "non_existent_#{rand.to_s}"
+      end.to raise_error(Bunny::NotFound)
+    end
+  end
+end
