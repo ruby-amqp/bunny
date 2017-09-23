@@ -1179,11 +1179,18 @@ module Bunny
 
       # We set the read_write_timeout to twice the heartbeat value
       # This allows us to miss a single heartbeat before we time out the socket.
-      @transport.read_timeout = if heartbeat_disabled?(@client_heartbeat)
+      #
+      # Since RabbitMQ can be configured to disable heartbeats (bad idea but technically
+      # possible nonetheless), we need to take both client and server values into
+      # consideration when deciding about using the heartbeat value for read timeouts.
+      @transport.read_timeout = if heartbeat_disabled?(@client_heartbeat) || heartbeat_disabled?(@heartbeat)
+                                  @logger.debug { "Will use default socket read timeout of #{Transport::DEFAULT_READ_TIMEOUT}" }
                                   Transport::DEFAULT_READ_TIMEOUT
                                 else
                                   # pad to account for edge cases. MK.
-                                  @heartbeat * 2.2
+                                  n = @heartbeat * 2.2
+                                  @logger.debug { "Will use socket read timeout of #{n}" }
+                                  n
                                 end
 
 
