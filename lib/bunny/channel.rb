@@ -602,7 +602,12 @@ module Bunny
       # we implement them). So we return a triple of nils immediately which apps should be
       # able to handle anyway as "got no message, no need to act". MK.
       last_basic_get_response = if @connection.open?
-                                  wait_on_basic_get_continuations
+                                  begin
+                                    wait_on_basic_get_continuations
+                                  rescue Timeout::Error => e
+                                    raise_if_continuation_resulted_in_a_channel_error!
+                                    raise e
+                                  end
                                 else
                                   [nil, nil, nil]
                                 end
