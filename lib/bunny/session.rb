@@ -101,14 +101,14 @@ module Bunny
     # @option connection_string_or_opts [String] :username ("guest") Username
     # @option connection_string_or_opts [String] :password ("guest") Password
     # @option connection_string_or_opts [String] :vhost ("/") Virtual host to use
-    # @option connection_string_or_opts [Integer] :heartbeat (600) Heartbeat interval. 0 means no heartbeat.
+    # @option connection_string_or_opts [Integer, Symbol] :heartbeat (:server) Heartbeat interval. :server means use the default suggested by RabbitMQ. 0 means no heartbeat (not recommended).
     # @option connection_string_or_opts [Integer] :network_recovery_interval (4) Recovery interval periodic network recovery will use. This includes initial pause after network failure.
     # @option connection_string_or_opts [Boolean] :tls (false) Should TLS/SSL be used?
     # @option connection_string_or_opts [String] :tls_cert (nil) Path to client TLS/SSL certificate file (.pem)
     # @option connection_string_or_opts [String] :tls_key (nil) Path to client TLS/SSL private key file (.pem)
     # @option connection_string_or_opts [Array<String>] :tls_ca_certificates Array of paths to TLS/SSL CA files (.pem), by default detected from OpenSSL configuration
     # @option connection_string_or_opts [String] :verify_peer (true) Whether TLS peer verification should be performed
-    # @option connection_string_or_opts [Keyword] :tls_version (negotiated) What TLS version should be used (:TLSv1, :TLSv1_1, or :TLSv1_2)
+    # @option connection_string_or_opts [Symbol] :tls_version (negotiated) What TLS version should be used (:TLSv1, :TLSv1_1, or :TLSv1_2)
     # @option connection_string_or_opts [Integer] :continuation_timeout (15000) Timeout for client operations that expect a response (e.g. {Bunny::Queue#get}), in milliseconds.
     # @option connection_string_or_opts [Integer] :connection_timeout (30) Timeout in seconds for connecting to the server.
     # @option connection_string_or_opts [Integer] :read_timeout (30) TCP socket read timeout in seconds.
