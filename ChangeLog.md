@@ -1,9 +1,4 @@
-## Changes between Bunny 2.7.1 and 2.7.2 (unreleased)
-
-No changes yet.
-
-
-## Changes between Bunny 2.7.0 and 2.7.1 (Sep 25th, 2017)
+## Changes between Bunny 2.7.0 and 2.8.0 (unreleased)
 
 ### Sensible Socket Read Timeouts When RabbitMQ is Configured to Disabled Heartbeats
 
