@@ -1,6 +1,50 @@
-## Changes between Bunny 2.7.0 and 2.8.0 (unreleased)
+## Changes between Bunny 2.7.1 and 2.7.2 (unreleased)
 
 No changes yet.
+
+
+## Changes between Bunny 2.7.0 and 2.7.1 (Sep 25th, 2017)
+
+### Sensible Socket Read Timeouts When RabbitMQ is Configured to Disabled Heartbeats
+
+Bunny now correctly handles scenarios where server is configured
+to disable heartbeats (which is a terrible idea, don't do it!)
+
+GitHub issue: [#519](https://github.com/ruby-amqp/bunny/issues/519).
+
+### Bunny::Channel#basic_get Usability
+
+`Bunny::Channel#basic_get` invoked with a non-existent queue now
+throws a channel exception instead of a generic operation timeout.
+
+GitHub issue: [#518](https://github.com/ruby-amqp/bunny/issues/518).
+
+### Spec Suite Improvements
+
+`BUNNY_CERTIFICATE_DIR` environment variable now can be used
+to override local CA and client certificate/key pair directory.
+The directory is expected to be the result directory generated
+by the basic [tls-gen](http://github.com/michaelklishin/tls-gen) profile.
+
+TLSv1.0 is no longer used in tests because it's being disabled by default
+by more and more installations as it has known vulnerabilities
+and is no longer considered to be acceptable by several compliance
+standards (e.g. PCI DSS).
+
+### Improved Synchronisation for channel.close Handlers
+
+`channel.close` handler will now acquire a lock . This avoids concurrency
+hazards in some rare scenarios when a channel is closed due a protocol
+exception by the server and concurrently opened by user code
+at the same time.
+
+### More Meaningful Error Messages in Bunny::Session#create_channel
+
+Sometimes users attempt to open a channel on a connection that
+isn't connected yet because `Bunny::Session#start` was never invoked.
+
+`Bunny::Session#create_channel` will now provide a more sensible exception message
+in those cases.
 
 
 ## Changes between Bunny 2.6.0 and 2.7.0 (May 11th, 2017)
