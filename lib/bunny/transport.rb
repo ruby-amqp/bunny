@@ -243,7 +243,7 @@ module Bunny
       #                         puts "Got AMQ::Protocol::EmptyResponseError, header is #{header.inspect}"
       #                       end
       type, channel, size = AMQ::Protocol::Frame.decode_header(header)
-      payload   = size>0?read_fully(size):''
+      payload   = size > 0 ? read_fully(size) : ''
       frame_end = read_fully(1)
 
       # 1) the size is miscalculated
