@@ -1,9 +1,4 @@
-## Changes between Bunny 2.7.1 and 2.7.2 (unreleased)
-
-No changes yet.
-
-
-## Changes between Bunny 2.7.0 and 2.7.1 (Sep 25th, 2017)
+## Changes between Bunny 2.7.0 and 2.8.0 (unreleased)
 
 ### Sensible Socket Read Timeouts When RabbitMQ is Configured to Disabled Heartbeats
 
@@ -51,7 +46,7 @@ in those cases.
 
 ### amq-protocol Update
 
-Minimum `amq-protocol` version is now [`2.2.0`]](https://github.com/ruby-amqp/amq-protocol/blob/master/ChangeLog.md#changes-between-210-and-220-may-11th-2017) which includes
+Minimum `amq-protocol` version is now [`2.2.0`](https://github.com/ruby-amqp/amq-protocol/blob/master/ChangeLog.md#changes-between-210-and-220-may-11th-2017) which includes
 a change in [how timestamps are encoded](https://github.com/ruby-amqp/amq-protocol/issues/64).
 
 
