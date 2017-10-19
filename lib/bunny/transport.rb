@@ -233,17 +233,13 @@ module Bunny
     # Exposed primarily for Bunny::Channel
     # @private
     def read_next_frame(opts = {})
-      header    = read_fully(7)
-      # TODO: network issues here will sometimes cause
-      #       the socket method return an empty string. We need to log
-      #       and handle this better.
-      # type, channel, size = begin
-      #                         AMQ::Protocol::Frame.decode_header(header)
-      #                       rescue AMQ::Protocol::EmptyResponseError => e
-      #                         puts "Got AMQ::Protocol::EmptyResponseError, header is #{header.inspect}"
-      #                       end
+      header              = read_fully(7)
       type, channel, size = AMQ::Protocol::Frame.decode_header(header)
-      payload   = read_fully(size)
+      payload             = if size > 0
+                              read_fully(size)
+                            else
+                              ''
+                            end
       frame_end = read_fully(1)
 
       # 1) the size is miscalculated

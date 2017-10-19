@@ -160,7 +160,7 @@ to also join the [RabbitMQ mailing list](https://groups.google.com/forum/#!forum
 
 ## Continuous Integration
 
-[![Build Status](https://travis-ci.org/ruby-amqp/bunny.png)](https://travis-ci.org/ruby-amqp/bunny/)
+[![Build Status](https://travis-ci.org/ruby-amqp/bunny.svg)](https://travis-ci.org/ruby-amqp/bunny/)
 
 
 ### News & Announcements on Twitter
