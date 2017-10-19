@@ -1,13 +1,6 @@
-## Changes between Bunny 2.7.1 and 2.7.2 (unreleased)
+## Changes between Bunny 2.7.x and 2.8.0 (unreleased)
 
-### Reading a Frame without Payload Could Result in a `Bunny::NoFinalOctetError`
-
-Reading a frame without payload (e.g. a heartbeat frame) could result in a `Bunny::NoFinalOctetError`
-with mostly idle connections.
-
-GitHub issue: https://github.com/ruby-amqp/bunny/issues/521.
-
-Contributed by GPif.
+No changes yet.
 
 
 ## Changes between Bunny 2.7.0 and 2.7.1 (Sep 25th, 2017)
