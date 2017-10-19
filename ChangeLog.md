@@ -5,7 +5,7 @@
 Reading a frame without payload (e.g. a heartbeat frame) could result in a `Bunny::NoFinalOctetError`
 with mostly idle connections.
 
-GitHub issue: https://github.com/ruby-amqp/bunny/issues/521.
+GitHub issue: [#521](https://github.com/ruby-amqp/bunny/issues/521).
 
 Contributed by GPif.
 
