@@ -1257,7 +1257,7 @@ module Bunny
 
     # @private
     def negotiate_value(client_value, server_value)
-      return server_value if client_value == :server
+      return server_value if [:server, "server"].include? client_value
 
       if client_value == 0 || server_value == 0
         [client_value, server_value].max
