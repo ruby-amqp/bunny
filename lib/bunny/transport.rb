@@ -31,6 +31,7 @@ module Bunny
     attr_writer :read_timeout
 
     def initialize(session, host, port, opts)
+      @socket = nil
       @session        = session
       @session_thread = opts[:session_thread]
       @host    = host

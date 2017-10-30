@@ -251,6 +251,7 @@ module Bunny
       @status == :closed
     end
 
+    # @return [String] Brief human-readable representation of the channel
     def to_s
       oid = ("0x%x" % (self.object_id << 1))
       "<#{self.class.name}:#{oid} number=#{@channel.id} @open=#{open?} connection=#{@connection.to_s}>"
@@ -1571,12 +1572,6 @@ module Bunny
     end
 
     # @endgroup
-
-
-    # @return [String] Brief human-readable representation of the channel
-    def to_s
-      "#<#{self.class.name}:#{object_id} @id=#{self.number} @connection=#{@connection.to_s}>"
-    end
 
 
     #
