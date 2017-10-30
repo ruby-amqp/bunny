@@ -89,7 +89,7 @@ module Bunny
     # @return [Integer] Timeout for blocking protocol operations (queue.declare, queue.bind, etc), in milliseconds. Default is 15000.
     attr_reader :continuation_timeout
     attr_reader :network_recovery_interval
-
+    attr_accessor :socket_configurator
 
     # @param [String, Hash] connection_string_or_opts Connection string or a hash of connection options
     # @param [Hash] optz Extra options not related to connection
