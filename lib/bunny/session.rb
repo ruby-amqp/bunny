@@ -78,7 +78,7 @@ module Bunny
 
     # @return [Bunny::Transport]
     attr_reader :transport
-    attr_reader :status, :port, :heartbeat, :user, :pass, :vhost, :frame_max, :channel_max, :threaded
+    attr_reader :status, :heartbeat, :user, :pass, :vhost, :frame_max, :channel_max, :threaded
     attr_reader :server_capabilities, :server_properties, :server_authentication_mechanisms, :server_locales
     attr_reader :channel_id_allocator
     # Authentication mechanism, e.g. "PLAIN" or "EXTERNAL"
@@ -141,23 +141,27 @@ module Bunny
 
       @default_hosts_shuffle_strategy = Proc.new { |hosts| hosts.shuffle }
 
-      @opts            = opts
-      log_file         = opts[:log_file] || opts[:logfile] || STDOUT
-      log_level        = opts[:log_level] || ENV["BUNNY_LOG_LEVEL"] || Logger::WARN
+      @opts                  = opts
+
+      @user                  = self.username_from(opts)
+      @pass                  = self.password_from(opts)
+      @vhost                 = self.vhost_from(opts)
+      @threaded              = opts.fetch(:threaded, true)
+      @transport             = nil
+      @heartbeat_sender      = nil
+      @last_connection_error = nil
+
+      log_file               = opts[:log_file] || opts[:logfile] || STDOUT
+      log_level              = opts[:log_level] || ENV["BUNNY_LOG_LEVEL"] || Logger::WARN
       # we might need to log a warning about ill-formatted IPv6 address but
       # progname includes hostname, so init like this first
-      @logger          = opts.fetch(:logger, init_default_logger_without_progname(log_file, log_level))
+      @logger                = opts.fetch(:logger, init_default_logger_without_progname(log_file, log_level))
 
-      @addresses       = self.addresses_from(opts)
-      @address_index   = 0
+      @addresses             = self.addresses_from(opts)
+      @address_index         = 0
 
       # re-init, see above
-      @logger          = opts.fetch(:logger, init_default_logger(log_file, log_level))
-
-      @user            = self.username_from(opts)
-      @pass            = self.password_from(opts)
-      @vhost           = self.vhost_from(opts)
-      @threaded        = opts.fetch(:threaded, true)
+      @logger                = opts.fetch(:logger, init_default_logger(log_file, log_level))
 
       validate_connection_options(opts)
 
@@ -302,10 +306,6 @@ module Bunny
 
           @transport.post_initialize_socket
           @transport.connect
-
-          if @socket_configurator
-            @transport.configure_socket(&@socket_configurator)
-          end
 
           self.init_connection
           self.open_connection

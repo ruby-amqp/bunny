@@ -10,12 +10,16 @@ module Bunny
   class ReaderLoop
 
     def initialize(transport, session, session_thread)
-      @transport      = transport
-      @session        = session
-      @session_thread = session_thread
-      @logger         = @session.logger
+      @stopping        = nil
+      @stopped         = nil
+      @network_is_down = nil
 
-      @mutex          = Mutex.new
+      @transport       = transport
+      @session         = session
+      @session_thread  = session_thread
+      @logger          = @session.logger
+
+      @mutex           = Mutex.new
     end
 
 

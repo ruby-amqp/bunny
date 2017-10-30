@@ -47,7 +47,7 @@ module Bunny
     # @return [String] Data read from the socket
     # @api public
     def read_fully(count, timeout = nil)
-      return nil if @__bunny_socket_eof_flag__
+      return nil if defined?(@__bunny_socket_eof_flag__) && @__bunny_socket_eof_flag__
 
       value = ''
       begin
@@ -80,7 +80,7 @@ module Bunny
     #
     # @api public
     def write_nonblock_fully(data, timeout = nil)
-      return nil if @__bunny_socket_eof_flag__
+      return nil if defined?(@__bunny_socket_eof_flag__) && @__bunny_socket_eof_flag__
 
       length = data.bytesize
       total_count = 0
