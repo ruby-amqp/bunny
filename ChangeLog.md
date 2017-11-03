@@ -1,4 +1,16 @@
-## Changes between Bunny 2.7.1 and 2.7.2 (unreleased)
+## Changes between Bunny 2.7.2 and 2.7.3 (unreleased)
+
+No changes yet.
+
+
+## Changes between Bunny 2.7.1 and 2.7.2 (Nov 4th, 2017)
+
+### Heartbeat Value Supports `:server` and `"server"`
+
+Heartbeat value of `:server` now can be specified as a string.
+
+Contributed by Tyrone.
+
 
 ### Reading a Frame without Payload Could Result in a `Bunny::NoFinalOctetError`
 
