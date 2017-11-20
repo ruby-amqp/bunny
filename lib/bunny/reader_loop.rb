@@ -36,11 +36,11 @@ module Bunny
         rescue AMQ::Protocol::EmptyResponseError, IOError, SystemCallError, Timeout::Error => e
           break if terminate? || @session.closing? || @session.closed?
 
-          log_exception(e)
           @network_is_down = true
           if @session.automatically_recover?
             @session.handle_network_failure(e)
           else
+            log_exception(e)
             @session_thread.raise(Bunny::NetworkFailure.new("detected a network failure: #{e.message}", e))
           end
         rescue ShutdownSignal => _
