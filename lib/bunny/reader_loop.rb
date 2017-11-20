@@ -36,11 +36,12 @@ module Bunny
         rescue AMQ::Protocol::EmptyResponseError, IOError, SystemCallError, Timeout::Error => e
           break if terminate? || @session.closing? || @session.closed?
 
-          log_exception(e)
           @network_is_down = true
           if @session.automatically_recover?
+            log_exception(e, level: :warn)
             @session.handle_network_failure(e)
           else
+            log_exception(e)
             @session_thread.raise(Bunny::NetworkFailure.new("detected a network failure: #{e.message}", e))
           end
         rescue ShutdownSignal => _
@@ -122,12 +123,12 @@ module Bunny
 
     protected
 
-    def log_exception(e)
+    def log_exception(e, level: :error)
       if !(io_error?(e) && (@session.closing? || @session.closed?))
-        @logger.error "Exception in the reader loop: #{e.class.name}: #{e.message}"
-        @logger.error "Backtrace: "
+        @logger.send level, "Exception in the reader loop: #{e.class.name}: #{e.message}"
+        @logger.send level, "Backtrace: "
         e.backtrace.each do |line|
-          @logger.error "\t#{line}"
+          @logger.send level, "\t#{line}"
         end
       end
     end
