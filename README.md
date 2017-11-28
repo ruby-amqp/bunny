@@ -154,8 +154,12 @@ Other documentation guides are available at [rubybunny.info](http://rubybunny.in
 
 ### Mailing List
 
-[Bunny has a mailing list](http://groups.google.com/group/ruby-amqp). We encourage you
-to also join the [RabbitMQ mailing list](https://groups.google.com/forum/#!forum/rabbitmq-users) mailing list. Feel free to ask any questions that you may have.
+[Bunny has a mailing list](http://groups.google.com/group/ruby-amqp). Please use it for all questions,
+investigations, and discussions. GitHub issues should be used for specific, well understood, actionable
+maintainers and contributors can work on.
+
+We encourage you to also join the [RabbitMQ mailing list](https://groups.google.com/forum/#!forum/rabbitmq-users)
+mailing list. Feel free to ask any questions that you may have.
 
 
 ## Continuous Integration
@@ -172,13 +176,17 @@ More detailed announcements can be found in the [RabbitMQ Ruby clients blog](htt
 
 ### Reporting Issues
 
-If you find a bug, poor default, missing feature or find any part of
-the API inconvenient, please [file an
-issue](http://github.com/ruby-amqp/bunny/issues) on GitHub.  When
-filing an issue, please specify which Bunny and RabbitMQ versions you
-are using, provide recent RabbitMQ log file contents if possible, and
-try to explain what behavior you expected and why. Bonus points for
-contributing failing test cases.
+If you find a bug you understand well, poor default, incorrect or unclear piece of documentation,
+or missing feature, please [file an
+issue](http://github.com/ruby-amqp/bunny/issues) on GitHub.
+
+Please use [Bunny's mailing list](http://groups.google.com/group/ruby-amqp) for questions,
+investigations, and discussions. GitHub issues should be used for specific, well understood, actionable
+maintainers and contributors can work on.
+
+When filing an issue, please specify which Bunny and RabbitMQ versions you
+are using, provide recent RabbitMQ log file contents, full exception stack traces,
+and steps to reproduce (or failing test cases).
 
 
 ## Other Ruby RabbitMQ Clients
