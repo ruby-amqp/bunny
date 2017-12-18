@@ -11,6 +11,32 @@ be mentioned.
 GitHub issue: [#528](https://github.com/ruby-amqp/bunny/issues/528), see [9df7cb](https://github.com/ruby-amqp/bunny/commit/9df7cb04d9ff12b1af62a11e239fd81e5472c872) for
 details.
 
+### JRuby 9K Compatibility
+
+A JRuby 9K compatibility issue was corrected by Marian Posăceanu.
+Note that JRuby users are recommended to use [March Hare](http://rubymarchhare.info/), a JRuby-oriented client, instead
+of Bunny.
+
+GitHub issue: [bunny#529](https://github.com/ruby-amqp/bunny/pull/529)
+
+### Connection Exceptions are Logged as Warning with Automatic Recovery
+
+When automatic recovery is enabled, connection errors are now logged as warnings
+and not errors.
+
+Contributed by Merten Falk.
+
+GitHub issue: [bunny#531](https://github.com/ruby-amqp/bunny/pull/531)
+
+### Server Heartbeat Value as a String
+
+It is now possible to specify a server-defined heartbeat value as a string (`"server"`), not just
+a symbol. This makes it easier to load settings from YAML files.
+
+Contributed by Tyrone Wilson.
+
+GitHub issue: [bunny#524](https://github.com/ruby-amqp/bunny/pull/524)
+
 
 ## Changes between Bunny 2.7.0 and 2.7.1 (Sep 25th, 2017)
 
