@@ -1,4 +1,9 @@
-## Changes between Bunny 2.7.0 and 2.8.0 (unreleased)
+## Changes between Bunny 2.8.0 and 2.9.0 (unreleased)
+
+No changes yet.
+
+
+## Changes between Bunny 2.7.0 and 2.8.0 (Dec 18th, 2018)
 
 This release has **minor breaking public API changes**.
 
