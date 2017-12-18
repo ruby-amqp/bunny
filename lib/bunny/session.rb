@@ -191,7 +191,7 @@ module Bunny
 
       client_props         = opts[:properties] || opts[:client_properties] || {}
       @client_properties   = DEFAULT_CLIENT_PROPERTIES.merge(client_props)
-      @mechanism           = opts.fetch(:auth_mechanism, "PLAIN")
+      @mechanism           = normalize_auth_mechanism(opts.fetch(:auth_mechanism, "PLAIN"))
       @credentials_encoder = credentials_encoder_for(@mechanism)
       @locale              = @opts.fetch(:locale, DEFAULT_LOCALE)
 
@@ -1391,6 +1391,17 @@ module Bunny
         CHANNEL_MAX_LIMIT
       else
         n
+      end
+    end
+
+    def normalize_auth_mechanism(value)
+      case value
+      when [] then
+        "PLAIN"
+      when nil then
+        "PLAIN"
+      else
+        value
       end
     end
 
