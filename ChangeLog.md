@@ -1,4 +1,4 @@
-## Changes between Bunny 2.7.x and 2.8.0 (unreleased)
+## Changes between Bunny 2.7.0 and 2.8.0 (unreleased)
 
 This release has **minor breaking public API changes**.
 
