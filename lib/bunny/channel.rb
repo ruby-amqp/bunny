@@ -233,6 +233,9 @@ module Bunny
     # {Bunny::Queue}, {Bunny::Exchange} and {Bunny::Consumer} instances.
     # @api public
     def close
+      # see bunny#528
+      raise_if_no_longer_open!
+
       @connection.close_channel(self)
       @status = :closed
       @work_pool.shutdown
@@ -1940,7 +1943,13 @@ module Bunny
 
     # @private
     def raise_if_no_longer_open!
-      raise ChannelAlreadyClosed.new("cannot use a channel that was already closed! Channel id: #{@id}", self) if closed?
+      if closed?
+        if @last_channel_error
+          raise ChannelAlreadyClosed.new("cannot use a closed channel! Channel id: #{@id}, closed due to a server-reported channel error: #{@last_channel_error.message}", self)
+        else
+          raise ChannelAlreadyClosed.new("cannot use a closed channel! Channel id: #{@id}", self)
+        end
+      end
     end
 
     # @private
