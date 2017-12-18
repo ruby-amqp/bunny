@@ -1383,6 +1383,7 @@ module Bunny
     end
 
     def normalize_client_channel_max(n)
+      return CHANNEL_MAX_LIMIT if n.nil?
       return CHANNEL_MAX_LIMIT if n > CHANNEL_MAX_LIMIT
 
       case n
