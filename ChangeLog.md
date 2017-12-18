@@ -1,6 +1,15 @@
 ## Changes between Bunny 2.7.x and 2.8.0 (unreleased)
 
-No changes yet.
+This release has **minor breaking public API changes**.
+
+### `Bunny::Channel#close` on a Closed Channel Now Raises a Sensible Exception
+
+`Bunny::Channel#close` on an already closed channel will now raise a sensible exception.
+If the channel was closed due to a channel-level protocol exception, that exception will
+be mentioned.
+
+GitHub issue: [#528](https://github.com/ruby-amqp/bunny/issues/528), see [9df7cb](https://github.com/ruby-amqp/bunny/commit/9df7cb04d9ff12b1af62a11e239fd81e5472c872) for
+details.
 
 
 ## Changes between Bunny 2.7.0 and 2.7.1 (Sep 25th, 2017)
