@@ -1,6 +1,26 @@
-## Changes between Bunny 2.7.2 and 2.7.3 (unreleased)
+## Changes between Bunny 2.7.3 and 2.7.4 (unreleased)
 
 No changes yet.
+
+
+## Changes between Bunny 2.7.2 and 2.7.3 (Dec 19th, 2017)
+
+### JRuby 9K Compatibility
+
+A JRuby 9K compatibility issue was corrected by Marian Posăceanu.
+Note that JRuby users are recommended to use [March Hare](http://rubymarchhare.info/), a JRuby-oriented client, instead
+of Bunny.
+
+GitHub issue: [#529](https://github.com/ruby-amqp/bunny/pull/529)
+
+### Connection Exceptions are Logged as Warning with Automatic Recovery
+
+When automatic recovery is enabled, connection errors are now logged as warnings
+and not errors.
+
+Contributed by Merten Falk.
+
+GitHub issue: [#531](https://github.com/ruby-amqp/bunny/pull/531)
 
 
 ## Changes between Bunny 2.7.1 and 2.7.2 (Nov 4th, 2017)
