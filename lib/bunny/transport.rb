@@ -303,12 +303,16 @@ module Bunny
       (opts[:port] == AMQ::Protocol::TLS_PORT) || false
     end
 
+    def tls_ca_certificates_paths_from(opts)
+      Array(opts[:cacertfile] || opts[:tls_ca_certificates] || opts[:ssl_ca_certificates])
+    end
+
     def tls_certificate_path_from(opts)
-      opts[:tls_cert] || opts[:ssl_cert] || opts[:tls_cert_path] || opts[:ssl_cert_path] || opts[:tls_certificate_path] || opts[:ssl_certificate_path]
+      opts[:certfile] || opts[:tls_cert] || opts[:ssl_cert] || opts[:tls_cert_path] || opts[:ssl_cert_path] || opts[:tls_certificate_path] || opts[:ssl_certificate_path]
     end
 
     def tls_key_path_from(opts)
-      opts[:tls_key] || opts[:ssl_key] || opts[:tls_key_path] || opts[:ssl_key_path]
+      opts[:keyfile] || opts[:tls_key] || opts[:ssl_key] || opts[:tls_key_path] || opts[:ssl_key_path]
     end
 
     def tls_certificate_from(opts)
@@ -337,7 +341,7 @@ module Bunny
     end
 
     def prepare_tls_context(opts)
-      if (opts[:verify_ssl] || opts[:verify_peer]).nil?
+      if (opts[:verify_ssl] || opts[:verify_peer] || opts[:verify]).nil?
         opts[:verify_peer] = true
       end
 
@@ -349,8 +353,8 @@ module Bunny
       @tls_key               = tls_key_from(opts)
       @tls_certificate_store = opts[:tls_certificate_store]
 
-      @tls_ca_certificates   = opts.fetch(:tls_ca_certificates, default_tls_certificates)
-      @verify_peer           = (opts[:verify_ssl] || opts[:verify_peer])
+      @tls_ca_certificates   = tls_ca_certificates_paths_from(opts) || default_tls_certificates
+      @verify_peer           = (opts[:verify_ssl] || opts[:verify_peer] || opts[:verify])
 
       @tls_context = initialize_tls_context(OpenSSL::SSL::SSLContext.new, opts)
     end

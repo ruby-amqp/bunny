@@ -46,6 +46,30 @@ describe Bunny::Session do
         expect { described_class.new("amqp://dev.rabbitmq.com/a/path/with/slashes") }.to raise_error(ArgumentError)
       end
     end
+
+    context "when URI contains query parameters" do
+      subject(:session) do
+        described_class.new("amqps://bunny_gem:bunny_password@/bunny_testbed?heartbeat=10&connection_timeout=100&channel_max=1000&verify=false&cacertfile=spec/tls/ca_certificate.pem&certfile=spec/tls/client_certificate.pem&keyfile=spec/tls/client_key.pem")
+      end
+
+      it "parses extra connection parameters" do
+        # session.start # raises "OpenSSL::SSL::SSLError: hostname "127.0.0.1" does not match the server certificate"
+
+        expect(session.user).to eq "bunny_gem"
+        expect(session.pass).to eq "bunny_password"
+        expect(session.hostname).to eq "127.0.0.1"
+        expect(session.port).to eq 5671
+        expect(session.vhost).to eq "bunny_testbed"
+        # expect(session.heartbeat).to eq(10) # require open_connection (session start)
+        expect(session.transport.connect_timeout).to eq(100)
+        expect(session.channel_max).to eq(1000)
+        expect(session.ssl?).to eq(true)
+        expect(session.transport.instance_variable_get(:@verify_peer)).to eq(false)
+        expect(session.transport.instance_variable_get(:@tls_ca_certificates)).to eq(["spec/tls/ca_certificate.pem"])
+        expect(session.transport.instance_variable_get(:@tls_ca_certificates)).to eq(["spec/tls/ca_certificate.pem"])
+        expect(session.transport.instance_variable_get(:@tls_key_path)).to eq("spec/tls/client_key.pem")
+      end
+    end
   end
 
   context "initialized with all defaults" do
@@ -319,9 +343,9 @@ describe Bunny::Session do
           password: "bunny_password",
           vhost: "bunny_testbed",
           ssl:                 true,
-          ssl_cert:            "spec/tls/client_cert.pem",
+          ssl_cert:            "spec/tls/client_certificate.pem",
           ssl_key:             "spec/tls/client_key.pem",
-          ssl_ca_certificates: ["./spec/tls/cacert.pem"])
+          ssl_ca_certificates: ["./spec/tls/ca_certificate.pem"])
       end
 
       it "uses TLS port" do
