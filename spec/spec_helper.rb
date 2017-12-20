@@ -3,15 +3,10 @@
 $LOAD_PATH.unshift File.expand_path("../lib", __FILE__)
 
 require 'bundler'
-Bundler.setup(:default, :test)
+Bundler.require(:default, :test)
 
-
-require "effin_utf8"
 require "bunny"
-require "rabbitmq/http/client"
 
-
-require "amq/protocol/version"
 puts "Using Ruby #{RUBY_VERSION}, amq-protocol #{AMQ::Protocol::VERSION}"
 
 module RabbitMQ
