@@ -191,7 +191,7 @@ module Bunny
 
       client_props         = opts[:properties] || opts[:client_properties] || {}
       @client_properties   = DEFAULT_CLIENT_PROPERTIES.merge(client_props)
-      @mechanism           = normalize_auth_mechanism(opts.fetch(:auth_mechanism, "PLAIN"))
+      @mechanism           = (opts[:auth_mechanism] || []).first || "PLAIN"
       @credentials_encoder = credentials_encoder_for(@mechanism)
       @locale              = @opts.fetch(:locale, DEFAULT_LOCALE)
 
@@ -464,7 +464,7 @@ module Bunny
     # @param [String] uri amqp or amqps URI to parse
     # @return [Hash] Parsed URI as a hash
     def self.parse_uri(uri)
-      AMQ::Settings.parse_amqp_url(uri)
+      AMQ::Settings.configure(uri)
     end
 
     # Checks if a queue with given name exists.
