@@ -60,10 +60,8 @@ describe Bunny::Session do
         expect(session.hostname).to eq "127.0.0.1"
         expect(session.port).to eq 5671
         expect(session.vhost).to eq "bunny_testbed"
-        # expect(session.heartbeat).to eq(10) # require open_connection (session start)
-        expect(session.transport.connect_timeout).to eq(100)
         expect(session.channel_max).to eq(1000)
-        expect(session.ssl?).to eq(true)
+        expect(session.uses_tls?).to eq(true)
         expect(session.transport.instance_variable_get(:@verify_peer)).to eq(false)
         expect(session.transport.instance_variable_get(:@tls_ca_certificates)).to eq(["spec/tls/ca_certificate.pem"])
         expect(session.transport.instance_variable_get(:@tls_ca_certificates)).to eq(["spec/tls/ca_certificate.pem"])
