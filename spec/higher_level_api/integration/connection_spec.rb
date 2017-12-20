@@ -62,10 +62,6 @@ describe Bunny::Session do
         expect(session.vhost).to eq "bunny_testbed"
         expect(session.channel_max).to eq(1000)
         expect(session.uses_tls?).to eq(true)
-        expect(session.transport.instance_variable_get(:@verify_peer)).to eq(false)
-        expect(session.transport.instance_variable_get(:@tls_ca_certificates)).to eq(["spec/tls/ca_certificate.pem"])
-        expect(session.transport.instance_variable_get(:@tls_ca_certificates)).to eq(["spec/tls/ca_certificate.pem"])
-        expect(session.transport.instance_variable_get(:@tls_key_path)).to eq("spec/tls/client_key.pem")
       end
     end
   end
