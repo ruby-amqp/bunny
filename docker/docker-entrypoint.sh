@@ -1,7 +1,7 @@
 #!/bin/sh
 server=rabbitmq-server
 ctl=rabbitmqctl
-delay=3
+delay=5
 
 echo "[Configuration] $(eval cat $RABBITMQ_CONFIG_FILE.config)"
 
