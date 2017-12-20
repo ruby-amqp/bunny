@@ -40,14 +40,16 @@ unless ENV["CI"]
 
   context "initialized with :tls => true" do
     let(:subject) do
-      Bunny.new(:user     => "bunny_gem",
-        :password => "bunny_password",
-        :vhost    => "bunny_testbed",
-        :tls                   => true,
-        :verify_peer           => verify_peer,
-        :tls_cert              => "#{CERTIFICATE_DIR}/client_certificate.pem",
-        :tls_key               => "#{CERTIFICATE_DIR}/client_key.pem",
-        :tls_ca_certificates   => ["#{CERTIFICATE_DIR}/ca_certificate.pem"])
+      Bunny.new(
+        hostname:  local_hostname(),
+        user:     "bunny_gem",
+        password: "bunny_password",
+        vhost:    "bunny_testbed",
+        tls: true,
+        verify_peer: verify_peer,
+        tls_cert: "#{CERTIFICATE_DIR}/client_certificate.pem",
+        tls_key: "#{CERTIFICATE_DIR}/client_key.pem",
+        tls_ca_certificates: ["#{CERTIFICATE_DIR}/ca_certificate.pem"])
     end
 
     context "peer verification is off" do
@@ -79,7 +81,9 @@ unless ENV["CI"]
 
   describe "TLS connection to RabbitMQ with client certificates" do
     let(:subject) do
-      c = Bunny.new(username: "bunny_gem",
+      c = Bunny.new(
+        hostname: local_hostname(),
+        username: "bunny_gem",
         password: "bunny_password",
         vhost: "bunny_testbed",
         tls: true,
@@ -101,7 +105,9 @@ unless ENV["CI"]
 
   describe "TLS connection to RabbitMQ without client certificates" do
     let(:subject) do
-      c = Bunny.new(username: "bunny_gem",
+      c = Bunny.new(
+        hostname: local_hostname(),
+        username: "bunny_gem",
         password: "bunny_password",
         vhost: "bunny_testbed",
         tls: true,
@@ -121,7 +127,7 @@ unless ENV["CI"]
 
   describe "TLS connection to RabbitMQ with a connection string" do
     let(:subject) do
-      c = Bunny.new("amqps://bunny_gem:bunny_password@#{local_hostname}/bunny_testbed",
+      c = Bunny.new("amqps://bunny_gem:bunny_password@#{local_hostname()}/bunny_testbed",
         tls_cert: "#{CERTIFICATE_DIR}/client_certificate.pem",
         tls_key: "#{CERTIFICATE_DIR}/client_key.pem",
         tls_ca_certificates: ["#{CERTIFICATE_DIR}/ca_certificate.pem"],
@@ -140,7 +146,7 @@ unless ENV["CI"]
 
   describe "TLS connection to RabbitMQ with a connection string and w/o client certificate and key" do
     let(:subject) do
-      c = Bunny.new("amqps://bunny_gem:bunny_password@#{local_hostname}/bunny_testbed",
+      c = Bunny.new("amqps://bunny_gem:bunny_password@#{local_hostname()}/bunny_testbed",
         tls_ca_certificates: ["#{CERTIFICATE_DIR}/ca_certificate.pem"],
         verify_peer: verify_peer)
       c.start
@@ -177,7 +183,9 @@ unless ENV["CI"]
 
   describe "TLS connection to RabbitMQ with client certificates provided inline" do
     let(:subject) do
-      c = Bunny.new(username: "bunny_gem",
+      c = Bunny.new(
+        hostname: local_hostname(),
+        username: "bunny_gem",
         password: "bunny_password",
         vhost: "bunny_testbed",
         tls: true,
@@ -198,7 +206,9 @@ unless ENV["CI"]
 
   describe "TLS connection to RabbitMQ with tls_version TLSv1.1 specified" do
     let(:subject) do
-      c = Bunny.new(username: "bunny_gem",
+      c = Bunny.new(
+        hostname: local_hostname(),
+        username: "bunny_gem",
         password: "bunny_password",
         vhost: "bunny_testbed",
         tls: true,
