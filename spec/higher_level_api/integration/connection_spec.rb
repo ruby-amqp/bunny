@@ -1,5 +1,9 @@
 require "spec_helper"
 
+def local_hostname
+  ENV.fetch("BUNNY_RABBITMQ_HOSTNAME", "127.0.0.1")
+end
+
 describe Bunny::Session do
   let(:port)     { AMQ::Protocol::DEFAULT_PORT }
   let(:username) { "guest" }
@@ -49,17 +53,18 @@ describe Bunny::Session do
 
     context "when URI contains query parameters" do
       subject(:session) do
-        described_class.new("amqps://bunny_gem:bunny_password@/bunny_testbed?heartbeat=10&connection_timeout=100&channel_max=1000&verify=false&cacertfile=spec/tls/ca_certificate.pem&certfile=spec/tls/client_certificate.pem&keyfile=spec/tls/client_key.pem")
+        described_class.new("amqps://bunny_gem:bunny_password@#{local_hostname}/bunny_testbed?heartbeat=10&connection_timeout=100&channel_max=1000&verify=false&cacertfile=spec/tls/ca_certificate.pem&certfile=spec/tls/client_certificate.pem&keyfile=spec/tls/client_key.pem")
       end
 
       it "parses extra connection parameters" do
-        # session.start # raises "OpenSSL::SSL::SSLError: hostname "127.0.0.1" does not match the server certificate"
+        session.start
 
         expect(session.user).to eq "bunny_gem"
         expect(session.pass).to eq "bunny_password"
-        expect(session.hostname).to eq "127.0.0.1"
+        expect(session.hostname).to eq(local_hostname)
         expect(session.port).to eq 5671
         expect(session.vhost).to eq "bunny_testbed"
+        expect(session.heartbeat).to eq(10)
         expect(session.channel_max).to eq(1000)
         expect(session.uses_tls?).to eq(true)
       end
