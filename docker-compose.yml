@@ -5,6 +5,7 @@ services:
     container_name: bunny_rabbitmq
     environment:
       RABBITMQ_NODENAME: bunny
+      BUNNY_RABBITMQ_HOSTNAME: mercurio
       # link to spec specific configuration
       RABBITMQ_CONFIG_FILE: /spec/config/rabbitmq
       RABBITMQ_ENABLED_PLUGINS_FILE: /spec/config/enabled_plugins
