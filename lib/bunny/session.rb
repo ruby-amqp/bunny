@@ -191,7 +191,7 @@ module Bunny
 
       client_props         = opts[:properties] || opts[:client_properties] || {}
       @client_properties   = DEFAULT_CLIENT_PROPERTIES.merge(client_props)
-      @mechanism           = (opts[:auth_mechanism] || []).first || "PLAIN"
+      @mechanism           = normalize_auth_mechanism(opts.fetch(:auth_mechanism, "PLAIN"))
       @credentials_encoder = credentials_encoder_for(@mechanism)
       @locale              = @opts.fetch(:locale, DEFAULT_LOCALE)
 
