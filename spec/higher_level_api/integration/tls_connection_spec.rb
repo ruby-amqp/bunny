@@ -141,6 +141,22 @@ unless ENV["CI"]
     end
 
     include_examples "successful TLS connection"
+
+    context "when URI contains query parameters" do
+      subject(:session) do
+        Bunny.new("amqps://bunny_gem:bunny_password@mercurio/bunny_testbed?heartbeat=10&connection_timeout=100&channel_max=1000&verify=false&cacertfile=spec/tls/ca_certificate.pem&certfile=spec/tls/client_certificate.pem&keyfile=spec/tls/client_key.pem")
+      end
+
+      it "parses extra connection parameters" do
+        session.start
+
+        expect(session.uses_tls?).to eq(true)
+        expect(session.transport.verify_peer).to eq(false)
+        expect(session.transport.tls_ca_certificates).to eq(["spec/tls/ca_certificate.pem"])
+        expect(session.transport.tls_certificate_path).to eq("spec/tls/client_certificate.pem")
+        expect(session.transport.tls_key_path).to eq("spec/tls/client_key.pem")
+      end
+    end
   end
 
 
