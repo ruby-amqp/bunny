@@ -26,7 +26,7 @@ module Bunny
     DEFAULT_WRITE_TIMEOUT = 30.0
 
     attr_reader :session, :host, :port, :socket, :connect_timeout, :read_timeout, :write_timeout, :disconnect_timeout
-    attr_reader :tls_context
+    attr_reader :tls_context, :verify_peer, :tls_ca_certificates, :tls_certificate_path, :tls_key_path
 
     attr_writer :read_timeout
 
