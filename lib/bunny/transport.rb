@@ -26,7 +26,7 @@ module Bunny
     DEFAULT_WRITE_TIMEOUT = 30.0
 
     attr_reader :session, :host, :port, :socket, :connect_timeout, :read_timeout, :write_timeout, :disconnect_timeout
-    attr_reader :tls_context
+    attr_reader :tls_context, :verify_peer, :tls_ca_certificates, :tls_certificate_path, :tls_key_path
 
     attr_writer :read_timeout
 
@@ -354,9 +354,20 @@ module Bunny
       @tls_certificate_store = opts[:tls_certificate_store]
 
       @tls_ca_certificates   = tls_ca_certificates_paths_from(opts) || default_tls_certificates
-      @verify_peer           = (opts[:verify_ssl] || opts[:verify_peer] || opts[:verify])
+      @verify_peer           = as_boolean(opts[:verify_ssl] || opts[:verify_peer] || opts[:verify])
 
       @tls_context = initialize_tls_context(OpenSSL::SSL::SSLContext.new, opts)
+    end
+
+    def as_boolean(val)
+      case val
+      when true    then true
+      when false   then false
+      when "true"  then true
+      when "false" then false
+      else
+        !!val
+      end
     end
 
     def wrap_in_tls_socket(socket)
