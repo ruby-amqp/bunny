@@ -2,7 +2,7 @@
 require "spec_helper"
 
 unless ENV["CI"]
-  CERTIFICATE_DIR=ENV.fetch("BUNNY_CERTIFICATE_DIR", "./spec/tls")
+  CERTIFICATE_DIR = ENV.fetch("BUNNY_CERTIFICATE_DIR", "./spec/tls")
   puts "Will use certificates from #{CERTIFICATE_DIR}"
 
   shared_examples_for "successful TLS connection" do
@@ -144,7 +144,7 @@ unless ENV["CI"]
 
     context "when URI contains query parameters" do
       subject(:session) do
-        Bunny.new("amqps://bunny_gem:bunny_password@mercurio/bunny_testbed?heartbeat=10&connection_timeout=100&channel_max=1000&verify=false&cacertfile=spec/tls/ca_certificate.pem&certfile=spec/tls/client_certificate.pem&keyfile=spec/tls/client_key.pem")
+        Bunny.new("amqps://bunny_gem:bunny_password@#{local_hostname()}/bunny_testbed?heartbeat=10&connection_timeout=100&channel_max=1000&verify=false&cacertfile=#{CERTIFICATE_DIR}/ca_certificate.pem&certfile=#{CERTIFICATE_DIR}/client_certificate.pem&keyfile=#{CERTIFICATE_DIR}/client_key.pem")
       end
 
       it "parses extra connection parameters" do
@@ -152,9 +152,9 @@ unless ENV["CI"]
 
         expect(session.uses_tls?).to eq(true)
         expect(session.transport.verify_peer).to eq(false)
-        expect(session.transport.tls_ca_certificates).to eq(["spec/tls/ca_certificate.pem"])
-        expect(session.transport.tls_certificate_path).to eq("spec/tls/client_certificate.pem")
-        expect(session.transport.tls_key_path).to eq("spec/tls/client_key.pem")
+        expect(session.transport.tls_ca_certificates).to eq(["#{CERTIFICATE_DIR}/ca_certificate.pem"])
+        expect(session.transport.tls_certificate_path).to eq("#{CERTIFICATE_DIR}/client_certificate.pem")
+        expect(session.transport.tls_key_path).to eq("#{CERTIFICATE_DIR}/client_key.pem")
       end
     end
   end
