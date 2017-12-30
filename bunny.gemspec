@@ -11,7 +11,7 @@ Gem::Specification.new do |s|
   s.summary = "Popular easy to use Ruby client for RabbitMQ"
   s.description = "Easy to use, feature complete Ruby client for RabbitMQ 3.3 and later versions."
   s.license = "MIT"
-  s.required_ruby_version = Gem::Requirement.new(">= 2.0")
+  s.required_ruby_version = Gem::Requirement.new(">= 2.2")
 
   # Sorted alphabetically.
   s.authors = [

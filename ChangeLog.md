@@ -1,6 +1,8 @@
 ## Changes between Bunny 2.8.0 and 2.9.0 (unreleased)
 
-No changes yet.
+### Ruby 2.2 Requirement
+
+Bunny now requires Ruby 2.2.
 
 
 ## Changes between Bunny 2.7.0 and 2.8.0 (Dec 18th, 2018)
