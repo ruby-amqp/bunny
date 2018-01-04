@@ -11,11 +11,22 @@ No changes yet.
 Bunny now requires Ruby 2.2.
 
 
-### Support for Additional URI Query Parameters
+### Connection Recovery Now Retries on Timeouts
 
-GitHub issue: [#534](https://github.com/ruby-amqp/bunny/pull/534).
+Connection recovery now will retry on TCP connection timeouts.
+
+GitHub issue: [#537](https://github.com/ruby-amqp/bunny/pull/537).
+
+
+### More URI Query Parameters
+
+Bunny now supports more URI query parameters plus aliases
+that are identical to those of the server.
 
 Contributed by Andrew Babichev.
+
+GitHub issue: [#534](https://github.com/ruby-amqp/bunny/pull/534)
+
 
 
 ## Changes between Bunny 2.7.0 and 2.8.0 (Dec 18th, 2018)
