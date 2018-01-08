@@ -1,8 +1,15 @@
-## Changes between Bunny 2.8.0 and 2.9.0 (unreleased)
+## Changes between Bunny 2.8.0 and 2.9.0 (Jan 8th, 2018)
 
 ### Ruby 2.2 Requirement
 
 Bunny now requires Ruby 2.2.
+
+
+### Support for Additional URI Query Parameters
+
+GitHub issue: [#534](https://github.com/ruby-amqp/bunny/pull/534).
+
+Contributed by Andrew Babichev.
 
 
 ## Changes between Bunny 2.7.0 and 2.8.0 (Dec 18th, 2018)
