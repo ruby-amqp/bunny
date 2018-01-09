@@ -24,7 +24,7 @@ Gem::Specification.new do |s|
   s.email = ["michael.s.klishin@gmail.com"]
 
   # Dependencies
-  s.add_dependency "amq-protocol", ">= 2.2.0"
+  s.add_dependency "amq-protocol", "~> 2.3.0"
 
   # Files.
   s.has_rdoc = true
