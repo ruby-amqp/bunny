@@ -1,4 +1,19 @@
-## Changes between Bunny 2.7.0 and 2.8.0 (unreleased)
+## Changes between Bunny 2.8.1 and 2.8.2 (unreleased)
+
+No changes yet.
+
+
+
+## Changes between Bunny 2.8.0 and 2.8.1 (Jan 9th, 2018)
+
+### amq-protocol Dependency
+
+This version depends on amq-protocol `2.2.x`.
+
+GitHub issue: [#538](https://github.com/ruby-amqp/bunny/issues/538).
+
+
+## Changes between Bunny 2.7.0 and 2.8.0 (Dec 18th, 2017)
 
 This release has **minor breaking public API changes**.
 
