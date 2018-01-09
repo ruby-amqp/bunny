@@ -50,4 +50,4 @@ def custom_gem(name, options = Hash.new)
   end
 end
 
-custom_gem "amq-protocol", git: "https://github.com/ruby-amqp/amq-protocol", branch: "master"
+custom_gem "amq-protocol", "~> 2.2.0"
