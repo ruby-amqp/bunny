@@ -353,7 +353,8 @@ module Bunny
       @tls_key               = tls_key_from(opts)
       @tls_certificate_store = opts[:tls_certificate_store]
 
-      @tls_ca_certificates   = tls_ca_certificates_paths_from(opts) || default_tls_certificates
+      @tls_ca_certificates   = tls_ca_certificates_paths_from(opts)
+      @tls_ca_certificates   = default_tls_certificates if @tls_ca_certificates.empty?
       @verify_peer           = as_boolean(opts[:verify_ssl] || opts[:verify_peer] || opts[:verify])
 
       @tls_context = initialize_tls_context(OpenSSL::SSL::SSLContext.new, opts)
