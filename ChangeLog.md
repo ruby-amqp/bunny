@@ -1,7 +1,15 @@
-## Changes between Bunny 2.9.0 and 2.9.1 (unreleased)
+## Changes between Bunny 2.9.1 and 2.9.2 (unreleased)
 
 No changes yet.
 
+
+## Changes between Bunny 2.9.0 and 2.9.1 (Jan 11th, 2018)
+
+### Default CA Certificate Paths are Respected Again
+
+GitHub issue: [#539](https://github.com/ruby-amqp/bunny/issues/539).
+
+Contributed by Carl Hörberg.
 
 
 ## Changes between Bunny 2.8.0 and 2.9.0 (Jan 8th, 2018)
