@@ -63,10 +63,17 @@ Bunny `1.5.0` and later versions only support RabbitMQ `3.3+`.
 Bunny `1.4.x` and earlier supports RabbitMQ 2.x and 3.x.
 
 
-## Project Maturity
+## Change Log
 
 Bunny is a mature library (started in early 2009) with
 a stable public API.
+
+Change logs per release series:
+
+ * [master](https://github.com/ruby-amqp/bunny/blob/master/ChangeLog.md)
+ * [2.9.x](https://github.com/ruby-amqp/bunny/blob/2.9.x-stable/ChangeLog.md)
+ * [2.8.x](https://github.com/ruby-amqp/bunny/blob/2.8.x-stable/ChangeLog.md)
+
 
 
 ## Installation & Bundler Dependency
