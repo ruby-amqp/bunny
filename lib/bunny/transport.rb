@@ -341,7 +341,7 @@ module Bunny
     end
 
     def prepare_tls_context(opts)
-      if (opts[:verify_ssl] || opts[:verify_peer] || opts[:verify]).nil?
+      if opts.values_at(:verify_ssl, :verify_peer, :verify).all?(&:nil?)
         opts[:verify_peer] = true
       end
 
