@@ -1,6 +1,15 @@
 ## Changes between Bunny 2.9.0 and 2.10.0 (unreleased)
 
-No changes yet.
+### `verify_peer: false` Has the Expected Effect Again
+
+Make sure `verify_peer: false` has the expected effect again.
+
+Default value of connection's `:verify_peer` option to `true` only when
+all of `:verify_ssl`, `:verify_peer`, and `:verify` are `nil`.
+
+GitHub issue: [#541](https://github.com/ruby-amqp/bunny/issues/541).
+
+Contributed by Howard Ding.
 
 
 
