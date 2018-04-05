@@ -59,11 +59,8 @@ module Bunny
         # @eof will break Rubinius' TCPSocket implementation. MK.
         @__bunny_socket_eof_flag__ = true
       rescue *READ_RETRY_EXCEPTION_CLASSES
-        if IO.select([self], nil, nil, timeout)
-          retry
-        else
-          raise Timeout::Error, "IO timeout when reading #{count} bytes"
-        end
+        IO.select([self], nil, nil, timeout)
+        retry
       end
       value
     end # read_fully
