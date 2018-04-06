@@ -44,14 +44,20 @@ module Bunny
           @__bunny_socket_eof_flag__ = true
         rescue OpenSSL::SSL::SSLError => e
           if e.message == "read would block"
-            IO.select([self], nil, nil, timeout)
-            retry
+            if IO.select([self], nil, nil, timeout)
+              retry
+            else
+              raise Timeout::Error, "IO timeout when reading #{count} bytes"
+            end
           else
             raise e
           end
         rescue *READ_RETRY_EXCEPTION_CLASSES => e
-          IO.select([self], nil, nil, timeout)
-          retry
+          if IO.select([self], nil, nil, timeout)
+            retry
+          else
+            raise Timeout::Error, "IO timeout when reading #{count} bytes"
+          end
         end
         value
       end
