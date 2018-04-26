@@ -209,9 +209,9 @@ module Bunny
       @socket.flush if @socket
     end
 
-    def read_fully(count)
+    def read_fully(count, timeout = @read_timeout)
       begin
-        @socket.read_fully(count, @read_timeout)
+        @socket.read_fully(count, timeout)
       rescue SystemCallError, Timeout::Error, Bunny::ConnectionError, IOError => e
         @logger.error "Got an exception when receiving data: #{e.message} (#{e.class.name})"
         close
@@ -233,7 +233,7 @@ module Bunny
     # Exposed primarily for Bunny::Channel
     # @private
     def read_next_frame(opts = {})
-      header              = read_fully(7)
+      header              = read_fully(7, nil)
       type, channel, size = AMQ::Protocol::Frame.decode_header(header)
       payload             = if size > 0
                               read_fully(size)
