@@ -29,6 +29,10 @@ module Bunny
     attr_reader :tls_context, :verify_peer, :tls_ca_certificates, :tls_certificate_path, :tls_key_path
 
     attr_writer :read_timeout
+    def read_timeout=(v)
+      @read_timeout = v
+      @read_timeout = nil if @read_timeout == 0
+    end
 
     def initialize(session, host, port, opts)
       @session        = session
@@ -209,9 +213,9 @@ module Bunny
       @socket.flush if @socket
     end
 
-    def read_fully(count, timeout = @read_timeout)
+    def read_fully(count)
       begin
-        @socket.read_fully(count, timeout)
+        @socket.read_fully(count, @read_timeout)
       rescue SystemCallError, Timeout::Error, Bunny::ConnectionError, IOError => e
         @logger.error "Got an exception when receiving data: #{e.message} (#{e.class.name})"
         close
@@ -233,7 +237,7 @@ module Bunny
     # Exposed primarily for Bunny::Channel
     # @private
     def read_next_frame(opts = {})
-      header              = read_fully(7, nil)
+      header              = read_fully(7)
       type, channel, size = AMQ::Protocol::Frame.decode_header(header)
       payload             = if size > 0
                               read_fully(size)

@@ -1177,22 +1177,11 @@ module Bunny
       @logger.debug { "Heartbeat interval negotiation: client = #{@client_heartbeat}, server = #{connection_tune.heartbeat}, result = #{@heartbeat}" }
       @logger.info "Heartbeat interval used (in seconds): #{@heartbeat}"
 
-      # We set the read_write_timeout to twice the heartbeat value
+      # We set the read_write_timeout to twice the heartbeat value,
+      # and then some padding for edge cases.
       # This allows us to miss a single heartbeat before we time out the socket.
-      #
-      # Since RabbitMQ can be configured to disable heartbeats (bad idea but technically
-      # possible nonetheless), we need to take both client and server values into
-      # consideration when deciding about using the heartbeat value for read timeouts.
-      @transport.read_timeout = if heartbeat_disabled?(@client_heartbeat) || heartbeat_disabled?(@heartbeat)
-                                  @logger.debug { "Will use default socket read timeout of #{Transport::DEFAULT_READ_TIMEOUT}" }
-                                  Transport::DEFAULT_READ_TIMEOUT
-                                else
-                                  # pad to account for edge cases. MK.
-                                  n = @heartbeat * 2.2
-                                  @logger.debug { "Will use socket read timeout of #{n}" }
-                                  n
-                                end
-
+      @transport.read_timeout = @heartbeat * 2.2
+      @logger.debug { "Will use socket read timeout of #{@transport.read_timeout}" }
 
       # if there are existing channels we've just recovered from
       # a network failure and need to fix the allocated set. See issue 205. MK.
