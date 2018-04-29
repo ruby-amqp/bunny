@@ -101,7 +101,7 @@ module Bunny
     # @option connection_string_or_opts [String] :username ("guest") Username
     # @option connection_string_or_opts [String] :password ("guest") Password
     # @option connection_string_or_opts [String] :vhost ("/") Virtual host to use
-    # @option connection_string_or_opts [Integer, Symbol] :heartbeat (:server) Heartbeat interval. :server means use the default suggested by RabbitMQ. 0 means no heartbeat (not recommended).
+    # @option connection_string_or_opts [Integer, Symbol] :heartbeat (:server) Heartbeat interval. :server means use the default suggested by RabbitMQ. 0 means heartbeats and socket read timeouts will be disabled (not recommended).
     # @option connection_string_or_opts [Integer] :network_recovery_interval (4) Recovery interval periodic network recovery will use. This includes initial pause after network failure.
     # @option connection_string_or_opts [Boolean] :tls (false) Should TLS/SSL be used?
     # @option connection_string_or_opts [String] :tls_cert (nil) Path to client TLS/SSL certificate file (.pem)
@@ -111,7 +111,7 @@ module Bunny
     # @option connection_string_or_opts [Symbol] :tls_version (negotiated) What TLS version should be used (:TLSv1, :TLSv1_1, or :TLSv1_2)
     # @option connection_string_or_opts [Integer] :continuation_timeout (15000) Timeout for client operations that expect a response (e.g. {Bunny::Queue#get}), in milliseconds.
     # @option connection_string_or_opts [Integer] :connection_timeout (30) Timeout in seconds for connecting to the server.
-    # @option connection_string_or_opts [Integer] :read_timeout (30) TCP socket read timeout in seconds.
+    # @option connection_string_or_opts [Integer] :read_timeout (30) TCP socket read timeout in seconds. If heartbeats are disabled this will be ignored.
     # @option connection_string_or_opts [Integer] :write_timeout (30) TCP socket write timeout in seconds.
     # @option connection_string_or_opts [Proc] :hosts_shuffle_strategy A Proc that reorders a list of host strings, defaults to Array#shuffle
     # @option connection_string_or_opts [Logger] :logger The logger.  If missing, one is created using :log_file and :log_level.
@@ -1177,22 +1177,13 @@ module Bunny
       @logger.debug { "Heartbeat interval negotiation: client = #{@client_heartbeat}, server = #{connection_tune.heartbeat}, result = #{@heartbeat}" }
       @logger.info "Heartbeat interval used (in seconds): #{@heartbeat}"
 
-      # We set the read_write_timeout to twice the heartbeat value
+      # We set the read_write_timeout to twice the heartbeat value,
+      # and then some padding for edge cases.
       # This allows us to miss a single heartbeat before we time out the socket.
-      #
-      # Since RabbitMQ can be configured to disable heartbeats (bad idea but technically
-      # possible nonetheless), we need to take both client and server values into
-      # consideration when deciding about using the heartbeat value for read timeouts.
-      @transport.read_timeout = if heartbeat_disabled?(@client_heartbeat) || heartbeat_disabled?(@heartbeat)
-                                  @logger.debug { "Will use default socket read timeout of #{Transport::DEFAULT_READ_TIMEOUT}" }
-                                  Transport::DEFAULT_READ_TIMEOUT
-                                else
-                                  # pad to account for edge cases. MK.
-                                  n = @heartbeat * 2.2
-                                  @logger.debug { "Will use socket read timeout of #{n}" }
-                                  n
-                                end
-
+      # If heartbeats are disabled, assume that TCP keepalives or a similar mechanism will be used
+      # and disable socket read timeouts. See ruby-amqp/bunny#551.
+      @transport.read_timeout = @heartbeat * 2.2
+      @logger.debug { "Will use socket read timeout of #{@transport.read_timeout}" }
 
       # if there are existing channels we've just recovered from
       # a network failure and need to fix the allocated set. See issue 205. MK.

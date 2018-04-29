@@ -29,6 +29,10 @@ module Bunny
     attr_reader :tls_context, :verify_peer, :tls_ca_certificates, :tls_certificate_path, :tls_key_path
 
     attr_writer :read_timeout
+    def read_timeout=(v)
+      @read_timeout = v
+      @read_timeout = nil if @read_timeout == 0
+    end
 
     def initialize(session, host, port, opts)
       @session        = session
