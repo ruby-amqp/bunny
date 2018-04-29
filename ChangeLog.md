@@ -12,6 +12,19 @@ GitHub issue: [#541](https://github.com/ruby-amqp/bunny/issues/541).
 Contributed by Howard Ding.
 
 
+### Disabling Heartbeats Disables TCP Socket Read Timeouts
+
+Disabling heartbeats will also disable TCP socket read timeouts,
+since the two are effectively interconnected. In this case a mechanism
+such as [TCP keepalives](http://www.rabbitmq.com/heartbeats.html#tcp-keepalives) is assumed to be used.
+
+See [RabbitMQ heartbeats guide](http://www.rabbitmq.com/heartbeats.html) for a more
+detailed overview of the options.
+
+GH issue: [#519](https://github.com/ruby-amqp/bunny/issues/519).
+
+Contributed by Carl Hörberg.
+
 
 ## Changes between Bunny 2.8.0 and 2.9.0 (Jan 8th, 2018)
 
