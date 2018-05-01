@@ -107,7 +107,7 @@ module Bunny
       end
 
     end
-  rescue LoadError => le
+  rescue LoadError
     puts "Could not load OpenSSL"
   end
 end
