@@ -1,5 +1,16 @@
 ## Changes between Bunny 2.9.0 and 2.10.0 (unreleased)
 
+### Disabling Heartbeats Also Disables TCP Socket Read Timeouts
+
+Disabling heartbeats will now disable TCP socket read timeouts.
+
+They go hand in hand and users who prefer TCP keepalives via
+kernel configuration previously had to also explicitly configure
+a zero read timeout.
+
+Contributed by Carl Hörberg.
+
+
 ### `verify_peer: false` Has the Expected Effect Again
 
 Make sure `verify_peer: false` has the expected effect again.
