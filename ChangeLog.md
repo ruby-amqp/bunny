@@ -8,6 +8,8 @@ They go hand in hand and users who prefer TCP keepalives via
 kernel configuration previously had to also explicitly configure
 a zero read timeout.
 
+GitHub issue: [#551](https://github.com/ruby-amqp/bunny/pull/551).
+
 Contributed by Carl Hörberg.
 
 
@@ -21,6 +23,14 @@ all of `:verify_ssl`, `:verify_peer`, and `:verify` are `nil`.
 GitHub issue: [#541](https://github.com/ruby-amqp/bunny/issues/541).
 
 Contributed by Howard Ding.
+
+
+### Squashed Some Warnings
+
+GitHub issue: [#552](https://github.com/ruby-amqp/bunny/pull/552).
+
+Contributed by @utilum.
+
 
 
 ### Disabling Heartbeats Disables TCP Socket Read Timeouts
