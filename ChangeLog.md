@@ -1,5 +1,8 @@
 ## Changes between Bunny 2.9.0 and 2.10.0 (unreleased)
 
+`2.10.0` is a maintenance release that introduces a couple of
+**minor potentially breaking changes**.
+
 ### Disabling Heartbeats Also Disables TCP Socket Read Timeouts
 
 Disabling heartbeats will now disable TCP socket read timeouts.
@@ -23,6 +26,18 @@ all of `:verify_ssl`, `:verify_peer`, and `:verify` are `nil`.
 GitHub issue: [#541](https://github.com/ruby-amqp/bunny/issues/541).
 
 Contributed by Howard Ding.
+
+
+### Maximum Number of Channels Limited to 2K by Default
+
+Default maximum number of channels is limited to 2047 to reduce the probability
+of severe channel leaks. See [rabbitmq/rabbitmq-server#1593](https://github.com/rabbitmq/rabbitmq-server/issues/1593) for details.
+
+Applications that want to use more channels per connection can still configure a higher value
+using the `channel_max` setting (for both Bunny and RabbitMQ server).
+
+GitHub issue: [#553](https://github.com/ruby-amqp/bunny/pull/553).
+
 
 
 ### Squashed Some Warnings
