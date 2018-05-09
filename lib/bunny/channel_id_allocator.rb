@@ -17,7 +17,9 @@ module Bunny
     #
 
     # @param [Integer] max_channel Max allowed channel id
-    def initialize(max_channel = ((1 << 16) - 1))
+    def initialize(max_channel = ((1 << 11) - 1))
+      # channel 0 has special meaning in the protocol, so start
+      # allocator at 1
       @allocator = AMQ::IntAllocator.new(1, max_channel)
       @mutex     = Monitor.new
     end
