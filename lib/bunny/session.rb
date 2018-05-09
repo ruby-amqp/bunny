@@ -36,10 +36,10 @@ module Bunny
     DEFAULT_HEARTBEAT = :server
     # @private
     DEFAULT_FRAME_MAX = 131072
-    # 2^16 - 1, maximum representable signed 16 bit integer.
+    # Hard limit the user cannot go over regardless of server configuration.
     # @private
     CHANNEL_MAX_LIMIT   = 65535
-    DEFAULT_CHANNEL_MAX = CHANNEL_MAX_LIMIT
+    DEFAULT_CHANNEL_MAX = 2047
 
     # backwards compatibility
     # @private
@@ -109,6 +109,7 @@ module Bunny
     # @option connection_string_or_opts [Array<String>] :tls_ca_certificates Array of paths to TLS/SSL CA files (.pem), by default detected from OpenSSL configuration
     # @option connection_string_or_opts [String] :verify_peer (true) Whether TLS peer verification should be performed
     # @option connection_string_or_opts [Symbol] :tls_version (negotiated) What TLS version should be used (:TLSv1, :TLSv1_1, or :TLSv1_2)
+    # @option connection_string_or_opts [Integer] :channel_max (2047) Maximum number of channels allowed on this connection, minus 1 to account for the special channel 0.
     # @option connection_string_or_opts [Integer] :continuation_timeout (15000) Timeout for client operations that expect a response (e.g. {Bunny::Queue#get}), in milliseconds.
     # @option connection_string_or_opts [Integer] :connection_timeout (30) Timeout in seconds for connecting to the server.
     # @option connection_string_or_opts [Integer] :read_timeout (30) TCP socket read timeout in seconds. If heartbeats are disabled this will be ignored.
@@ -1188,6 +1189,7 @@ module Bunny
       # if there are existing channels we've just recovered from
       # a network failure and need to fix the allocated set. See issue 205. MK.
       if @channels.empty?
+        @logger.debug { "Initializing channel ID allocator with channel_max = #{@channel_max}" }
         @channel_id_allocator = ChannelIdAllocator.new(@channel_max)
       end
 
