@@ -169,6 +169,17 @@ module Bunny
       @connection = connection
       @logger     = connection.logger
       @id         = id || @connection.next_channel_id
+
+      # channel allocator is exhausted
+      if @id < 0
+        msg = "Cannot open a channel: max number of channels on connection reached. Connection channel_max value: #{@connection.channel_max}"
+        @logger.error(msg)
+
+        raise RuntmeError.new(msg)
+      else
+        @logger.debug { "Allocated channel id: #{@id}" }
+      end
+
       @status     = :opening
 
       @connection.register_channel(self)
