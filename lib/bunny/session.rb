@@ -1069,7 +1069,9 @@ module Bunny
       # threads publish on the same channel aggressively, at some point frames will be
       # delivered out of order and broker will raise 505 UNEXPECTED_FRAME exception.
       # If we synchronize on the channel, however, this is both thread safe and pretty fine-grained
-      # locking. Note that "single frame" methods do not need this kind of synchronization. MK.
+      # locking. Note that "single frame" methods technically do not need this kind of synchronization
+      # (no incorrect frame interleaving of the same kind as with basic.publish isn't possible) but we
+      # still recommend not sharing channels between threads except for consumer-only cases in the docs. MK.
       channel.synchronize do
         # see rabbitmq/rabbitmq-server#156
         data = frames.reduce("") { |acc, frame| acc << frame.encode }
@@ -1088,7 +1090,7 @@ module Bunny
       # threads publish on the same channel aggressively, at some point frames will be
       # delivered out of order and broker will raise 505 UNEXPECTED_FRAME exception.
       # If we synchronize on the channel, however, this is both thread safe and pretty fine-grained
-      # locking. Note that "single frame" methods do not need this kind of synchronization. MK.
+      # locking. See a note about "single frame" methods in a comment in `send_frameset`. MK.
       channel.synchronize do
         frames.each { |frame| self.send_frame_without_timeout(frame, false) }
         signal_activity!
