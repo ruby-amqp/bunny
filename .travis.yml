@@ -15,6 +15,7 @@ services:
 branches:
   only:
     - master
-    - 2.6.x-stable
+    - 2.9.x-stable
+    - 2.8.x-stable    
 env:
   - CI=true
