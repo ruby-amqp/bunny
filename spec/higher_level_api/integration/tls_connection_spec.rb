@@ -1,6 +1,8 @@
 # -*- coding: utf-8 -*-
 require "spec_helper"
 
+require "socket"
+
 unless ENV["CI"]
   CERTIFICATE_DIR = ENV.fetch("BUNNY_CERTIFICATE_DIR", "./spec/tls")
   puts "Will use certificates from #{CERTIFICATE_DIR}"
@@ -35,7 +37,7 @@ unless ENV["CI"]
   end
 
   def local_hostname
-    ENV.fetch("BUNNY_RABBITMQ_HOSTNAME", "127.0.0.1")
+    ENV.fetch("BUNNY_RABBITMQ_HOSTNAME", "localhost")
   end
 
   context "initialized with :tls => true" do
