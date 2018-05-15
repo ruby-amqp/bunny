@@ -1,6 +1,8 @@
 language: ruby
 bundler_args: --without development
 cache: bundler
+before_install:
+  - gem install bundler
 before_script: "./bin/ci/before_build"
 script: "bundle exec rake integration_without_recovery"
 rvm:
