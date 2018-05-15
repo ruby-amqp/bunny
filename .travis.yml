@@ -16,6 +16,10 @@ branches:
   only:
     - master
     - 2.9.x-stable
-    - 2.8.x-stable    
+    - 2.8.x-stable
 env:
   - CI=true
+matrix:
+  allow_failures:
+    rvm:
+      - ruby-head
