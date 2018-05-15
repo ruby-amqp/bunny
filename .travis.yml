@@ -5,9 +5,10 @@ before_script: "./bin/ci/before_build"
 script: "bundle exec rake integration_without_recovery"
 rvm:
   - ruby-head
-  - "2.4.1"
-  - "2.3.4"
-  - "2.2.7"
+  - "2.5.1"
+  - "2.4.2"
+  - "2.3.5"
+  - "2.2.8"
 notifications:
   email: michael@rabbitmq.com
 services:
