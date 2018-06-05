@@ -357,8 +357,6 @@ module Bunny
       @tls_key               = tls_key_from(opts)
       @tls_certificate_store = opts[:tls_certificate_store]
 
-      @tls_ca_certificates   = tls_ca_certificates_paths_from(opts)
-      @tls_ca_certificates   = default_tls_certificates if @tls_ca_certificates.empty?
       @verify_peer           = as_boolean(opts[:verify_ssl] || opts[:verify_peer] || opts[:verify])
 
       @tls_context = initialize_tls_context(OpenSSL::SSL::SSLContext.new, opts)
@@ -417,7 +415,7 @@ module Bunny
       ctx.cert_store = if @tls_certificate_store
                          @tls_certificate_store
                        else
-                         initialize_tls_certificate_store(@tls_ca_certificates)
+                         initialize_tls_certificate_store(tls_ca_certificates_paths_from(opts))
                        end
 
       if !@tls_certificate
@@ -450,23 +448,6 @@ but prone to man-in-the-middle attacks. Please set verify_peer: true in producti
       ctx
     end
 
-    def default_tls_certificates
-      if defined?(JRUBY_VERSION)
-        # see https://github.com/jruby/jruby/issues/1055. MK.
-        []
-      else
-        default_ca_file = ENV[OpenSSL::X509::DEFAULT_CERT_FILE_ENV] || OpenSSL::X509::DEFAULT_CERT_FILE
-        default_ca_path = ENV[OpenSSL::X509::DEFAULT_CERT_DIR_ENV] || OpenSSL::X509::DEFAULT_CERT_DIR
-
-        [
-          default_ca_file,
-          File.join(default_ca_path, 'ca-certificates.crt'), # Ubuntu/Debian
-          File.join(default_ca_path, 'ca-bundle.crt'),       # Amazon Linux & Fedora/RHEL
-          File.join(default_ca_path, 'ca-bundle.pem')        # OpenSUSE
-          ].uniq
-      end
-    end
-
     def initialize_tls_certificate_store(certs)
       cert_files = []
       cert_inlines = []
@@ -481,10 +462,8 @@ but prone to man-in-the-middle attacks. Please set verify_peer: true in producti
       end
       @logger.debug { "Using CA certificates at #{cert_files.join(', ')}" }
       @logger.debug { "Using #{cert_inlines.count} inline CA certificates" }
-      if certs.empty?
-        @logger.error "No CA certificates found, add one with :tls_ca_certificates"
-      end
       OpenSSL::X509::Store.new.tap do |store|
+        store.set_default_paths
         cert_files.select { |path| File.readable?(path) }.
           each { |path| store.add_file(path) }
         cert_inlines.
