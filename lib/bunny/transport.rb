@@ -415,7 +415,9 @@ module Bunny
       ctx.cert_store = if @tls_certificate_store
                          @tls_certificate_store
                        else
-                         initialize_tls_certificate_store(tls_ca_certificates_paths_from(opts))
+                         # this ivar exists so that this value can be exposed in the API
+                         @tls_ca_certificates = tls_ca_certificates_paths_from(opts)
+                         initialize_tls_certificate_store(@tls_ca_certificates)
                        end
 
       if !@tls_certificate
