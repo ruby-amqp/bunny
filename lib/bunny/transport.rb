@@ -463,9 +463,6 @@ but prone to man-in-the-middle attacks. Please set verify_peer: true in producti
       end
       @logger.debug { "Using CA certificates at #{cert_files.join(', ')}" }
       @logger.debug { "Using #{cert_inlines.count} inline CA certificates" }
-      if certs.empty?
-        @logger.error "No CA certificates found, add one with :tls_ca_certificates"
-      end
       OpenSSL::X509::Store.new.tap do |store|
         store.set_default_paths
         cert_files.select { |path| File.readable?(path) }.
