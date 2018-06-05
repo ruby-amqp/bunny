@@ -1,3 +1,9 @@
+## Changes between Bunny 2.10.0 and 2.11.0 (unreleased)
+
+No changes yet.
+
+
+
 ## Changes between Bunny 2.9.0 and 2.10.0 (Jun 5th, 2018)
 
 `2.10.0` is a maintenance release that introduces a couple of
