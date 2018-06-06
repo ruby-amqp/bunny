@@ -1,6 +1,14 @@
 ## Changes between Bunny 2.10.0 and 2.11.0 (unreleased)
 
-No changes yet.
+### More Reliable System-wide Trusted Certificate Directory Detection
+
+Bunny no longer tries to compile a list of trusted CA certificates on its own.
+Instead it uses an OpenSSL API method that makes OpenSSL set the path(s),
+which should cover more platforms and be forward- and backward-compatible.
+
+GitHub issue: [#555](https://github.com/ruby-amqp/bunny/issues/555).
+
+Contributed by Ana María Martínez Gómez.
 
 
 
