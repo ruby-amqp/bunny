@@ -101,7 +101,7 @@ module Bunny
     # @option connection_string_or_opts [String] :username ("guest") Username
     # @option connection_string_or_opts [String] :password ("guest") Password
     # @option connection_string_or_opts [String] :vhost ("/") Virtual host to use
-    # @option connection_string_or_opts [Integer, Symbol] :heartbeat (:server) Heartbeat interval. :server means use the default suggested by RabbitMQ. 0 means heartbeats and socket read timeouts will be disabled (not recommended).
+    # @option connection_string_or_opts [Integer, Symbol] :heartbeat (:server) Heartbeat timeout to offer to the server. :server means use the value suggested by RabbitMQ. 0 means heartbeats and socket read timeouts will be disabled (not recommended).
     # @option connection_string_or_opts [Integer] :network_recovery_interval (4) Recovery interval periodic network recovery will use. This includes initial pause after network failure.
     # @option connection_string_or_opts [Boolean] :tls (false) Should TLS/SSL be used?
     # @option connection_string_or_opts [String] :tls_cert (nil) Path to client TLS/SSL certificate file (.pem)
@@ -233,8 +233,12 @@ module Bunny
     # @return [String] Virtual host used
     def virtual_host; self.vhost; end
 
-    # @return [Integer] Heartbeat interval used
+    # @deprecated
+    # @return [Integer] Heartbeat timeout (not interval) used
     def heartbeat_interval; self.heartbeat; end
+
+    # @return [Integer] Heartbeat timeout used
+    def heartbeat_timeout; self.heartbeat; end
 
     # @return [Boolean] true if this connection uses TLS (SSL)
     def uses_tls?
@@ -944,7 +948,7 @@ module Bunny
 
     # @private
     def heartbeat_from(options)
-      options[:heartbeat] || options[:heartbeat_interval] || options[:requested_heartbeat] || DEFAULT_HEARTBEAT
+      options[:heartbeat] || options[:heartbeat_timeout] || options[:requested_heartbeat] || options[:heartbeat_interval] || DEFAULT_HEARTBEAT
     end
 
     # @private

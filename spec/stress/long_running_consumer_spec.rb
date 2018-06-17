@@ -9,7 +9,7 @@ unless ENV["CI"]
     before :all do
       @connection = Bunny.new(username: "bunny_gem",
         password: "bunny_password", vhost: "bunny_testbed",
-        automatic_recovery: false, heartbeat_interval: 6)
+        automatic_recovery: false, heartbeat_timeout: 6)
       @connection.start
     end
 

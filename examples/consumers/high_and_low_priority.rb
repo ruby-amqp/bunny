@@ -11,7 +11,7 @@ require 'bunny'
 HIGH_PRIORITY_Q = "bunny.examples.priority.hilo.high"
 LOW_PRIORITY_Q  = "bunny.examples.priority.hilo.low"
 
-conn = Bunny.new(:heartbeat_interval => 8)
+conn = Bunny.new(heartbeat_timeout: 8)
 conn.start
 
 ch1  = conn.create_channel
