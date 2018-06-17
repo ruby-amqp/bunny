@@ -8,7 +8,7 @@ $:.unshift(File.expand_path("../../../lib", __FILE__))
 
 require 'bunny'
 
-conn = Bunny.new(:heartbeat_interval => 8, :automatically_recover => false)
+conn = Bunny.new(heartbeat_timeout: 8, automatically_recover: false)
 conn.start
 
 ch = conn.create_channel

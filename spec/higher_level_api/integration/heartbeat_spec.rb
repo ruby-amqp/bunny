@@ -3,7 +3,7 @@ require "spec_helper"
 describe "Client-defined heartbeat interval" do
   context "with value > 0" do
     let(:connection) do
-      c = Bunny.new(username: "bunny_gem", password: "bunny_password", vhost: "bunny_testbed", heartbeat_interval: 4)
+      c = Bunny.new(username: "bunny_gem", password: "bunny_password", vhost: "bunny_testbed", heartbeat_timeout: 4)
       c.start
       c
     end
@@ -19,7 +19,7 @@ describe "Client-defined heartbeat interval" do
   context "with value = 0" do
     let(:connection) do
       c = Bunny.new(username: "bunny_gem", password: "bunny_password", vhost: "bunny_testbed",
-        heartbeat_interval: 0, automatically_recover: false)
+        heartbeat_timeout: 0, automatically_recover: false)
       c.start
       c
     end
@@ -35,7 +35,7 @@ end
 
 describe "Server-defined heartbeat interval" do
   let(:connection) do
-    c = Bunny.new(username: "bunny_gem", password: "bunny_password", vhost: "bunny_testbed", heartbeat_interval: :server)
+    c = Bunny.new(username: "bunny_gem", password: "bunny_password", vhost: "bunny_testbed", heartbeat_timeout: :server)
     c.start
     c
   end

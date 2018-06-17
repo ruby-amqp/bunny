@@ -462,7 +462,7 @@ describe Bunny::Session do
     let(:interval) { 1 }
 
     subject do
-      described_class.new(hostname: host, username: username, password: password, vhost: vhost, heartbeat_interval: interval)
+      described_class.new(hostname: host, username: username, password: password, vhost: vhost, heartbeat_timeout: interval)
     end
 
     it "successfully connects" do
