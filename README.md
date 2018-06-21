@@ -71,8 +71,9 @@ a stable public API.
 Change logs per release series:
 
  * [master](https://github.com/ruby-amqp/bunny/blob/master/ChangeLog.md)
+ * [2.11.x](https://github.com/ruby-amqp/bunny/blob/2.11.x-stable/ChangeLog.md)
+ * [2.10.x](https://github.com/ruby-amqp/bunny/blob/2.10.x-stable/ChangeLog.md)
  * [2.9.x](https://github.com/ruby-amqp/bunny/blob/2.9.x-stable/ChangeLog.md)
- * [2.8.x](https://github.com/ruby-amqp/bunny/blob/2.8.x-stable/ChangeLog.md)
 
 
 
