@@ -1,4 +1,9 @@
-## Changes between Bunny 2.10.0 and 2.11.0 (unreleased)
+## Changes between Bunny 2.11.0 and 2.11.1 (unreleased)
+
+No changes yet.
+
+
+## Changes between Bunny 2.10.0 and 2.11.0 (Jun 21st, 2018)
 
 ### More Reliable System-wide Trusted Certificate Directory Detection
 
