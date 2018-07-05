@@ -24,10 +24,9 @@ Gem::Specification.new do |s|
   s.email = ["michael.s.klishin@gmail.com"]
 
   # Dependencies
-  s.add_dependency "amq-protocol", "~> 2.3.0"
+  s.add_runtime_dependency 'amq-protocol', '~> 2.3', '>= 2.3.0'
 
   # Files.
-  s.has_rdoc = true
   s.extra_rdoc_files = ["README.md"]
   s.files         = `git ls-files`.split("\n")
   s.test_files    = `git ls-files -- spec/*`.split("\n")
