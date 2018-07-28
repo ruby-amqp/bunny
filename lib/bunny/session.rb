@@ -757,6 +757,7 @@ module Bunny
         end
       else
         @logger.error "Ran out of recovery attempts (limit set to #{@max_recovery_attempts})"
+        self.close
       end
     end
 
