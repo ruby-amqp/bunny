@@ -1150,20 +1150,20 @@ module Bunny
 
     # @group Exchange operations (exchange.*)
 
-    # Declares a echange using echange.declare AMQP 0.9.1 method.
+    # Declares a exchange using echange.declare AMQP 0.9.1 method.
     #
     # @param [String] name Exchange name
     # @param [String,Symbol] type Exchange type, e.g. :fanout or :topic
     # @param [Hash] opts Exchange properties
     #
-    # @option opts [Boolean] durable (false)     Should information about this echange be persisted to disk so that it
+    # @option opts [Boolean] durable (false)     Should information about this exchange be persisted to disk so that it
     #                                            can survive broker restarts? Typically set to true for long-lived exchanges.
-    # @option opts [Boolean] auto_delete (false) Should this echange be deleted when it is no longer used?
+    # @option opts [Boolean] auto_delete (false) Should this exchange be deleted when it is no longer used?
     # @option opts [Boolean] passive (false)   If true, exchange will be checked for existence. If it does not
     #                                          exist, {Bunny::NotFound} will be raised.
     #
     # @return [AMQ::Protocol::Exchange::DeclareOk] RabbitMQ response
-    # @see http://rubybunny.info/articles/echanges.html Exchanges and Publishing guide
+    # @see http://rubybunny.info/articles/exchanges.html Exchanges and Publishing guide
     # @api public
     def exchange_declare(name, type, opts = {})
       raise_if_no_longer_open!
