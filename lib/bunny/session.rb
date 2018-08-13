@@ -1079,9 +1079,13 @@ module Bunny
       # still recommend not sharing channels between threads except for consumer-only cases in the docs. MK.
       channel.synchronize do
         # see rabbitmq/rabbitmq-server#156
-        data = frames.reduce("") { |acc, frame| acc << frame.encode }
-        @transport.write(data)
-        signal_activity!
+        if open?
+          data = frames.reduce("") { |acc, frame| acc << frame.encode }
+          @transport.write(data)
+          signal_activity!
+        else
+          raise ConnectionClosedError.new(frames)
+        end
       end
     end # send_frameset(frames)
 
@@ -1097,8 +1101,12 @@ module Bunny
       # If we synchronize on the channel, however, this is both thread safe and pretty fine-grained
       # locking. See a note about "single frame" methods in a comment in `send_frameset`. MK.
       channel.synchronize do
-        frames.each { |frame| self.send_frame_without_timeout(frame, false) }
-        signal_activity!
+        if open?
+          frames.each { |frame| self.send_frame_without_timeout(frame, false) }
+          signal_activity!
+        else
+          raise ConnectionClosedError.new(frames)
+        end
       end
     end # send_frameset_without_timeout(frames)
 
