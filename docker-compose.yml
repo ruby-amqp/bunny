@@ -18,3 +18,11 @@ services:
       - 15672:15672
     volumes:
       - ./spec:/spec:ro
+  toxiproxy:
+    container_name: toxiproxy
+    image: shopify/toxiproxy
+    ports:
+      - 8474:8474
+      - 11111:11111
+    depends_on:
+      - rabbitmq
