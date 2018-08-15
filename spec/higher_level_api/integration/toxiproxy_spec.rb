@@ -32,4 +32,6 @@ if ::Toxiproxy.running?
       end
     end
   end
+else
+  puts "Toxiproxy isn't running, some examples will be skipped"
 end
