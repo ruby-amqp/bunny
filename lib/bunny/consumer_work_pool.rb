@@ -25,6 +25,7 @@ module Bunny
       @shutdown_conditional = ::ConditionVariable.new
       @queue = ::Queue.new
       @paused = false
+      @running = false
     end
 
 
