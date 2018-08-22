@@ -417,7 +417,7 @@ module Bunny
       @status_mutex.synchronize { @status == :closed }
     end
 
-    # @return [Boolean] true if this AMQP 0.9.1 connection has been programmatically closed
+    # @return [Boolean] true if this AMQP 0.9.1 connection has been closed by the user (as opposed to the server)
     def manually_closed?
       @status_mutex.synchronize { @manually_closed == true }
     end
