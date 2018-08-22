@@ -16,6 +16,10 @@ module Bunny
       @logger         = @session.logger
 
       @mutex          = Mutex.new
+
+      @stopping        = false
+      @stopped         = false
+      @network_is_down = false
     end
 
 

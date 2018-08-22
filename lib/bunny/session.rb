@@ -152,15 +152,17 @@ module Bunny
       @addresses       = self.addresses_from(opts)
       @address_index   = 0
 
-      # re-init, see above
-      @logger          = opts.fetch(:logger, init_default_logger(log_file, log_level))
-
+      @transport       = nil
       @user            = self.username_from(opts)
       @pass            = self.password_from(opts)
       @vhost           = self.vhost_from(opts)
       @threaded        = opts.fetch(:threaded, true)
 
+      # re-init, see above
+      @logger          = opts.fetch(:logger, init_default_logger(log_file, log_level))
+
       validate_connection_options(opts)
+      @last_connection_error = nil
 
       # should automatic recovery from network failures be used?
       @automatically_recover = if opts[:automatically_recover].nil? && opts[:automatic_recovery].nil?
@@ -188,6 +190,7 @@ module Bunny
       @client_channel_max = normalize_client_channel_max(opts.fetch(:channel_max, DEFAULT_CHANNEL_MAX))
       # will be-renegotiated during connection tuning steps. MK.
       @channel_max        = @client_channel_max
+      @heartbeat_sender   = nil
       @client_heartbeat   = self.heartbeat_from(opts)
 
       client_props         = opts[:properties] || opts[:client_properties] || {}
@@ -307,10 +310,6 @@ module Bunny
 
           @transport.post_initialize_socket
           @transport.connect
-
-          if @socket_configurator
-            @transport.configure_socket(&@socket_configurator)
-          end
 
           self.init_connection
           self.open_connection

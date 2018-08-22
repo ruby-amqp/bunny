@@ -8,6 +8,11 @@ module Bunny
       # methods found in Bunny::Socket.
       class SSLSocket < Bunny::SSLSocket
 
+        def initialize(*args)
+          super
+          @__bunny_socket_eof_flag__ = false
+        end
+
         # Reads given number of bytes with an optional timeout
         #
         # @param [Integer] count How many bytes to read
