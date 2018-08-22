@@ -24,6 +24,11 @@ module Bunny
                                       [Errno::EAGAIN, Errno::EWOULDBLOCK, IO::WaitWritable]
                                     end
 
+      def initialize(*args)
+        super
+        @__bunny_socket_eof_flag__ = false
+      end
+
       # Reads given number of bytes with an optional timeout
       #
       # @param [Integer] count How many bytes to read
