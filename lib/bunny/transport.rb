@@ -28,7 +28,6 @@ module Bunny
     attr_reader :session, :host, :port, :socket, :connect_timeout, :read_timeout, :write_timeout, :disconnect_timeout
     attr_reader :tls_context, :verify_peer, :tls_ca_certificates, :tls_certificate_path, :tls_key_path
 
-    attr_writer :read_timeout
     def read_timeout=(v)
       @read_timeout = v
       @read_timeout = nil if @read_timeout == 0
