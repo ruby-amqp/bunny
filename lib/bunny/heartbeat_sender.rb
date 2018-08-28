@@ -29,6 +29,7 @@ module Bunny
         @interval = [(period / 2) - 1, 0.4].max
 
         @thread = Thread.new(&method(:run))
+        @thread.report_on_exception = false if @thread.respond_to?(:report_on_exception)
       end
     end
 
