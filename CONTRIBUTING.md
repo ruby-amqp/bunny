@@ -90,7 +90,7 @@ Version >= 1.6.0+ is required for compose version 2 syntax.
 After those have been installed (and the `docker-compose` command is available on your command line path), run
 
 ```
-docker-compose up
+docker-compose build && docker-compose up
 ```
 
 The first time you do this, it will take some time, since it has to download everything it needs

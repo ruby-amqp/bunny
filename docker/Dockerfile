@@ -1,13 +1,13 @@
-FROM debian:jessie
+FROM ubuntu:bionic
 
 RUN apt-get -q update && \
-    apt-get install -yq --no-install-recommends wget ca-certificates
+    apt-get install -yq --no-install-recommends gnupg1 wget ca-certificates apt-transport-https
 
-RUN echo 'deb http://www.rabbitmq.com/debian/ testing main' > /etc/apt/sources.list.d/rabbitmq.list && \
-    wget -O- https://www.rabbitmq.com/rabbitmq-release-signing-key.asc | apt-key add -
+RUN echo 'deb https://dl.bintray.com/rabbitmq/debian bionic main erlang' > /etc/apt/sources.list.d/rabbitmq.list && \
+    wget -O - 'https://dl.bintray.com/rabbitmq/Keys/rabbitmq-release-signing-key.asc' | apt-key add -
 
 RUN apt-get -q update && \
-    apt-get install -yq --no-install-recommends rabbitmq-server
+    apt-get install -yq rabbitmq-server
 
 COPY docker-entrypoint.sh /
 
