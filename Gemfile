@@ -29,6 +29,10 @@ group :development do
   gem "ruby-prof", :platform => :mri
 
   gem "json",      :platform => :ruby_18
+
+  gem "ripl"
+  gem "ripl-multi_line"
+  gem "ripl-irb"
 end
 
 group :test do
