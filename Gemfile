@@ -11,7 +11,7 @@ extend Module.new {
 
     local_path = File.expand_path("../vendor/#{name}", __FILE__)
     if File.exist?(local_path)
-      super name, options.merge(:path => local_path).
+      super name, options.merge(path: local_path).
         delete_if { |key, _| [:git, :branch].include?(key) }
     else
       super name, *args
@@ -19,16 +19,14 @@ extend Module.new {
   end
 }
 
-gem "rake", ">= 10.0.4"
+gem "rake", ">= 12.3.1"
 gem "effin_utf8"
 
 group :development do
   gem "yard"
 
-  gem "redcarpet", :platform => :mri
-  gem "ruby-prof", :platform => :mri
-
-  gem "json",      :platform => :ruby_18
+  gem "redcarpet", platform: :mri
+  gem "ruby-prof", platform: :mri
 
   gem "ripl"
   gem "ripl-multi_line"
@@ -49,7 +47,7 @@ def custom_gem(name, options = Hash.new)
   local_path = File.expand_path("../vendor/#{name}", __FILE__)
   if File.exist?(local_path)
     puts "Using #{name} from #{local_path}..."
-    gem name, options.merge(:path => local_path).delete_if { |key, _| [:git, :branch].include?(key) }
+    gem name, options.merge(path: local_path).delete_if { |key, _| [:git, :branch].include?(key) }
   else
     gem name, options
   end
