@@ -12,7 +12,6 @@ $server -detached
 echo "[Configuration] Waiting $delay seconds for RabbitMQ to start."
 
 sleep $delay
-$ctl await
 
 echo '*** Creating users ***'
 $ctl add_user bunny_gem bunny_password
