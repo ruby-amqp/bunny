@@ -1003,10 +1003,13 @@ module Bunny
     def queue_declare(name, opts = {})
       raise_if_no_longer_open!
 
-      @pending_queue_declare_name = name
+      # strip trailing new line and carriage returns
+      # just like RabbitMQ does
+      safe_name = name.gsub(/[\r\n]/, "")
+      @pending_queue_declare_name = safe_name
       @connection.send_frame(
         AMQ::Protocol::Queue::Declare.encode(@id,
-          name,
+          @pending_queue_declare_name,
           opts.fetch(:passive, false),
           opts.fetch(:durable, false),
           opts.fetch(:exclusive, false),
@@ -1020,7 +1023,7 @@ module Bunny
         end
       ensure
         # clear pending continuation context if it belongs to us
-        @pending_queue_declare_name = nil if @pending_queue_declare_name == name
+        @pending_queue_declare_name = nil if @pending_queue_declare_name == safe_name
       end
       raise_if_continuation_resulted_in_a_channel_error!
 
