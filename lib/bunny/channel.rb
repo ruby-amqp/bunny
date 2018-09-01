@@ -985,7 +985,8 @@ module Bunny
 
     # Declares a queue using queue.declare AMQP 0.9.1 method.
     #
-    # @param [String] name Queue name
+    # @param [String] name The name of the queue or an empty string to let RabbitMQ generate a name.
+    #                      Note that LF and CR characters will be stripped from the value.
     # @param [Hash] opts Queue properties
     #
     # @option opts [Boolean] durable (false)     Should information about this queue be persisted to disk so that it
@@ -1155,7 +1156,8 @@ module Bunny
 
     # Declares a exchange using echange.declare AMQP 0.9.1 method.
     #
-    # @param [String] name Exchange name
+    # @param [String] name The name of the exchange. Note that LF and CR characters
+    #                       will be stripped from the value.
     # @param [String,Symbol] type Exchange type, e.g. :fanout or :topic
     # @param [Hash] opts Exchange properties
     #
