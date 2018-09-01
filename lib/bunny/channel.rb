@@ -1171,8 +1171,11 @@ module Bunny
     def exchange_declare(name, type, opts = {})
       raise_if_no_longer_open!
 
+      # strip trailing new line and carriage returns
+      # just like RabbitMQ does
+      safe_name = name.gsub(/[\r\n]/, "")
       @connection.send_frame(AMQ::Protocol::Exchange::Declare.encode(@id,
-          name,
+          safe_name,
           type.to_s,
           opts.fetch(:passive, false),
           opts.fetch(:durable, false),
