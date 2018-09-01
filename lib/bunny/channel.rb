@@ -648,7 +648,7 @@ module Bunny
 
       @connection.send_frame(AMQ::Protocol::Basic::Qos.encode(@id, 0, count, global))
 
-      Bunny::Timeout.timeout(wait_on_continuations_timeout, ClientTimeout) do
+      with_continuation_timeout do
         @last_basic_qos_ok = wait_on_continuations
       end
       raise_if_continuation_resulted_in_a_channel_error!
@@ -669,7 +669,7 @@ module Bunny
       raise_if_no_longer_open!
 
       @connection.send_frame(AMQ::Protocol::Basic::Recover.encode(@id, requeue))
-      Bunny::Timeout.timeout(wait_on_continuations_timeout, ClientTimeout) do
+      with_continuation_timeout do
         @last_basic_recover_ok = wait_on_continuations
       end
       raise_if_continuation_resulted_in_a_channel_error!
@@ -876,7 +876,7 @@ module Bunny
           arguments))
 
       begin
-        Bunny::Timeout.timeout(wait_on_continuations_timeout, ClientTimeout) do
+        with_continuation_timeout do
           @last_basic_consume_ok = wait_on_continuations
         end
       rescue Exception => e
@@ -926,7 +926,7 @@ module Bunny
           consumer.arguments))
 
       begin
-        Bunny::Timeout.timeout(wait_on_continuations_timeout, ClientTimeout) do
+        with_continuation_timeout do
           @last_basic_consume_ok = wait_on_continuations
         end
       rescue Exception => e
@@ -961,7 +961,7 @@ module Bunny
     def basic_cancel(consumer_tag)
       @connection.send_frame(AMQ::Protocol::Basic::Cancel.encode(@id, consumer_tag, false))
 
-      Bunny::Timeout.timeout(wait_on_continuations_timeout, ClientTimeout) do
+      with_continuation_timeout do
         @last_basic_cancel_ok = wait_on_continuations
       end
 
@@ -985,7 +985,8 @@ module Bunny
 
     # Declares a queue using queue.declare AMQP 0.9.1 method.
     #
-    # @param [String] name Queue name
+    # @param [String] name The name of the queue or an empty string to let RabbitMQ generate a name.
+    #                      Note that LF and CR characters will be stripped from the value.
     # @param [Hash] opts Queue properties
     #
     # @option opts [Boolean] durable (false)     Should information about this queue be persisted to disk so that it
@@ -1003,16 +1004,28 @@ module Bunny
     def queue_declare(name, opts = {})
       raise_if_no_longer_open!
 
-      @connection.send_frame(AMQ::Protocol::Queue::Declare.encode(@id,
-          name,
+      # strip trailing new line and carriage returns
+      # just like RabbitMQ does
+      safe_name = name.gsub(/[\r\n]/, "")
+      @pending_queue_declare_name = safe_name
+      @connection.send_frame(
+        AMQ::Protocol::Queue::Declare.encode(@id,
+          @pending_queue_declare_name,
           opts.fetch(:passive, false),
           opts.fetch(:durable, false),
           opts.fetch(:exclusive, false),
           opts.fetch(:auto_delete, false),
           false,
           opts[:arguments]))
-      @last_queue_declare_ok = wait_on_continuations
 
+      begin
+        with_continuation_timeout do
+          @last_queue_declare_ok = wait_on_continuations
+        end
+      ensure
+        # clear pending continuation context if it belongs to us
+        @pending_queue_declare_name = nil if @pending_queue_declare_name == safe_name
+      end
       raise_if_continuation_resulted_in_a_channel_error!
 
       @last_queue_declare_ok
@@ -1037,7 +1050,7 @@ module Bunny
           opts[:if_unused],
           opts[:if_empty],
           false))
-      Bunny::Timeout.timeout(wait_on_continuations_timeout, ClientTimeout) do
+      with_continuation_timeout do
         @last_queue_delete_ok = wait_on_continuations
       end
       raise_if_continuation_resulted_in_a_channel_error!
@@ -1057,7 +1070,7 @@ module Bunny
 
       @connection.send_frame(AMQ::Protocol::Queue::Purge.encode(@id, name, false))
 
-      Bunny::Timeout.timeout(wait_on_continuations_timeout, ClientTimeout) do
+      with_continuation_timeout do
         @last_queue_purge_ok = wait_on_continuations
       end
       raise_if_continuation_resulted_in_a_channel_error!
@@ -1093,7 +1106,7 @@ module Bunny
           (opts[:routing_key] || opts[:key]),
           false,
           opts[:arguments]))
-      Bunny::Timeout.timeout(wait_on_continuations_timeout, ClientTimeout) do
+      with_continuation_timeout do
         @last_queue_bind_ok = wait_on_continuations
       end
 
@@ -1128,7 +1141,7 @@ module Bunny
           exchange_name,
           opts[:routing_key],
           opts[:arguments]))
-      Bunny::Timeout.timeout(wait_on_continuations_timeout, ClientTimeout) do
+      with_continuation_timeout do
         @last_queue_unbind_ok = wait_on_continuations
       end
 
@@ -1143,7 +1156,8 @@ module Bunny
 
     # Declares a exchange using echange.declare AMQP 0.9.1 method.
     #
-    # @param [String] name Exchange name
+    # @param [String] name The name of the exchange. Note that LF and CR characters
+    #                       will be stripped from the value.
     # @param [String,Symbol] type Exchange type, e.g. :fanout or :topic
     # @param [Hash] opts Exchange properties
     #
@@ -1159,8 +1173,11 @@ module Bunny
     def exchange_declare(name, type, opts = {})
       raise_if_no_longer_open!
 
+      # strip trailing new line and carriage returns
+      # just like RabbitMQ does
+      safe_name = name.gsub(/[\r\n]/, "")
       @connection.send_frame(AMQ::Protocol::Exchange::Declare.encode(@id,
-          name,
+          safe_name,
           type.to_s,
           opts.fetch(:passive, false),
           opts.fetch(:durable, false),
@@ -1168,7 +1185,7 @@ module Bunny
           opts.fetch(:internal, false),
           false, # nowait
           opts[:arguments]))
-      Bunny::Timeout.timeout(wait_on_continuations_timeout, ClientTimeout) do
+      with_continuation_timeout do
         @last_exchange_declare_ok = wait_on_continuations
       end
 
@@ -1193,7 +1210,7 @@ module Bunny
           name,
           opts[:if_unused],
           false))
-      Bunny::Timeout.timeout(wait_on_continuations_timeout, ClientTimeout) do
+      with_continuation_timeout do
         @last_exchange_delete_ok = wait_on_continuations
       end
 
@@ -1237,7 +1254,7 @@ module Bunny
           opts[:routing_key],
           false,
           opts[:arguments]))
-      Bunny::Timeout.timeout(wait_on_continuations_timeout, ClientTimeout) do
+      with_continuation_timeout do
         @last_exchange_bind_ok = wait_on_continuations
       end
 
@@ -1281,7 +1298,7 @@ module Bunny
           opts[:routing_key],
           false,
           opts[:arguments]))
-      Bunny::Timeout.timeout(wait_on_continuations_timeout, ClientTimeout) do
+      with_continuation_timeout do
         @last_exchange_unbind_ok = wait_on_continuations
       end
 
@@ -1309,7 +1326,7 @@ module Bunny
       raise_if_no_longer_open!
 
       @connection.send_frame(AMQ::Protocol::Channel::Flow.encode(@id, active))
-      Bunny::Timeout.timeout(wait_on_continuations_timeout, ClientTimeout) do
+      with_continuation_timeout do
         @last_channel_flow_ok = wait_on_continuations
       end
       raise_if_continuation_resulted_in_a_channel_error!
@@ -1330,7 +1347,7 @@ module Bunny
       raise_if_no_longer_open!
 
       @connection.send_frame(AMQ::Protocol::Tx::Select.encode(@id))
-      Bunny::Timeout.timeout(wait_on_continuations_timeout, ClientTimeout) do
+      with_continuation_timeout do
         @last_tx_select_ok = wait_on_continuations
       end
       raise_if_continuation_resulted_in_a_channel_error!
@@ -1346,7 +1363,7 @@ module Bunny
       raise_if_no_longer_open!
 
       @connection.send_frame(AMQ::Protocol::Tx::Commit.encode(@id))
-      Bunny::Timeout.timeout(wait_on_continuations_timeout, ClientTimeout) do
+      with_continuation_timeout do
         @last_tx_commit_ok = wait_on_continuations
       end
       raise_if_continuation_resulted_in_a_channel_error!
@@ -1361,7 +1378,7 @@ module Bunny
       raise_if_no_longer_open!
 
       @connection.send_frame(AMQ::Protocol::Tx::Rollback.encode(@id))
-      Bunny::Timeout.timeout(wait_on_continuations_timeout, ClientTimeout) do
+      with_continuation_timeout do
         @last_tx_rollback_ok = wait_on_continuations
       end
       raise_if_continuation_resulted_in_a_channel_error!
@@ -1408,7 +1425,7 @@ module Bunny
       @confirms_callback = callback
 
       @connection.send_frame(AMQ::Protocol::Confirm::Select.encode(@id, false))
-      Bunny::Timeout.timeout(wait_on_continuations_timeout, ClientTimeout) do
+      with_continuation_timeout do
         @last_confirm_select_ok = wait_on_continuations
       end
       raise_if_continuation_resulted_in_a_channel_error!
@@ -1593,6 +1610,11 @@ module Bunny
     #
 
     # @private
+    def with_continuation_timeout(&block)
+      Bunny::Timeout.timeout(wait_on_continuations_timeout, ClientTimeout, &block)
+    end
+
+    # @private
     def register_consumer(consumer_tag, consumer)
       @consumer_mutex.synchronize do
         @consumers[consumer_tag] = consumer
@@ -1616,11 +1638,32 @@ module Bunny
     end
 
     # @private
+    def pending_server_named_queue_declaration?
+      @pending_queue_declare_name && @pending_queue_declare_name.empty?
+    end
+
+    # @private
+    def can_accept_queue_declare_ok?(method)
+      @pending_queue_declare_name == method.queue ||
+        pending_server_named_queue_declaration?
+    end
+
+    # @private
     def handle_method(method)
       @logger.debug { "Channel#handle_frame on channel #{@id}: #{method.inspect}" }
       case method
       when AMQ::Protocol::Queue::DeclareOk then
-        @continuations.push(method)
+        # safeguard against late arrivals of responses and
+        # so on, see ruby-amqp/bunny#558
+        if can_accept_queue_declare_ok?(method)
+          @continuations.push(method)
+        else
+          if !pending_server_named_queue_declaration?
+            # this response is for an outdated/overwritten
+            # queue.declare, drop it
+            @logger.warn "Received a queue.declare-ok response for a mismatching queue (#{method.queue} instead of #{@pending_queue_declare_name}) on channel #{@id} possibly due to a timeout, ignoring it"
+          end
+        end
       when AMQ::Protocol::Queue::DeleteOk then
         @continuations.push(method)
       when AMQ::Protocol::Queue::PurgeOk then
