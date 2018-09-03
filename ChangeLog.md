@@ -46,7 +46,7 @@ Contributed by Arlandis Word.
 
 Many warnings have been eliminated.
 
-GitHub issue: [#564](https://github.com/ruby-amqp/bunny/pull/564)
+GitHub issue: [#563](https://github.com/ruby-amqp/bunny/issues/563)
 
 Contributed by @dacto.
 
@@ -76,6 +76,7 @@ Contributed by Ana María Martínez Gómez.
 
 `2.10.0` is a maintenance release that introduces a couple of
 **minor potentially breaking changes**.
+
 
 ### Disabling Heartbeats Also Disables TCP Socket Read Timeouts
 
