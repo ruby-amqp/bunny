@@ -1,7 +1,61 @@
 ## Changes between Bunny 2.11.0 and 2.12.0 (unreleased)
 
-No changes yet.
+### More Defensive Treatment of `queue.declare-ok` Responses
 
+Responses for `queue.declare` are now checked against a memoized
+queue name (but only if the queue is not server-named). This helps
+avoids scenarios with overlapping/concurrent requests due to high
+network latency as demonstrated in [#558](https://github.com/ruby-amqp/bunny/issues/558).
+
+"Mismatched" responses will be ignored: Bunny channel API would throw
+an exception for such declarations and there would be no way to "return to"
+even if a matching response arrived and was matched with one of the pending
+requests in a reasonable period of time.
+
+As part of this work a new Toxiproxy-based test suite was introduced
+to Bunny.
+
+GitHub issue: [#558](https://github.com/ruby-amqp/bunny/issues/558)
+
+Reproduction steps contributed by Brian Morton and Scott Bonebraker.
+
+### I/O Exceptions from Heartbeat Sender are Now Silent
+
+Heartbeat sender's purpose is to notify the peer, not so much
+to detect local connectivity failures; those will be detected
+by the I/O loop and transport.
+
+For single threaded connection users that prefer to roll their own
+recovery strategies getting exceptions from the heartbeat sender
+was counterproductive and painful to deal with.
+
+As part of this work a new Toxiproxy-based test suite was introduced
+to Bunny.
+
+GitHub issue: [#559](https://github.com/ruby-amqp/bunny/issues/559)
+
+Contributed by Scott Bonebraker.
+
+### Connection Recovery Will Fail When Max Retry Attempt Limit is Exceeded
+
+GitHub issue: [#549](https://github.com/ruby-amqp/bunny/issues/549)
+
+Contributed by Arlandis Word.
+
+### Squashed Warnings
+
+Many warnings have been eliminated.
+
+GitHub issue: [#564](https://github.com/ruby-amqp/bunny/pull/564)
+
+Contributed by @dacto.
+
+
+### API Reference Corrections
+
+GitHub issue: [#557](https://github.com/ruby-amqp/bunny/pull/557)
+
+Contributed by Bruno Costa.
 
 
 ## Changes between Bunny 2.10.0 and 2.11.0 (Jun 21st, 2018)
