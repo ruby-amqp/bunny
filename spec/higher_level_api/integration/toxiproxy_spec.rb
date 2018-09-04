@@ -46,6 +46,28 @@ if ::Toxiproxy.running?
           sleep 5
         end
       end
+    end
+
+    context "recovery attempt limit that's exceeded" do
+      before(:each) do
+        setup_toxiproxy
+        @connection = Bunny.new(user: "bunny_gem", password: "bunny_password", vhost: "bunny_testbed",
+          host: "localhost:11111", heartbeat_timeout: 1, automatically_recover: true, network_recovery_interval: 1,
+          recovery_attempts: 3, reset_recovery_attempts_after_reconnection: true)
+        @connection.start
+      end
+
+      it "permanently closes connection" do
+        expect(@connection.open?).to be(true)
+
+        rabbitmq_toxiproxy.down do
+          sleep 6
+        end
+        # give the connection oen last chance to recover
+        sleep 3
+
+        expect(@connection.closed?).to be(true)
+      end
     end # context
   end # describe
 else
