@@ -221,7 +221,7 @@ describe "Connection recovery" do
 
       close_all_connections!
 
-      wait_for_recovery_with { exchange_names_in_vhost("/").include?(source.name) }
+      wait_for_recovery_with { connections.any? && exchange_names_in_vhost("/").include?(source.name) }
       ch.confirm_select
 
       source.publish("msg", routing_key: "")
@@ -284,7 +284,7 @@ describe "Connection recovery" do
 
       close_all_connections!
 
-      wait_for_recovery_with { exchange_names_in_vhost("/").include?(source.name) }
+      wait_for_recovery_with { connections.any? && exchange_names_in_vhost("/").include?(source.name) }
 
       ch2.confirm_select
 
