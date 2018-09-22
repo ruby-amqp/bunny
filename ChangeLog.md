@@ -1,4 +1,9 @@
-## Changes between Bunny 2.11.0 and 2.12.0 (unreleased)
+## Changes between Bunny 2.12.0 and 2.13.0 (unreleased)
+
+No changes yet.
+
+
+## Changes between Bunny 2.11.0 and 2.12.0 (Sep 22nd, 2018)
 
 ### More Defensive Treatment of `queue.declare-ok` Responses
 
