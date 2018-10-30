@@ -41,6 +41,16 @@ GitHub issue: [#559](https://github.com/ruby-amqp/bunny/issues/559)
 
 Contributed by Scott Bonebraker.
 
+### Correct Connection State on Connections that Experienced Missed Heartbeat
+
+Connections that experienced connection closure did not always correctly transition to the closed state.
+`Bunny::ConnectionClosedError` will now be thrown when an operation is attempted on such
+connections.
+
+GitHub issue: [#561](https://github.com/ruby-amqp/bunny/issues/561)
+
+Contributed by Scott Bonebraker.
+
 ### Connection Recovery Will Fail When Max Retry Attempt Limit is Exceeded
 
 GitHub issue: [#549](https://github.com/ruby-amqp/bunny/issues/549)
