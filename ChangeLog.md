@@ -49,6 +49,8 @@ connections.
 
 GitHub issue: [#561](https://github.com/ruby-amqp/bunny/issues/561)
 
+Contributed by Scott Bonebraker.
+
 ### Connection Recovery Will Fail When Max Retry Attempt Limit is Exceeded
 
 GitHub issue: [#549](https://github.com/ruby-amqp/bunny/issues/549)
