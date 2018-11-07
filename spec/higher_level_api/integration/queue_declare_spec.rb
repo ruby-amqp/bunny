@@ -36,7 +36,7 @@ describe Bunny::Queue do
   end
 
 
-  context "when queue name is passed on as an empty string" do
+  context "when queue name is passed as an empty string" do
     it "uses server-assigned queue name" do
       ch   = connection.create_channel
 
@@ -47,6 +47,17 @@ describe Bunny::Queue do
       q.delete
 
       ch.close
+    end
+  end
+
+
+  context "when a nil is passed for queue name" do
+    it "throws an error" do
+      ch   = connection.create_channel
+
+      expect {
+        ch.queue(nil, durable: true, auto_delete: false)
+      }.to raise_error(ArgumentError)
     end
   end
 

@@ -1,6 +1,9 @@
 ## Changes between Bunny 2.12.0 and 2.12.1 (unreleased)
 
-No changes yet.
+### More Defensive `Bunny::Channel` Method(s)
+
+`Bunny::Channel#queue` will now throw an `ArgumentError` if a `nil`
+is passed for queue name.
 
 
 ## Changes between Bunny 2.11.0 and 2.12.0 (Sep 22nd, 2018)
