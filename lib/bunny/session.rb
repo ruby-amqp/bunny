@@ -772,8 +772,10 @@ module Bunny
 
     # @private
     def decrement_recovery_attemp_counter!
-      @recovery_attempts -= 1 if @recovery_attempts
-      @logger.debug "#{@recovery_attempts} recovery attempts left"
+      if @recovery_attempts
+        @recovery_attempts -= 1
+        @logger.debug "#{@recovery_attempts} recovery attempts left"
+      end
       @recovery_attempts
     end
 
