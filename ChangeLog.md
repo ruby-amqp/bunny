@@ -5,6 +5,8 @@
 `Bunny::Channel#queue` will now throw an `ArgumentError` if a `nil`
 is passed for queue name.
 
+GitHub issue: [#570](https://github.com/ruby-amqp/bunny/issues/570)
+
 
 ## Changes between Bunny 2.11.0 and 2.12.0 (Sep 22nd, 2018)
 
