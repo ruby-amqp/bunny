@@ -415,6 +415,8 @@ module Bunny
     # @see http://rubybunny.info/articles/extensions.html RabbitMQ Extensions guide
     # @api public
     def queue(name = AMQ::Protocol::EMPTY_STRING, opts = {})
+      throw ArgumentError.new("queue name must not be nil") if name.nil?
+
       q = find_queue(name) || Bunny::Queue.new(self, name, opts)
 
       register_queue(q)
