@@ -12,6 +12,13 @@ is passed for queue name.
 
 GitHub issue: [#570](https://github.com/ruby-amqp/bunny/issues/570)
 
+### Correct Logging of Recovery Attempts Left
+
+During connection recovery, if `recover_attempts` is not set (is `nil`)
+connection could produce confusing log messages.
+
+GitHub issue: [#569](https://github.com/ruby-amqp/bunny/issues/569)
+
 
 ## Changes between Bunny 2.11.0 and 2.12.0 (Sep 22nd, 2018)
 
