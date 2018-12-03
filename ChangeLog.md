@@ -1,4 +1,9 @@
-## Changes between Bunny 2.12.0 and 2.12.1 (unreleased)
+## Changes between Bunny 2.12.1 and 2.12.2 (unreleased)
+
+No changes yet.
+
+
+## Changes between Bunny 2.12.0 and 2.12.1 (Dec 3rd, 2018)
 
 ### More Defensive `Bunny::Channel` Method(s)
 
