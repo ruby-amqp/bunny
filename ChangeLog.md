@@ -1,4 +1,4 @@
-## Changes between Bunny 2.13.0 and 2.14.0 (unreleased)
+## Changes between Bunny 2.13.0 and 2.13.1 (unreleased)
 
 No changes yet.
 
