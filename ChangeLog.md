@@ -1,4 +1,9 @@
-## Changes between Bunny 2.12.0 and 2.13.0 (unreleased)
+## Changes between Bunny 2.13.0 and 2.14.0 (unreleased)
+
+No changes yet.
+
+
+## Changes between Bunny 2.12.0 and 2.13.0 (Dec 25th, 2018)
 
 ### More Defensive `Bunny::Channel` Method(s)
 
@@ -13,6 +18,13 @@ During connection recovery, if `recover_attempts` is not set (is `nil`)
 connection could produce confusing log messages.
 
 GitHub issue: [#569](https://github.com/ruby-amqp/bunny/issues/569)
+
+### effin_utf8 Dependency Dropped
+
+This library no longer supports Ruby 1.8 and thus
+doesn't need to depend on the `effin_utf8` gem.
+
+Contributed by Luciano Sousa.
 
 
 ## Changes between Bunny 2.11.0 and 2.12.0 (Sep 22nd, 2018)
