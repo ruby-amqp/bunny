@@ -20,7 +20,6 @@ extend Module.new {
 }
 
 gem "rake", ">= 12.3.1"
-gem "effin_utf8"
 
 group :development do
   gem "yard"
