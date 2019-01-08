@@ -2,31 +2,46 @@ require "spec_helper"
 
 describe "A message that is proxied by multiple intermediate consumers" do
   let(:c1) do
-    c = Bunny.new(username: "bunny_gem", password: "bunny_password", vhost: "bunny_testbed")
+    c = Bunny.new(username: "bunny_gem",
+      password: "bunny_password",
+      vhost: "bunny_testbed",
+      heartbeat: 6)
     c.start
     c
   end
 
   let(:c2) do
-    c = Bunny.new(username: "bunny_gem", password: "bunny_password", vhost: "bunny_testbed")
+    c = Bunny.new(username: "bunny_gem",
+      password: "bunny_password",
+      vhost: "bunny_testbed",
+      heartbeat: 6)
     c.start
     c
   end
 
   let(:c3) do
-    c = Bunny.new(username: "bunny_gem", password: "bunny_password", vhost: "bunny_testbed")
+    c = Bunny.new(username: "bunny_gem",
+      password: "bunny_password",
+      vhost: "bunny_testbed",
+      heartbeat: 6)
     c.start
     c
   end
 
   let(:c4) do
-    c = Bunny.new(username: "bunny_gem", password: "bunny_password", vhost: "bunny_testbed")
+    c = Bunny.new(username: "bunny_gem",
+      password: "bunny_password",
+      vhost: "bunny_testbed",
+      heartbeat: 6)
     c.start
     c
   end
 
   let(:c5) do
-    c = Bunny.new(username: "bunny_gem", password: "bunny_password", vhost: "bunny_testbed")
+    c = Bunny.new(username: "bunny_gem",
+      password: "bunny_password",
+      vhost: "bunny_testbed",
+      heartbeat: 6)
     c.start
     c
   end
@@ -41,7 +56,7 @@ describe "A message that is proxied by multiple intermediate consumers" do
   #
   # x => q4 => q3 => q2 => q1 => xs (results)
   it "reaches its final destination" do
-    n   = 10000
+    n   = 30_000
     xs  = []
 
     ch1 = c1.create_channel
@@ -75,9 +90,9 @@ describe "A message that is proxied by multiple intermediate consumers" do
       x.publish("msg #{i}", routing_key: q4.name)
     end
 
-    t = n / 1000 * 3.0
-    puts "About to sleep for #{t} seconds..."
-    sleep(t)
+    Bunny::TestKit.poll_until(40) do
+      xs.size >= n
+    end
 
     expect(xs.size).to eq n
     expect(xs.last).to eq "msg #{n - 1}"
