@@ -14,10 +14,10 @@ unless ENV["CI"]
     end
 
     after :all do
-      @connection.close
+      @connection.close(false) rescue nil
     end
 
-    let(:target) { 256 * 1024 * 1024 }
+    let(:target) { 1024 * 1024 * 1024 }
     let(:queue)  { "bunny.stress.long_running_consumer.#{Time.now.to_i}" }
 
     let(:rate) { 50 }
@@ -30,19 +30,20 @@ unless ENV["CI"]
 
       ct = Thread.new do
         t  = 0
-        ch = @connection.create_channel(nil, 6)
+        ch = @connection.create_channel(nil, 16)
         begin
           q  = ch.queue(queue, exclusive: true)
 
-          q.bind("amq.fanout").subscribe do |_, _, payload|
+          q.bind("amq.fanout").subscribe(manual_ack: true) do |delivery_info, _, payload|
             t += payload.bytesize
+            ch.ack(delivery_info.delivery_tag)
 
             if t >= target
-              puts "Hit the target, done with the test..."
+              puts "Consumed 100% of data, done with the test..."
 
               finished.notify_all
             else
-              puts "Consumed #{(t.to_f / target.to_f).round(3) * 100}% of data"
+              puts "Consumed #{(t.to_f / target.to_f).round(2) * 100}% of data"
             end
           end
         rescue Interrupt => e
@@ -62,9 +63,10 @@ unless ENV["CI"]
             break if t >= target
 
             rate.times do |i|
-              msg = Bunny::TestKit.message_in_kb(96, 8192, i)
+              msg = Bunny::TestKit.message_in_kb(4, 8192, i)
               x.publish(msg)
               t += msg.bytesize
+              puts "Published #{(t.to_f / target.to_f).round(2) * 100}% of data"
             end
 
             sleep (s * rand)
