@@ -6,6 +6,7 @@ require 'bundler'
 Bundler.require(:default, :test)
 
 require "bunny"
+require "bunny/test_kit"
 
 puts "Using Ruby #{RUBY_VERSION}, amq-protocol #{AMQ::Protocol::VERSION}"
 

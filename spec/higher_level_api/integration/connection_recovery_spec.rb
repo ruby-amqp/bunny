@@ -413,15 +413,11 @@ describe "Connection recovery" do
   end
 
   def poll_while(&probe)
-    Timeout.timeout(20) {
-      sleep 0.1 while probe.call
-    }
+    Bunny::TestKit.poll_while(&probe)
   end
 
   def poll_until(&probe)
-    Timeout.timeout(20) {
-      sleep 0.1 until probe.call
-    }
+    Bunny::TestKit.poll_until(&probe)
   end
 
   def with_open(c = Bunny.new(network_recovery_interval: recovery_interval,
