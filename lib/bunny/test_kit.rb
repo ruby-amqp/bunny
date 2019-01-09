@@ -7,21 +7,12 @@ module Bunny
   class TestKit
     class << self
 
-      def poll_while(&probe)
-        poll_while(60, &probe)
-      end
-
-      def poll_while(timeout, &probe)
+      def poll_while(timeout = 60, &probe)
         Timeout.timeout(timeout) {
           sleep 0.1 while probe.call
         }
       end
-
-      def poll_until(&probe)
-        poll_until(60, &probe)
-      end
-
-      def poll_until(timeout, &probe)
+      def poll_until(timeout = 60, &probe)
         Timeout.timeout(timeout) {
           sleep 0.1 until probe.call
         }
