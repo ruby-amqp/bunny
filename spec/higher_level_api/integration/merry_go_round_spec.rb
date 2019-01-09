@@ -5,7 +5,7 @@ describe "A message that is proxied by multiple intermediate consumers" do
     c = Bunny.new(username: "bunny_gem",
       password: "bunny_password",
       vhost: "bunny_testbed",
-      heartbeat: 6)
+      heartbeat_timeout: 6)
     c.start
     c
   end
@@ -14,7 +14,7 @@ describe "A message that is proxied by multiple intermediate consumers" do
     c = Bunny.new(username: "bunny_gem",
       password: "bunny_password",
       vhost: "bunny_testbed",
-      heartbeat: 6)
+      heartbeat_timeout: 6)
     c.start
     c
   end
@@ -23,7 +23,7 @@ describe "A message that is proxied by multiple intermediate consumers" do
     c = Bunny.new(username: "bunny_gem",
       password: "bunny_password",
       vhost: "bunny_testbed",
-      heartbeat: 6)
+      heartbeat_timeout: 6)
     c.start
     c
   end
@@ -32,7 +32,7 @@ describe "A message that is proxied by multiple intermediate consumers" do
     c = Bunny.new(username: "bunny_gem",
       password: "bunny_password",
       vhost: "bunny_testbed",
-      heartbeat: 6)
+      heartbeat_timeout: 6)
     c.start
     c
   end
@@ -41,7 +41,7 @@ describe "A message that is proxied by multiple intermediate consumers" do
     c = Bunny.new(username: "bunny_gem",
       password: "bunny_password",
       vhost: "bunny_testbed",
-      heartbeat: 6)
+      heartbeat_timeout: 6)
     c.start
     c
   end
@@ -56,13 +56,14 @@ describe "A message that is proxied by multiple intermediate consumers" do
   #
   # x => q4 => q3 => q2 => q1 => xs (results)
   it "reaches its final destination" do
-    n   = 30_000
+    n   = 50_000
     xs  = []
 
     ch1 = c1.create_channel
     q1  = ch1.queue("", exclusive: true)
-    q1.subscribe do |_, _, payload|
+    q1.subscribe(manual_ack: true) do |delivery_info, _, payload|
       xs << payload
+      ch1.ack(delivery_info.delivery_tag)
     end
 
     ch2 = c2.create_channel
@@ -71,19 +72,20 @@ describe "A message that is proxied by multiple intermediate consumers" do
       q1.publish(payload)
     end
 
-    ch3 = c3.create_channel
-    q3  = ch2.queue("", exclusive: true)
-    q3.subscribe do |_, _, payload|
+    ch3 = c3.create_channel(nil, 2)
+    q3  = ch3.queue("", exclusive: true)
+    q3.subscribe(manual_ack: true) do |delivery_info, _, payload|
       q2.publish(payload)
+      ch3.ack(delivery_info.delivery_tag)
     end
 
-    ch4 = c4.create_channel
-    q4  = ch2.queue("", exclusive: true)
+    ch4 = c4.create_channel(nil, 4)
+    q4  = ch4.queue("", exclusive: true)
     q4.subscribe do |_, _, payload|
       q3.publish(payload)
     end
 
-    ch5 = c5.create_channel
+    ch5 = c5.create_channel(nil, 8)
     x   = ch5.default_exchange
 
     n.times do |i|
