@@ -1,1 +1,1 @@
-bin/ci/before_build.sh
+before_build.sh
