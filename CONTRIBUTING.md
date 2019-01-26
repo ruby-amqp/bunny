@@ -27,44 +27,47 @@ locally with the `rabbitmq-management` and `rabbitmq_consistent_hash_exchange` p
 
 ### Running the Specs
 
-The specs require RabbitMQ to be running locally with a specific set of vhosts
+The specs require RabbitMQ to be running locally with a specific set of virtual hosts
 and users. RabbitMQ can be provisioned and started any way that's convenient to you
 as long as it has a suitable TLS keys configuration and management plugin enabled.
 Make sure you have a recent version of RabbitMQ (> `3.5.3`).
 
-You can also start a clean RabbitMQ server
-node on your machine specifically for the bunny specs.
-This can be done either by using a locally installed RabbitMQ server or by
-running a RabbitMQ server in a Docker container.
+The test suite can either use a locally available RabbitMQ node ([generic binary builds](http://www.rabbitmq.com/install-generic-unix.html)
+are an option that works well) or by running a RabbitMQ server in a Docker container.
 
-#### Using a locally installed RabbitMQ server
+### Using a locally installed RabbitMQ node
 
 It is possible to start a local RabbitMQ node from the repository root. It is not necessarily
 optimal but can be a good starting point but is a useful example:
 
 ```
-RABBITMQ_NODENAME=bunny RABBITMQ_CONFIG_FILE=./spec/config/rabbitmq RABBITMQ_ENABLED_PLUGINS_FILE=./spec/config/enabled_plugins rabbitmq-server
+RABBITMQ_NODENAME=bunny RABBITMQ_CONFIG_FILE=./spec/config/rabbitmq.conf RABBITMQ_ENABLED_PLUGINS_FILE=./spec/config/enabled_plugins rabbitmq-server
 ```
 
-The specs use the RabbitMQ management plugin and require a TLS port to
-be available. The config files in the spec/config directory enable
-these. TLS (x509 PEM) certificates include a hostname-specific fields,
-the tests allow for expecting hostname overriding using the `BUNNY_RABBITMQ_HOSTNAME`
-environment variables (default value is `127.0.0.1`).
+The specs need the RabbitMQ management plugin to be enabled and include TLS connectivity tests,
+so the node must be configured to use a [certificate and key pair](http://www.rabbitmq.com/ssl.html#certificates-and-keys).
+The config and enabled plugin files in the spec/config directory take care of that
+but certificates must be provisioned locally. By default there's a set of CA, server, and client certificates pre-generated at `spec/tls`.
 
-By default there's a set of CA, server, and client certificates pre-generated at `spec/tls`. Since x509 certificates
-contain a hardcoded CN and your hostname is unlikely to match it,
-the location can be overridden via the `BUNNY_CERTIFICATE_DIR` environment variable.
-It is supposed to target [tls-gen](https://github.com/michaelklishin/tls-gen)'s basic profile
-output (result) directory on the host where specs are to be executed. Combine it with `BUNNY_RABBITMQ_HOSTNAME`
-when running TLS connection tests:
+The `BUNNY_CERTIFICATE_DIR` environment variable can be used to a directory containing a CA certificate
+and a certificate/key pair to be used by the server. The directory can be generated using
+[tls-gen](https://github.com/michaelklishin/tls-gen)'s basic profile. This option is recommended.
+
+`BUNNY_RABBITMQ_HOSTNAME` can be used to override the expected server hostname for [peer verification](http://www.rabbitmq.com/ssl.html#peer-verification) in the TLS test suite:
 
 ```
 BUNNY_CERTIFICATE_DIR="/path/to/tls-gen/basic/result" BUNNY_RABBITMQ_HOSTNAME="mayflower" bundle exec rspec
 
 ```
 
-Next up you'll need to prepare your node for the specs (just once):
+Certificates can be generated with [tls-gen](https://github.com/michaelklishin/tls-gen)'s basic profile.
+In that case they include a Subject Alternative Name of `localhost` for improved portability.
+
+
+### Node Setup
+
+There is also a script that preconfigured the node for Bunny tests. It is sufficient to run
+it once but if RabbitMQ is reset it has to be executed again:
 
 ```
 RABBITMQ_NODENAME=bunny ./bin/ci/before_build
@@ -90,14 +93,24 @@ Version >= 1.6.0+ is required for compose version 2 syntax.
 After those have been installed (and the `docker-compose` command is available on your command line path), run
 
 ```
-docker-compose build && docker-compose up
+docker-compose build && docker-compose run --service-ports rabbitmq
 ```
 
 The first time you do this, it will take some time, since it has to download everything it needs
 to build the Docker image.
 
 The RabbitMQ server will run in the foreground in the terminal where you started it. You can stop
-it by pressing CTRL+C. If you want to run it in the background, run `docker-compose up -d`.
+it by pressing CTRL+C. If you want to run it in the background, pass `-d` to `docker-compose`.
+
+### Toxiproxy
+
+If Toxiproxy is running locally on standard ports or started via Docker:
+
+```
+docker-compose run --service-ports toxiproxy
+```
+
+then Bunny will run additional resiliency tests.
 
 ### Running Test Suites
 

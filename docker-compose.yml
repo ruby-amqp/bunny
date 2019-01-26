@@ -1,4 +1,4 @@
-version: '2'
+version: '3.7'
 services:
   rabbitmq:
     build: ./docker
@@ -8,7 +8,7 @@ services:
       # see CONTRIBUTING.md
       BUNNY_RABBITMQ_HOSTNAME: mercurio
       # link to spec specific configuration
-      RABBITMQ_CONFIG_FILE: /spec/config/rabbitmq
+      RABBITMQ_CONFIG_FILE: /spec/config/rabbitmq.conf
       RABBITMQ_ENABLED_PLUGINS_FILE: /spec/config/enabled_plugins
       # send logs to stdout
       RABBITMQ_LOGS: '-'
