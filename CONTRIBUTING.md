@@ -6,10 +6,10 @@ Issues are appropriate for something specific enough for a maintainer or contrib
  * There should be enough information to reproduce the behavior observed in a reasonable amount of time
  * It should be reasonably clear why the behavior should be changed and why this cannot or should not be addressed
    in application code, a separate library and so on
-   
+
  All issues that do not satisfy the above properties belong to the [Ruby RabbitMQ clients mailing list](http://groups.google.com/forum/#!forum/ruby-amqp). Pull request that do not satisfy them have a high chance
  of being closed.
- 
+
 ## Submitting a Pull Request
 
 Please read the sections below to get an idea about how to run Bunny test suites first. Successfully
@@ -30,7 +30,7 @@ locally with the `rabbitmq-management` and `rabbitmq_consistent_hash_exchange` p
 The specs require RabbitMQ to be running locally with a specific set of vhosts
 and users. RabbitMQ can be provisioned and started any way that's convenient to you
 as long as it has a suitable TLS keys configuration and management plugin enabled.
-Make sure you have a recent version of RabbitMQ (> `3.5.3`).
+Make sure you have a recent version of RabbitMQ (> `3.7.10`).
 
 You can also start a clean RabbitMQ server
 node on your machine specifically for the bunny specs.
@@ -101,8 +101,8 @@ it by pressing CTRL+C. If you want to run it in the background, run `docker-comp
 
 ### Running Test Suites
 
-Prior to running the tests, configure the RabbitMQ permissions by running `./bin/ci/before_build` 
-if you have RabbitMQ locally installed, if you are running RabbitMQ via Docker as above this step 
+Prior to running the tests, configure the RabbitMQ permissions by running `./bin/ci/before_build`
+if you have RabbitMQ locally installed, if you are running RabbitMQ via Docker as above this step
 is not required as the setup is baked in.
 
 Make sure you have those two installed and then run integration tests:
