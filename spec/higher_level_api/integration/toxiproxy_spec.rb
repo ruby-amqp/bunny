@@ -5,7 +5,6 @@ if ::Toxiproxy.running?
   describe Bunny::Channel, "#basic_publish" do
     include RabbitMQ::Toxiproxy
 
-
     after :each do
       @connection.close if @connection.open?
     end
@@ -53,7 +52,8 @@ if ::Toxiproxy.running?
         setup_toxiproxy
         @connection = Bunny.new(user: "bunny_gem", password: "bunny_password", vhost: "bunny_testbed",
           host: "localhost:11111", heartbeat_timeout: 1, automatically_recover: true, network_recovery_interval: 1,
-          recovery_attempts: 3, reset_recovery_attempts_after_reconnection: true)
+          recovery_attempts: 2, reset_recovery_attempts_after_reconnection: true,
+          disconnect_timeout: 1)
         @connection.start
       end
 
@@ -61,11 +61,12 @@ if ::Toxiproxy.running?
         expect(@connection.open?).to be(true)
 
         rabbitmq_toxiproxy.down do
-          sleep 6
+          sleep 5
         end
-        # give the connection oen last chance to recover
+        # give the connection one last chance to recover
         sleep 3
 
+        expect(@connection.open?).to be(false)
         expect(@connection.closed?).to be(true)
       end
     end # context
