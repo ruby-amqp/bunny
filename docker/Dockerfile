@@ -1,13 +1,16 @@
-FROM ubuntu:bionic
+FROM ubuntu:18.04
 
-RUN apt-get -q update && \
-    apt-get install -yq --no-install-recommends gnupg1 wget ca-certificates apt-transport-https
+RUN apt-get update -y
+RUN apt-get install -y gnupg2 wget
+RUN wget -O - "https://github.com/rabbitmq/signing-keys/releases/download/2.0/rabbitmq-release-signing-key.asc" | apt-key add -
 
-RUN echo 'deb https://dl.bintray.com/rabbitmq/debian bionic main erlang' > /etc/apt/sources.list.d/rabbitmq.list && \
-    wget -O - 'https://dl.bintray.com/rabbitmq/Keys/rabbitmq-release-signing-key.asc' | apt-key add -
+COPY apt/sources.list.d/bintray.rabbitmq.list /etc/apt/sources.list.d/bintray.rabbitmq.list
+COPY apt/preferences.d/erlang                 /etc/apt/preferences.d/erlang
 
-RUN apt-get -q update && \
-    apt-get install -yq rabbitmq-server
+RUN apt-get update -y
+
+RUN apt-get upgrade -y && \
+    apt-get install -y rabbitmq-server
 
 COPY docker-entrypoint.sh /
 
