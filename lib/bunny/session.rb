@@ -367,14 +367,16 @@ module Bunny
     alias channel create_channel
 
     # Closes the connection. This involves closing all of its channels.
-    def close
+    def close(await_response = true)
       @status_mutex.synchronize { @status = :closing }
 
       ignoring_io_errors do
         if @transport.open?
+          @logger.debug "Transport is still open..."
           close_all_channels
 
-          self.close_connection(true)
+          @logger.debug "Will close all channels...."
+          self.close_connection(await_response)
         end
 
         clean_up_on_shutdown
@@ -383,6 +385,8 @@ module Bunny
         @status = :closed
         @manually_closed = true
       end
+      @logger.debug "Connection is closed"
+      true
     end
     alias stop close
 
@@ -567,11 +571,13 @@ module Bunny
     end
 
     # @private
-    def close_connection(sync = true)
+    def close_connection(await_response = true)
       if @transport.open?
+        @logger.debug "Transport is still open"
         @transport.send_frame(AMQ::Protocol::Connection::Close.encode(200, "Goodbye", 0, 0))
 
-        if sync
+        if await_response
+          @logger.debug "Waiting for a connection.close-ok..."
           @last_connection_close_ok = wait_on_continuations
         end
       end
@@ -755,8 +761,10 @@ module Bunny
           retry
         end
       else
-        @logger.error "Ran out of recovery attempts (limit set to #{@max_recovery_attempts})"
-        self.close
+        @logger.error "Ran out of recovery attempts (limit set to #{@max_recovery_attempts}), giving up"
+        @transport.close
+        self.close(false)
+        @manually_closed = false
       end
     end
 
