@@ -10,6 +10,7 @@ COPY apt/preferences.d/erlang                 /etc/apt/preferences.d/erlang
 RUN apt-get update -y
 
 RUN apt-get upgrade -y && \
+    apt-get install -y erlang-asn1 erlang-crypto erlang-public-key erlang-ssl && \
     apt-get install -y rabbitmq-server
 
 COPY docker-entrypoint.sh /
