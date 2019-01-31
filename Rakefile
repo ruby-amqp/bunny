@@ -44,3 +44,11 @@ RSpec::Core::RakeTask.new(:stress) do |t|
 end
 
 task :default => :integration
+
+namespace :tls do
+  desc "Checks the certificates and keys in BUNNY_CERTIFICATE_DIR with openssl s_client"
+  task :s_client do
+    dir = ENV["BUNNY_CERTIFICATE_DIR"]
+    sh "openssl s_client -tls1_2 -connect 127.0.0.1:5671 -cert #{dir}/client_certificate.pem -key #{dir}/client_key.pem -CAfile #{dir}/ca_certificate.pem"
+  end
+end
