@@ -1208,7 +1208,7 @@ module Bunny
       # If heartbeats are disabled, assume that TCP keepalives or a similar mechanism will be used
       # and disable socket read timeouts. See ruby-amqp/bunny#551.
       @transport.read_timeout = @heartbeat * 2.2
-      @logger.debug { "Will use socket read timeout of #{@transport.read_timeout}" }
+      @logger.debug { "Will use socket read timeout of #{@transport.read_timeout.to_i} seconds" }
 
       # if there are existing channels we've just recovered from
       # a network failure and need to fix the allocated set. See issue 205. MK.

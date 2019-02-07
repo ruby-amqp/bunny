@@ -82,10 +82,29 @@ module Bunny
 
 
     def connect
-      if uses_ssl?
-        @socket.connect
-        if uses_tls? && @verify_peer
-          @socket.post_connection_check(host)
+      if uses_tls?
+        begin
+          @socket.connect
+        rescue OpenSSL::SSL::SSLError => e
+          @logger.error { "TLS connection failed: #{e.message}" }
+          raise e
+        end
+
+        log_peer_certificate_info(Logger::DEBUG, @socket.peer_cert)
+        log_peer_certificate_chain_info(Logger::DEBUG, @socket.peer_cert_chain)
+
+        begin
+          @socket.post_connection_check(host) if @verify_peer
+        rescue OpenSSL::SSL::SSLError => e
+          @logger.error do
+            msg = "Peer verification of target server failed: #{e.message}. "
+            msg += "Target hostname: #{hostname}, see peer certificate chain details below."
+            msg
+          end
+          log_peer_certificate_info(Logger::ERROR, @socket.peer_cert)
+          log_peer_certificate_chain_info(Logger::ERROR, @socket.peer_cert_chain)
+
+          raise e
         end
 
         @status = :connected
@@ -337,6 +356,29 @@ module Bunny
       end
     end
 
+    def peer_certificate_info(peer_cert, prefix = "Peer's leaf certificate")
+      exts = peer_cert.extensions.map { |x| x.value }
+      # Subject Alternative Names
+      sans = exts.select { |s| s =~ /^DNS/ }.map { |s| s.gsub(/^DNS:/, "") }
+
+      msg = "#{prefix} subject: #{peer_cert.subject}, "
+      msg += "subject alternative names: #{sans.join(', ')}, "
+      msg += "issuer: #{peer_cert.issuer}, "
+      msg += "not valid after: #{peer_cert.not_after}, "
+      msg += "X.509 usage extensions: #{exts.join(', ')}"
+
+      msg
+    end
+
+    def log_peer_certificate_info(severity, peer_cert, prefix = "Peer's leaf certificate")
+      @logger.add(severity, peer_certificate_info(peer_cert, prefix))
+    end
+
+    def log_peer_certificate_chain_info(severity, chain)
+      chain.each do |cert|
+        self.log_peer_certificate_info(severity, cert, "Peer's certificate chain entry")
+      end
+    end
 
     def inline_client_certificate_from(opts)
       opts[:tls_certificate] || opts[:ssl_cert_string] || opts[:tls_cert]
@@ -424,8 +466,8 @@ module Bunny
 
       if !@tls_certificate
         @logger.warn <<-MSG
-Using TLS but no client certificate is provided! If RabbitMQ is configured to verify peer
-certificate, connection upgrade will fail!
+Using TLS but no client certificate is provided. If RabbitMQ is configured to require & verify peer
+certificate, connection will be rejected. Learn more at https://www.rabbitmq.com/ssl.html
         MSG
       end
       if @tls_certificate && !@tls_key
@@ -437,12 +479,13 @@ certificate, connection upgrade will fail!
       else
         OpenSSL::SSL::VERIFY_NONE
       end
+      @logger.debug { "Will use peer verification mode #{verify_mode}" }
       ctx.verify_mode = verify_mode
 
       if !@verify_peer
         @logger.warn <<-MSG
 Using TLS but peer hostname verification is disabled. This is convenient for local development
-but prone to man-in-the-middle attacks. Please set verify_peer: true in production!
+but prone to man-in-the-middle attacks. Please set verify_peer: true in production. Learn more at https://www.rabbitmq.com/ssl.html
         MSG
       end
 
