@@ -107,18 +107,71 @@ describe Bunny::Queue do
   end
 
 
-
-  context "when queue is declared with a different set of attributes" do
+  context "when queue is declared with a mismatching auto-delete property value" do
     it "raises an exception" do
       ch   = connection.create_channel
 
       q = ch.queue("bunny.tests.queues.auto-delete", auto_delete: true, durable: false)
       expect {
         # force re-declaration
-        ch.queue_declare("bunny.tests.queues.auto-delete", auto_delete: false, durable: true)
+        ch.queue_declare(q.name, auto_delete: false, durable: false)
       }.to raise_error(Bunny::PreconditionFailed)
 
       expect(ch).to be_closed
+
+      cleanup_ch = connection.create_channel
+      cleanup_ch.queue_delete(q.name)
+    end
+  end
+
+  context "when queue is declared with a mismatching durable property value" do
+    it "raises an exception" do
+      ch   = connection.create_channel
+
+      q = ch.queue("bunny.tests.queues.durable", durable: true)
+      expect {
+        # force re-declaration
+        ch.queue_declare(q.name, durable: false)
+      }.to raise_error(Bunny::PreconditionFailed)
+
+      expect(ch).to be_closed
+
+      cleanup_ch = connection.create_channel
+      cleanup_ch.queue_delete(q.name)
+    end
+  end
+
+  context "when queue is declared with a mismatching exclusive property value" do
+    it "raises an exception" do
+      ch   = connection.create_channel
+
+      q = ch.queue("bunny.tests.queues.exclusive.#{rand}", exclusive: true)
+      # when there's an exclusivity property mismatch, a different error
+      # (405 RESOURCE_LOCKED) is used. This is a leaked queue exclusivity/ownership
+      # implementation detail that's now basically a feature. MK.
+      expect {
+        # force re-declaration
+        ch.queue_declare(q.name, exclusive: false)
+      }.to raise_error(Bunny::ResourceLocked)
+
+      expect(ch).to be_closed
+    end
+  end
+
+  context "when queue is declared with a set of mismatching values" do
+    it "raises an exception" do
+      ch   = connection.create_channel
+
+      q = ch.queue("bunny.tests.queues.proprty-equivalence", auto_delete: true, durable: false)
+      expect {
+        # force re-declaration
+        ch.queue_declare(q.name, auto_delete: false, durable: true)
+      }.to raise_error(Bunny::PreconditionFailed)
+
+      expect(ch).to be_closed
+
+      cleanup_ch = connection.create_channel
+      cleanup_ch.queue_delete(q.name)
     end
   end
 
