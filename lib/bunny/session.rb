@@ -808,7 +808,7 @@ module Bunny
 
     # @private
     def connection_recovery_complete
-      @connection_recovery_complete&.call
+      @connection_recovery_complete.call if @connection_recovery_complete
     end
 
     # @private
