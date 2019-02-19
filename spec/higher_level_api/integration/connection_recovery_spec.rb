@@ -51,8 +51,8 @@ describe "Connection recovery" do
 
   it "calls the network recovery callback" do
     with_open(c_with_callback) do |c|
-      ch1 = c.create_channel
-      ch2 = c.create_channel
+      _ = c.create_channel
+      _ = c.create_channel
       sleep 1.5
       close_all_connections!
       sleep 0.5
