@@ -1,6 +1,8 @@
 require "spec_helper"
 require "rabbitmq/http/client"
 
+require "bunny/concurrent/condition"
+
 describe "Connection recovery" do
   let(:http_client) { RabbitMQ::HTTP::Client.new("http://127.0.0.1:15672") }
   let(:logger) { Logger.new($stderr).tap {|logger| logger.level = ENV["BUNNY_LOG_LEVEL"] || Logger::WARN } }
@@ -37,6 +39,21 @@ describe "Connection recovery" do
       poll_until { channels.count == 2 }
       expect(ch1).to be_open
       expect(ch2).to be_open
+    end
+  end
+
+  it "provides a recovery completion callback" do
+    with_open do |c|
+      latch = Bunny::Concurrent::Condition.new
+      c.after_recovery_completed do
+        latch.notify
+      end
+
+      ch = c.create_channel
+      sleep 1.0
+      close_all_connections!
+      poll_until { c.open? && ch.open? }
+      poll_until { latch.none_threads_waiting? }
     end
   end
 
@@ -270,7 +287,6 @@ describe "Connection recovery" do
       destination = ch.fanout("destination.exchange.recovery.example", auto_delete: true)
 
       source2      = ch2.fanout("source.exchange.recovery.example", no_declare: true)
-      destination2 = ch2.fanout("destination.exchange.recovery.example", no_declare: true)
 
       destination.bind(source)
 
@@ -426,7 +442,7 @@ describe "Connection recovery" do
     c.start
     block.call(c)
   ensure
-    c.close
+    c.close(false) rescue nil
   end
 
   def with_open_multi_host(&block)
