@@ -1,4 +1,33 @@
-## Changes between Bunny 2.13.0 and 2.14.0 (unreleased)
+## Changes between Bunny 2.14.0 and 2.15.0 (unreleased)
+
+No changes yet.
+
+## Changes between Bunny 2.13.0 and 2.14.0 (Feb 20th, 2019)
+
+### Improved Peer Verification Failure Logging
+
+When [peer verification](https://www.rabbitmq.com/ssl.html#peer-verification) fails, the connection will now log
+some relevant peer certificate chain details. If Bunny
+log level is set to `debug`, the same information will be logged
+unconditionally.
+
+### Closing Connections without Waiting for Response
+
+`Bunny::Session#close` now accepts a parameter that controls whether
+it waits for a `connection.close-ok` frame. Not waiting is useful
+when it is known for a fact that the node might not respond
+(it might be shutting down, connection is known to be interrupted
+or unrecoverable and so on) or waiting is irrelevant to the caller.
+
+### Successful Connection Recovery Notification
+
+`Bunny::Session#after_recovery_completed` (accepts a block)
+and a new connection option, `:recovery_completed` (a callable object)
+can be used to react to successful connection and topology recovery.
+
+GitHub issue: [#573](https://github.com/ruby-amqp/bunny/pull/573).
+
+Contributed by Ionut Popa.
 
 ### effin_utf8 Dependency Dropped
 
