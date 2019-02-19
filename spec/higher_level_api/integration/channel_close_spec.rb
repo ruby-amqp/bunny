@@ -57,6 +57,10 @@ describe Bunny::Channel do
       expect(ch).to be_closed
 
       expect { ch.close }.to raise_error(Bunny::ChannelAlreadyClosed)
+
+      cleanup_ch = connection.create_channel
+      cleanup_ch.queue_delete(s)
+      cleanup_ch.close
     end
   end
 end
