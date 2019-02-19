@@ -6,13 +6,13 @@ describe "Connection recovery" do
   let(:logger) { Logger.new($stderr).tap {|logger| logger.level = ENV["BUNNY_LOG_LEVEL"] || Logger::WARN } }
   let(:recovery_interval) { 0.2 }
 
-  let(:connection_recovery_complete) { double("recovery_callback", call: nil) }
+  let(:recovery_completed) { double("recovery_callback", call: nil) }
 
   let(:c_with_callback) do
     Bunny.new(network_recovery_interval: recovery_interval,
                 recover_from_connection_close: true,
                 logger: logger,
-                connection_recovery_complete: connection_recovery_complete)
+                recovery_completed: recovery_completed)
   end
 
   it "reconnects after grace period" do
@@ -59,7 +59,7 @@ describe "Connection recovery" do
       poll_until { channels.count == 2 }
     end
 
-    expect(connection_recovery_complete).to have_received(:call).exactly(1).times
+    expect(recovery_completed).to have_received(:call).exactly(1).times
   end
 
   it "recovers channels (with multiple hosts)" do
