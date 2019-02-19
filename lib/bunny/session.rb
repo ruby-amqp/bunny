@@ -115,7 +115,7 @@ module Bunny
     # @option connection_string_or_opts [Integer] :read_timeout (30) TCP socket read timeout in seconds. If heartbeats are disabled this will be ignored.
     # @option connection_string_or_opts [Integer] :write_timeout (30) TCP socket write timeout in seconds.
     # @option connection_string_or_opts [Proc] :hosts_shuffle_strategy a callable that reorders a list of host strings, defaults to Array#shuffle
-    # @option connection_string_or_opts [Proc] :recovery_completed a callable that will be called when a network recovery is performed
+    # @option connection_string_or_opts [Proc] : a callable that will be called when a network recovery is performed
     # @option connection_string_or_opts [Logger] :logger The logger.  If missing, one is created using :log_file and :log_level.
     # @option connection_string_or_opts [IO, String] :log_file The file or path to use when creating a logger.  Defaults to STDOUT.
     # @option connection_string_or_opts [IO, String] :logfile DEPRECATED: use :log_file instead.  The file or path to use when creating a logger.  Defaults to STDOUT.
@@ -751,7 +751,7 @@ module Bunny
         end
 
         recover_channels
-        recovery_completed
+        notify_of_recovery_completion
       end
     rescue HostListDepleted
       reset_address_index
@@ -806,8 +806,12 @@ module Bunny
       end
     end
 
+    def after_recovery_completed(&block)
+      @recovery_completed = block
+    end
+
     # @private
-    def recovery_completed
+    def notify_of_recovery_completion
       @recovery_completed.call if @recovery_completed
     end
 

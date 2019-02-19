@@ -1,19 +1,12 @@
 require "spec_helper"
 require "rabbitmq/http/client"
 
+require "bunny/concurrent/condition"
+
 describe "Connection recovery" do
   let(:http_client) { RabbitMQ::HTTP::Client.new("http://127.0.0.1:15672") }
   let(:logger) { Logger.new($stderr).tap {|logger| logger.level = ENV["BUNNY_LOG_LEVEL"] || Logger::WARN } }
   let(:recovery_interval) { 0.2 }
-
-  let(:recovery_completed) { double("recovery_callback", call: nil) }
-
-  let(:c_with_callback) do
-    Bunny.new(network_recovery_interval: recovery_interval,
-                recover_from_connection_close: true,
-                logger: logger,
-                recovery_completed: recovery_completed)
-  end
 
   it "reconnects after grace period" do
     with_open do |c|
@@ -49,17 +42,19 @@ describe "Connection recovery" do
     end
   end
 
-  it "calls the network recovery callback" do
-    with_open(c_with_callback) do |c|
-      _ = c.create_channel
-      _ = c.create_channel
-      sleep 1.5
-      close_all_connections!
-      sleep 0.5
-      poll_until { channels.count == 2 }
-    end
+  it "provides a recovery completion callback" do
+    with_open do |c|
+      latch = Bunny::Concurrent::Condition.new
+      c.after_recovery_completed do
+        latch.notify
+      end
 
-    expect(recovery_completed).to have_received(:call).exactly(1).times
+      ch = c.create_channel
+      sleep 1.0
+      close_all_connections!
+      poll_until { c.open? && ch.open? }
+      poll_until { latch.none_threads_waiting? }
+    end
   end
 
   it "recovers channels (with multiple hosts)" do
@@ -292,7 +287,6 @@ describe "Connection recovery" do
       destination = ch.fanout("destination.exchange.recovery.example", auto_delete: true)
 
       source2      = ch2.fanout("source.exchange.recovery.example", no_declare: true)
-      destination2 = ch2.fanout("destination.exchange.recovery.example", no_declare: true)
 
       destination.bind(source)
 
@@ -448,7 +442,7 @@ describe "Connection recovery" do
     c.start
     block.call(c)
   ensure
-    c.close
+    c.close(false) rescue nil
   end
 
   def with_open_multi_host(&block)
