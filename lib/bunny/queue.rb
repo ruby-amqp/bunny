@@ -158,9 +158,6 @@ module Bunny
     # @option opts [Boolean] :ack (false) [DEPRECATED] Use :manual_ack instead
     # @option opts [Boolean] :manual_ack (false) Will this consumer use manual acknowledgements?
     # @option opts [Boolean] :exclusive (false) Should this consumer be exclusive for this queue?
-    # @option opts [Boolean] :block (false) Should the call block the calling thread? This option can be useful for keeping the main thread of
-    #                                       a script alive. It is incompatible with automatic connection recovery
-    #                                       and is not generally recommended.
     # @option opts [#call] :on_cancellation Block to execute when this consumer is cancelled remotely (e.g. via the RabbitMQ Management plugin)
     # @option opts [String] :consumer_tag Unique consumer identifier. It is usually recommended to let Bunny generate it for you.
     # @option opts [Hash] :arguments ({}) Additional (optional) arguments, typically used by RabbitMQ extensions
