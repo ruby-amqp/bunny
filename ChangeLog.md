@@ -1,6 +1,10 @@
 ## Changes between Bunny 2.14.0 and 2.15.0 (unreleased)
 
-No changes yet.
+### Gem Installation Fixed on Windows
+
+`bin/ci`, a directory with symlinks, is no longer included into the gem.
+
+Contributed by Jack Xiaosong Xu.
 
 ## Changes between Bunny 2.13.0 and 2.14.0 (Feb 20th, 2019)
 
