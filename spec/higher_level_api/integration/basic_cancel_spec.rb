@@ -20,7 +20,7 @@ describe Bunny::Consumer, "#cancel" do
       t = Thread.new do
         ch         = connection.create_channel
         q          = ch.queue(queue_name, auto_delete: true, durable: false)
-        consumer = q.subscribe(block: false) do |_, _, payload|
+        consumer = q.subscribe do |_, _, payload|
           delivered_data << payload
         end
 
@@ -58,7 +58,7 @@ describe Bunny::Consumer, "#cancel" do
           delivered_data << payload
         end
 
-        q.subscribe_with(consumer, block: false)
+        q.subscribe_with(consumer)
       end
       t.abort_on_exception = true
       sleep 1.0
@@ -91,7 +91,7 @@ describe Bunny::Consumer, "#cancel" do
           delivered_data << payload
         end
 
-        q.subscribe_with(consumer, block: false)
+        q.subscribe_with(consumer)
       end
       t.abort_on_exception = true
       sleep 1.0
@@ -122,7 +122,7 @@ describe Bunny::Consumer, "#cancel" do
           delivered_data << payload
         end
 
-        q.subscribe_with(consumer, block: false)
+        q.subscribe_with(consumer)
       end
       t.abort_on_exception = true
       sleep 1.0
