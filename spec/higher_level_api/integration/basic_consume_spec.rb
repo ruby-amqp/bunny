@@ -189,17 +189,17 @@ describe Bunny::Queue, "#subscribe" do
         ch = connection.create_channel
         q  = ch.queue(queue_name)
 
-        c1  = q.subscribe(exclusive: false, manual_ack: false, block: false) do |delivery_info, properties, payload|
+        c1  = q.subscribe(exclusive: false, manual_ack: false) do |delivery_info, properties, payload|
         end
         c1.cancel
 
-        c2  = q.subscribe(exclusive: false, manual_ack: false, block: false) do |delivery_info, properties, payload|
+        c2  = q.subscribe(exclusive: false, manual_ack: false) do |delivery_info, properties, payload|
           delivered_keys << delivery_info.routing_key
           delivered_data << payload
         end
         c2.cancel
 
-        q.subscribe(exclusive: false, manual_ack: false, block: true) do |delivery_info, properties, payload|
+        q.subscribe(exclusive: false, manual_ack: false) do |delivery_info, properties, payload|
           delivered_keys << delivery_info.routing_key
           delivered_data << payload
         end
