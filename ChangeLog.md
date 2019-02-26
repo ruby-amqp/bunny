@@ -1,6 +1,16 @@
-## Changes between Bunny 2.14.0 and 2.14.1 (unreleased)
+## Changes between Bunny 2.14.1 and 2.14.2 (unreleased)
 
 No changes yet.
+
+## Changes between Bunny 2.14.0 and 2.14.1 (Feb 26th, 2019)
+
+### Gem Installation Fixed on Windows
+
+`bin/ci`, a directory with symlinks, is no longer included into the gem.
+
+Contributed by Jack Xiaosong Xu.
+
+GitHub issue: [#573](https://github.com/ruby-amqp/bunny/pull/574)
 
 ## Changes between Bunny 2.13.0 and 2.14.0 (Feb 20th, 2019)
 

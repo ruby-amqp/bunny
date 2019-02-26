@@ -8,8 +8,8 @@ Gem::Specification.new do |s|
   s.name = "bunny"
   s.version = Bunny::VERSION.dup
   s.homepage = "http://rubybunny.info"
-  s.summary = "Popular easy to use Ruby client for RabbitMQ"
-  s.description = "Easy to use, feature complete Ruby client for RabbitMQ 3.3 and later versions."
+  s.summary = "Easy to use Ruby client for RabbitMQ"
+  s.description = "Easy to use, feature complete Ruby client for RabbitMQ"
   s.license = "MIT"
   s.required_ruby_version = Gem::Requirement.new(">= 2.2")
 
@@ -21,7 +21,7 @@ Gem::Specification.new do |s|
     "Michael S. Klishin",
     "Stefan Kaes"]
 
-  s.email = ["michael.s.klishin@gmail.com"]
+  s.email = ["mklishin@pivotal.io"]
 
   # Dependencies
   s.add_runtime_dependency 'amq-protocol', '~> 2.3', '>= 2.3.0'
