@@ -4,6 +4,7 @@
 *.rbc
 *.gem
 /doc/
+/debug/
 .yardoc
 .rvmrc
 Gemfile.lock
