@@ -79,7 +79,7 @@ module Qrack
 
       # Close all active channels
       channels.each do |c|
-        Bunny::Timer::timeout(@disconnect_timeout) { c.close } if c.open?
+        Bunny::Timer::timeout(@read_write_timeout) { c.close } if c.open?
       end
 
       # Close connection to AMQP server
