@@ -10,6 +10,7 @@ Gem::Specification.new do |s|
   s.homepage = "http://github.com/ruby-amqp/bunny"
   s.summary = "Synchronous Ruby AMQP 0.9.1 client"
   s.description = "A synchronous Ruby AMQP client that enables interaction with AMQP-compliant brokers."
+  s.license = "MIT"
 
   # Sorted alphabetically.
   s.authors = [
@@ -28,10 +29,9 @@ Gem::Specification.new do |s|
     map { |mail| Base64.decode64(mail) }
 
   # Files.
-  s.has_rdoc = true
   s.extra_rdoc_files = ["README.textile"]
   s.rdoc_options = ["--main", "README.rdoc"]
-  s.files         = `git ls-files`.split("\n")
+  s.files         = `git ls-files`.split("\n").reject { |f| f.match(%r{^bin/ci/}) }
   s.test_files    = `git ls-files -- spec/*`.split("\n")
   s.require_paths = ["lib"]
 
@@ -40,7 +40,4 @@ Gem::Specification.new do |s|
     s.post_install_message = CHANGELOG.new.version_changes
   rescue LoadError
   end
-
-  # RubyForge
-  s.rubyforge_project = "bunny-amqp"
 end
