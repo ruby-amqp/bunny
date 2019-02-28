@@ -21,8 +21,8 @@ services:
 branches:
   only:
     - master
-    - 2.12.x-stable
-    - 2.11.x-stable
+    - 2.14.x-stable
+    - 2.13.x-stable
 env:
   - CI=true
 matrix:
