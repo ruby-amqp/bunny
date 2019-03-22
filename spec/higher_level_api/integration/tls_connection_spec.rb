@@ -40,7 +40,7 @@ unless ENV["CI"]
     ENV.fetch("BUNNY_RABBITMQ_HOSTNAME", "localhost")
   end
 
-  context "initialized with :tls => true" do
+  context "initialized with tls: true" do
     let(:subject) do
       Bunny.new(
         hostname:  local_hostname(),
@@ -222,7 +222,7 @@ unless ENV["CI"]
     include_examples "successful TLS connection"
   end
 
-  describe "TLS connection to RabbitMQ with tls_version TLSv1.1 specified" do
+  describe "TLS connection to RabbitMQ with tls_version TLSv1.2 specified" do
     let(:subject) do
       c = Bunny.new(
         hostname: local_hostname(),
@@ -230,7 +230,7 @@ unless ENV["CI"]
         password: "bunny_password",
         vhost: "bunny_testbed",
         tls: true,
-        tls_protocol: :TLSv1_1,
+        tls_protocol: :TLSv1_2,
         tls_ca_certificates: ["#{CERTIFICATE_DIR}/ca_certificate.pem"],
         verify_peer: false)
       c.start
@@ -244,7 +244,7 @@ unless ENV["CI"]
     include_examples "successful TLS connection"
 
     it "connects using TLSv1.1" do
-      expect(subject.transport.socket.ssl_version).to eq "TLSv1.1"
+      expect(subject.transport.socket.ssl_version).to eq "TLSv1.2"
     end
   end
 end
