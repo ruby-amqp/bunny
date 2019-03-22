@@ -11,10 +11,10 @@ before_script:
 script: "bundle exec rake integration_without_recovery"
 rvm:
   - ruby-head
-  - "2.6.0"
-  - "2.5.1"
-  - "2.4.2"
-  - "2.3.5"
+  - "2.6.2"
+  - "2.5.5"
+  - "2.4.5"
+  - "2.3.8"
 notifications:
   email: michael@rabbitmq.com
 services:
