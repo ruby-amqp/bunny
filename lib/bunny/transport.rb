@@ -371,7 +371,7 @@ module Bunny
     end
 
     def log_peer_certificate_info(severity, peer_cert, prefix = "Peer's leaf certificate")
-      @logger.add(severity, peer_certificate_info(peer_cert, prefix))
+      @logger.add(severity) { peer_certificate_info(peer_cert, prefix) }
     end
 
     def log_peer_certificate_chain_info(severity, chain)
