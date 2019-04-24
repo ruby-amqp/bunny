@@ -1,6 +1,20 @@
-## Changes between Bunny 2.14.1 and 2.14.2 (unreleased)
+## Changes between Bunny 2.14.2 and 2.14.3 (in development)
 
 No changes yet.
+
+
+## Changes between Bunny 2.14.1 and 2.14.2 (Apr 24th, 2019)
+
+### Lazy Peer Certificate Chain Information Logging
+
+Peer certificate chain information is now logged lazily, which prevents
+an obscure exception originating ASN.1 parser and makes the logging
+code evaluate only when it is really necessary.
+
+GitHub issue: [#578](https://github.com/ruby-amqp/bunny/pull/578)
+
+Contributed by Garrett Thornburg.
+
 
 ## Changes between Bunny 2.14.0 and 2.14.1 (Feb 26th, 2019)
 
