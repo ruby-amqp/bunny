@@ -6,6 +6,17 @@
 
 Contributed by Jack Xiaosong Xu.
 
+### Lazy Peer Certificate Chain Information Logging
+
+Peer certificate chain information is now logged lazily, which prevents
+an obscure exception originating ASN.1 parser and makes the logging
+code evaluate only when it is really necessary.
+
+GitHub issue: [#578](https://github.com/ruby-amqp/bunny/pull/578)
+
+Contributed by Garrett Thornburg.
+
+
 ## Changes between Bunny 2.13.0 and 2.14.0 (Feb 20th, 2019)
 
 ### Improved Peer Verification Failure Logging
