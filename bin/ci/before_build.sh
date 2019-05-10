@@ -1,9 +1,5 @@
 #!/usr/bin/env sh
 
-#!/bin/sh
-
-#!/bin/sh
-
 CTL=${BUNNY_RABBITMQCTL:-"sudo rabbitmqctl"}
 PLUGINS=${BUNNY_RABBITMQ_PLUGINS:-"sudo rabbitmq-plugins"}
 
