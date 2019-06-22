@@ -340,6 +340,14 @@ module Bunny
       self
     end
 
+    def update_secret(value, reason)
+      @transport.send_frame(AMQ::Protocol::Connection::UpdateSecret.encode(value, reason))
+      @last_update_secret_ok = wait_on_continuations
+      raise_if_continuation_resulted_in_a_connection_error!
+
+      @last_update_secret_ok
+    end
+
     # Socket operation write timeout used by this connection
     # @return [Integer]
     # @private
@@ -630,6 +638,8 @@ module Bunny
       when AMQ::Protocol::Connection::Unblocked then
         @blocked = false
         @unblock_callback.call(method) if @unblock_callback
+      when AMQ::Protocol::Connection::UpdateSecretOk then
+        @continuations.push(method)
       when AMQ::Protocol::Channel::Close then
         begin
           ch = synchronised_find_channel(ch_number)
