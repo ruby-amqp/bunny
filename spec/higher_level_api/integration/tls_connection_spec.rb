@@ -256,7 +256,7 @@ describe "TLS connection to RabbitMQ with tls_version TLSv1.2 specified", skip: 
 
   include_examples "successful TLS connection"
 
-  it "connects using TLSv1.1", skip: no_tls12_supported? do
+  it "connects using TLSv1.2", skip: no_tls12_supported? do
     expect(subject.transport.socket.ssl_version).to eq "TLSv1.2"
   end
 end
