@@ -32,6 +32,9 @@ module Bunny
         socket.setsockopt(::Socket::IPPROTO_TCP, ::Socket::TCP_NODELAY, true)
       end
       socket.setsockopt(::Socket::SOL_SOCKET, ::Socket::SO_KEEPALIVE, true) if options.fetch(:keepalive, true)
+      socket.instance_eval do
+        @__bunny_socket_eof_flag__ = false
+      end
       socket.extend self
       socket.options = { :host => host, :port => port }.merge(options)
       socket
