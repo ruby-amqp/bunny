@@ -1,6 +1,18 @@
-## Changes between Bunny 2.14.2 and 2.14.3 (in development)
+## Changes between Bunny 2.14.3 and 2.14.4 (in development)
 
 No changes yet.
+
+
+## Changes between Bunny 2.14.2 and 2.14.3 (Sep 29th, 2019)
+
+### OpenSSL Exceptions Trigger Recovery
+
+OpenSSL exceptions on a fully established connection will now kick off
+connection recovery.
+
+GitHub issue: [#583](https://github.com/ruby-amqp/bunny/issues/583)
+
+Contributed by Carl Hörberg.
 
 
 ## Changes between Bunny 2.14.1 and 2.14.2 (Apr 24th, 2019)
