@@ -7,11 +7,15 @@ RUN wget -O - "https://github.com/rabbitmq/signing-keys/releases/download/2.0/ra
 COPY apt/sources.list.d/bintray.rabbitmq.list /etc/apt/sources.list.d/bintray.rabbitmq.list
 COPY apt/preferences.d/erlang                 /etc/apt/preferences.d/erlang
 
-RUN apt-get update -y
+RUN apt-get update -y && apt-get upgrade -y
 
-RUN apt-get upgrade -y && \
-    apt-get install -y erlang-asn1 erlang-crypto erlang-public-key erlang-ssl && \
-    apt-get install -y rabbitmq-server
+RUN apt-get install -y erlang-base \
+                       erlang-asn1 erlang-crypto erlang-eldap erlang-ftp erlang-inets \
+                       erlang-mnesia erlang-os-mon erlang-parsetools erlang-public-key \
+                       erlang-runtime-tools erlang-snmp erlang-ssl \
+                       erlang-syntax-tools erlang-tftp erlang-tools erlang-xmerl
+
+RUN apt-get install -y rabbitmq-server
 
 COPY docker-entrypoint.sh /
 
