@@ -171,6 +171,7 @@ module Bunny
                                else
                                  opts[:automatically_recover] || opts[:automatic_recovery]
                                end
+      @recovering_from_network_failure = false
       @max_recovery_attempts = opts[:recovery_attempts]
       @recovery_attempts     = @max_recovery_attempts
       # When this is set, connection attempts won't be reset after
@@ -184,6 +185,7 @@ module Bunny
       @continuation_timeout   = opts.fetch(:continuation_timeout, DEFAULT_CONTINUATION_TIMEOUT)
 
       @status             = :not_connected
+      @manually_closed    = false
       @blocked            = false
 
       # these are negotiated with the broker during the connection tuning phase
