@@ -4,8 +4,8 @@ sudo apt-get install -y wget
 wget -O - "https://github.com/rabbitmq/signing-keys/releases/download/2.0/rabbitmq-release-signing-key.asc" | sudo apt-key add -
 
 sudo tee /etc/apt/sources.list.d/bintray.rabbitmq.list <<EOF
-deb https://dl.bintray.com/rabbitmq-erlang/debian xenial erlang
-deb https://dl.bintray.com/rabbitmq/debian xenial main
+deb https://dl.bintray.com/rabbitmq-erlang/debian bionic erlang
+deb https://dl.bintray.com/rabbitmq/debian bionic main
 EOF
 
 sudo apt-get update -y
