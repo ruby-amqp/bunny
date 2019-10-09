@@ -1,4 +1,4 @@
-dist: xenial
+dist: bionic
 language: ruby
 bundler_args: --without development
 cache: bundler
