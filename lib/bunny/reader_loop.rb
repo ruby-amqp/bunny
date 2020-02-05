@@ -116,6 +116,13 @@ module Bunny
     end
 
     def join
+      # Thread#join can/would trigger a re-raise of an unhandled exception in this thread.
+      # In addition, Thread.handle_interrupt can be used by other libraries or application code
+      # that would make this join operation fail with an obscure exception.
+      # So we try to save everyone some really unpleasant debugging time by introducing
+      # this condition which typically would not evaluate to true anyway.
+      #
+      # See ruby-amqp/bunny#589 and ruby-amqp/bunny#590 for background.
       @thread.join if @thread && @thread != Thread.current
     end
 
