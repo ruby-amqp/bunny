@@ -116,7 +116,7 @@ module Bunny
     end
 
     def join
-      @thread.join if @thread
+      @thread.join if @thread && @thread != Thread.current
     end
 
     def kill
