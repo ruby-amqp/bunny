@@ -1,5 +1,21 @@
 ## Changes between Bunny 2.14.0 and 2.15.0 (unreleased)
 
+### More Defensive Thread Join Operations
+
+Bunny is now more defensive around thread join operations which it performs
+when stopping its consumer work pool.
+
+`Thread#join` can cause an unhandled exception to be re-raised at
+a very surprising moment. This behavior can also be affected by 3rd party
+libraries, e.g. those that do connection pooling. While Bunny cannot
+fully avoid every possible surprising failure, it now avoids at least
+one such problematic interaction triggered by a custom [interrupt handler](https://ruby-doc.org/core-2.5.1/Thread.html#method-c-handle_interrupt)
+in a 3rd party library.
+
+GitHub issue: [#589](https://github.com/ruby-amqp/bunny/issues/589)
+
+Contributed by @fuegas.
+
 ### Gem Installation Fixed on Windows
 
 `bin/ci`, a directory with symlinks, is no longer included into the gem.
