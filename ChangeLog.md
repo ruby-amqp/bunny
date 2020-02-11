@@ -1,6 +1,25 @@
-## Changes between Bunny 2.14.3 and 2.14.4 (in development)
+## Changes between Bunny 2.14.4 and 2.14.5 (in development)
 
-No changes yet.
+No changes.
+
+
+## Changes between Bunny 2.14.3 and 2.14.4 (Feb 11th, 2020)
+
+### More Defensive Thread Join Operations
+
+Bunny is now more defensive around thread join operations which it performs
+when stopping its consumer work pool.
+
+`Thread#join` can cause an unhandled exception to be re-raised at
+a very surprising moment. This behavior can also be affected by 3rd party
+libraries, e.g. those that do connection pooling. While Bunny cannot
+fully avoid every possible surprising failure, it now avoids at least
+one such problematic interaction triggered by a custom [interrupt handler](https://ruby-doc.org/core-2.5.1/Thread.html#method-c-handle_interrupt)
+in a 3rd party library.
+
+GitHub issue: [#589](https://github.com/ruby-amqp/bunny/issues/589)
+
+Contributed by @fuegas.
 
 
 ## Changes between Bunny 2.14.2 and 2.14.3 (Sep 29th, 2019)
