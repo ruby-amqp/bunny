@@ -1,5 +1,5 @@
-require_relative '../../lib/bunny/channel'
-require_relative '../../lib/bunny/exchange'
+require 'bunny/channel'
+require 'bunny/exchange'
 
 module Bunny
   describe Exchange do
