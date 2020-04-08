@@ -1,4 +1,4 @@
-## Changes between Bunny 2.14.0 and 2.15.0 (unreleased)
+## Changes between Bunny 2.14.0 and 2.15.0 (Apr 8th, 2020)
 
 ### More Defensive Thread Join Operations
 
@@ -15,6 +15,11 @@ in a 3rd party library.
 GitHub issue: [#589](https://github.com/ruby-amqp/bunny/issues/589)
 
 Contributed by @fuegas.
+
+### Dependency Updates
+
+`amq-protocol` dependency has been bumped to `2.3.1` to support `connection.update-secret`
+protocol extension.
 
 ### Gem Installation Fixed on Windows
 
