@@ -1,3 +1,8 @@
+## Changes between Bunny 2.15.0 and 2.15.1 (unreleased)
+
+No changes yet.
+
+
 ## Changes between Bunny 2.14.0 and 2.15.0 (Apr 8th, 2020)
 
 ### More Defensive Thread Join Operations
