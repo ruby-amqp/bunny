@@ -24,7 +24,7 @@ Gem::Specification.new do |s|
   s.email = ["michael.s.klishin@gmail.com"]
 
   # Dependencies
-  s.add_runtime_dependency 'amq-protocol', '~> 2.3', '>= 2.3.0'
+  s.add_runtime_dependency 'amq-protocol', '~> 2.3', '>= 2.3.1'
 
   # Files.
   s.extra_rdoc_files = ["README.md"]
