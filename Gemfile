@@ -34,7 +34,7 @@ end
 
 group :test do
   gem "rspec", "~> 3.9.0"
-  gem "rabbitmq_http_api_client", "~> 1.11.0", require: "rabbitmq/http/client"
+  gem "rabbitmq_http_api_client", "~> 1.13.0", require: "rabbitmq/http/client"
   gem "toxiproxy", "~> 1.0.3"
 end
 
