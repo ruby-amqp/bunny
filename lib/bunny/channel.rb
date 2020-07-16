@@ -1156,7 +1156,7 @@ module Bunny
 
     # @group Exchange operations (exchange.*)
 
-    # Declares a exchange using echange.declare AMQP 0.9.1 method.
+    # Declares a exchange using exchange.declare AMQP 0.9.1 method.
     #
     # @param [String] name The name of the exchange. Note that LF and CR characters
     #                       will be stripped from the value.
