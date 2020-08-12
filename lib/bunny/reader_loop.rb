@@ -9,17 +9,17 @@ module Bunny
   # @private
   class ReaderLoop
 
-    def initialize(transport, session, session_thread)
-      @transport      = transport
-      @session        = session
-      @session_thread = session_thread
-      @logger         = @session.logger
+    def initialize(transport, session, session_error_handler)
+      @transport             = transport
+      @session               = session
+      @session_error_handler = session_error_handler
+      @logger                = @session.logger
 
-      @mutex          = Mutex.new
+      @mutex                 = Mutex.new
 
-      @stopping        = false
-      @stopped         = false
-      @network_is_down = false
+      @stopping              = false
+      @stopped               = false
+      @network_is_down       = false
     end
 
 
@@ -47,7 +47,7 @@ module Bunny
             @session.handle_network_failure(e)
           else
             log_exception(e)
-            @session_thread.raise(Bunny::NetworkFailure.new("detected a network failure: #{e.message}", e))
+            @session_error_handler.raise(Bunny::NetworkFailure.new("detected a network failure: #{e.message}", e))
           end
         rescue ShutdownSignal => _
           @mutex.synchronize { @stopping = true }
@@ -58,7 +58,7 @@ module Bunny
             log_exception(e)
 
             @network_is_down = true
-            @session_thread.raise(Bunny::NetworkFailure.new("caught an unexpected exception in the network loop: #{e.message}", e))
+            @session_error_handler.raise(Bunny::NetworkFailure.new("caught an unexpected exception in the network loop: #{e.message}", e))
           end
         rescue Errno::EBADF => _ebadf
           break if terminate?
