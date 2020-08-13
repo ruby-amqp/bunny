@@ -124,6 +124,7 @@ module Bunny
     # @option connection_string_or_opts [Integer] :recovery_attempts (nil) Max number of recovery attempts, nil means forever
     # @option connection_string_or_opts [Integer] :reset_recovery_attempts_after_reconnection (true) Should recovery attempt counter be reset after successful reconnection? When set to false, the attempt counter will last through the entire lifetime of the connection object.
     # @option connection_string_or_opts [Boolean] :recover_from_connection_close (true) Should this connection recover after receiving a server-sent connection.close (e.g. connection was force closed)?
+    # @option connection_string_or_opts [Object] :session_error_handler (Thread.current) Object which responds to #raise that will act as a session error handler. Defaults to Thread.current, which will raise asynchronous exceptions in the thread that created the session.
     #
     # @option optz [String] :auth_mechanism ("PLAIN") Authentication mechanism, PLAIN or EXTERNAL
     # @option optz [String] :locale ("PLAIN") Locale RabbitMQ should use
@@ -213,9 +214,9 @@ module Bunny
       @address_index_mutex = @mutex_impl.new
 
       @channels            = Hash.new
-      @recovery_completed = opts[:recovery_completed]
+      @recovery_completed  = opts[:recovery_completed]
 
-      @origin_thread       = Thread.current
+      @session_error_handler = opts.fetch(:session_error_handler, Thread.current)
 
       self.reset_continuations
       self.initialize_transport
@@ -862,7 +863,7 @@ module Bunny
 
       clean_up_on_shutdown
       if threaded?
-        @origin_thread.raise(@last_connection_error)
+        @session_error_handler.raise(@last_connection_error)
       else
         raise @last_connection_error
       end
@@ -1019,7 +1020,7 @@ module Bunny
 
     # @private
     def reader_loop
-      @reader_loop ||= ReaderLoop.new(@transport, self, Thread.current)
+      @reader_loop ||= ReaderLoop.new(@transport, self, @session_error_handler)
     end
 
     # @private
@@ -1282,7 +1283,7 @@ module Bunny
           end
 
           if threaded?
-            @origin_thread.raise(e)
+            @session_error_handler.raise(e)
           else
             raise e
           end
@@ -1328,7 +1329,7 @@ module Bunny
         @transport = Transport.new(self,
                                    host_from_address(address),
                                    port_from_address(address),
-                                   @opts.merge(:session_thread => @origin_thread)
+                                   @opts.merge(:session_error_handler => @session_error_handler)
                                   )
 
         # Reset the cached progname for the logger only when no logger was provided
