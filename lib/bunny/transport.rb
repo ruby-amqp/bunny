@@ -35,7 +35,7 @@ module Bunny
 
     def initialize(session, host, port, opts)
       @session        = session
-      @session_thread = opts[:session_thread]
+      @session_error_handler = opts[:session_error_handler]
       @host    = host
       @port    = port
       @opts    = opts
@@ -146,7 +146,7 @@ module Bunny
           if @session.automatically_recover?
             @session.handle_network_failure(e)
           else
-            @session_thread.raise(Bunny::NetworkFailure.new("detected a network failure: #{e.message}", e))
+            @session_error_handler.raise(Bunny::NetworkFailure.new("detected a network failure: #{e.message}", e))
           end
         end
       end
@@ -170,7 +170,7 @@ module Bunny
           if @session.automatically_recover?
             @session.handle_network_failure(e)
           else
-            @session_thread.raise(Bunny::NetworkFailure.new("detected a network failure: #{e.message}", e))
+            @session_error_handler.raise(Bunny::NetworkFailure.new("detected a network failure: #{e.message}", e))
           end
         end
       end
@@ -188,7 +188,7 @@ module Bunny
         if @session.automatically_recover?
           @session.handle_network_failure(e)
         else
-          @session_thread.raise(Bunny::NetworkFailure.new("detected a network failure: #{e.message}", e))
+          @session_error_handler.raise(Bunny::NetworkFailure.new("detected a network failure: #{e.message}", e))
         end
       end
     end
@@ -245,7 +245,7 @@ module Bunny
         if @session.automatically_recover?
           raise
         else
-          @session_thread.raise(Bunny::NetworkFailure.new("detected a network failure: #{e.message}", e))
+          @session_error_handler.raise(Bunny::NetworkFailure.new("detected a network failure: #{e.message}", e))
         end
       end
     end
