@@ -1,6 +1,19 @@
-## Changes between Bunny 2.15.0 and 2.15.1 (unreleased)
+## Changes between Bunny 2.16.0 and 2.17.0 (undefined)
 
 No changes yet.
+
+
+## Changes between Bunny 2.15.0 and 2.16.0 (Aug 14th, 2020)
+
+### Asynchronous Exception Delegate
+
+Bunny now can delete asynchronous connection (`Bunny::Session`) exception to an arbitrary
+delegate object. Use the `:session_error_handler` connection setting to pass it.
+The value defaults to `Thread.current`.
+
+Contributed by @bbascarevic.
+
+GitHub issue: [ruby-amqp/bunny#597](https://github.com/ruby-amqp/bunny/issues/597)
 
 
 ## Changes between Bunny 2.14.0 and 2.15.0 (Apr 8th, 2020)
