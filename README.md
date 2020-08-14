@@ -43,12 +43,11 @@ Specific examples:
    Web applications that display that information in the real time.
 
 
-
 ## Supported Ruby Versions
 
 Modern Bunny versions support
 
- * CRuby 2.3 through 2.6 (inclusive)
+ * CRuby 2.3 through 2.7 (inclusive)
 
 Bunny works sufficiently well on JRuby but there are known
 JRuby bugs in versions prior to JRuby 9000 that cause high CPU burn. JRuby users should
@@ -71,10 +70,10 @@ a stable public API.
 Change logs per release series:
 
  * [master](https://github.com/ruby-amqp/bunny/blob/master/ChangeLog.md)
- * [2.14.x](https://github.com/ruby-amqp/bunny/blob/2.13.x-stable/ChangeLog.md)
+ * [2.16.x](https://github.com/ruby-amqp/bunny/blob/2.16.x-stable/ChangeLog.md)
+ * [2.15.x](https://github.com/ruby-amqp/bunny/blob/2.15.x-stable/ChangeLog.md)
+ * [2.14.x](https://github.com/ruby-amqp/bunny/blob/2.14.x-stable/ChangeLog.md)
  * [2.13.x](https://github.com/ruby-amqp/bunny/blob/2.13.x-stable/ChangeLog.md)
- * [2.12.x](https://github.com/ruby-amqp/bunny/blob/2.12.x-stable/ChangeLog.md)
- * [2.11.x](https://github.com/ruby-amqp/bunny/blob/2.11.x-stable/ChangeLog.md)
 
 
 
@@ -97,7 +96,7 @@ gem install bunny
 To use Bunny in a project managed with Bundler:
 
 ``` ruby
-gem "bunny", ">= 2.14.1"
+gem "bunny", ">= 2.16.1"
 ```
 
 
