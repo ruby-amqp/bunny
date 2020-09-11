@@ -14,14 +14,14 @@ name that will be displayed in the RabbitMQ management UI and mentioned in
 Instead of
 
 ``` ruby
-conn = Bunny.new(client_properties: {connection_name: 'app ABC #{rand}'})
+conn = Bunny.new(client_properties: {connection_name: "app ABC #{rand}"})
 conn.start
 ```
 
 a new top-level connection option now can be used:
 
 ``` ruby
-conn = Bunny.new(connection_name: 'app ABC #{rand}')
+conn = Bunny.new(connection_name: "app ABC #{rand}")
 conn.start
 ```
 
