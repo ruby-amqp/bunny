@@ -1,6 +1,28 @@
 ## Changes between Bunny 2.16.x and 2.17.0 (undefined)
 
-No changes yet.
+### Easier to Specify a Client-Propvided Connection Name
+
+It is now easier to provide a client-provided (custom) connection
+name that will be displayed in the RabbitMQ management UI and mentioned in
+[server logs](https://www.rabbitmq.com/logging.html).
+
+Instead of
+
+``` ruby
+conn = Bunny.new(client_properties: {connection_name: 'app ABC #{rand}'})
+conn.start
+```
+
+a new top-level connection option now can be used:
+
+``` ruby
+conn = Bunny.new(connection_name: 'app ABC #{rand}')
+conn.start
+```
+
+Contributed by @brerx.
+
+GitHub issue: [ruby-amqp/bunny#600](https://github.com/ruby-amqp/bunny/pull/600)
 
 
 ## Changes between Bunny 2.15.0 and 2.16.0 (Aug 14th, 2020)
