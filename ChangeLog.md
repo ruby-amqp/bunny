@@ -1,4 +1,4 @@
-## Changes between Bunny 2.17.x and 2.18.0 (in development)
+## Changes between Bunny 2.17.0 and 2.17.1 (in development)
 
 No changes yet.
 
