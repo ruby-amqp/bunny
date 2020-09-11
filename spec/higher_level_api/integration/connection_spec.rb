@@ -563,21 +563,27 @@ describe Bunny::Session do
 
   context "initialized with a custom connection name" do
     it "uses provided connection name with default connection string" do
-      conn = Bunny.new(nil, connection_name: 'test_name')
+      conn = Bunny.new(connection_name: 'test_name')
 
       expect(conn.connection_name).to eq 'test_name'
+    end
+
+    it "uses provided connection name from client property hash" do
+      conn = Bunny.new(client_properties: {connection_name: 'cp/test_name'})
+
+      expect(conn.connection_name).to eq 'cp/test_name'
     end
 
     it "uses provided connection name with custom connection string" do
-      conn = Bunny.new('amqp://guest:guest@rabbitmq:5672', connection_name: 'test_name')
+      conn = Bunny.new('amqp://guest:guest@rabbitmq:5672', connection_name: 'test_name3')
 
-      expect(conn.connection_name).to eq 'test_name'
+      expect(conn.connection_name).to eq 'test_name3'
     end
 
     it "uses provided connection name with hash options" do
-      conn = Bunny.new(user: 'user', password: 'p455w0rd', connection_name: 'test_name')
+      conn = Bunny.new(user: 'user', password: 'p455w0rd', connection_name: 'test_name4')
 
-      expect(conn.connection_name).to eq 'test_name'
+      expect(conn.connection_name).to eq 'test_name4'
     end
   end
 end
