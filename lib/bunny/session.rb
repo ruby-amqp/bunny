@@ -89,6 +89,7 @@ module Bunny
     # @return [Integer] Timeout for blocking protocol operations (queue.declare, queue.bind, etc), in milliseconds. Default is 15000.
     attr_reader :continuation_timeout
     attr_reader :network_recovery_interval
+    attr_reader :connection_name
     attr_accessor :socket_configurator
 
     # @param [String, Hash] connection_string_or_opts Connection string or a hash of connection options
@@ -128,6 +129,7 @@ module Bunny
     #
     # @option optz [String] :auth_mechanism ("PLAIN") Authentication mechanism, PLAIN or EXTERNAL
     # @option optz [String] :locale ("PLAIN") Locale RabbitMQ should use
+    # @option optz [String] :connection_name (nil) Client-provided connection name, if any. Note that the value returned does not uniquely identify a connection and cannot be used as a connection identifier in HTTP API requests.
     #
     # @see http://rubybunny.info/articles/connecting.html Connecting to RabbitMQ guide
     # @see http://rubybunny.info/articles/tls.html TLS/SSL guide
@@ -198,7 +200,10 @@ module Bunny
       @client_heartbeat   = self.heartbeat_from(opts)
 
       client_props         = opts[:properties] || opts[:client_properties] || {}
+      connection_name      = client_props[:connection_name] || opts[:connection_name]
       @client_properties   = DEFAULT_CLIENT_PROPERTIES.merge(client_props)
+                                                      .merge(connection_name: connection_name)
+      @connection_name     = @client_properties[:connection_name]
       @mechanism           = normalize_auth_mechanism(opts.fetch(:auth_mechanism, "PLAIN"))
       @credentials_encoder = credentials_encoder_for(@mechanism)
       @locale              = @opts.fetch(:locale, DEFAULT_LOCALE)
