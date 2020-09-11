@@ -201,7 +201,8 @@ module Bunny
 
       client_props         = opts[:properties] || opts[:client_properties] || {}
       @client_properties   = DEFAULT_CLIENT_PROPERTIES.merge(client_props)
-      @connection_name     = @client_properties.fetch(:connection_name, nil)
+                                                      .merge(connection_name: opts[:connection_name])
+      @connection_name     = @client_properties[:connection_name]
       @mechanism           = normalize_auth_mechanism(opts.fetch(:auth_mechanism, "PLAIN"))
       @credentials_encoder = credentials_encoder_for(@mechanism)
       @locale              = @opts.fetch(:locale, DEFAULT_LOCALE)
