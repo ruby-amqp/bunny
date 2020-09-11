@@ -70,10 +70,10 @@ a stable public API.
 Change logs per release series:
 
  * [master](https://github.com/ruby-amqp/bunny/blob/master/ChangeLog.md)
+ * [2.17.x](https://github.com/ruby-amqp/bunny/blob/2.17.x-stable/ChangeLog.md)
  * [2.16.x](https://github.com/ruby-amqp/bunny/blob/2.16.x-stable/ChangeLog.md)
  * [2.15.x](https://github.com/ruby-amqp/bunny/blob/2.15.x-stable/ChangeLog.md)
  * [2.14.x](https://github.com/ruby-amqp/bunny/blob/2.14.x-stable/ChangeLog.md)
- * [2.13.x](https://github.com/ruby-amqp/bunny/blob/2.13.x-stable/ChangeLog.md)
 
 
 
@@ -96,7 +96,7 @@ gem install bunny
 To use Bunny in a project managed with Bundler:
 
 ``` ruby
-gem "bunny", ">= 2.16.1"
+gem "bunny", ">= 2.17.0"
 ```
 
 
