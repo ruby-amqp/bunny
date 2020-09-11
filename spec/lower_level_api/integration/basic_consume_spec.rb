@@ -96,10 +96,4 @@ describe Bunny::Channel, "#basic_consume" do
       ch.close
     end
   end
-
-  it "propagates the connection_name to the client_properties" do
-    named_connection = Bunny.new(properties: { connection_name: 'test_name' })
-
-    expect(named_connection.connection_name).to eq 'test_name'
-  end
 end

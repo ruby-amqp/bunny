@@ -560,4 +560,12 @@ describe Bunny::Session do
       described_class.new(logger: logger)
     end
   end
+
+  context "initialized with a custom connection name" do
+    it "uses provided connection name" do
+      conn = Bunny.new(properties: { connection_name: 'test_name' })
+
+      expect(conn.connection_name).to eq 'test_name'
+    end
+  end
 end
