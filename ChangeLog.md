@@ -5,7 +5,7 @@ No changes yet.
 
 ## Changes between Bunny 2.16.x and 2.17.0 (Sep 11th, 2020)
 
-### Easier to Specify a Client-Propvided Connection Name
+### Easier to Specify a Client-Provided Connection Name
 
 It is now easier to provide a client-provided (custom) connection
 name that will be displayed in the RabbitMQ management UI and mentioned in
