@@ -17,13 +17,13 @@ module Bunny
     attr_reader :size
     attr_reader :abort_on_exception
 
-    def initialize(size = 1, abort_on_exception = false, shutdown_timeout = 60)
+    def initialize(size = 1, abort_on_exception = false, shutdown_timeout = 60, pool_queue_limit=10000)
       @size  = size
       @abort_on_exception = abort_on_exception
       @shutdown_timeout = shutdown_timeout
       @shutdown_mutex = ::Mutex.new
       @shutdown_conditional = ::ConditionVariable.new
-      @queue = ::Queue.new
+      @queue = ::SizedQueue.new(pool_queue_limit)
       @paused = false
       @running = false
     end
