@@ -25,6 +25,7 @@ Gem::Specification.new do |s|
 
   # Dependencies
   s.add_runtime_dependency 'amq-protocol', '~> 2.3', '>= 2.3.1'
+  s.add_runtime_dependency 'sorted_set', '~> 1', '>= 1.0.2'
 
   # Files.
   s.extra_rdoc_files = ["README.md"]

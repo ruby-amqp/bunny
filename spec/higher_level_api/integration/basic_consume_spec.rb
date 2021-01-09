@@ -62,8 +62,10 @@ describe Bunny::Queue, "#subscribe" do
           x.publish("hello", routing_key: queue_name)
         end
 
-        sleep 1.0
-        expect(delivery_tags).to eq SortedSet.new(Range.new(1, 100).to_a)
+        sleep 1.5
+        100.times do |i|
+          expect(delivery_tags).to include(i + 1)
+        end
 
         expect(ch.queue(queue_name, auto_delete: true, durable: false).message_count).to eq 0
 
@@ -95,7 +97,9 @@ describe Bunny::Queue, "#subscribe" do
         end
 
         sleep 1.5
-        expect(delivery_tags).to eq SortedSet.new(Range.new(1, 100).to_a)
+        100.times do |i|
+          expect(delivery_tags).to include(i + 1)
+        end
 
         expect(ch.queue(queue_name, auto_delete: true, durable: false).message_count).to eq 0
 
@@ -305,8 +309,10 @@ describe Bunny::Queue, "#subscribe" do
           x.publish("hello", routing_key: queue_name)
         end
 
-        sleep 1.0
-        expect(delivery_tags).to eq SortedSet.new(Range.new(1, 100).to_a)
+        sleep 1.5
+        100.times do |i|
+          expect(delivery_tags).to include(i + 1)
+        end
 
         expect(ch.queue(queue_name, auto_delete: true, durable: false).message_count).to eq 0
 
@@ -338,7 +344,9 @@ describe Bunny::Queue, "#subscribe" do
         end
 
         sleep 1.5
-        expect(delivery_tags).to eq SortedSet.new(Range.new(1, 100).to_a)
+        100.times do |i|
+          expect(delivery_tags).to include(i + 1)
+        end
 
         expect(ch.queue(queue_name, auto_delete: true, durable: false).message_count).to eq 0
 
