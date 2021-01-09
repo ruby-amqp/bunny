@@ -2,7 +2,7 @@ require "spec_helper"
 
 describe Bunny::Channel, "#basic_consume" do
   before(:all) do
-    @connection = Bunny.new(:user => "bunny_gem", :password => "bunny_password", :vhost => "bunny_testbed")
+    @connection = Bunny.new(:user => "bunny_gem", password: "bunny_password", :vhost => "bunny_testbed")
     @connection.start
   end
 
@@ -12,7 +12,7 @@ describe Bunny::Channel, "#basic_consume" do
 
   it "returns basic.consume-ok when it is received" do
     ch = @connection.create_channel
-    q  = ch.queue("", :exclusive => true)
+    q  = ch.queue("", exclusive: true)
 
     consume_ok = ch.basic_consume(q)
     expect(consume_ok).to be_instance_of AMQ::Protocol::Basic::ConsumeOk
@@ -23,7 +23,7 @@ describe Bunny::Channel, "#basic_consume" do
 
   it "carries server-generated consumer tag with basic.consume-ok" do
     ch = @connection.create_channel
-    q  = ch.queue("", :exclusive => true)
+    q  = ch.queue("", exclusive: true)
 
     consume_ok = ch.basic_consume(q, "")
     expect(consume_ok.consumer_tag).to match /amq\.ctag.*/
@@ -51,13 +51,13 @@ describe Bunny::Channel, "#basic_consume" do
 
       ch = @connection.create_channel
       x  = ch.default_exchange
-      x.publish("hello", :routing_key => queue_name)
+      x.publish("hello", routing_key: queue_name)
 
       sleep 0.7
       expect(delivered_keys).to include queue_name
       expect(delivered_data).to include "hello"
 
-      expect(ch.queue(queue_name, :auto_delete => true, :durable => false).message_count).to eq 0
+      expect(ch.queue(queue_name, auto_delete: true, durable: false).message_count).to eq 0
 
       ch.close
     end
@@ -72,7 +72,7 @@ describe Bunny::Channel, "#basic_consume" do
 
       t = Thread.new do
         ch = @connection.create_channel
-        q = ch.queue(queue_name, :auto_delete => true, :durable => false)
+        q = ch.queue(queue_name, auto_delete: true, durable: false)
         ch.basic_consume(q, "", false, false) do |delivery_info, properties, payload|
           delivered_keys << delivery_info.routing_key
           delivered_data << payload
@@ -85,13 +85,13 @@ describe Bunny::Channel, "#basic_consume" do
 
       ch = @connection.create_channel
       x  = ch.default_exchange
-      x.publish("hello", :routing_key => queue_name)
+      x.publish("hello", routing_key: queue_name)
 
       sleep 0.7
       expect(delivered_keys).to include queue_name
       expect(delivered_data).to include "hello"
 
-      expect(ch.queue(queue_name, :auto_delete => true, :durable => false).message_count).to eq 0
+      expect(ch.queue(queue_name, auto_delete: true, durable: false).message_count).to eq 0
 
       ch.close
     end

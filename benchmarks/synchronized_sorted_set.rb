@@ -2,7 +2,7 @@
 # encoding: utf-8
 
 require "rubygems"
-require "set"
+require "sorted_set"
 require "thread"
 require "benchmark"
 
