@@ -1,7 +1,10 @@
 ## Changes between Bunny 2.17.x and 2.18.0 (in development)
 
-No changes yet.
+### Ruby 3.0 Compatibility
 
+Bunny has switched to use a `SortedSet` from a standalone library.
+As of Ruby 3.0, it is no longer available in the standard library
+(`set`).
 
 ## Changes between Bunny 2.16.x and 2.17.0 (Sep 11th, 2020)
 
