@@ -124,6 +124,7 @@ module Bunny
     # @option connection_string_or_opts [Boolean] :automatically_recover (true) Should automatically recover from network failures?
     # @option connection_string_or_opts [Integer] :recovery_attempts (nil) Max number of recovery attempts, nil means forever
     # @option connection_string_or_opts [Integer] :reset_recovery_attempts_after_reconnection (true) Should recovery attempt counter be reset after successful reconnection? When set to false, the attempt counter will last through the entire lifetime of the connection object.
+    # @option connection_string_or_opts [Proc] :recovery_attempt_started (nil) Will be called before every connection recovery attempt
     # @option connection_string_or_opts [Proc] :recovery_completed (nil) Will be called after successful connection recovery
     # @option connection_string_or_opts [Boolean] :recover_from_connection_close (true) Should this connection recover after receiving a server-sent connection.close (e.g. connection was force closed)?
     # @option connection_string_or_opts [Object] :session_error_handler (Thread.current) Object which responds to #raise that will act as a session error handler. Defaults to Thread.current, which will raise asynchronous exceptions in the thread that created the session.
@@ -219,7 +220,9 @@ module Bunny
       @address_index_mutex = @mutex_impl.new
 
       @channels            = Hash.new
-      @recovery_completed  = opts[:recovery_completed]
+
+      @recovery_attempt_started = opts[:recovery_attempt_started]
+      @recovery_completed       = opts[:recovery_completed]
 
       @session_error_handler = opts.fetch(:session_error_handler, Thread.current)
 
@@ -534,6 +537,11 @@ module Bunny
       end
     end
 
+    # Defines a callable (e.g. a block) that will be called
+    # before every connection recovery attempt.
+    def before_recovery_attempt_starts(&block)
+      @recovery_attempt_started = block
+    end
 
     # Defines a callable (e.g. a block) that will be called
     # after successful connection recovery.
@@ -758,6 +766,7 @@ module Bunny
     def recover_from_network_failure
       sleep @network_recovery_interval
       @logger.debug "Will attempt connection recovery..."
+      notify_of_recovery_attempt_start
 
       self.initialize_transport
 
@@ -829,6 +838,11 @@ module Bunny
           ch.recover_from_network_failure
         end
       end
+    end
+
+    # @private
+    def notify_of_recovery_attempt_start
+      @recovery_attempt_started.call if @recovery_attempt_started
     end
 
     # @private
