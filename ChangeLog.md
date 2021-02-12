@@ -1738,7 +1738,7 @@ This is rarely necessary but helps make sure no error goes unnoticed.
 Example:
 
 ``` ruby
-channel.on_error |ch, channel_close|
+channel.on_error do |ch, channel_close|
   puts channel_close.inspect
 end
 ```
