@@ -174,7 +174,7 @@ module Bunny
       @automatically_recover = if opts[:automatically_recover].nil? && opts[:automatic_recovery].nil?
                                  true
                                else
-                                 opts[:automatically_recover] || opts[:automatic_recovery]
+                                 opts[:automatically_recover] | opts[:automatic_recovery]
                                end
       @recovering_from_network_failure = false
       @max_recovery_attempts = opts[:recovery_attempts]
