@@ -489,7 +489,7 @@ but prone to man-in-the-middle attacks. Please set verify_peer: true in producti
         MSG
       end
 
-      ssl_version = opts[:tls_protocol] || opts[:ssl_version]
+      ssl_version = opts[:tls_protocol] || opts[:ssl_version] || :TLSv1_2
       ctx.ssl_version = ssl_version if ssl_version
 
       ctx

@@ -39,20 +39,6 @@ def local_hostname
   ENV.fetch("BUNNY_RABBITMQ_HOSTNAME", "localhost")
 end
 
-def no_tls12_supported?
-  not tls12_supported?
-end
-
-def tls12_supported?
-  begin
-    ctx = OpenSSL::SSL::SSLContext.new
-    ctx.min_version = ctx.max_version = OpenSSL::SSL::TLS1_2_VERSION
-    true
-  rescue
-    false
-  end
-end
-
 context "initialized with tls: true", skip: ENV["CI"] do
   let(:subject) do
     Bunny.new(
@@ -102,6 +88,7 @@ describe "TLS connection to RabbitMQ with client certificates", skip: ENV["CI"] 
       password: "bunny_password",
       vhost: "bunny_testbed",
       tls: true,
+      tls_protocol: :TLSv1_2,
       tls_cert: "#{CERTIFICATE_DIR}/client_certificate.pem",
       tls_key: "#{CERTIFICATE_DIR}/client_key.pem",
       tls_ca_certificates: ["#{CERTIFICATE_DIR}/ca_certificate.pem"],
@@ -126,6 +113,7 @@ describe "TLS connection to RabbitMQ without client certificates", skip: ENV["CI
       password: "bunny_password",
       vhost: "bunny_testbed",
       tls: true,
+      tls_protocol: :TLSv1_2,
       tls_ca_certificates: ["#{CERTIFICATE_DIR}/ca_certificate.pem"],
       verify_peer: false)
     c.start
@@ -143,6 +131,7 @@ end
 describe "TLS connection to RabbitMQ with a connection string", skip: ENV["CI"] do
   let(:subject) do
     c = Bunny.new("amqps://bunny_gem:bunny_password@#{local_hostname()}/bunny_testbed",
+      tls_protocol: :TLSv1_2,
       tls_cert: "#{CERTIFICATE_DIR}/client_certificate.pem",
       tls_key: "#{CERTIFICATE_DIR}/client_key.pem",
       tls_ca_certificates: ["#{CERTIFICATE_DIR}/ca_certificate.pem"],
@@ -179,6 +168,7 @@ describe "TLS connection to RabbitMQ with a connection string and w/o client cer
   let(:subject) do
     c = Bunny.new("amqps://bunny_gem:bunny_password@#{local_hostname()}/bunny_testbed",
       tls_ca_certificates: ["#{CERTIFICATE_DIR}/ca_certificate.pem"],
+      tls_protocol: :TLSv1_2,
       verify_peer: verify_peer)
     c.start
     c
@@ -223,28 +213,7 @@ describe "TLS connection to RabbitMQ with client certificates provided inline", 
       tls_cert: File.read("#{CERTIFICATE_DIR}/client_certificate.pem"),
       tls_key: File.read("#{CERTIFICATE_DIR}/client_key.pem"),
       tls_ca_certificates: ["#{CERTIFICATE_DIR}/ca_certificate.pem"],
-      verify_peer: false)
-    c.start
-    c
-  end
-
-  after :each do
-    subject.close
-  end
-
-  include_examples "successful TLS connection"
-end
-
-describe "TLS connection to RabbitMQ with tls_version TLSv1.2 specified", skip: ENV["CI"] do
-  let(:subject) do
-    c = Bunny.new(
-      hostname: local_hostname(),
-      username: "bunny_gem",
-      password: "bunny_password",
-      vhost: "bunny_testbed",
-      tls: true,
       tls_protocol: :TLSv1_2,
-      tls_ca_certificates: ["#{CERTIFICATE_DIR}/ca_certificate.pem"],
       verify_peer: false)
     c.start
     c
@@ -255,8 +224,4 @@ describe "TLS connection to RabbitMQ with tls_version TLSv1.2 specified", skip: 
   end
 
   include_examples "successful TLS connection"
-
-  it "connects using TLSv1.2", skip: no_tls12_supported? do
-    expect(subject.transport.socket.ssl_version).to eq "TLSv1.2"
-  end
 end

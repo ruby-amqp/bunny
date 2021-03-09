@@ -14,8 +14,6 @@ rvm:
   - "2.7.1"
   - "2.6.6"
   - "2.5.8"
-  - "2.4.10"
-  - "2.3.8"
 notifications:
   email: michael@rabbitmq.com
 services:
@@ -23,8 +21,9 @@ services:
 branches:
   only:
     - master
-    - 2.14.x-stable
-    - 2.13.x-stable
+    - 2.17.x-stable
+    - 2.16.x-stable
+    - 2.15.x-stable
 env:
   - CI=true
 matrix:
