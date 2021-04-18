@@ -1889,7 +1889,7 @@ To use the `"EXTERNAL"` method, pass `:auth_mechanism => "EXTERNAL"` to
 
 ``` ruby
 # uses the EXTERNAL authentication mechanism
-conn = Bunny.new(:auth_method => "EXTERNAL")
+conn = Bunny.new(:auth_mechanism => "EXTERNAL")
 conn.start
 ```
 
