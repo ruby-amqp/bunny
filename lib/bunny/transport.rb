@@ -501,7 +501,7 @@ but prone to man-in-the-middle attacks. Please set verify_peer: true in producti
       certs.each do |cert|
         # if it starts with / or C:/ then it's a file path that may or may not
         # exist (e.g. a default OpenSSL path). MK.
-        if File.readable?(cert) || cert =~ /^([a-z]:?)?\//i
+        if File.readable?(cert) || cert =~ /\A([a-z]:?)?\//i
           cert_files.push(cert)
         else
           cert_inlines.push(cert)
