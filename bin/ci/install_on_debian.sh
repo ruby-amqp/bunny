@@ -1,29 +1,23 @@
 #!/bin/sh
 
+export DEBIAN_FRONTEND=noninteractive
+
 sudo apt-get install curl gnupg debian-keyring debian-archive-keyring apt-transport-https -y
 
 ## Team RabbitMQ's main signing key
 sudo apt-key adv --keyserver "hkps://keys.openpgp.org" --recv-keys "0x0A9AF2115F4687BD29803A206B73A36E6026DFCA"
-## Launchpad PPA that provides modern Erlang releases
-sudo apt-key adv --keyserver "keyserver.ubuntu.com" --recv-keys "F77F1EDA57EBB1CC"
-## PackageCloud RabbitMQ repository
-sudo apt-key adv --keyserver "keyserver.ubuntu.com" --recv-keys "F6609E60DC62814E"
+## Modern Erlang repository signing key
+curl -1sLf 'https://dl.cloudsmith.io/public/rabbitmq/rabbitmq-erlang/gpg.E495BB49CC4BBE5B.key' | sudo apt-key add -
+## RabbitMQ repository signing key
+curl -1sLf 'https://dl.cloudsmith.io/public/rabbitmq/rabbitmq-server/gpg.9F4587F226208342.key' | apt-key add -
 
 ## Add apt repositories maintained by Team RabbitMQ
 sudo tee /etc/apt/sources.list.d/rabbitmq.list <<EOF
-## Provides modern Erlang/OTP releases
-##
-## "bionic" as distribution name should work for any reasonably recent Ubuntu or Debian release.
-## See the release to distribution mapping table in RabbitMQ doc guides to learn more.
-deb http://ppa.launchpad.net/rabbitmq/rabbitmq-erlang/ubuntu bionic main
-deb-src http://ppa.launchpad.net/rabbitmq/rabbitmq-erlang/ubuntu bionic main
+deb https://dl.cloudsmith.io/public/rabbitmq/rabbitmq-erlang/deb/ubuntu bionic main
+deb-src https://dl.cloudsmith.io/public/rabbitmq/rabbitmq-erlang/deb/ubuntu focal main
 
-## Provides RabbitMQ
-##
-## "bionic" as distribution name should work for any reasonably recent Ubuntu or Debian release.
-## See the release to distribution mapping table in RabbitMQ doc guides to learn more.
-deb https://packagecloud.io/rabbitmq/rabbitmq-server/ubuntu/ bionic main
-deb-src https://packagecloud.io/rabbitmq/rabbitmq-server/ubuntu/ bionic main
+deb https://dl.cloudsmith.io/public/rabbitmq/rabbitmq-server/deb/ubuntu bionic main
+deb-src https://dl.cloudsmith.io/public/rabbitmq/rabbitmq-server/deb/ubuntu focal main
 EOF
 
 ## Update package indices
@@ -42,5 +36,3 @@ sudo apt-get install rabbitmq-server -y --fix-missing
 sudo service rabbitmq-server start
 
 sudo rabbitmqctl await_startup --timeout 120
-
-until sudo lsof -i:5672; do echo "Waiting for RabbitMQ to start..."; sleep 1; done
