@@ -8,7 +8,7 @@ describe Bunny::Session, 'TLS certificate store' do
   let(:logger) { Logger.new(io).tap { |l| l.level = :debug } }
   let(:io) { StringIO.new }
 
-  context 'when a POSIX path given' do
+  context 'when a Windows path given' do
     let(:certificate) { 'C:/some/path/cacert.pem' }
 
     # skipping actual work with file by Windows path as this spec runs in Linux
@@ -24,7 +24,7 @@ describe Bunny::Session, 'TLS certificate store' do
     end
   end
 
-  context 'when a Windows path given' do
+  context 'when a POSIX path given' do
     let(:certificate) { './spec/tls/ca_certificate.pem' }
 
     it 'uses the certificate by path' do
