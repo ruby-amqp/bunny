@@ -169,7 +169,7 @@ Some highly relevant RabbitMQ documentation guides:
  * [Queues](https://www.rabbitmq.com/queues.html)
  * [Publishers](https://www.rabbitmq.com/publishers.html)
  * [Consumers](https://www.rabbitmq.com/consumers.html)
- * Publisher and Consumer [Confirmations](https://www.rabbitmq.com/confirms.html)
+ * Data safety: publisher and consumer [Confirmations](https://www.rabbitmq.com/confirms.html)
  * [Production Checklist](https://www.rabbitmq.com/production-checklist.html)
 
 ### API Reference
