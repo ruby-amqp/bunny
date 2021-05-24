@@ -1,10 +1,43 @@
-## Changes between Bunny 2.17.x and 2.18.0 (in development)
+## Changes between Bunny 2.18.x and 2.19.0 (in development)
+
+No changes yet.
+
+
+## Changes between Bunny 2.17.x and 2.18.0 (May 4, 2021)
 
 ### Ruby 3.0 Compatibility
 
 Bunny has switched to use a `SortedSet` from a standalone library.
 As of Ruby 3.0, it is no longer available in the standard library
 (`set`).
+
+### New Option to Silence TLS-related Warnings
+
+A new connection option, `tls_silence_warnings`, silences two warnings:
+
+ * When TLS is enabled but no client certificate/private key pair is provided
+ * When [peer verification](https://www.rabbitmq.com/ssl.html#peer-verification) is disabled
+
+An example:
+
+``` ruby
+c = Bunny.new("amqps://bunny_gem:bunny_password@hostname/vhost",
+      tls: true,
+      tls_ca_certificates: ["#{CERTIFICATE_DIR}/ca_certificate.pem"],
+      tls_protocol: :TLSv1_2,
+      verify_peer: false,
+      tls_silence_warnings: true)
+c.start
+```
+
+GitHub issue: [#607](https://github.com/ruby-amqp/bunny/issues/607)
+
+### Leaner Gem
+
+Bunny gem no longer includes TLS certificates and other Git repository files that are not library
+or test files.
+
+GitHub issue: [#612](https://github.com/ruby-amqp/bunny/issues/612)
 
 ## Changes between Bunny 2.16.x and 2.17.0 (Sep 11th, 2020)
 
