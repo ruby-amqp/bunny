@@ -150,7 +150,7 @@ For a 15 minute tutorial using more practical examples, see [Getting Started wit
 
 ### Guides
 
-Other documentation guides are available at [rubybunny.info](http://rubybunny.info):
+Bunny documentation guides are available at [rubybunny.info](http://rubybunny.info):
 
  * [Queues and Consumers](http://rubybunny.info/articles/queues.html)
  * [Exchanges and Publishers](http://rubybunny.info/articles/exchanges.html)
@@ -161,6 +161,16 @@ Other documentation guides are available at [rubybunny.info](http://rubybunny.in
  * [Bindings](http://rubybunny.info/articles/bindings.html)
  * [Using RabbitMQ Extensions with Bunny](http://rubybunny.info/articles/extensions.html)
  * [Durability and Related Matters](http://rubybunny.info/articles/durability.html)
+
+Some highly relevant RabbitMQ documentation guides:
+
+ * [Connections](https://www.rabbitmq.com/connections.html)
+ * [Channels](https://www.rabbitmq.com/channels.html)
+ * [Queues](https://www.rabbitmq.com/queues.html)
+ * [Publishers](https://www.rabbitmq.com/publishers.html)
+ * [Consumers](https://www.rabbitmq.com/consumers.html)
+ * Publisher and Consumer [Confirmations](https://www.rabbitmq.com/confirms.html)
+ * [Production Checklist](https://www.rabbitmq.com/production-checklist.html)
 
 ### API Reference
 
