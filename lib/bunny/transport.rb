@@ -453,7 +453,7 @@ module Bunny
       end
     end
 
-    def initialize_tls_context(ctx, opts={})
+    def initialize_tls_context(ctx, opts = {})
       ctx.cert       = OpenSSL::X509::Certificate.new(@tls_certificate) if @tls_certificate
       ctx.key        = OpenSSL::PKey.read(@tls_key) if @tls_key
       ctx.cert_store = if @tls_certificate_store
@@ -463,8 +463,9 @@ module Bunny
                          @tls_ca_certificates = tls_ca_certificates_paths_from(opts)
                          initialize_tls_certificate_store(@tls_ca_certificates)
                        end
+      should_silence_warnings = opts.fetch(:tls_silence_warnings, false)
 
-      if !@tls_certificate
+      if !@tls_certificate && !should_silence_warnings
         @logger.warn <<-MSG
 Using TLS but no client certificate is provided. If RabbitMQ is configured to require & verify peer
 certificate, connection will be rejected. Learn more at https://www.rabbitmq.com/ssl.html
@@ -482,7 +483,7 @@ certificate, connection will be rejected. Learn more at https://www.rabbitmq.com
       @logger.debug { "Will use peer verification mode #{verify_mode}" }
       ctx.verify_mode = verify_mode
 
-      if !@verify_peer
+      if !@verify_peer && !should_silence_warnings
         @logger.warn <<-MSG
 Using TLS but peer hostname verification is disabled. This is convenient for local development
 but prone to man-in-the-middle attacks. Please set verify_peer: true in production. Learn more at https://www.rabbitmq.com/ssl.html

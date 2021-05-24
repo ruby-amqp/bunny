@@ -201,6 +201,34 @@ describe "TLS connection to RabbitMQ with a connection string and w/o client cer
   end
 end
 
+describe "TLS connection to RabbitMQ w/o client certificate", skip: ENV["CI"] do
+  let(:subject) do
+    c = Bunny.new("amqps://bunny_gem:bunny_password@#{local_hostname()}/bunny_testbed",
+      tls_ca_certificates: ["#{CERTIFICATE_DIR}/ca_certificate.pem"],
+      tls_protocol: :TLSv1_2,
+      verify_peer: false,
+      tls_silence_warnings: should_silence_warnings)
+    c.start
+    c
+  end
+
+  after :each do
+    subject.close
+  end
+
+  context "TLS-related warnings are enabled" do
+    let(:should_silence_warnings) { false }
+
+    include_examples "successful TLS connection"
+  end
+
+  context "TLS-related warnings are silenced" do
+    let(:should_silence_warnings) { true }
+
+    include_examples "successful TLS connection"
+  end
+end
+
 
 describe "TLS connection to RabbitMQ with client certificates provided inline", skip: ENV["CI"] do
   let(:subject) do
