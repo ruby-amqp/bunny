@@ -3,41 +3,6 @@
 require 'spec_helper'
 
 describe 'multiple atribute handling on acks' do
-  # Monkey patch with 2 implementations of confirmed subsets + counters for testing
-  class Bunny::Channel
-    attr_accessor :multiples, :old_implementation
-
-    def handle_ack_or_nack(delivery_tag_before_offset, multiple, nack)
-      range_start_testing = old_implementation ? 1 : @unconfirmed_set.first # choose between subsets
-
-      delivery_tag          = delivery_tag_before_offset + @delivery_tag_offset
-      confirmed_range_start = multiple ? @delivery_tag_offset + range_start_testing : delivery_tag
-      confirmed_range_end   = delivery_tag
-      confirmed_range       = (confirmed_range_start..confirmed_range_end)
-
-      # just counting multiples to proof we recieved some
-      @multiples = @multiples.to_i + 1 if multiple
-
-      @unconfirmed_set_mutex.synchronize do
-        if nack
-          @nacked_set.merge(@unconfirmed_set & confirmed_range)
-        end
-
-        @unconfirmed_set.subtract(confirmed_range)
-
-        @only_acks_received = (@only_acks_received && !nack)
-
-        @confirms_continuations.push(true) if @unconfirmed_set.empty?
-
-        if @confirms_callback
-          confirmed_range.each do |tag|
-            @confirms_callback.call(tag, false, nack)
-          end
-        end
-      end
-    end
-  end
-
   def measure
     result = {}
     result[:begin] = Process.clock_gettime(Process::CLOCK_MONOTONIC)
@@ -58,6 +23,43 @@ describe 'multiple atribute handling on acks' do
                             write_timeout: 0,
                             read_timeout: 0)
     @connection.start
+  end
+
+  before do
+    # Monkey patch with 2 implementations of confirmed subsets + counters for testing
+    class Bunny::Channel
+      attr_accessor :multiples, :old_implementation
+
+      def handle_ack_or_nack(delivery_tag_before_offset, multiple, nack)
+        range_start_testing = old_implementation ? 1 : @unconfirmed_set.first # choose between subsets
+
+        delivery_tag          = delivery_tag_before_offset + @delivery_tag_offset
+        confirmed_range_start = multiple ? @delivery_tag_offset + range_start_testing : delivery_tag
+        confirmed_range_end   = delivery_tag
+        confirmed_range       = (confirmed_range_start..confirmed_range_end)
+
+        # just counting multiples to proof we recieved some
+        @multiples = @multiples.to_i + 1 if multiple
+
+        @unconfirmed_set_mutex.synchronize do
+          if nack
+            @nacked_set.merge(@unconfirmed_set & confirmed_range)
+          end
+
+          @unconfirmed_set.subtract(confirmed_range)
+
+          @only_acks_received = (@only_acks_received && !nack)
+
+          @confirms_continuations.push(true) if @unconfirmed_set.empty?
+
+          if @confirms_callback
+            confirmed_range.each do |tag|
+              @confirms_callback.call(tag, false, nack)
+            end
+          end
+        end
+      end
+    end
   end
 
   after(:all) do
