@@ -1789,7 +1789,7 @@ module Bunny
     # @private
     def handle_ack_or_nack(delivery_tag_before_offset, multiple, nack)
       delivery_tag          = delivery_tag_before_offset + @delivery_tag_offset
-      confirmed_range_start = multiple ? @delivery_tag_offset + 1 : delivery_tag
+      confirmed_range_start = multiple ? @delivery_tag_offset + @unconfirmed_set.first : delivery_tag
       confirmed_range_end   = delivery_tag
       confirmed_range       = (confirmed_range_start..confirmed_range_end)
 
