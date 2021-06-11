@@ -31,7 +31,7 @@ describe 'multiple atribute handling on acks' do
       attr_accessor :multiples, :old_implementation
 
       def handle_ack_or_nack(delivery_tag_before_offset, multiple, nack)
-        range_start_testing = old_implementation ? 1 : @unconfirmed_set.first # choose between subsets
+        range_start_testing = old_implementation ? 1 : @unconfirmed_set.min # choose between subsets
 
         delivery_tag          = delivery_tag_before_offset + @delivery_tag_offset
         confirmed_range_start = multiple ? @delivery_tag_offset + range_start_testing : delivery_tag
