@@ -1,6 +1,15 @@
 ## Changes between Bunny 2.18.x and 2.19.0 (in development)
 
-No changes yet.
+### Correct Handling of Publisher Confirms with Multiple Flag Set
+
+Bunny was invoking a publisher confirms callback excessively when
+it encountered, wasting CPU cycles for no good reason and
+potentially resulting in incorrect or confusing publishing
+application behavior.
+
+Contributed by Yuri @kinnalru Samoilenko.
+
+GitHub issue: [#617](https://github.com/ruby-amqp/bunny/pull/617)
 
 
 ## Changes between Bunny 2.17.x and 2.18.0 (May 4, 2021)
