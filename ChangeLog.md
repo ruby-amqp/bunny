@@ -7,7 +7,10 @@ it encountered, wasting CPU cycles for no good reason and
 potentially resulting in incorrect or confusing publishing
 application behavior.
 
-Contributed by Yuri @kinnalru Samoilenko.
+Contributed by
+
+ * Vladislav @yurusov Yurusov
+ * Yuri @kinnalru Samoilenko
 
 GitHub issue: [#617](https://github.com/ruby-amqp/bunny/pull/617)
 
