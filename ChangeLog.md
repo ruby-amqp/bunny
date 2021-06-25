@@ -1,4 +1,9 @@
-## Changes between Bunny 2.18.x and 2.19.0 (in development)
+## Changes between Bunny 2.19.x and 2.20.0 (in development)
+
+No changes yet.
+
+
+## Changes between Bunny 2.18.x and 2.19.0 (June 25, 2021)
 
 ### Correct Handling of Publisher Confirms with Multiple Flag Set
 
