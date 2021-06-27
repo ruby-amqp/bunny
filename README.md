@@ -192,13 +192,6 @@ mailing list. Feel free to ask any questions that you may have.
 [![Build Status](https://travis-ci.org/ruby-amqp/bunny.svg)](https://travis-ci.org/ruby-amqp/bunny/)
 
 
-### News & Announcements on Twitter
-
-To subscribe for announcements of releases, important changes and so on, please follow [@rubyamqp](https://twitter.com/#!/rubyamqp) on Twitter.
-
-More detailed announcements can be found in the [RabbitMQ Ruby clients blog](http://blog.rubyrabbitmq.info).
-
-
 ### Reporting Issues
 
 If you find a bug you understand well, poor default, incorrect or unclear piece of documentation,
