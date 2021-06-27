@@ -30,6 +30,5 @@ Gem::Specification.new do |s|
   # Files.
   s.extra_rdoc_files = ["README.md"]
   s.files         = `git ls-files -- lib/*`.split("\n").reject { |f| f.match(%r{^bin/ci/}) }
-  s.test_files    = `git ls-files -- spec/*`.split("\n").reject { |f| f.match(%r{^spec/tls/}) }
   s.require_paths = ["lib"]
 end
