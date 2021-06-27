@@ -1,6 +1,12 @@
 ## Changes between Bunny 2.19.x and 2.20.0 (in development)
 
-No changes yet.
+### Test Files Left Out of .gem File
+
+Test files (specs) are no longer included into the `.gem` file.
+
+Contributed by Alexey @alexeyschepin Schepin.
+
+GitHub issue: [#621](https://github.com/ruby-amqp/bunny/pull/621)
 
 
 ## Changes between Bunny 2.18.x and 2.19.0 (June 25, 2021)
