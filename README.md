@@ -58,8 +58,7 @@ Bunny `1.7.x` was the last version to support CRuby 1.9.3 and 1.8.7
 
 ## Supported RabbitMQ Versions
 
-Bunny `1.5.0` and later versions only support RabbitMQ `3.3+`.
-Bunny `1.4.x` and earlier supports RabbitMQ 2.x and 3.x.
+Modern Bunny releases target [currently supported RabbitMQ release series](https://www.rabbitmq.com/versions.html).
 
 
 ## Change Log
@@ -69,9 +68,8 @@ a stable public API.
 
 Change logs per release series:
 
- * [master](https://github.com/ruby-amqp/bunny/blob/master/ChangeLog.md)
+ * [master](https://github.com/ruby-amqp/bunny/blob/master/ChangeLog.md) (most notable changes for all release series)
  * [2.19.x](https://github.com/ruby-amqp/bunny/blob/2.19.x-stable/ChangeLog.md)
- * [2.18.x](https://github.com/ruby-amqp/bunny/blob/2.18.x-stable/ChangeLog.md)
 
 
 
@@ -94,7 +92,7 @@ gem install bunny
 To use Bunny in a project managed with Bundler:
 
 ``` ruby
-gem "bunny", ">= 2.18.0"
+gem "bunny", ">= 2.19.0"
 ```
 
 
