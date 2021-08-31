@@ -79,20 +79,20 @@ Change logs per release series:
 
 [![Gem Version](https://badge.fury.io/rb/bunny.svg)](http://badge.fury.io/rb/bunny)
 
-### With Rubygems
-
-To install Bunny with RubyGems:
-
-```
-gem install bunny
-```
-
 ### Bundler Dependency
 
 To use Bunny in a project managed with Bundler:
 
 ``` ruby
 gem "bunny", ">= 2.19.0"
+```
+
+### With Rubygems
+
+To install Bunny with RubyGems:
+
+```
+gem install bunny
 ```
 
 
