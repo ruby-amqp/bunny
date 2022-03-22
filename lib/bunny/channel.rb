@@ -1599,7 +1599,7 @@ module Bunny
 
     # @return [String] Brief human-readable representation of the channel
     def to_s
-      "#<#{self.class.name}:#{object_id} @id=#{self.number} @connection=#{@connection.to_s}> @open=#{open?}"
+      "#<#{self.class.name}:#{object_id} @id=#{self.number} @connection=#{@connection.to_s} @open=#{open?}>"
     end
 
     def inspect
