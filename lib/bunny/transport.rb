@@ -25,6 +25,24 @@ module Bunny
     DEFAULT_READ_TIMEOUT  = 30.0
     DEFAULT_WRITE_TIMEOUT = 30.0
 
+    # mimics METHODS_MAP in ssl.rb but also lists TLS 1.3
+    # and string constants
+    TLS_VERSION_ALIASES = {
+      TLSv1: OpenSSL::SSL::TLS1_VERSION,
+      TLSv1_1: OpenSSL::SSL::TLS1_1_VERSION,
+      TLSv1_2: OpenSSL::SSL::TLS1_2_VERSION,
+      TLSv1_2: OpenSSL::SSL::TLS1_2_VERSION,
+      TLSv1_3: OpenSSL::SSL::TLS1_3_VERSION,
+      "1.0": OpenSSL::SSL::TLS1_VERSION,
+      "1.1": OpenSSL::SSL::TLS1_1_VERSION,
+      "1.2": OpenSSL::SSL::TLS1_2_VERSION,
+      "1.3": OpenSSL::SSL::TLS1_3_VERSION,
+      OpenSSL::SSL::TLS1_VERSION => OpenSSL::SSL::TLS1_VERSION,
+      OpenSSL::SSL::TLS1_1_VERSION => OpenSSL::SSL::TLS1_1_VERSION,
+      OpenSSL::SSL::TLS1_2_VERSION => OpenSSL::SSL::TLS1_2_VERSION,
+      OpenSSL::SSL::TLS1_3_VERSION => OpenSSL::SSL::TLS1_3_VERSION
+    }.freeze
+
     attr_reader :session, :host, :port, :socket, :connect_timeout, :read_timeout, :write_timeout, :disconnect_timeout
     attr_reader :tls_context, :verify_peer, :tls_ca_certificates, :tls_certificate_path, :tls_key_path
 
@@ -491,7 +509,11 @@ but prone to man-in-the-middle attacks. Please set verify_peer: true in producti
       end
 
       ssl_version = opts[:tls_protocol] || opts[:ssl_version] || :TLSv1_2
-      ctx.ssl_version = ssl_version if ssl_version
+      if ssl_version
+        v = tls_version_constant(ssl_version)
+        ctx.min_version = v
+        ctx.max_version = v
+      end
 
       ctx
     end
@@ -517,6 +539,14 @@ but prone to man-in-the-middle attacks. Please set verify_peer: true in producti
         cert_inlines.
           each { |cert| store.add_cert(OpenSSL::X509::Certificate.new(cert)) }
       end
+    end
+
+
+    def tls_version_constant(value)
+      # OpenSSL::SSL::TLS1_3_VERSION and similar constants
+      # are just integers, so use the value itself as fallback since
+      # there is no class to case switch on
+      TLS_VERSION_ALIASES[value] || value
     end
 
     def timeout_from(options)
