@@ -1663,7 +1663,7 @@ module Bunny
           if !pending_server_named_queue_declaration?
             # this response is for an outdated/overwritten
             # queue.declare, drop it
-            @logger.warn "Received a queue.declare-ok response for a mismatching queue (#{method.queue} instead of #{@pending_queue_declare_name}) on channel #{@id} possibly due to a timeout, ignoring it"
+            @logger.warn "Received a queue.declare-ok response for a mismatching queue (#{method.queue} instead of #{@pending_queue_declare_name}) on channel #{@id}, possibly due to concurrent channel use or a timeout, ignoring it"
           end
         end
       when AMQ::Protocol::Queue::DeleteOk then
