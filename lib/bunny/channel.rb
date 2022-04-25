@@ -408,7 +408,7 @@ module Bunny
     # @option opts [Boolean] :durable (false) Should this queue be durable?
     # @option opts [Boolean] :auto-delete (false) Should this queue be automatically deleted when the last consumer disconnects?
     # @option opts [Boolean] :exclusive (false) Should this queue be exclusive (only can be used by this connection, removed when the connection is closed)?
-    # @option opts [Boolean] :arguments ({}) Additional optional arguments (typically used by RabbitMQ extensions and plugins)
+    # @option opts [Hash] :arguments ({}) Additional optional arguments (typically used by RabbitMQ extensions and plugins)
     #
     # @return [Bunny::Queue] Queue that was declared or looked up in the cache
     # @see http://rubybunny.info/articles/queues.html Queues and Consumers guide
