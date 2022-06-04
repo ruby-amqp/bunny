@@ -37,7 +37,7 @@ module Bunny
       @channel       = channel
     end
 
-    # Iterates over the delivery properties
+    # Iterates over delivery properties
     # @see Enumerable#each
     def each(*args, &block)
       @hash.each(*args, &block)
