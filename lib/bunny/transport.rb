@@ -31,7 +31,6 @@ module Bunny
       TLSv1: OpenSSL::SSL::TLS1_VERSION,
       TLSv1_1: OpenSSL::SSL::TLS1_1_VERSION,
       TLSv1_2: OpenSSL::SSL::TLS1_2_VERSION,
-      TLSv1_2: OpenSSL::SSL::TLS1_2_VERSION,
       TLSv1_3: OpenSSL::SSL::TLS1_3_VERSION,
       "1.0": OpenSSL::SSL::TLS1_VERSION,
       "1.1": OpenSSL::SSL::TLS1_1_VERSION,
