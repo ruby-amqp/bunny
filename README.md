@@ -7,7 +7,7 @@ have any heavyweight dependencies.
 
 ## I Know What RabbitMQ and Bunny are, How Do I Get Started?
 
-[Right here](http://rubybunny.info/articles/getting_started.html)!
+[Right here](https://www.rabbitmq.com/getstarted.html)!
 
 
 ## What is Bunny Good For?
@@ -69,7 +69,7 @@ a stable public API.
 
 Change logs per release series:
 
- * [master](https://github.com/ruby-amqp/bunny/blob/master/ChangeLog.md) (most notable changes for all release series)
+ * [main](https://github.com/ruby-amqp/bunny/blob/main/ChangeLog.md) (most notable changes for all release series)
  * [2.19.x](https://github.com/ruby-amqp/bunny/blob/2.19.x-stable/ChangeLog.md)
 
 
@@ -102,7 +102,7 @@ gem install bunny
 Below is a small snippet that demonstrates how to publish
 and synchronously consume ("pull API") messages with Bunny.
 
-For a 15 minute tutorial using more practical examples, see [Getting Started with RabbitMQ and Ruby using Bunny](http://rubybunny.info/articles/getting_started.html).
+For a 15 minute tutorial using more practical examples, see [Getting Started with RabbitMQ and Ruby using Bunny](https://www.rabbitmq.com/tutorials/tutorial-one-ruby.html).
 
 ``` ruby
 require "bunny"
@@ -149,23 +149,25 @@ For a 15 minute tutorial using more practical examples, see [Getting Started wit
 
 ### Guides
 
-Bunny documentation guides are available at [rubybunny.info](http://rubybunny.info):
+Bunny documentation guides are [under `docs/guides` in this repository](https://github.com/ruby-amqp/bunny/tree/main/docs/guides):
 
- * [Queues and Consumers](http://rubybunny.info/articles/queues.html)
- * [Exchanges and Publishers](http://rubybunny.info/articles/exchanges.html)
+ * [Queues and Consumers](https://github.com/ruby-amqp/bunny/tree/main/docs/guides/queues.md)
+ * [Exchanges and Publishers](https://github.com/ruby-amqp/bunny/tree/main/docs/guides/exchanges.md)
  * [AMQP 0.9.1 Model Explained](http://www.rabbitmq.com/tutorials/amqp-concepts.html)
- * [Connecting to RabbitMQ](http://rubybunny.info/articles/connecting.html)
- * [Error Handling and Recovery](http://rubybunny.info/articles/error_handling.html)
- * [TLS/SSL Support](http://rubybunny.info/articles/tls.html)
- * [Bindings](http://rubybunny.info/articles/bindings.html)
- * [Using RabbitMQ Extensions with Bunny](http://rubybunny.info/articles/extensions.html)
- * [Durability and Related Matters](http://rubybunny.info/articles/durability.html)
+ * [Connecting to RabbitMQ](https://github.com/ruby-amqp/bunny/tree/main/docs/guides/connecting.md)
+ * [Error Handling and Recovery](https://github.com/ruby-amqp/bunny/tree/main/docs/guides/error_handling.md)
+ * [TLS/SSL Support](https://github.com/ruby-amqp/bunny/tree/main/docs/guides/tls.md)
+ * [Bindings](https://github.com/ruby-amqp/bunny/tree/main/docs/guides/bindings.md)
+ * [Using RabbitMQ Extensions with Bunny](https://github.com/ruby-amqp/bunny/tree/main/docs/guides/extensions.md)
+ * [Durability and Related Matters](https://github.com/ruby-amqp/bunny/tree/main/docs/guides/durability.md)
 
 Some highly relevant RabbitMQ documentation guides:
 
  * [Connections](https://www.rabbitmq.com/connections.html)
  * [Channels](https://www.rabbitmq.com/channels.html)
  * [Queues](https://www.rabbitmq.com/queues.html)
+ * [Quorum queues](https://www.rabbitmq.com/quorum-queues.html)
+ * [Streams](https://rabbitmq.com/streams.html) (Bunny can perform basic operations on streams even though it does not implement the [RabbitMQ Stream protocol](https://github.com/rabbitmq/rabbitmq-server/blob/v3.10.x/deps/rabbitmq_stream/docs/PROTOCOL.adoc))
  * [Publishers](https://www.rabbitmq.com/publishers.html)
  * [Consumers](https://www.rabbitmq.com/consumers.html)
  * Data safety: publisher and consumer [Confirmations](https://www.rabbitmq.com/confirms.html)
