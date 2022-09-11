@@ -86,20 +86,26 @@ describe "A batch of messages proxied by multiple intermediate consumers" do
       end
 
       ch5 = c5.create_channel(nil, 8)
+      ch5.confirm_select
       x   = ch5.default_exchange
 
       n.times do |i|
-        x.publish("msg #{i}", routing_key: q4.name)
+        x.publish(i.to_s, routing_key: q4.name)
       end
+      ch5.wait_for_confirms
 
-      Bunny::TestKit.poll_until(90) do
+      Bunny::TestKit.poll_until(120) do
         xs.size >= n
       end
 
       expect(xs.size).to eq n
-      expect(xs.last).to eq "msg #{n - 1}"
+      expect(xs).to include (n - 1).to_s
 
       [q1, q2, q3, q4].each { |q| q.delete }
+
+      [ch1, ch2, ch3, ch4, ch5].each do |ch|
+        ch.close if ch.open?
+      end
     end
   end
 end
