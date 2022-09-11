@@ -47,7 +47,8 @@ Specific examples:
 
 Modern Bunny versions support
 
- * CRuby 2.5 through 3.0 (inclusive)
+ * CRuby 2.6 through 3.1 (inclusive)
+ * [TruffleRuby](https://www.graalvm.org/ruby/)
 
 Bunny works sufficiently well on JRuby but there are known
 JRuby bugs in versions prior to JRuby 9000 that cause high CPU burn. JRuby users should
