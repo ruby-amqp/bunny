@@ -153,6 +153,7 @@ module Bunny
     attr_reader :nacked_set
     # @return [Hash<String, Bunny::Consumer>] Consumer instances declared on this channel
     attr_reader :consumers
+    attr_reader :delivery_tag_offset
 
     # @return [Integer] active basic.qos prefetch value
     attr_reader :prefetch_count
