@@ -143,6 +143,10 @@ module Bunny
     attr_reader :work_pool
     # @return [Integer] Next publisher confirmations sequence index
     attr_reader :next_publish_seq_no
+    # @return [Integer] Offset for the confirmations sequence index.
+    # This will be set to the current sequence index during automatic network failure recovery
+    # to keep the sequence monotonic for the user and abstract the reset from the protocol
+    attr_reader :delivery_tag_offset
     # @return [Hash<String, Bunny::Queue>] Queue instances declared on this channel
     attr_reader :queues
     # @return [Hash<String, Bunny::Exchange>] Exchange instances declared on this channel
@@ -153,7 +157,6 @@ module Bunny
     attr_reader :nacked_set
     # @return [Hash<String, Bunny::Consumer>] Consumer instances declared on this channel
     attr_reader :consumers
-    attr_reader :delivery_tag_offset
 
     # @return [Integer] active basic.qos prefetch value
     attr_reader :prefetch_count
@@ -1526,6 +1529,7 @@ module Bunny
 
     # Recovers publisher confirms mode. Used by the Automatic Network Failure
     # Recovery feature.
+    # Set the offset to the previous publish sequence index as the protocol will reset the index to after recovery.
     #
     # @api plugin
     def recover_confirm_mode
@@ -1533,8 +1537,8 @@ module Bunny
         @unconfirmed_set_mutex.synchronize do
           @unconfirmed_set.clear
           @delivery_tag_offset = @next_publish_seq_no - 1
-          confirm_select(@confirms_callback)
         end
+        confirm_select(@confirms_callback)
       end
     end
 
@@ -1789,11 +1793,13 @@ module Bunny
       end
     end
 
+    # Handle delivery tag offset calculations to keep the the delivery tag monotonic after a reset
+    # due to automatic network failure recovery. @unconfirmed_set contains indices already offsetted.
     # @private
     def handle_ack_or_nack(delivery_tag_before_offset, multiple, nack)
       @unconfirmed_set_mutex.synchronize do
         delivery_tag          = delivery_tag_before_offset + @delivery_tag_offset
-        confirmed_range_start = multiple ? @delivery_tag_offset + @unconfirmed_set.min : delivery_tag
+        confirmed_range_start = multiple ? @unconfirmed_set.min : delivery_tag
         confirmed_range_end   = delivery_tag
         confirmed_range       = (confirmed_range_start..confirmed_range_end)
 
