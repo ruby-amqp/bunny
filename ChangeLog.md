@@ -1,4 +1,55 @@
-## Changes between Bunny 2.19.x and 2.20.0 (in development)
+## Changes between Bunny 2.20.x and 2.21.0 (in development)
+
+No changes yet.
+
+## Changes between Bunny 2.19.x and 2.20.0 (December 15, 2022)
+
+### New `Bunny::Channel` helpers for declaring quorum queues and streams
+
+  Introduce a few helpers for quorum queues, streams, and durable client-named
+  queues in general, similar in spirit to `Bunny::Channel#temporary_queue`
+  for temporary queues.
+
+#### `Bunny::Channel#quorum_queue`
+
+`Bunny::Channel#quorum_queue` accepts a name (server-generated names are not supported)
+and a set of [options arguments](https://www.rabbitmq.com/queues.html#optional-arguments),
+and declares a [quorum queue](https://www.rabbitmq.com/quorum-queues.html).
+
+Durability, exclusivity, and auto-delete properties will be ignored: it only makes
+sense for [quorum queues](https://www.rabbitmq.com/quorum-queues.html) to be durable, non-exclusive and non-auto-delete since
+they are [all about data safety](https://www.rabbitmq.com/quorum-queues.html#use-cases).
+
+#### `Bunny::Channel#stream`
+
+`Bunny::Channel#stream` accepts a name (server-generated names are not supported)
+and a set of [options arguments](https://www.rabbitmq.com/queues.html#optional-arguments),
+and declares a [stream](https://www.rabbitmq.com/streams.html) that Bunny
+can use over AMQP 0-9-1 as if it was a replicated queue (without any [stream-specific operations](https://rabbitmq.com/stream.html)).
+
+Durability, exclusivity, and auto-delete properties will be ignored: it only makes
+sense for [streams](https://www.rabbitmq.com/streams.html) to be durable, non-exclusive and non-auto-delete since they are by definition a durable replicated data structure for non-transient
+(or at least not entirely transient) data.
+
+#### `Bunny::Channel#durable_queue`
+
+`Bunny::Channel#durable_queue` accepts a name (server-generated names are not supported),
+a queue type (one of: `Bunny::Queue::Types::QUORUM`, `Bunny::Queue::Types::CLASSIC`, `Bunny::Queue::Types::STREAM`), and a set of [options arguments](https://www.rabbitmq.com/queues.html#optional-arguments),
+and declares a [quorum queue](https://www.rabbitmq.com/quorum-queues.html).
+
+Durability, exclusivity, and auto-delete properties will be ignored by design, just
+like `Bunny::Channel#temporary_queue` overrides them to declare transient queues.
+
+#### `Bunny::Queue::Types`
+
+`Bunny::Queue::Types` is a module with a few constants that represent currently available
+queue types:
+
+ * `Bunny::Queue::Types::QUORUM`
+ * `Bunny::Queue::Types::CLASSIC`
+ * `Bunny::Queue::Types::STREAM`
+
+Their names are self-explanatory.
 
 ### Test Files Left Out of .gem File
 
