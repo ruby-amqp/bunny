@@ -671,8 +671,12 @@ module Bunny
           # avoid doing that while holding a mutex lock. MK.
           ch.handle_method(method)
         ensure
-          # synchronises on @channel_mutex under the hood
-          self.unregister_channel(ch)
+          if ch.nil?
+            @logger.warn "Could not associate Close message with channel. Probably it was already closed."
+          else
+            # synchronises on @channel_mutex under the hood
+            self.unregister_channel(ch)
+          end
         end
       when AMQ::Protocol::Basic::GetEmpty then
         ch = find_channel(ch_number)
