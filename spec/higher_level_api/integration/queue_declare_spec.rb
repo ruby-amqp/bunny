@@ -106,6 +106,149 @@ describe Bunny::Queue do
     end
   end
 
+  context "when queue is declared with optional arguments" do
+    it "declares it with those arguments" do
+      ch   = connection.create_channel
+
+      args = {
+        Bunny::Queue::XArgs::MAX_LENGTH => 1000
+      }
+      q = ch.queue("bunny.tests.queues.x-args.1", durable: true, arguments: args)
+      expect(q).not_to be_auto_delete
+      expect(q).not_to be_exclusive
+      expect(q).to be_durable
+      expect(q.arguments).to eq(args)
+      q.delete
+
+      ch.close
+    end
+  end
+
+  context "when queue is declared with type using x-args and a literal string" do
+    it "declares a queue of that type" do
+      ch   = connection.create_channel
+
+      args = {
+        Bunny::Queue::XArgs::QUEUE_TYPE => "quorum"
+      }
+      q = ch.queue("bunny.tests.queues.x-args.2.qq", durable: true, arguments: args)
+      expect(q).not_to be_auto_delete
+      expect(q).not_to be_exclusive
+      expect(q).to be_durable
+      expect(q.arguments).to eq(args)
+      q.delete
+
+      ch.close
+    end
+  end
+
+  context "when queue is declared with type using x-args and a constant" do
+    it "declares a queue of that type" do
+      ch   = connection.create_channel
+
+      args = {
+        Bunny::Queue::XArgs::QUEUE_TYPE => Bunny::Queue::Types::QUORUM
+      }
+      q = ch.queue("bunny.tests.queues.x-args.2.qq", durable: true, arguments: args)
+      expect(q).not_to be_auto_delete
+      expect(q).not_to be_exclusive
+      expect(q).to be_durable
+      expect(q.arguments).to eq(args)
+      q.delete
+
+      ch.close
+    end
+  end
+
+  context "when queue is declared with type using :type and a literal string" do
+    it "declares a queue of that type" do
+      ch   = connection.create_channel
+
+      args = {
+        Bunny::Queue::XArgs::QUEUE_TYPE => "quorum"
+      }
+      q = ch.queue("bunny.tests.queues.x-args.3.qq", durable: true, type: Bunny::Queue::Types::QUORUM)
+      expect(q).not_to be_auto_delete
+      expect(q).not_to be_exclusive
+      expect(q).to be_durable
+      expect(q.arguments).to eq(args)
+      q.delete
+
+      ch.close
+    end
+  end
+
+  context "when queue is declared with type using :type and a constant" do
+    it "declares a queue of that type" do
+      ch   = connection.create_channel
+
+      args = {
+        Bunny::Queue::XArgs::QUEUE_TYPE => Bunny::Queue::Types::QUORUM
+      }
+      q = ch.queue("bunny.tests.queues.x-args.3.qq", durable: true, type: Bunny::Queue::Types::QUORUM)
+      expect(q).not_to be_auto_delete
+      expect(q).not_to be_exclusive
+      expect(q).to be_durable
+      expect(q.arguments).to eq(args)
+      q.delete
+
+      ch.close
+    end
+  end
+
+  context "when a quorum queue is declared using a helper" do
+    it "declares a quorum queue" do
+      ch   = connection.create_channel
+
+      args = {
+        Bunny::Queue::XArgs::MAX_LENGTH => 1000,
+        Bunny::Queue::XArgs::QUEUE_TYPE => Bunny::Queue::Types::QUORUM
+      }
+      q = ch.quorum_queue("bunny.tests.queues.qq.1", durable: false, exclusive: true, arguments: {
+        Bunny::Queue::XArgs::MAX_LENGTH => 1000
+      })
+      expect(q).not_to be_auto_delete
+      expect(q).not_to be_exclusive
+      expect(q).to be_durable
+      expect(q.arguments).to eq(args)
+      q.delete
+
+      ch.close
+    end
+  end
+
+  context "when a stream 'queue' is declared using a helper" do
+    it "declares a stream" do
+      ch   = connection.create_channel
+
+      args = {
+        Bunny::Queue::XArgs::MAX_LENGTH => 1000,
+        Bunny::Queue::XArgs::QUEUE_TYPE => Bunny::Queue::Types::STREAM
+      }
+      q = ch.stream("bunny.tests.queues.sq.1", durable: false, exclusive: true, arguments: {
+        Bunny::Queue::XArgs::MAX_LENGTH => 1000
+      })
+      expect(q).not_to be_auto_delete
+      expect(q).not_to be_exclusive
+      expect(q).to be_durable
+      expect(q.arguments).to eq(args)
+      q.delete
+
+      ch.close
+    end
+  end
+
+  context "when queue is declared with an unsupported :type" do
+    it "raises an exception" do
+      ch   = connection.create_channel
+
+      expect {
+        ch.queue("bunny.tests.queues.unsupported.type", durable: true, type: "super-duper-q")
+      }.to raise_error(ArgumentError)
+
+      ch.close
+    end
+  end
 
   context "when queue is declared with a mismatching auto-delete property value" do
     it "raises an exception" do
