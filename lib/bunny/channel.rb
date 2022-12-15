@@ -426,6 +426,73 @@ module Bunny
       register_queue(q)
     end
 
+    # Declares a new client-named quorum queue.
+    #
+    # @param [String] name Queue name. Empty (server-generated) names are not supported by this method.
+    # @param  [Hash]  opts  Queue properties and other options. Durability, exclusivity, auto-deletion options will be ignored.
+    #
+    # @option opts [Hash] :arguments ({}) Additional optional arguments (typically used by RabbitMQ extensions and plugins)
+    #
+    # @return [Bunny::Queue] Queue that was declared
+    # @see #durable_queue
+    # @see #queue
+    # @api public
+    def quorum_queue(name, opts = {})
+      throw ArgumentError.new("quorum queue name must not be nil") if name.nil?
+      throw ArgumentError.new("quorum queue name must not be empty (server-named QQs do not make sense)") if name.empty?
+
+      durable_queue(name, Bunny::Queue::Types::QUORUM, opts)
+    end
+
+    # Declares a new client-named stream (that Bunny can use as if it was a queue).
+    # Note that Bunny would still use AMQP 0-9-1 to perform operations on this "queue".
+    # To use stream-specific operations and to gain from stream protocol efficiency and partitioning,
+    # use a Ruby client for the RabbitMQ stream protocol.
+    #
+    # @param [String] name Stream name. Empty (server-generated) names are not supported by this method.
+    # @param  [Hash]  opts  Queue properties and other options. Durability, exclusivity, auto-deletion options will be ignored.
+    #
+    # @option opts [Hash] :arguments ({}) Additional optional arguments (typically used by RabbitMQ extensions and plugins)
+    #
+    #
+    # @return [Bunny::Queue] Queue that was declared
+    # @see #durable_queue
+    # @see #queue
+    # @api public
+    def stream(name, opts = {})
+      throw ArgumentError.new("stream name must not be nil") if name.nil?
+      throw ArgumentError.new("stream name must not be empty (server-named QQs do not make sense)") if name.empty?
+
+      durable_queue(name, Bunny::Queue::Types::STREAM, opts)
+    end
+
+    # Declares a new server-named queue that is automatically deleted when the
+    # connection is closed.
+    #
+    # @param [String] name Queue name. Empty (server-generated) names are not supported by this method.
+    # @param  [Hash]  opts  Queue properties and other options. Durability, exclusivity, auto-deletion options will be ignored.
+    #
+    # @option opts [Hash] :arguments ({}) Additional optional arguments (typically used by RabbitMQ extensions and plugins)
+    #
+    # @return [Bunny::Queue] Queue that was declared
+    # @see #queue
+    # @api public
+    def durable_queue(name, type = "classic", opts = {})
+      throw ArgumentError.new("queue name must not be nil") if name.nil?
+      throw ArgumentError.new("queue name must not be empty (server-named durable queues do not make sense)") if name.empty?
+
+      final_opts = opts.merge({
+        :type        => type,
+        :durable     => true,
+        # exclusive or auto-delete QQs do not make much sense
+        :exclusive   => false,
+        :auto_delete => false
+      })
+      q = find_queue(name) || Bunny::Queue.new(self, name, final_opts)
+
+      register_queue(q)
+    end
+
     # Declares a new server-named queue that is automatically deleted when the
     # connection is closed.
     #

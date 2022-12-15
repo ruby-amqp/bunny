@@ -11,6 +11,23 @@ module Bunny
     # API
     #
 
+    module Types
+      QUORUM  = "quorum"
+      CLASSIC = "classic"
+      STREAM  = "stream"
+
+      KNOWN = [CLASSIC, QUORUM, STREAM]
+
+      def self.known?(q_type)
+        KNOWN.include?(q_type)
+      end
+    end
+
+    module XArgs
+      MAX_LENGTH = "x-max-length",
+      QUEUE_TYPE = "x-queue-type"
+    end
+
     # @return [Bunny::Channel] Channel this queue uses
     attr_reader :channel
     # @return [String] Queue name
@@ -25,7 +42,8 @@ module Bunny
     # @option opts [Boolean] :durable (false)      Should this queue be durable?
     # @option opts [Boolean] :auto_delete (false)  Should this queue be automatically deleted when the last consumer disconnects?
     # @option opts [Boolean] :exclusive (false)    Should this queue be exclusive (only can be used by this connection, removed when the connection is closed)?
-    # @option opts [Hash] :arguments ({})       Additional optional arguments (typically used by RabbitMQ extensions and plugins)
+    # @option opts [String] :type (nil)            Type of the declared queue (classic, quorum or stream)
+    # @option opts [Hash] :arguments (nil)         Additional optional arguments (typically used by RabbitMQ extensions and plugins)
     #
     # @see Bunny::Channel#queue
     # @see http://rubybunny.info/articles/queues.html Queues and Consumers guide
@@ -42,7 +60,14 @@ module Bunny
       @exclusive        = @options[:exclusive]
       @server_named     = @name.empty?
       @auto_delete      = @options[:auto_delete]
-      @arguments        = @options[:arguments]
+      @type             = @options[:type]
+
+      @arguments        = if @type and !@type.empty? then
+        (@options[:arguments] || {}).merge({XArgs::QUEUE_TYPE => @type})
+      else
+        @options[:arguments]
+      end
+      verify_type!(@arguments)
 
       @bindings         = Array.new
 
@@ -388,6 +413,12 @@ module Bunny
       else
         h
       end
+    end
+
+    def verify_type!(args)
+      q_type = (args || {})["x-queue-type"]
+      throw ArgumentError.new(
+        "unsupported queue type #{q_type.inspect}, supported ones: #{Types::KNOWN.join(', ')}") if (q_type and !Types.known?(q_type))
     end
   end
 end
