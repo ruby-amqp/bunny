@@ -1,3 +1,7 @@
+## Changes between Bunny 2.20.x and 2.21.0 (in development)
+
+No changes yet.
+
 ## Changes between Bunny 2.20.x and 2.20.1 (December 19, 2022)
 
 ### Gracefully Handles a Race Condition Between Server-sent and Client Channel Closure
