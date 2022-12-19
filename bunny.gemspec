@@ -9,7 +9,7 @@ Gem::Specification.new do |s|
   s.version = Bunny::VERSION.dup
   s.homepage = "http://rubybunny.info"
   s.summary = "Popular easy to use Ruby client for RabbitMQ"
-  s.description = "Easy to use, feature complete Ruby client for RabbitMQ 3.3 and later versions."
+  s.description = "Easy to use, feature complete Ruby client for RabbitMQ 3.9 and later versions."
   s.license = "MIT"
   s.required_ruby_version = Gem::Requirement.new(">= 2.5")
 
