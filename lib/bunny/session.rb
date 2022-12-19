@@ -672,7 +672,7 @@ module Bunny
           ch.handle_method(method)
         ensure
           if ch.nil?
-            @logger.warn "Could not associate Close message with channel. Probably it was already closed."
+            @logger.warn "Received a server-sent channel.close but the channel was not found locally. Ignoring the frame."
           else
             # synchronises on @channel_mutex under the hood
             self.unregister_channel(ch)
