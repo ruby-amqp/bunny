@@ -1,14 +1,18 @@
-## Changes between Bunny 2.20.x and 2.21.0 (in development)
+## Changes between Bunny 2.20.x and 2.20.1 (December 19, 2022)
 
-No changes yet.
+### Gracefully Handles a Race Condition Between Server-sent and Client Channel Closure
+
+Contributed by @milgner.
+
+GitHub issue: [#644](https://github.com/ruby-amqp/bunny/pull/644)
 
 ## Changes between Bunny 2.19.x and 2.20.0 (December 15, 2022)
 
 ### New `Bunny::Channel` helpers for declaring quorum queues and streams
 
-  Introduce a few helpers for quorum queues, streams, and durable client-named
-  queues in general, similar in spirit to `Bunny::Channel#temporary_queue`
-  for temporary queues.
+Introduce a few helpers for quorum queues, streams, and durable client-named
+queues in general, similar in spirit to `Bunny::Channel#temporary_queue`
+for temporary queues.
 
 #### `Bunny::Channel#quorum_queue`
 
