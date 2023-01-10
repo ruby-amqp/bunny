@@ -63,7 +63,7 @@ module Bunny
       @type             = @options[:type]
 
       @arguments        = if @type and !@type.empty? then
-        (@options[:arguments] || {}).merge({XArgs::QUEUE_TYPE => @type})
+        (@options[:arguments] || {}).merge!({XArgs::QUEUE_TYPE => @type})
       else
         @options[:arguments]
       end
