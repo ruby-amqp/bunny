@@ -68,6 +68,9 @@ module Bunny
         @options[:arguments]
       end
       verify_type!(@arguments)
+      # reassigns updated and verified arguments because Bunny::Channel#declare_queue
+      # accepts a map of options
+      @options[:arguments] = @arguments
 
       @bindings         = Array.new
 
