@@ -2,7 +2,15 @@
 
 No changes yet.
 
-## Changes between Bunny 2.20.x and 2.20.1 (December 19, 2022)
+## Changes between Bunny 2.20.1 and 2.20.2 (January 12, 2023)
+
+### Correctly propagate updated x-arguments when declaring a queue
+
+Contributed by @rene-muehlboeck.
+
+Github issue: [#650](https://github.com/ruby-amqp/bunny/issues/650).
+
+## Changes between Bunny 2.20.0 and 2.20.1 (December 19, 2022)
 
 ### Gracefully Handles a Race Condition Between Server-sent and Client Channel Closure
 
