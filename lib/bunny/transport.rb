@@ -31,15 +31,12 @@ module Bunny
       TLSv1: OpenSSL::SSL::TLS1_VERSION,
       TLSv1_1: OpenSSL::SSL::TLS1_1_VERSION,
       TLSv1_2: OpenSSL::SSL::TLS1_2_VERSION,
-      TLSv1_3: OpenSSL::SSL::TLS1_3_VERSION,
       "1.0": OpenSSL::SSL::TLS1_VERSION,
       "1.1": OpenSSL::SSL::TLS1_1_VERSION,
       "1.2": OpenSSL::SSL::TLS1_2_VERSION,
-      "1.3": OpenSSL::SSL::TLS1_3_VERSION,
       OpenSSL::SSL::TLS1_VERSION => OpenSSL::SSL::TLS1_VERSION,
       OpenSSL::SSL::TLS1_1_VERSION => OpenSSL::SSL::TLS1_1_VERSION,
-      OpenSSL::SSL::TLS1_2_VERSION => OpenSSL::SSL::TLS1_2_VERSION,
-      OpenSSL::SSL::TLS1_3_VERSION => OpenSSL::SSL::TLS1_3_VERSION
+      OpenSSL::SSL::TLS1_2_VERSION => OpenSSL::SSL::TLS1_2_VERSION
     }
 
     # older OpenSSL versions won't support for TLS 1.3 and won't
