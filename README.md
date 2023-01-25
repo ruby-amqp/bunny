@@ -50,6 +50,11 @@ Modern Bunny versions support
  * CRuby 2.6 through 3.1 (inclusive)
  * [TruffleRuby](https://www.graalvm.org/ruby/)
 
+For environments that use TLS, Bunny expects Ruby installations to use a recent enough OpenSSL versions that
+includes support for TLS 1.3.
+
+### JRuby
+
 Bunny works sufficiently well on JRuby but there are known
 JRuby bugs in versions prior to JRuby 9000 that cause high CPU burn. JRuby users should
 use [March Hare](http://rubymarchhare.info).
