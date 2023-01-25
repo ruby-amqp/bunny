@@ -12,6 +12,14 @@ Github issue: [#650](https://github.com/ruby-amqp/bunny/issues/650).
 
 ## Changes between Bunny 2.20.0 and 2.20.1 (December 19, 2022)
 
+Starting with this release, Bunny **targets Ruby installations with TLSv1.3 support**.
+This means that some older distributions, e.g. Ubuntu 16.04, 18.04, CentOS 7
+**will not longer be supported**.
+
+Those distributions have usually reached their end of general support (there won't be
+maintenance releases besides security patches for paying customers of those distributions),
+so the benefits of TLSv1.3 support outweigh the cons.
+
 ### Gracefully Handles a Race Condition Between Server-sent and Client Channel Closure
 
 Contributed by @milgner.
