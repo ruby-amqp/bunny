@@ -31,16 +31,23 @@ module Bunny
       TLSv1: OpenSSL::SSL::TLS1_VERSION,
       TLSv1_1: OpenSSL::SSL::TLS1_1_VERSION,
       TLSv1_2: OpenSSL::SSL::TLS1_2_VERSION,
-      TLSv1_3: OpenSSL::SSL::TLS1_3_VERSION,
       "1.0": OpenSSL::SSL::TLS1_VERSION,
       "1.1": OpenSSL::SSL::TLS1_1_VERSION,
       "1.2": OpenSSL::SSL::TLS1_2_VERSION,
-      "1.3": OpenSSL::SSL::TLS1_3_VERSION,
       OpenSSL::SSL::TLS1_VERSION => OpenSSL::SSL::TLS1_VERSION,
       OpenSSL::SSL::TLS1_1_VERSION => OpenSSL::SSL::TLS1_1_VERSION,
-      OpenSSL::SSL::TLS1_2_VERSION => OpenSSL::SSL::TLS1_2_VERSION,
-      OpenSSL::SSL::TLS1_3_VERSION => OpenSSL::SSL::TLS1_3_VERSION
-    }.freeze
+      OpenSSL::SSL::TLS1_2_VERSION => OpenSSL::SSL::TLS1_2_VERSION
+    }
+
+    # older OpenSSL versions won't support for TLS 1.3 and won't
+    # have this constant defined.
+    if defined?(OpenSSL::SSL::TLS1_3_VERSION)
+      TLS_VERSION_ALIASES["1.3"]                        = OpenSSL::SSL::TLS1_3_VERSION
+      TLS_VERSION_ALIASES[:TLSv1_3]                     = OpenSSL::SSL::TLS1_3_VERSION
+      TLS_VERSION_ALIASES[OpenSSL::SSL::TLS1_3_VERSION] = OpenSSL::SSL::TLS1_3_VERSION
+    end
+
+    TLS_VERSION_ALIASES.freeze
 
     attr_reader :session, :host, :port, :socket, :connect_timeout, :read_timeout, :write_timeout, :disconnect_timeout
     attr_reader :tls_context, :verify_peer, :tls_ca_certificates, :tls_certificate_path, :tls_key_path
