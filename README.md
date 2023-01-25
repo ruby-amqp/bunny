@@ -50,8 +50,8 @@ Modern Bunny versions support
  * CRuby 2.6 through 3.1 (inclusive)
  * [TruffleRuby](https://www.graalvm.org/ruby/)
 
-For environments that use TLS, Bunny expects Ruby installations to use a recent enough OpenSSL versions that
-includes support for TLS 1.3.
+For environments that use TLS, Bunny expects Ruby installations to use a recent enough OpenSSL version that
+**includes support for TLS 1.3**.
 
 ### JRuby
 
