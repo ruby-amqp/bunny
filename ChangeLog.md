@@ -1,6 +1,17 @@
-## Changes between Bunny 2.20.x and 2.21.0 (in development)
+## Changes between Bunny 2.20.2 and 2.20.3 (in development)
 
 No changes yet.
+
+
+## Changes between Bunny 2.20.2 and 2.22.3 (January 25, 2023)
+
+### Make sure Bunny can load in environments with older OpenSSL
+
+Bunny 2.20.x failed to load in environments that provide an old
+version of OpenSSL without TLS 1.3 support.
+
+GitHub issue: [#652](https://github.com/ruby-amqp/bunny/issues/652).
+
 
 ## Changes between Bunny 2.20.1 and 2.20.2 (January 12, 2023)
 
