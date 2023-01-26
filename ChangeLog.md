@@ -1,4 +1,4 @@
-## Changes between Bunny 2.20.2 and 2.20.3 (in development)
+## Changes between Bunny 2.20.3 and 2.20.4 (in development)
 
 No changes yet.
 
