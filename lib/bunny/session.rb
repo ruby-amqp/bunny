@@ -71,6 +71,7 @@ module Bunny
     # Default reconnection interval for TCP connection failures
     DEFAULT_NETWORK_RECOVERY_INTERVAL = 5.0
 
+    DEFAULT_RECOVERABLE_EXCEPTIONS = [TCPConnectionFailedForAllHosts, TCPConnectionFailed, AMQ::Protocol::EmptyResponseError, SystemCallError, Timeout::Error, Bunny::ConnectionLevelException, Bunny::ConnectionClosedError]
 
     #
     # API
@@ -91,6 +92,7 @@ module Bunny
     attr_reader :network_recovery_interval
     attr_reader :connection_name
     attr_accessor :socket_configurator
+    attr_accessor :recoverable_exceptions
 
     # @param [String, Hash] connection_string_or_opts Connection string or a hash of connection options
     # @param [Hash] optz Extra options not related to connection
@@ -225,6 +227,8 @@ module Bunny
       @recovery_completed       = opts[:recovery_completed]
 
       @session_error_handler = opts.fetch(:session_error_handler, Thread.current)
+
+      @recoverable_exceptions = DEFAULT_RECOVERABLE_EXCEPTIONS.dup
 
       self.reset_continuations
       self.initialize_transport
@@ -747,9 +751,7 @@ module Bunny
 
     # @private
     def recoverable_network_failure?(exception)
-      # No reasonably smart strategy was suggested in a few years.
-      # So just recover unconditionally. MK.
-      true
+      @recoverable_exceptions.any? {|x| exception.kind_of? x}
     end
 
     # @private
@@ -794,19 +796,22 @@ module Bunny
     rescue HostListDepleted
       reset_address_index
       retry
-    rescue TCPConnectionFailedForAllHosts, TCPConnectionFailed, AMQ::Protocol::EmptyResponseError, SystemCallError, Timeout::Error => e
-      @logger.warn "TCP connection failed, reconnecting in #{@network_recovery_interval} seconds"
-      if should_retry_recovery?
-        decrement_recovery_attemp_counter!
-        if recoverable_network_failure?(e)
+    rescue => e
+      if recoverable_network_failure?(e)
+        @logger.warn "TCP connection failed"
+        if should_retry_recovery?
+          @logger.warn "Reconnecting in #{@network_recovery_interval} seconds"
+          decrement_recovery_attemp_counter!
           announce_network_failure_recovery
           retry
+        else
+          @logger.error "Ran out of recovery attempts (limit set to #{@max_recovery_attempts}), giving up"
+          @transport.close
+          self.close(false)
+          @manually_closed = false
         end
       else
-        @logger.error "Ran out of recovery attempts (limit set to #{@max_recovery_attempts}), giving up"
-        @transport.close
-        self.close(false)
-        @manually_closed = false
+        raise e
       end
     end
 
@@ -1356,7 +1361,7 @@ module Bunny
                                    host_from_address(address),
                                    port_from_address(address),
                                    @opts.merge(:session_error_handler => @session_error_handler)
-                                  )
+        )
 
         # Reset the cached progname for the logger only when no logger was provided
         @default_logger.progname = self.to_s
