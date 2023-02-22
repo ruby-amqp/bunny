@@ -71,7 +71,7 @@ module Bunny
     # Default reconnection interval for TCP connection failures
     DEFAULT_NETWORK_RECOVERY_INTERVAL = 5.0
 
-    DEFAULT_RECOVERABLE_EXCEPTIONS = [TCPConnectionFailedForAllHosts, TCPConnectionFailed, AMQ::Protocol::EmptyResponseError, SystemCallError, Timeout::Error, Bunny::ConnectionLevelException, Bunny::ConnectionClosedError]
+    DEFAULT_RECOVERABLE_EXCEPTIONS = [StandardError, TCPConnectionFailedForAllHosts, TCPConnectionFailed, AMQ::Protocol::EmptyResponseError, SystemCallError, Timeout::Error, Bunny::ConnectionLevelException, Bunny::ConnectionClosedError]
 
     #
     # API
