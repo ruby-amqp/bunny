@@ -26,10 +26,6 @@ group :development do
 
   gem "redcarpet", platform: :mri
   gem "ruby-prof", platform: :mri
-
-  gem "ripl"
-  gem "ripl-multi_line"
-  gem "ripl-irb"
 end
 
 group :test do
