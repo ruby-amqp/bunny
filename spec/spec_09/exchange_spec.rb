@@ -8,7 +8,7 @@
 # If this is not the case, please change the 'Bunny.new' call below to include
 # the relevant arguments e.g. @b = Bunny.new(:user => 'john', :pass => 'doe', :host => 'foobar')
 
-require "bunny"
+require_relative "../spec_helper"
 
 describe 'Exchange' do
 
