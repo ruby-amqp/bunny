@@ -128,6 +128,11 @@ describe 'Exchange' do
     exch.publish('This is a published message')
   end
 
+  it "should be able to publish a message with headers containing integer values" do
+    exch = @b.exchange('direct_exchange')
+    exch.publish('This is a published message', :headers => {:a => 1})
+  end
+
   it "should not modify the passed options hash when publishing a message" do
     exch = @b.exchange('direct_exchange')
     opts = {:key => 'a', :persistent => true}

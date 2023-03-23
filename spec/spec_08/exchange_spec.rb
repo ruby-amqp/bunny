@@ -135,6 +135,11 @@ describe 'Exchange' do
     opts.should == {:key => 'a', :persistent => true}
   end
 
+  it "should be able to publish a message with headers containing integer values" do
+    exch = @b.exchange('direct_exchange')
+    exch.publish('This is a published message', :headers => {:a => 1})
+  end
+
   it "should be able to return an undeliverable message" do
     exch = @b.exchange('return_exch')
     exch.publish('This message should be undeliverable', :mandatory => true)
