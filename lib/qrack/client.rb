@@ -52,7 +52,7 @@ module Qrack
       @verify_ssl = opts[:verify_ssl].nil? || opts[:verify_ssl]
       @status = :not_connected
       @frame_max = opts[:frame_max] || 131072
-      @channel_max = opts[:channel_max] || 0
+      @channel_max = opts[:channel_max] || 2047
       @heartbeat = opts[:heartbeat] || 0
       @connect_timeout = opts[:connect_timeout] || CONNECT_TIMEOUT
       @read_write_timeout = opts[:socket_timeout]
