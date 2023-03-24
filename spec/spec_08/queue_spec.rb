@@ -8,12 +8,12 @@
 # If this is not the case, please change the 'Bunny.new' call below to include
 # the relevant arguments e.g. @b = Bunny.new(:user => 'john', :pass => 'doe', :host => 'foobar')
 
-require File.expand_path(File.join(File.dirname(__FILE__), %w[.. .. lib bunny]))
+require_relative "../spec_helper"
 
 describe 'Queue' do
 
   def expect_deprecation_warning_for_publishing_on_queue(q, n=1)
-    Bunny.should_receive(:deprecation_warning).with("Qrack::Queue#publish", "0.8", anything).exactly(n).times
+    expect(Bunny).to receive(:deprecation_warning).with("Qrack::Queue#publish", "0.8", anything).exactly(n).times
   end
 
   def message_count(queue, sleep_time = 0.1)

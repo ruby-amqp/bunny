@@ -2,7 +2,7 @@
 
 # connection_spec.rb
 
-require "bunny"
+require_relative "../spec_helper"
 
 describe Bunny do
 

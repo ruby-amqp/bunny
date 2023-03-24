@@ -8,7 +8,7 @@
 # If this is not the case, please change the 'Bunny.new' call below to include
 # the relevant arguments e.g. @b = Bunny.new(:user => 'john', :pass => 'doe', :host => 'foobar')
 
-require File.expand_path(File.join(File.dirname(__FILE__), %w[.. .. lib bunny]))
+require_relative "../spec_helper"
 
 describe 'Exchange' do
 
@@ -133,6 +133,11 @@ describe 'Exchange' do
     opts = {:key => 'a', :persistent => true}
     exch.publish('', opts)
     opts.should == {:key => 'a', :persistent => true}
+  end
+
+  it "should be able to publish a message with headers containing integer values" do
+    exch = @b.exchange('direct_exchange')
+    exch.publish('This is a published message', :headers => {:a => 1})
   end
 
   it "should be able to return an undeliverable message" do

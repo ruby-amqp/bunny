@@ -194,7 +194,7 @@ module Qrack
                              when String
                                table.write(:octet, 83) # 'S'
                                table.write(:longstr, value.to_s)
-                             when Fixnum
+                             when Integer
                                table.write(:octet, 73) # 'I'
                                table.write(:long, value)
                              when Float
