@@ -70,7 +70,7 @@ module Bunny
       return if !(wait_for_workers && @shutdown_timeout && was_running)
 
       @shutdown_mutex.synchronize do
-        @shutdown_conditional.wait(@shutdown_mutex, @shutdown_timeout)
+        @shutdown_conditional.wait(@shutdown_mutex, @shutdown_timeout) if busy?
       end
     end
 
