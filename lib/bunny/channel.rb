@@ -378,7 +378,7 @@ module Bunny
     # @see http://rubybunny.info/articles/exchanges.html Exchanges and Publishing guide
     # @api public
     def default_exchange
-      Exchange.default(self)
+      @default_exchange ||= Exchange.default(self)
     end
 
     # Declares a headers exchange or looks it up in the cache of previously
@@ -396,7 +396,7 @@ module Bunny
     # @see http://rubybunny.info/articles/exchanges.html Exchanges and Publishing guide
     # @see http://rubybunny.info/articles/extensions.html RabbitMQ Extensions to AMQP 0.9.1 guide
     def exchange(name, opts = {})
-      Exchange.new(self, opts.fetch(:type, :direct), name, opts)
+      find_exchange(name) || Exchange.new(self, opts.fetch(:type, :direct), name, opts)
     end
 
     # @endgroup
