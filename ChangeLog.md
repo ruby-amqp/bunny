@@ -1,6 +1,20 @@
-## Changes between Bunny 2.20.3 and 2.20.4 (in development)
+## Changes between Bunny 2.21.0 and 2.22.0 (in development)
 
 No changes yet.
+
+## Changes between Bunny 2.20.3 and 2.21.0 (June 8, 2023)
+
+### Fixed a Potential Deadlock During Consumer Work Pool Shutdown
+
+Contributed by @parhs.
+
+GitHub issue: [#664](https://github.com/ruby-amqp/bunny/pull/664)
+
+### Connection Recovery Reliability Improvements
+
+Contributed by @womblep.
+
+GitHub issue: [#658](https://github.com/ruby-amqp/bunny/pull/658)
 
 
 ## Changes between Bunny 2.20.2 and 2.22.3 (January 25, 2023)
