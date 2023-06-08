@@ -1,6 +1,12 @@
 ## Changes between Bunny 2.21.0 and 2.22.0 (in development)
 
-No changes yet.
+### `Bunny::Channel#default_exchange` Caching
+
+`Bunny::Channel#default_exchange` now caches the `Bunny::Exchange` instance
+it returns.
+
+GitHub issue: [#661](https://github.com/ruby-amqp/bunny/issues/661)
+
 
 ## Changes between Bunny 2.20.3 and 2.21.0 (June 8, 2023)
 
