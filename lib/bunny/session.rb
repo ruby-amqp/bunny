@@ -128,7 +128,7 @@ module Bunny
     # @option connection_string_or_opts [Integer] :reset_recovery_attempts_after_reconnection (true) Should recovery attempt counter be reset after successful reconnection? When set to false, the attempt counter will last through the entire lifetime of the connection object.
     # @option connection_string_or_opts [Proc] :recovery_attempt_started (nil) Will be called before every connection recovery attempt
     # @option connection_string_or_opts [Proc] :recovery_completed (nil) Will be called after successful connection recovery
-    # @option connection_string_or_opts [Proc] :recovery_failed (nil) Will be called when the connection recovery failed after the specified amount of recovery attempts
+    # @option connection_string_or_opts [Proc] :recovery_attempts_exhausted (nil) Will be called when the connection recovery failed after the specified amount of recovery attempts
     # @option connection_string_or_opts [Boolean] :recover_from_connection_close (true) Should this connection recover after receiving a server-sent connection.close (e.g. connection was force closed)?
     # @option connection_string_or_opts [Object] :session_error_handler (Thread.current) Object which responds to #raise that will act as a session error handler. Defaults to Thread.current, which will raise asynchronous exceptions in the thread that created the session.
     #
@@ -226,7 +226,7 @@ module Bunny
 
       @recovery_attempt_started = opts[:recovery_attempt_started]
       @recovery_completed       = opts[:recovery_completed]
-      @recovery_failed          = opts[:recovery_failed]
+      @recovery_attempts_exhausted          = opts[:recovery_attempts_exhausted]
 
       @session_error_handler = opts.fetch(:session_error_handler, Thread.current)
 
@@ -558,8 +558,8 @@ module Bunny
     # Defines a callable (e.g. a block) that will be called
     # when the connection recovery failed after the specified
     # numbers of recovery attempts.
-    def after_recovery_failed(&block)
-      @recovery_failed = block
+    def after_recovery_attempts_exhausted(&block)
+      @recovery_attempts_exhausted = block
     end
 
     #
@@ -817,7 +817,7 @@ module Bunny
           @transport.close
           self.close(false)
           @manually_closed = false
-          notify_of_recovery_failed
+          notify_of_recovery_attempts_exhausted
         end
       else
         raise e
@@ -869,8 +869,8 @@ module Bunny
     end
 
     # @private
-    def notify_of_recovery_failed
-      @recovery_failed.call if @recovery_failed
+    def notify_of_recovery_attempts_exhausted
+      @recovery_attempts_exhausted.call if @recovery_attempts_exhausted
     end
 
     # @private
