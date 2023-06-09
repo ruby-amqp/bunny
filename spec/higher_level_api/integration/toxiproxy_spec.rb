@@ -54,7 +54,7 @@ if ::Toxiproxy.running?
         setup_toxiproxy
         @connection = Bunny.new(user: "bunny_gem", password: "bunny_password", vhost: "bunny_testbed",
           host: "localhost:11111", heartbeat_timeout: 1, automatically_recover: true, network_recovery_interval: 1,
-          recovery_attempts: 2, recovery_failed: Proc.new { dummy.call }, reset_recovery_attempts_after_reconnection: true,
+          recovery_attempts: 2, recovery_attempts_exhausted: Proc.new { dummy.call }, reset_recovery_attempts_after_reconnection: true,
           disconnect_timeout: 1)
         @connection.start
       end
