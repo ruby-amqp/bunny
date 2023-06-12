@@ -17,10 +17,6 @@ module RabbitMQ
       rabbitmq_toxiproxy.enable
     end
 
-    def cleanup_toxiproxy
-      ::Toxiproxy.populate()
-    end
-
     def rabbitmq_toxiproxy
       ::Toxiproxy[/rabbitmq/]
     end
