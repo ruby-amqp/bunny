@@ -21,13 +21,9 @@ if ::Toxiproxy.running?
 
       it "raises a ConnectionClosedError" do
         ch = @connection.create_channel
-        begin
-          rabbitmq_toxiproxy.down do
-            sleep 2
-            expect { ch.default_exchange.publish("", :routing_key => queue_name) }.to raise_error(Bunny::ConnectionClosedError)
-          end
-        ensure
-          cleanup_toxiproxy
+        rabbitmq_toxiproxy.down do
+          sleep 2
+          expect { ch.default_exchange.publish("", :routing_key => queue_name) }.to raise_error(Bunny::ConnectionClosedError)
         end
       end
     end
