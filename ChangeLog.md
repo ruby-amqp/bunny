@@ -1,4 +1,17 @@
-## Changes between Bunny 2.21.0 and 2.22.0 (in development)
+## Changes between Bunny 2.22.0 and 2.23.0 (in development)
+
+No changes yet.
+
+## Changes between Bunny 2.21.0 and 2.22.0 (June 12, 2023)
+
+### New Connection Callback: `:recovery_attempts_exhausted`
+
+A new connection callback, `:recovery_attempts_exhausted`, is invoked when
+all allowed recovery attempts have failed.
+
+Contributed by @Schmitze333.
+
+GitHub issue: [#666](https://github.com/ruby-amqp/bunny/pull/666)
 
 ### `Bunny::Channel#default_exchange` Caching
 
