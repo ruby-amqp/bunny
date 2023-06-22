@@ -27,7 +27,7 @@ module Bunny
 
     def self.open(host, port, options = {})
       socket = ::Socket.tcp(host, port, nil, nil,
-                            connect_timeout: options[:connect_timeout])
+                            connect_timeout: options[:connect_timeout], resolv_timeout: options[:connect_timeout])
       if ::Socket.constants.include?('TCP_NODELAY') || ::Socket.constants.include?(:TCP_NODELAY)
         socket.setsockopt(::Socket::IPPROTO_TCP, ::Socket::TCP_NODELAY, true)
       end
