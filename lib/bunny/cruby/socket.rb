@@ -1,4 +1,5 @@
 require "socket"
+require "resolv-replace"
 
 module Bunny
   # TCP socket extension that uses TCP_NODELAY and supports reading
@@ -26,8 +27,7 @@ module Bunny
                                     end
 
     def self.open(host, port, options = {})
-      socket = ::Socket.tcp(host, port, nil, nil,
-                            connect_timeout: options[:connect_timeout], resolv_timeout: options[:connect_timeout])
+      socket = TCPSocket.new(host, port)
       if ::Socket.constants.include?('TCP_NODELAY') || ::Socket.constants.include?(:TCP_NODELAY)
         socket.setsockopt(::Socket::IPPROTO_TCP, ::Socket::TCP_NODELAY, true)
       end
