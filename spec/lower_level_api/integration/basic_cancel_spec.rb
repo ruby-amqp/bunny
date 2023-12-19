@@ -60,7 +60,7 @@ describe Bunny::Channel, "#basic_cancel" do
       ch = @connection.create_channel
 
       # RabbitMQ 3.1 does not raise an exception w/ unknown consumer tag. MK.
-      ch.basic_cancel("878798s7df89#{rand}#{Time.now.to_i}")
+      ch.basic_cancel("878798s7df89#{rand}#{Bunny::Timestamp.now.to_i}")
 
       ch.close
     end
