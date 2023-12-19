@@ -8,7 +8,8 @@ module Bunny
 
     # @return [String] Generated consumer tag
     def generate
-      "#{Kernel.rand}-#{Time.now.to_i * 1000}-#{Kernel.rand(999_999_999_999)}"
+      t = Bunny::Timestamp.now
+      "#{Kernel.rand}-#{t.to_i * 1000}-#{Kernel.rand(999_999_999_999)}"
     end # generate
 
 
@@ -17,7 +18,8 @@ module Bunny
     # @return [String]  Unique string.
     # @api public
     def generate_prefixed(name = "bunny")
-      "#{name}-#{Time.now.to_i * 1000}-#{Kernel.rand(999_999_999_999)}"
+      t = Bunny::Timestamp.now
+      "#{name}-#{t.to_i * 1000}-#{Kernel.rand(999_999_999_999)}"
     end
   end
 end

@@ -488,7 +488,7 @@ describe Bunny::Session do
   context "initialized with hostname: 127.0.0.1 and INVALID credentials" do
     let(:host)     { "127.0.0.1" }
     # see ./bin/ci/before_build
-    let(:username) { "bunny_gem#{Time.now.to_i}" }
+    let(:username) { "bunny_gem#{Bunny::Timestamp.now.to_i}" }
     let(:password) { "sdjkfhsdf8ysd8fy8" }
     let(:vhost)    { "___sd89aysd98789" }
 

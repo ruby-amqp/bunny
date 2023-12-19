@@ -621,6 +621,7 @@ hash) that `Bunny::Exchange#publish` accepts as the `:headers` option.
 An example:
 
 ``` ruby
+# or Process.clock_gettime(Process::CLOCK_MONOTONIC) if using a monotonic clock is important
 now = Time.now
 
 x.publish("hello",

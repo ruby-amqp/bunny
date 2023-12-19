@@ -14,7 +14,7 @@ describe Bunny::Queue, "#subscribe" do
   let(:queue_name) { "bunny.basic_consume#{rand}" }
 
   it "provides delivery handler access to message properties" do
-    @now     = Time.now
+    @now     = Bunny::Timestamp.now
     metadata = {}
     envelope = {}
 

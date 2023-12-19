@@ -98,7 +98,7 @@ describe Bunny::Exchange, "#delete" do
 
     context "when a exchange DOES NOT exist" do
       it "returns false" do
-        expect(connection.exchange_exists?("suf89u9a4jo3ndnakls##{Time.now.to_i}")).to eq false
+        expect(connection.exchange_exists?("suf89u9a4jo3ndnakls##{Bunny::Timestamp.now.to_i}")).to eq false
       end
     end
   end
