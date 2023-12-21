@@ -10,7 +10,7 @@ require "bunny/framing"
 require "bunny/exceptions"
 
 require "bunny/socket"
-
+require "bunny/timestamp"
 require "bunny/timeout"
 
 begin
