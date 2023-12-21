@@ -312,7 +312,7 @@ describe "Connection recovery" do
 
   it "recovers allocated channel ids" do
     with_open do |c|
-      q = "queue#{Time.now.to_i}"
+      q = "queue#{Bunny::Timestamp.now.to_i}"
       10.times { c.create_channel }
       expect(c.queue_exists?(q)).to eq false
       close_all_connections!

@@ -25,18 +25,19 @@ module Bunny
       end
 
       def poll(timeout_in_ms = nil)
-        timeout = timeout_in_ms ? timeout_in_ms / 1000.0 : nil
+        timeout_in_sec = timeout_in_ms ? timeout_in_ms / 1000.0 : nil
 
         @lock.synchronize do
-          timeout_strikes_at = Time.now.utc + (timeout || 0)
+          started_at = Bunny::Timestamp.monotonic
           while @q.empty?
-            wait = if timeout
-                     timeout_strikes_at - Time.now.utc
-                   else
-                     nil
-                   end
-            @cond.wait(@lock, wait)
-            raise ::Timeout::Error if wait && Time.now.utc >= timeout_strikes_at
+            wait = !(timeout_in_sec.nil?)
+            @cond.wait(@lock, timeout_in_sec)
+
+            if wait
+              ended_at = Bunny::Timestamp.monotonic
+              elapsed = ended_at - started_at
+              raise ::Timeout::Error if (elapsed > timeout_in_sec)
+            end
           end
           item = @q.shift
           item

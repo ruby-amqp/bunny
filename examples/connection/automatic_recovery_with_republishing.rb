@@ -45,7 +45,7 @@ q1.subscribe do |delivery_info, metadata, payload|
   puts "[Q1] Consumed #{payload} on channel #{q1.channel.id}"
   if ch0.open?
     puts "Publishing a reply on channel #{ch0.id} which is open"
-    x0.publish(Time.now.to_i.to_s)
+    x0.publish(Bunny::Timestamp.now.to_i.to_s)
   end
 end
 
@@ -54,7 +54,7 @@ q2.subscribe do |delivery_info, metadata, payload|
 
   if ch1.open?
     puts "Publishing a reply on channel #{ch1.id} which is open"
-    x1.publish(Time.now.to_i.to_s)
+    x1.publish(Bunny::Timestamp.now.to_i.to_s)
   end
 end
 
@@ -63,7 +63,7 @@ q3.subscribe do |delivery_info, metadata, payload|
 
   if ch2.open?
     puts "Publishing a reply on channel #{ch1.id} which is open"
-    x2.publish(Time.now.to_i.to_s)
+    x2.publish(Bunny::Timestamp.now.to_i.to_s)
   end
 end
 
@@ -72,7 +72,7 @@ q3.subscribe do |delivery_info, metadata, payload|
 
   if ch3.open?
     puts "Publishing a reply on channel #{ch3.id} which is open"
-    x3.publish(Time.now.to_i.to_s)
+    x3.publish(Bunny::Timestamp.now.to_i.to_s)
   end
 end
 
@@ -91,7 +91,7 @@ end
 loop do
   sleep 1
   data = rand.to_s
-  rk   = ["abc", "def", "xyz", Time.now.to_i.to_s].sample
+  rk   = ["abc", "def", "xyz", Bunny::Timestamp.now.to_i.to_s].sample
 
   begin
     3.times do

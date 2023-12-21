@@ -1536,7 +1536,8 @@ module Bunny
     # @return [String]  Unique string.
     # @api plugin
     def generate_consumer_tag(name = "bunny")
-      "#{name}-#{Time.now.to_i * 1000}-#{Kernel.rand(999_999_999_999)}"
+      t = Bunny::Timestamp.now
+      "#{name}-#{t.to_i * 1000}-#{Kernel.rand(999_999_999_999)}"
     end
 
     # @endgroup
