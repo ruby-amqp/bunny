@@ -17,6 +17,6 @@ describe Bunny::HeartbeatSender do
     allow(heartbeat_sender).to receive(:beat).and_raise(StandardError.new("This error should be logged"))
 
     heartbeat_sender.start
-    expect(logger).to have_received(:error).with("Error in the hearbeat sender: This error should be logged")
+    expect(logger).to have_received(:error).with("Error in the heartbeat sender: This error should be logged")
   end
 end

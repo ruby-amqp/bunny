@@ -51,10 +51,10 @@ module Bunny
           sleep @interval
         end
       rescue IOError => ioe
-        @logger.error "I/O error in the hearbeat sender: #{ioe.message}"
+        @logger.error "I/O error in the heartbeat sender: #{ioe.message}"
         stop
       rescue ::Exception => e
-        @logger.error "Error in the hearbeat sender: #{e.message}"
+        @logger.error "Error in the heartbeat sender: #{e.message}"
         stop
       end
     end
