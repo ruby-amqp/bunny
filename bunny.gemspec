@@ -13,6 +13,10 @@ Gem::Specification.new do |s|
   s.license = "MIT"
   s.required_ruby_version = Gem::Requirement.new(">= 2.5")
 
+  s.metadata = {
+    "changelog_uri" => "https://github.com/ruby-amqp/bunny/blob/main/ChangeLog.md"
+  }
+
   # Sorted alphabetically.
   s.authors = [
     "Chris Duncan",
