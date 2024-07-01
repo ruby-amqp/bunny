@@ -1,6 +1,22 @@
-## Changes between Bunny 2.22.0 and 2.23.0 (in development)
+## Changes between Bunny 2.23.0 and 2.24.0 (in development)
 
 No changes yet.
+
+
+## Changes between Bunny 2.22.0 and 2.23.0 (July 1, 2024)
+
+### Bunny::Channel#on_error invoked for [delivery acknowledgement timeouts](https://www.rabbitmq.com/docs/consumers#acknowledgement-timeout)
+
+Contributed by @dchompd.
+
+GitHub issue: [#684](https://github.com/ruby-amqp/bunny/pull/684)
+
+### Heartbeat sender now uses a monotonic clock function
+
+Contributed by @blowfishpro.
+
+GitHub issue: [#676](https://github.com/ruby-amqp/bunny/issues/676)
+
 
 ## Changes between Bunny 2.21.0 and 2.22.0 (June 12, 2023)
 
