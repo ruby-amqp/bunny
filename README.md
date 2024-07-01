@@ -47,11 +47,11 @@ Specific examples:
 
 Modern Bunny versions support
 
- * CRuby 2.6 through 3.1 (inclusive)
+ * CRuby 2.7 through 3.3 (inclusive)
  * [TruffleRuby](https://www.graalvm.org/ruby/)
 
 For environments that use TLS, Bunny expects Ruby installations to use a recent enough OpenSSL version that
-**includes support for TLS 1.3**.
+**includes support for [TLS 1.3](https://www.rabbitmq.com/docs/ssl#tls1.3)**.
 
 ### JRuby
 
@@ -69,14 +69,7 @@ Modern Bunny releases target [currently supported RabbitMQ release series](https
 
 ## Change Log
 
-Bunny is a mature library (started in early 2009) with
-a stable public API.
-
-Change logs per release series:
-
- * [main](https://github.com/ruby-amqp/bunny/blob/main/ChangeLog.md) (most notable changes for all release series)
- * [2.19.x](https://github.com/ruby-amqp/bunny/blob/2.19.x-stable/ChangeLog.md)
-
+[Change log](https://github.com/ruby-amqp/bunny/blob/main/ChangeLog.md).
 
 
 ## Installation & Bundler Dependency
@@ -90,7 +83,7 @@ Change logs per release series:
 To use Bunny in a project managed with Bundler:
 
 ``` ruby
-gem "bunny", ">= 2.19.0"
+gem "bunny", ">= 2.23.0"
 ```
 
 ### With Rubygems
