@@ -13,6 +13,7 @@ sleep 3
 # guest:guest has full access to /
 $CTL add_vhost /
 $CTL add_user guest guest
+$CTL set_user_tags guest "administrator"
 $CTL set_permissions -p / guest ".*" ".*" ".*"
 
 #
