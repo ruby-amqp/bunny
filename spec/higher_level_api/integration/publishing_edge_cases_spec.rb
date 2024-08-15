@@ -24,7 +24,7 @@ unless ENV["CI"]
         q  = ch.queue("", exclusive: true)
         x  = ch.default_exchange
 
-        as = ("a" * (1024 * 1024 * 4 + 28237777))
+        as = ("a" * 16777216)
         x.publish(as, routing_key: q.name, persistent: true)
 
         sleep(1)
@@ -45,7 +45,7 @@ unless ENV["CI"]
         q  = ch.queue("", exclusive: true)
         x  = ch.default_exchange
 
-        as = "кириллца, йо" * (1024 * 1024)
+        as = "кириллца, йо" * (1024 * 500)
         x.publish(as, routing_key: q.name, persistent: true)
 
         sleep(1)
