@@ -12,10 +12,10 @@ conn = Bunny.new(heartbeat_timeout: 8)
 conn.start
 
 ch = conn.create_channel
-x  = ch.topic("bunny.examples.recovery.topic", :durable => false)
-q  = ch.queue("bunny.examples.recovery.client_named_queue1", :durable => false)
+x  = ch.topic("bunny.examples.recovery.topic", durable: false)
+q  = ch.queue("bunny.examples.recovery.client_named_queue1", durable: false)
 
-q.bind(x, :routing_key => "abc").bind(x, :routing_key => "def")
+q.bind(x, routing_key: "abc").bind(x, routing_key: "def")
 
 q.subscribe do |delivery_info, metadata, payload|
   puts "Consumed #{payload}"
@@ -27,7 +27,7 @@ loop do
   rk   = ["abc", "def"].sample
 
   begin
-    x.publish(data, :routing_key => rk)
+    x.publish(data, routing_key: rk)
     puts "Published #{data}, routing key: #{rk}"
   # happens when a message is published before the connection
   # is recovered

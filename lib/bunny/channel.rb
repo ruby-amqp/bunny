@@ -1077,6 +1077,8 @@ module Bunny
     def queue_declare(name, opts = {})
       raise_if_no_longer_open!
 
+      Bunny::Queue.verify_type!(opts[:arguments]) if opts[:arguments]
+
       # strip trailing new line and carriage returns
       # just like RabbitMQ does
       safe_name = name.gsub(/[\r\n]/, "")
