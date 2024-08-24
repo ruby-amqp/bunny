@@ -19,7 +19,7 @@ describe Bunny::Queue, "#subscribe" do
   end
 
   context "with automatic acknowledgement mode" do
-    let(:queue_name) { "bunny.basic_consume#{rand}" }
+    let(:queue_name) { "bunny.basic_consume.read-only.#{rand}" }
 
     it "registers the consumer" do
       delivered_keys = []

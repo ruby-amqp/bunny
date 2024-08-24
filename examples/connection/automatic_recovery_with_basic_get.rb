@@ -12,8 +12,8 @@ conn = Bunny.new(:heartbeat_timeout => 8)
 conn.start
 
 ch = conn.create_channel
-x  = ch.topic("bunny.examples.recovery.topic", :durable => false)
-q  = ch.queue("bunny.examples.recovery.client_named_queue2", :durable => true)
+x  = ch.topic("bunny.examples.recovery.topic", durable: false)
+q  = ch.queue("bunny.examples.recovery.client_named_queue2", durable: true)
 q.purge
 
 q.bind(x, :routing_key => "abc").bind(x, :routing_key => "def")
