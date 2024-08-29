@@ -1270,7 +1270,7 @@ module Bunny
                                 negotiate_value(@client_heartbeat, connection_tune.heartbeat)
                               end
       @logger.debug { "Heartbeat interval negotiation: client = #{@client_heartbeat}, server = #{connection_tune.heartbeat}, result = #{@heartbeat}" }
-      @logger.info "Heartbeat interval used (in seconds): #{@heartbeat}"
+      @logger.debug "Heartbeat interval used (in seconds): #{@heartbeat}"
 
       # We set the read_write_timeout to twice the heartbeat value,
       # and then some padding for edge cases.
