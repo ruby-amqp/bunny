@@ -48,7 +48,38 @@ describe Bunny::Channel, "#basic_cancel" do
       sleep 0.5
 
       ch = @connection.create_channel
-      ch.default_exchange.publish("", :routing_key => queue_name)
+      ch.default_exchange.publish("", routing_key: queue_name)
+
+      sleep 0.7
+      expect(delivered_data).to be_empty
+    end
+  end
+
+  context "when the given consumer tag is valid and no_wait is set to true" do
+    let(:queue_name) { "bunny.basic.cancel.queue#{rand}" }
+
+    it "cancels the consumer" do
+      delivered_data = []
+
+      t = Thread.new do
+        ch         = @connection.create_channel
+        q          = ch.queue(queue_name, auto_delete: true, durable: false)
+        consume_ok = ch.basic_consume(q, "", true, false) do |_, _, payload|
+          delivered_data << payload
+        end
+
+        expect(consume_ok.consumer_tag).not_to be_nil
+        # set the no-wait flag
+        cancel_ok = ch.basic_cancel(consume_ok.consumer_tag, no_wait: true)
+        expect(cancel_ok).to be_nil
+
+        ch.close
+      end
+      t.abort_on_exception = true
+      sleep 0.5
+
+      ch = @connection.create_channel
+      ch.default_exchange.publish("", routing_key: queue_name)
 
       sleep 0.7
       expect(delivered_data).to be_empty
