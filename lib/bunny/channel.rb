@@ -1027,15 +1027,24 @@ module Bunny
     # it was on is auto-deleted and this consumer was the last one, the queue will be deleted.
     #
     # @param [String] consumer_tag Consumer tag (unique identifier) to cancel
+    # @param [Hash] arguments ({}) Optional arguments
     #
-    # @return [AMQ::Protocol::Basic::CancelOk] RabbitMQ response
+    # @option opts [Boolean] :no_wait (false) if set to true, this method won't receive a response and will
+    #                                         immediately return nil
+    #
+    # @return [AMQ::Protocol::Basic::CancelOk] RabbitMQ response or nil, if the no_wait option is used
     # @see http://rubybunny.info/articles/queues.html Queues and Consumers guide
     # @api public
-    def basic_cancel(consumer_tag)
-      @connection.send_frame(AMQ::Protocol::Basic::Cancel.encode(@id, consumer_tag, false))
+    def basic_cancel(consumer_tag, opts = {})
+      no_wait = opts.fetch(:no_wait, false)
+      @connection.send_frame(AMQ::Protocol::Basic::Cancel.encode(@id, consumer_tag, no_wait))
 
-      with_continuation_timeout do
-        @last_basic_cancel_ok = wait_on_continuations
+      if no_wait
+        @last_basic_cancel_ok = nil
+      else
+        with_continuation_timeout do
+          @last_basic_cancel_ok = wait_on_continuations
+        end
       end
 
       # reduces thread usage for channels that don't have any
@@ -1258,7 +1267,7 @@ module Bunny
           opts.fetch(:durable, false),
           opts.fetch(:auto_delete, false),
           opts.fetch(:internal, false),
-          false, # nowait
+          opts.fetch(:no_wait, false),
           opts[:arguments]))
       with_continuation_timeout do
         @last_exchange_declare_ok = wait_on_continuations
