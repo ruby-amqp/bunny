@@ -412,7 +412,7 @@ module Bunny
     # @option opts [Boolean] :durable (false) Should this queue be durable?
     # @option opts [Boolean] :auto-delete (false) Should this queue be automatically deleted when the last consumer disconnects?
     # @option opts [Boolean] :exclusive (false) Should this queue be exclusive (only can be used by this connection, removed when the connection is closed)?
-    # @option opts [Hash] :arguments ({}) Additional optional arguments (typically used by RabbitMQ extensions and plugins)
+    # @option opts [Hash] :arguments ({}) Optional arguments (x-arguments)
     #
     # @return [Bunny::Queue] Queue that was declared or looked up in the cache
     # @see http://rubybunny.info/articles/queues.html Queues and Consumers guide
@@ -431,7 +431,7 @@ module Bunny
     # @param [String] name Queue name. Empty (server-generated) names are not supported by this method.
     # @param  [Hash]  opts  Queue properties and other options. Durability, exclusivity, auto-deletion options will be ignored.
     #
-    # @option opts [Hash] :arguments ({}) Additional optional arguments (typically used by RabbitMQ extensions and plugins)
+    # @option opts [Hash] :arguments ({}) Optional arguments (x-arguments)
     #
     # @return [Bunny::Queue] Queue that was declared
     # @see #durable_queue
@@ -452,7 +452,7 @@ module Bunny
     # @param [String] name Stream name. Empty (server-generated) names are not supported by this method.
     # @param  [Hash]  opts  Queue properties and other options. Durability, exclusivity, auto-deletion options will be ignored.
     #
-    # @option opts [Hash] :arguments ({}) Additional optional arguments (typically used by RabbitMQ extensions and plugins)
+    # @option opts [Hash] :arguments ({}) Optional arguments (x-arguments)
     #
     #
     # @return [Bunny::Queue] Queue that was declared
@@ -472,7 +472,7 @@ module Bunny
     # @param [String] name Queue name. Empty (server-generated) names are not supported by this method.
     # @param  [Hash]  opts  Queue properties and other options. Durability, exclusivity, auto-deletion options will be ignored.
     #
-    # @option opts [Hash] :arguments ({}) Additional optional arguments (typically used by RabbitMQ extensions and plugins)
+    # @option opts [Hash] :arguments ({}) Optional arguments (x-arguments)
     #
     # @return [Bunny::Queue] Queue that was declared
     # @see #queue
@@ -1079,7 +1079,7 @@ module Bunny
     #                                          connection is closed
     # @option opts [Boolean] passive (false)   If true, queue will be checked for existence. If it does not
     #                                          exist, {Bunny::NotFound} will be raised.
-    #
+    # @option opts [Hash] :arguments ({}) Optional queue arguments (x-arguments)
     # @return [AMQ::Protocol::Queue::DeclareOk] RabbitMQ response
     # @see http://rubybunny.info/articles/queues.html Queues and Consumers guide
     # @api public
