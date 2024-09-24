@@ -195,6 +195,10 @@ describe Bunny::Queue do
                     "bunny.tests.low-level.queues.proprty-equivalence.x-args.x-expires",
                     "x-expires", 2200000, 5500000
 
+  include_examples "verifies optional x-argument equivalence",
+                    "bunny.tests.low-level.queues.proprty-equivalence.x-args.x-message-ttl",
+                    "x-message-ttl", 3000, 5000
+
 
   RSpec.shared_examples "ignores optional x-argument equivalence" do |queue_name, arg, val1, val2|
     it "DOES NOT raise an exception when optional argument #{arg} values do not match that of the original declaration" do
@@ -218,6 +222,5 @@ describe Bunny::Queue do
   include_examples "ignores optional x-argument equivalence",
                     "bunny.tests.low-level.queues.proprty-equivalence.x-args.x-alternate-exchange",
                     "x-alternate-exchange", "amq.fanout", "amq.topic"
-
 
 end
