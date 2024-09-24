@@ -165,65 +165,59 @@ describe Bunny::Queue do
     end
   end
 
-  context "when queue is declared with a mismatching x-max-length" do
-    it "raises an exception" do
+  RSpec.shared_examples "verifies optional x-argument equivalence" do |queue_name, arg, val1, val2|
+    it "raises an exception when optional argument #{arg} values do not match that of the original declaration" do
       ch   = connection.create_channel
       cleanup_ch = connection.create_channel
+      cleanup_ch.queue_delete(queue_name)
 
-      name = "bunny.tests.low-level.queues.proprty-equivalence.x-args.x-max-length"
-      cleanup_ch.queue_delete(name)
-
-      q = ch.queue_declare(name, type: "classic", durable: true, arguments: {"x-max-length": 10})
+      q = ch.queue_declare(queue_name, type: "classic", durable: true, arguments: {arg => val1})
       expect do
-        ch.queue_declare(name, type: "classic", durable: true, arguments: {"x-max-length": 20})
+        ch.queue_declare(queue_name, type: "classic", durable: true, arguments: {arg => val2})
       end.to raise_error(Bunny::PreconditionFailed)
 
       expect(ch).to be_closed
 
-      cleanup_ch = connection.create_channel
-      cleanup_ch.queue_delete(name)
+      cleanup_ch.queue_delete(queue_name)
       cleanup_ch.close
     end
   end
 
-  context "when queue is declared with a mismatching x-max-bytes" do
-    it "raises an exception" do
+  include_examples "verifies optional x-argument equivalence",
+                    "bunny.tests.low-level.queues.proprty-equivalence.x-args.x-max-length",
+                    "x-max-length", 50, 100
+
+  include_examples "verifies optional x-argument equivalence",
+                    "bunny.tests.low-level.queues.proprty-equivalence.x-args.x-max-length-bytes",
+                    "x-max-length-bytes", 1000000, 99900000
+
+  include_examples "verifies optional x-argument equivalence",
+                    "bunny.tests.low-level.queues.proprty-equivalence.x-args.x-expires",
+                    "x-expires", 2200000, 5500000
+
+
+  RSpec.shared_examples "ignores optional x-argument equivalence" do |queue_name, arg, val1, val2|
+    it "DOES NOT raise an exception when optional argument #{arg} values do not match that of the original declaration" do
       ch   = connection.create_channel
       cleanup_ch = connection.create_channel
+      cleanup_ch.queue_delete(queue_name)
 
-      name = "bunny.tests.low-level.queues.proprty-equivalence.x-args.x-max-length-bytes"
-      cleanup_ch.queue_delete(name)
+      q = ch.queue_declare(queue_name, type: "classic", durable: true, arguments: {arg => val1})
+      # no exception raised
+      ch.queue_declare(queue_name, type: "classic", durable: true, arguments: {arg => val2})
 
-      q = ch.queue_declare(name, type: "classic", durable: true, arguments: {"x-max-length-bytes": 1000000})
-      expect do
-        ch.queue_declare(name, type: "classic", durable: true, arguments: {"x-max-length-bytes": 99000000})
-      end.to raise_error(Bunny::PreconditionFailed)
-
-      expect(ch).to be_closed
-
-      cleanup_ch = connection.create_channel
-      cleanup_ch.queue_delete(name)
+      cleanup_ch.queue_delete(queue_name)
       cleanup_ch.close
     end
   end
 
-  context "when queue is declared with a mismatching x-consumer-timeout" do
-    it "raises an exception" do
-      ch   = connection.create_channel
-      name = "bunny.tests.low-level.queues.proprty-equivalence.x-args.x-consumer-timeout"
+  include_examples "ignores optional x-argument equivalence",
+                    "bunny.tests.low-level.queues.proprty-equivalence.x-args.x-consumer-timeout",
+                    "x-consumer-timeout", 10_000, 20_000
 
-      q = ch.queue_declare(name, type: "classic", durable: true, arguments: {"x-consumer-timeout": 50000})
-      # expect do
-      #   ch.queue_declare(name, type: "classic", durable: true, arguments: {"x-consumer-timeout": 987000})
-      # end.to raise_error(Bunny::PreconditionFailed)
-      ch.queue_declare(name, type: "classic", durable: true, arguments: {"x-consumer-timeout": 987000})
+  include_examples "ignores optional x-argument equivalence",
+                    "bunny.tests.low-level.queues.proprty-equivalence.x-args.x-alternate-exchange",
+                    "x-alternate-exchange", "amq.fanout", "amq.topic"
 
-      # expect(ch).to be_closed
-
-      cleanup_ch = connection.create_channel
-      cleanup_ch.queue_delete(name)
-      cleanup_ch.close
-    end
-  end
 
 end
