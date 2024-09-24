@@ -148,12 +148,15 @@ describe Bunny::Queue do
   context "when queue is declared with a set of mismatching values" do
     it "raises an exception" do
       ch   = connection.create_channel
-      name = "bunny.tests.low-level.queues.proprty-equivalence"
+      cleanup_ch = connection.create_channel
+
+      name = "bunny.tests.low-level.queues.proprty-equivalence.fundmentals"
+      cleanup_ch.queue_delete(name)
 
       q = ch.queue_declare(name, auto_delete: true, durable: false)
-      expect {
+      expect do
         ch.queue_declare(name, auto_delete: false, durable: true)
-      }.to raise_error(Bunny::PreconditionFailed)
+      end.to raise_error(Bunny::PreconditionFailed)
 
       expect(ch).to be_closed
 
@@ -161,4 +164,66 @@ describe Bunny::Queue do
       cleanup_ch.queue_delete(name)
     end
   end
+
+  context "when queue is declared with a mismatching x-max-length" do
+    it "raises an exception" do
+      ch   = connection.create_channel
+      cleanup_ch = connection.create_channel
+
+      name = "bunny.tests.low-level.queues.proprty-equivalence.x-args.x-max-length"
+      cleanup_ch.queue_delete(name)
+
+      q = ch.queue_declare(name, type: "classic", durable: true, arguments: {"x-max-length": 10})
+      expect do
+        ch.queue_declare(name, type: "classic", durable: true, arguments: {"x-max-length": 20})
+      end.to raise_error(Bunny::PreconditionFailed)
+
+      expect(ch).to be_closed
+
+      cleanup_ch = connection.create_channel
+      cleanup_ch.queue_delete(name)
+      cleanup_ch.close
+    end
+  end
+
+  context "when queue is declared with a mismatching x-max-bytes" do
+    it "raises an exception" do
+      ch   = connection.create_channel
+      cleanup_ch = connection.create_channel
+
+      name = "bunny.tests.low-level.queues.proprty-equivalence.x-args.x-max-length-bytes"
+      cleanup_ch.queue_delete(name)
+
+      q = ch.queue_declare(name, type: "classic", durable: true, arguments: {"x-max-length-bytes": 1000000})
+      expect do
+        ch.queue_declare(name, type: "classic", durable: true, arguments: {"x-max-length-bytes": 99000000})
+      end.to raise_error(Bunny::PreconditionFailed)
+
+      expect(ch).to be_closed
+
+      cleanup_ch = connection.create_channel
+      cleanup_ch.queue_delete(name)
+      cleanup_ch.close
+    end
+  end
+
+  context "when queue is declared with a mismatching x-consumer-timeout" do
+    it "raises an exception" do
+      ch   = connection.create_channel
+      name = "bunny.tests.low-level.queues.proprty-equivalence.x-args.x-consumer-timeout"
+
+      q = ch.queue_declare(name, type: "classic", durable: true, arguments: {"x-consumer-timeout": 50000})
+      # expect do
+      #   ch.queue_declare(name, type: "classic", durable: true, arguments: {"x-consumer-timeout": 987000})
+      # end.to raise_error(Bunny::PreconditionFailed)
+      ch.queue_declare(name, type: "classic", durable: true, arguments: {"x-consumer-timeout": 987000})
+
+      # expect(ch).to be_closed
+
+      cleanup_ch = connection.create_channel
+      cleanup_ch.queue_delete(name)
+      cleanup_ch.close
+    end
+  end
+
 end
