@@ -165,7 +165,7 @@ describe Bunny::Queue do
     end
   end
 
-  RSpec.shared_examples "verifies optional x-argument equivalence" do |arg, val1, val2|
+  RSpec.shared_examples "enforces optional x-argument equivalence" do |arg, val1, val2|
     it "raises an exception when optional argument #{arg} values do not match that of the original declaration" do
       queue_name = "bunny.tests.low-level.queues.proprty-equivalence.x-args.#{arg}"
 
@@ -185,13 +185,13 @@ describe Bunny::Queue do
     end
   end
 
-  include_examples "verifies optional x-argument equivalence", "x-max-length", 100, 200
-  include_examples "verifies optional x-argument equivalence", "x-max-length-bytes", 1000000, 99900000
-  include_examples "verifies optional x-argument equivalence", "x-expires", 2200000, 5500000
-  include_examples "verifies optional x-argument equivalence", "x-message-ttl", 3000, 5000
+  include_examples "enforces optional x-argument equivalence", "x-max-length", 100, 200
+  include_examples "enforces optional x-argument equivalence", "x-max-length-bytes", 1000000, 99900000
+  include_examples "enforces optional x-argument equivalence", "x-expires", 2200000, 5500000
+  include_examples "enforces optional x-argument equivalence", "x-message-ttl", 3000, 5000
 
 
-  RSpec.shared_examples "ignores optional x-argument equivalence" do |arg, val1, val2|
+  RSpec.shared_examples "leniently verifies optional x-argument equivalence" do |arg, val1, val2|
     it "DOES NOT raise an exception when optional argument #{arg} values do not match that of the original declaration" do
       queue_name = "bunny.tests.low-level.queues.proprty-equivalence.x-args.#{arg}"
 
@@ -208,7 +208,7 @@ describe Bunny::Queue do
     end
   end
 
-  include_examples "ignores optional x-argument equivalence", "x-consumer-timeout", 10_000, 20_000
-  include_examples "ignores optional x-argument equivalence", "x-alternate-exchange", "amq.fanout", "amq.topic"
+  include_examples "leniently verifies optional x-argument equivalence", "x-consumer-timeout", 10_000, 20_000
+  include_examples "leniently verifies optional x-argument equivalence", "x-alternate-exchange", "amq.fanout", "amq.topic"
 
 end
