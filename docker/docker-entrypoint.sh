@@ -7,8 +7,9 @@ echo 'Starting a RabbitMQ node'
 $server -detached
 
 echo "Waiting for RabbitMQ to finish startup..."
+sleep 5
+$ctl await_startup --timeout 30
 
-$ctl await_startup --timeout 15
 
 $ctl add_user bunny_gem bunny_password
 $ctl add_user bunny_reader reader_password
