@@ -1,3 +1,0 @@
-Package: erlang*
-Pin: release o=Bintray
-Pin-Priority: 1000
