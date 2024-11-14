@@ -516,6 +516,8 @@ module Bunny
       begin
         ch.queue(name, :passive => true)
         true
+      rescue Bunny::ResourceLocked => _
+        true
       rescue Bunny::NotFound => _
         false
       ensure
