@@ -378,7 +378,7 @@ describe Bunny::Queue do
     context "when a queue exists" do
       it "returns true" do
         ch = connection.create_channel
-        q  = ch.queue("", exlusive: true)
+        q  = ch.queue("bunny.tests.queues.exists")
 
         expect(connection.queue_exists?(q.name)).to eq true
       end
@@ -387,6 +387,15 @@ describe Bunny::Queue do
     context "when a queue DOES NOT exist" do
       it "returns false" do
         expect(connection.queue_exists?("suf89u9a4jo3ndnakls##{Bunny::Timestamp.now.to_i}")).to eq false
+      end
+    end
+    
+    context "when a exclusive queue exists" do
+      it "returns true" do
+        ch = connection.create_channel
+        q  = ch.queue("bunny.tests.queues.exists.exclusive", exclusive: true)
+
+        expect(connection.queue_exists?(q.name)).to eq true
       end
     end
   end
