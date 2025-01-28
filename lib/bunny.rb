@@ -1,4 +1,5 @@
 # -*- encoding: utf-8; mode: ruby -*-
+# frozen_string_literal: true
 
 require "timeout"
 

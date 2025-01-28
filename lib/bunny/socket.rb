@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 # See #165. MK.
 if defined?(JRUBY_VERSION)
   require "bunny/jruby/socket"

@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 require "bunny/cruby/socket"
 
 module Bunny
@@ -30,7 +32,7 @@ module Bunny
       # @return [String] Data read from the socket
       # @api public
       def read_fully(count, timeout = nil)
-        value = ''
+        value = +''
 
         begin
           loop do

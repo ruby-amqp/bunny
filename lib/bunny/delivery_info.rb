@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 require "bunny/versioned_delivery_tag"
 
 module Bunny

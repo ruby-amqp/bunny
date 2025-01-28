@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 module Bunny
   # Used to generate consumer tags in the client
   class ConsumerTagGenerator
