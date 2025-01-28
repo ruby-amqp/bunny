@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 require "bunny/authentication/credentials_encoder"
 
 module Bunny

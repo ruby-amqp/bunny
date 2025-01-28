@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 require "bunny/get_response"
 
 module Bunny

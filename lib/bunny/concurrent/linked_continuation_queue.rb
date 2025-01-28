@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 if !defined?(JRUBY_VERSION)
   raise "Bunny::Concurrent::LinkedContinuationQueue can only be used on JRuby!"
 end

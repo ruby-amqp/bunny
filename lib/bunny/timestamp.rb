@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 module Bunny
   # Abstracts away the Ruby (OS) method of retriving timestamps.
   #

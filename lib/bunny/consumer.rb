@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 module Bunny
   # Base class that represents consumer interface. Subclasses of this class implement
   # specific logic of handling consumer life cycle events. Note that when the only event

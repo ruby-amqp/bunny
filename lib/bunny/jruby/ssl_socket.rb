@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 module Bunny
   module JRuby
     begin
@@ -23,7 +25,7 @@ module Bunny
         def read_fully(count, timeout = nil)
           return nil if @__bunny_socket_eof_flag__
 
-          value = ''
+          value = +''
           begin
             loop do
               value << read_nonblock(count - value.bytesize)
