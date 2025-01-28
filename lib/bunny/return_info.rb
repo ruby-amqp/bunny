@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 module Bunny
   # Wraps AMQ::Protocol::Basic::Return to
   # provide access to the delivery properties as immutable hash as

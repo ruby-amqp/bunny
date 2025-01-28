@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 module Bunny
   # Wraps a delivery tag (which is an integer) so that {Bunny::Channel} could
   # detect stale tags after connection recovery.

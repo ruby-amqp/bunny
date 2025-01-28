@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 require "socket"
 require "thread"
 require "monitor"
@@ -1161,7 +1163,7 @@ module Bunny
       channel.synchronize do
         # see rabbitmq/rabbitmq-server#156
         if open?
-          data = frames.reduce("") { |acc, frame| acc << frame.encode }
+          data = frames.reduce(+"") { |acc, frame| acc << frame.encode }
           @transport.write(data)
           signal_activity!
         else

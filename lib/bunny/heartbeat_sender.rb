@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 require "thread"
 require "amq/protocol/client"
 require "amq/protocol/frame"
