@@ -555,7 +555,7 @@ used.
 ## Checking if an Exchange Exists
 
 Sometimes it's convenient to check if an exchange exists. To do so, at the protocol
-level you use `exchange.declare` with `passive` seto to `true`. In response
+level you use `exchange.declare` with `passive` sets to `true`. In response
 RabbitMQ responds with a channel exception if the exchange does not exist.
 
 Bunny provides a convenience method, `Bunny::Session#exchange_exists?`, to do this:

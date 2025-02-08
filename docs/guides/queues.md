@@ -1087,7 +1087,7 @@ Exchanges](/articles/exchanges.html) guide. In this guide, we will
 only mention how message acknowledgements are related to AMQP
 transactions and the Publisher Confirms extension.
 
-Let us consider a publisher application (P) that communications with a
+Let us consider a publisher application (P) that communicates with a
 consumer (C) using AMQP 0.9.1. Their communication can be graphically
 represented like this:
 
