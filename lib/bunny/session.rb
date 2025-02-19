@@ -1120,21 +1120,6 @@ module Bunny
       end
     end
 
-    # Sends frame to the peer, checking that connection is open.
-    # Uses transport implementation that does not perform
-    # timeout control. Exposed primarily for Bunny::Channel.
-    #
-    # @raise [ConnectionClosedError]
-    # @private
-    def send_frame_without_timeout(frame, signal_activity = true)
-      if open?
-        @transport.write_without_timeout(frame.encode)
-        signal_activity! if signal_activity
-      else
-        raise ConnectionClosedError.new(frame)
-      end
-    end
-
     # Sends multiple frames, in one go. For thread safety this method takes a channel
     # object and synchronizes on it.
     #
@@ -1158,40 +1143,6 @@ module Bunny
         end
       end
     end # send_frameset(frames)
-
-    # Sends multiple frames, one by one. For thread safety this method takes a channel
-    # object and synchronizes on it. Uses transport implementation that does not perform
-    # timeout control.
-    #
-    # @private
-    def send_frameset_without_timeout(frames, channel)
-      # some developers end up sharing channels between threads and when multiple
-      # threads publish on the same channel aggressively, at some point frames will be
-      # delivered out of order and broker will raise 505 UNEXPECTED_FRAME exception.
-      # If we synchronize on the channel, however, this is both thread safe and pretty fine-grained
-      # locking. See a note about "single frame" methods in a comment in `send_frameset`. MK.
-      channel.synchronize do
-        if open?
-          frames.each { |frame| self.send_frame_without_timeout(frame, false) }
-          signal_activity!
-        else
-          raise ConnectionClosedError.new(frames)
-        end
-      end
-    end # send_frameset_without_timeout(frames)
-
-    # @private
-    def send_raw_without_timeout(data, channel)
-      # some developers end up sharing channels between threads and when multiple
-      # threads publish on the same channel aggressively, at some point frames will be
-      # delivered out of order and broker will raise 505 UNEXPECTED_FRAME exception.
-      # If we synchronize on the channel, however, this is both thread safe and pretty fine-grained
-      # locking. Note that "single frame" methods do not need this kind of synchronization. MK.
-      channel.synchronize do
-        @transport.write(data)
-        signal_activity!
-      end
-    end # send_frameset_without_timeout(frames)
 
     # @return [String]
     # @api public

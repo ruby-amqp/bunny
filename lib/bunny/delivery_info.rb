@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 
-require "bunny/versioned_delivery_tag"
+require "bunny/delivery_tag"
 
 module Bunny
   # Wraps {AMQ::Protocol::Basic::Deliver} to
@@ -28,7 +28,8 @@ module Bunny
       @basic_deliver = basic_deliver
       @hash          = {
         :consumer_tag => basic_deliver.consumer_tag,
-        :delivery_tag => VersionedDeliveryTag.new(basic_deliver.delivery_tag, channel.recoveries_counter),
+        :delivery_tag => DeliveryTag.new(basic_deliver.delivery_tag,
+                                         channel.connection.transport),
         :redelivered  => basic_deliver.redelivered,
         :exchange     => basic_deliver.exchange,
         :routing_key  => basic_deliver.routing_key,
@@ -71,9 +72,9 @@ module Bunny
       @basic_deliver.consumer_tag
     end
 
-    # @return [String] Delivery identifier that is used to acknowledge, reject and nack deliveries
+    # @return [Bunny::DeliveryTag] Delivery identifier that is used to acknowledge, reject and nack deliveries
     def delivery_tag
-      @basic_deliver.delivery_tag
+      @hash[:delivery_tag]
     end
 
     # @return [Boolean] true if this delivery is a redelivery (the message was requeued at least once)
