@@ -15,11 +15,7 @@ require "bunny/delivery_info"
 require "bunny/return_info"
 require "bunny/message_properties"
 
-if defined?(JRUBY_VERSION)
-  require "bunny/concurrent/linked_continuation_queue"
-else
-  require "bunny/concurrent/continuation_queue"
-end
+require "bunny/concurrent/continuation_queue"
 
 module Bunny
   # ## Channels in RabbitMQ
@@ -2113,18 +2109,10 @@ module Bunny
       @basic_get_continuations = new_continuation
     end
 
-
-    if defined?(JRUBY_VERSION)
-      # @private
-      def new_continuation
-        Concurrent::LinkedContinuationQueue.new
-      end
-    else
-      # @private
-      def new_continuation
-        Concurrent::ContinuationQueue.new
-      end
-    end # if defined?
+    # @private
+    def new_continuation
+      Concurrent::ContinuationQueue.new
+    end
 
     # @private
     def guarding_against_stale_delivery_tags(tag, &block)
