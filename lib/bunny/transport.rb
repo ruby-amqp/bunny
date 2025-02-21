@@ -153,51 +153,26 @@ module Bunny
       block.call(@tls_context) if @tls_context
     end
 
-    if defined?(JRUBY_VERSION)
-      # Writes data to the socket.
-      def write(data)
-        return write_without_timeout(data) unless @write_timeout
+    # Writes data to the socket. If read/write timeout was specified the operation will return after that
+    # amount of time has elapsed waiting for the socket.
+    def write(data)
+      return write_without_timeout(data) unless @write_timeout
 
-        begin
-          if open?
-            @writes_mutex.synchronize do
-              @socket.write(data)
-            end
-          end
-        rescue SystemCallError, Timeout::Error, Bunny::ConnectionError, IOError => e
-          @logger.error "Got an exception when sending data: #{e.message} (#{e.class.name})"
-          close
-          @status = :not_connected
-
-          if @session.automatically_recover?
-            @session.handle_network_failure(e)
-          else
-            @session_error_handler.raise(Bunny::NetworkFailure.new("detected a network failure: #{e.message}", e))
+      begin
+        if open?
+          @writes_mutex.synchronize do
+            @socket.write_nonblock_fully(data, @write_timeout)
           end
         end
-      end
-    else
-      # Writes data to the socket. If read/write timeout was specified the operation will return after that
-      # amount of time has elapsed waiting for the socket.
-      def write(data)
-        return write_without_timeout(data) unless @write_timeout
+      rescue SystemCallError, Timeout::Error, Bunny::ConnectionError, IOError => e
+        @logger.error "Got an exception when sending data: #{e.message} (#{e.class.name})"
+        close
+        @status = :not_connected
 
-        begin
-          if open?
-            @writes_mutex.synchronize do
-              @socket.write_nonblock_fully(data, @write_timeout)
-            end
-          end
-        rescue SystemCallError, Timeout::Error, Bunny::ConnectionError, IOError => e
-          @logger.error "Got an exception when sending data: #{e.message} (#{e.class.name})"
-          close
-          @status = :not_connected
-
-          if @session.automatically_recover?
-            @session.handle_network_failure(e)
-          else
-            @session_error_handler.raise(Bunny::NetworkFailure.new("detected a network failure: #{e.message}", e))
-          end
+        if @session.automatically_recover?
+          @session.handle_network_failure(e)
+        else
+          @session_error_handler.raise(Bunny::NetworkFailure.new("detected a network failure: #{e.message}", e))
         end
       end
     end

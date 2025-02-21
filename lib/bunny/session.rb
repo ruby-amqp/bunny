@@ -12,11 +12,7 @@ require "bunny/authentication/credentials_encoder"
 require "bunny/authentication/plain_mechanism_encoder"
 require "bunny/authentication/external_mechanism_encoder"
 
-if defined?(JRUBY_VERSION)
-  require "bunny/concurrent/linked_continuation_queue"
-else
-  require "bunny/concurrent/continuation_queue"
-end
+require "bunny/concurrent/continuation_queue"
 
 require "amq/protocol/client"
 require "amq/settings"
@@ -1080,16 +1076,7 @@ module Bunny
           # this is the easiest way to wait until the loop
           # is guaranteed to have terminated
           @reader_loop.terminate_with(ShutdownSignal)
-          # joining the thread here may take forever
-          # on JRuby because sun.nio.ch.KQueueArrayWrapper#kevent0 is
-          # a native method that cannot be (easily) interrupted.
-          # So we use this ugly hack or else our test suite takes forever
-          # to run on JRuby (a new connection is opened/closed per example). MK.
-          if defined?(JRUBY_VERSION)
-            sleep 0.075
-          else
-            @reader_loop.join
-          end
+          @reader_loop.join
         else
           # single threaded mode, nothing to do. MK.
         end
@@ -1413,16 +1400,9 @@ module Bunny
       Authentication::CredentialsEncoder.for_session(self)
     end
 
-    if defined?(JRUBY_VERSION)
-      # @private
-      def reset_continuations
-        @continuations = Concurrent::LinkedContinuationQueue.new
-      end
-    else
-      # @private
-      def reset_continuations
-        @continuations = Concurrent::ContinuationQueue.new
-      end
+    # @private
+    def reset_continuations
+      @continuations = Concurrent::ContinuationQueue.new
     end
 
     # @private
