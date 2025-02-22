@@ -21,6 +21,7 @@ jobs:
 
     env:
       CI: true
+      RUNS: 5
 
     services:
       rabbitmq:
