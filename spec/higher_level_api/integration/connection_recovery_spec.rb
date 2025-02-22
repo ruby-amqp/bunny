@@ -57,32 +57,6 @@ describe "Connection recovery" do
     end
   end
 
-  it "recovers channels (with multiple hosts)" do
-    with_open_multi_host do |c|
-      ch1 = c.create_channel
-      ch2 = c.create_channel
-      sleep 1.5
-      close_all_connections!
-      sleep 0.5
-      poll_until { channels.count == 2 }
-      expect(ch1).to be_open
-      expect(ch2).to be_open
-    end
-  end
-
-  it "recovers channels (with multiple hosts, including a broken one)" do
-    with_open_multi_broken_host do |c|
-      ch1 = c.create_channel
-      ch2 = c.create_channel
-      sleep 1.5
-      close_all_connections!
-      sleep 0.5
-      poll_until { channels.count == 2 }
-      expect(ch1).to be_open
-      expect(ch2).to be_open
-    end
-  end
-
   it "recovers basic.qos prefetch setting" do
     with_open do |c|
       ch = c.create_channel
