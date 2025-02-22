@@ -7,6 +7,7 @@ Bundler.require(:default, :test)
 
 require "bunny"
 require "bunny/test_kit"
+require "base64"
 
 puts "Using Ruby #{RUBY_VERSION}, amq-protocol #{AMQ::Protocol::VERSION}"
 
