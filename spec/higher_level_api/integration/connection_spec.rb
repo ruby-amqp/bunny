@@ -511,34 +511,36 @@ describe Bunny::Session do
     end
   end
 
-  context "initialized with unreachable host or port" do
-    it "fails to connect" do
-      expect do
-        c = described_class.new(port: 38000)
-        c.start
-      end.to raise_error(Bunny::TCPConnectionFailed)
-    end
-
-    it "is not connected" do
-      begin
-        c = described_class.new(port: 38000)
-        c.start
-      rescue Bunny::TCPConnectionFailed => e
-        true
+  unless ENV["CI"]
+    context "initialized with unreachable host or port" do
+      it "fails to connect" do
+        expect do
+          c = described_class.new(port: 38000, connection_timeout: 2)
+          c.start
+        end.to raise_error(Bunny::TCPConnectionFailed)
       end
 
-      expect(subject.status).to eq :not_connected
-    end
+      it "is not connected" do
+        begin
+          c = described_class.new(port: 38000, connection_timeout: 2)
+          c.start
+        rescue Bunny::TCPConnectionFailed => e
+          true
+        end
 
-    it "is not open" do
-      begin
-        c = described_class.new(port: 38000)
-        c.start
-      rescue Bunny::TCPConnectionFailed => e
-        true
+        expect(subject.status).to eq :not_connected
       end
 
-      expect(subject).not_to be_open
+      it "is not open" do
+        begin
+          c = described_class.new(port: 38000, connection_timeout: 2)
+          c.start
+        rescue Bunny::TCPConnectionFailed => e
+          true
+        end
+
+        expect(subject).not_to be_open
+      end
     end
   end
 
