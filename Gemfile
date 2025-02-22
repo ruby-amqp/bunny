@@ -29,7 +29,8 @@ group :development do
 end
 
 group :test do
-  gem "rspec", "~> 3.12.0"
+  gem "rspec", "~> 3.13.0"
+  gem "base64"
   gem "rabbitmq_http_api_client", "~> 2.2.0", require: "rabbitmq/http/client"
   gem "toxiproxy", "~> 2"
 end

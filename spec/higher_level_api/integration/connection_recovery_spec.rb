@@ -7,6 +7,7 @@ describe "Connection recovery" do
   let(:http_client) { RabbitMQ::HTTP::Client.new("http://127.0.0.1:15672") }
   let(:logger) { Logger.new($stderr).tap {|logger| logger.level = ENV["BUNNY_LOG_LEVEL"] || Logger::WARN } }
   let(:recovery_interval) { 0.2 }
+  let(:connection_interval) { 2 }
 
   it "reconnects after grace period" do
     with_open do |c|
@@ -421,6 +422,7 @@ describe "Connection recovery" do
 
   def with_open_multi_host(&block)
     c = Bunny.new(hosts: ["127.0.0.1", "localhost"],
+                  connection_interval: connection_interval,
                   network_recovery_interval: recovery_interval,
                   recover_from_connection_close: true,
                   logger: logger)
@@ -431,6 +433,7 @@ describe "Connection recovery" do
     c = Bunny.new(hosts: ["broken", "127.0.0.1", "localhost"],
                   hosts_shuffle_strategy: Proc.new { |hosts| hosts }, # We do not shuffle for these tests so we always hit the broken host
                   network_recovery_interval: recovery_interval,
+                  connection_interval: connection_interval,
                   recover_from_connection_close: true,
                   logger: logger)
     with_open(c, &block)
