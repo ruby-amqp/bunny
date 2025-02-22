@@ -19,6 +19,9 @@ jobs:
           - "3.3.7"
           - "3.2.7"
 
+    env:
+      CI: true
+
     services:
       rabbitmq:
         image: rabbitmq:4-management
@@ -39,4 +42,4 @@ jobs:
         run: BUNNY_RABBITMQCTL=DOCKER:${{job.services.rabbitmq.id}} BUNNY_RABBITMQ_PLUGINS=DOCKER:${{job.services.rabbitmq.id}} bin/ci/before_build.sh
 
       - name: Run tests
-        run: bundle exec rspec -c
+        run: bundle exec rspec -c -fd spec/higher_level_api spec/lower_level_api spec/issues
