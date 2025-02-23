@@ -1,0 +1,35 @@
+{
+  "users": [
+    {
+      "name": "guest",
+      "password": "guest",
+      "tags": "administrator"
+    },
+    {
+      "name": "bunny_gem",
+      "password": "bunny_password",
+      "tags": "administrator"
+    },
+    {
+      "name": "bunny_reader",
+      "password": "reader_password",
+      "tags": "monitoring"
+    }
+  ],
+  "vhosts": [
+    { "name": "/" },
+    { "name": "bunny_testbed" },
+    { "name": "bunny_dqt_classic", "default_queue_type": "classic" },
+    { "name": "bunny_dqt_quorum", "default_queue_type": "quorum" },
+    { "name": "bunny_dqt_stream", "default_queue_type": "stream" }
+  ],
+  "permissions": [
+    { "user": "guest", "vhost": "/", "configure": ".*", "write": ".*", "read": ".*" },
+    { "user": "guest", "vhost": "bunny_testbed", "configure": ".*", "write": ".*", "read": ".*" },
+    { "user": "bunny_gem", "vhost": "bunny_testbed", "configure": ".*", "write": ".*", "read": ".*" },
+    { "user": "bunny_gem", "vhost": "bunny_dqt_classic", "configure": ".*", "write": ".*", "read": ".*" },
+    { "user": "bunny_gem", "vhost": "bunny_dqt_quorum", "configure": ".*", "write": ".*", "read": ".*" },
+    { "user": "bunny_gem", "vhost": "bunny_dqt_stream", "configure": ".*", "write": ".*", "read": ".*" },
+    { "user": "bunny_reader", "vhost": "bunny_testbed", "configure": "^---$", "write": "^---$", "read": ".*" }
+  ]
+}
