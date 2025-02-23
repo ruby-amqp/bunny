@@ -378,7 +378,7 @@ describe Bunny::Queue do
     context "when a queue exists" do
       it "returns true" do
         ch = connection.create_channel
-        q  = ch.queue("bunny.tests.queues.exists")
+        q  = ch.queue("bunny.tests.queues.exists", durable: true, arguments: {"x-expires" => 5000})
 
         expect(connection.queue_exists?(q.name)).to eq true
       end
