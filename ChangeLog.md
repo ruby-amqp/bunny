@@ -1,6 +1,25 @@
 ## Changes between Bunny 2.23.0 and 2.24.0 (in development)
 
-No changes yet.
+### An Option that Will Cancel Consumers Before a Channel Closing is Initiated
+
+Sometimes it makes more sense to avoid any possible in-flight deliveires
+rather than trying to deal with them in a reasonable way, even though
+all outstanding deliveries that were not confirmed will be requeued after
+a channel closure event.
+
+Here is how this setting is supposed to be used:
+
+```ruby
+c = Bunny.new; c.start
+ch = c.create_channel.configure do |new_ch|
+  new_ch.prefetch(10)
+  new_ch.cancel_consumers_before_closing!
+end
+
+q = ch.quorum_queue("a.queue")
+```
+
+This setting is opt-in and disabled by default.
 
 
 ## Changes between Bunny 2.22.0 and 2.23.0 (July 1, 2024)
