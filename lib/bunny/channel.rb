@@ -161,6 +161,8 @@ module Bunny
     # @return [Integer] active basic.qos prefetch global mode
     attr_reader :prefetch_global
 
+    attr_reader :cancel_consumers_before_closing
+
     DEFAULT_CONTENT_TYPE = "application/octet-stream".freeze
     SHORTSTR_LIMIT = 255
 
@@ -216,6 +218,8 @@ module Bunny
       @uncaught_exception_handler = Proc.new do |e, consumer|
         @logger.error "Uncaught exception from consumer #{consumer.to_s}: #{e.inspect} @ #{e.backtrace[0]}"
       end
+
+      @cancel_consumers_before_closing = false
     end
 
     attr_reader :recoveries_counter
@@ -248,6 +252,23 @@ module Bunny
     def close
       # see bunny#528
       raise_if_no_longer_open!
+
+      # This is a best-effort attempt to cancel all consumers before closing the channel.
+      # Retries are extremely unlikely to succeed, and the channel itself is about to be closed,
+      # so we don't bother retrying.
+      if self.cancel_consumers_before_closing?
+       # cancelling a consumer involves using the same mutex, so avoid holding the lock
+        keys = @consumer_mutex.synchronize { @consumers.keys }
+        keys.each do |ctag|
+          begin
+            self.basic_cancel(ctag)
+          rescue Bunny::Exception
+            # ignore
+          rescue Bunny::ClientTimeout
+            # ignore
+          end
+        end
+      end
 
       @connection.close_channel(self)
       @status = :closed
@@ -293,6 +314,23 @@ module Bunny
 
     # @endgroup
 
+    # @group Other settings
+
+    def configure(&block)
+      block.call(self) if block_given?
+
+      self
+    end
+
+    def cancel_consumers_before_closing!
+      @cancel_consumers_before_closing = true
+    end
+
+    def cancel_consumers_before_closing?
+      !!@cancel_consumers_before_closing
+    end
+
+    # @endgroup
 
     #
     # Higher-level API, similar to amqp gem
@@ -498,7 +536,10 @@ module Bunny
     # @see #queue
     # @api public
     def temporary_queue(opts = {})
-      queue("", opts.merge(:exclusive => true))
+      temporary_queue_opts = {
+        :exclusive => true
+      }
+      queue("", opts.merge(temporary_queue_opts))
     end
 
     # @endgroup
