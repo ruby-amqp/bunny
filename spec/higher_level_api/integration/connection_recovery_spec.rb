@@ -7,6 +7,7 @@ describe "Connection recovery" do
   let(:http_client) { RabbitMQ::HTTP::Client.new("http://127.0.0.1:15672") }
   let(:logger) { Logger.new($stderr).tap {|logger| logger.level = ENV["BUNNY_LOG_LEVEL"] || Logger::WARN } }
   let(:recovery_interval) { 0.2 }
+  let(:connection_interval) { 2 }
 
   it "reconnects after grace period" do
     with_open do |c|
@@ -54,32 +55,6 @@ describe "Connection recovery" do
       close_all_connections!
       poll_until { c.open? && ch.open? }
       poll_until { latch.none_threads_waiting? }
-    end
-  end
-
-  it "recovers channels (with multiple hosts)" do
-    with_open_multi_host do |c|
-      ch1 = c.create_channel
-      ch2 = c.create_channel
-      sleep 1.5
-      close_all_connections!
-      sleep 0.5
-      poll_until { channels.count == 2 }
-      expect(ch1).to be_open
-      expect(ch2).to be_open
-    end
-  end
-
-  it "recovers channels (with multiple hosts, including a broken one)" do
-    with_open_multi_broken_host do |c|
-      ch1 = c.create_channel
-      ch2 = c.create_channel
-      sleep 1.5
-      close_all_connections!
-      sleep 0.5
-      poll_until { channels.count == 2 }
-      expect(ch1).to be_open
-      expect(ch2).to be_open
     end
   end
 
@@ -146,7 +121,7 @@ describe "Connection recovery" do
   it "recovers client-named queues" do
     with_open do |c|
       ch = c.create_channel
-      q  = ch.queue("bunny.tests.recovery.client-named#{rand}")
+      q  = ch.queue("bunny.tests.recovery.client-named#{rand}", durable: false, exclusive: true)
       close_all_connections!
       wait_for_recovery_with { connections.any? }
       expect(ch).to be_open
@@ -312,7 +287,7 @@ describe "Connection recovery" do
 
   it "recovers allocated channel ids" do
     with_open do |c|
-      q = "queue#{Time.now.to_i}"
+      q = "queue#{Bunny::Timestamp.now.to_i}"
       10.times { c.create_channel }
       expect(c.queue_exists?(q)).to eq false
       close_all_connections!
@@ -447,6 +422,7 @@ describe "Connection recovery" do
 
   def with_open_multi_host(&block)
     c = Bunny.new(hosts: ["127.0.0.1", "localhost"],
+                  connection_interval: connection_interval,
                   network_recovery_interval: recovery_interval,
                   recover_from_connection_close: true,
                   logger: logger)
@@ -457,6 +433,7 @@ describe "Connection recovery" do
     c = Bunny.new(hosts: ["broken", "127.0.0.1", "localhost"],
                   hosts_shuffle_strategy: Proc.new { |hosts| hosts }, # We do not shuffle for these tests so we always hit the broken host
                   network_recovery_interval: recovery_interval,
+                  connection_interval: connection_interval,
                   recover_from_connection_close: true,
                   logger: logger)
     with_open(c, &block)

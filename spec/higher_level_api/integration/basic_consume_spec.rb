@@ -40,6 +40,7 @@ describe Bunny::Queue, "#subscribe" do
 
       expect(ch.queue(queue_name, auto_delete: true, durable: false).message_count).to eq 0
 
+      ch.queue_delete(@queue_name)
       ch.close
     end
 
@@ -69,6 +70,7 @@ describe Bunny::Queue, "#subscribe" do
 
         expect(ch.queue(queue_name, auto_delete: true, durable: false).message_count).to eq 0
 
+        q.delete
         ch.close
       end
     end
@@ -103,6 +105,7 @@ describe Bunny::Queue, "#subscribe" do
 
         expect(ch.queue(queue_name, auto_delete: true, durable: false).message_count).to eq 0
 
+        q.delete
         ch.close
       end
     end
@@ -138,6 +141,7 @@ describe Bunny::Queue, "#subscribe" do
 
       expect(ch.queue(queue_name, auto_delete: true, durable: false).message_count).to eq 0
 
+      ch.queue_delete(@queue_name)
       ch.close
     end
   end
@@ -176,6 +180,7 @@ describe Bunny::Queue, "#subscribe" do
 
         expect(ch.queue(queue_name, auto_delete: true, durable: false).message_count).to eq 0
 
+        q.delete
         ch.close
       end
     end
@@ -235,7 +240,7 @@ describe Bunny::Queue, "#subscribe" do
         caught = nil
         t = Thread.new do
           ch = connection.create_channel
-          q  = ch.queue(queue_name, auto_delete: true, durable: false)
+          q  = ch.queue(queue_name, auto_delete: true, durable: false, exclusive: true)
 
           ch.on_uncaught_exception do |e, consumer|
             caught = e
@@ -269,7 +274,7 @@ describe Bunny::Queue, "#subscribe" do
           allow(connection.logger).to receive(:error) { |x| caughts << x }
 
           ch = connection.create_channel
-          q  = ch.queue(queue_name, auto_delete: true, durable: false)
+          q  = ch.queue(queue_name, auto_delete: true, durable: false, exclusive: true)
 
           q.subscribe(exclusive: false, manual_ack: false) do |delivery_info, properties, payload|
             raise RuntimeError.new(queue_name)
@@ -284,7 +289,6 @@ describe Bunny::Queue, "#subscribe" do
         sleep 1.5
 
         expect(caughts.size).to eq(5)
-
         ch.close
       end
     end
@@ -316,6 +320,7 @@ describe Bunny::Queue, "#subscribe" do
 
         expect(ch.queue(queue_name, auto_delete: true, durable: false).message_count).to eq 0
 
+        q.delete
         ch.close
       end
     end
@@ -350,6 +355,7 @@ describe Bunny::Queue, "#subscribe" do
 
         expect(ch.queue(queue_name, auto_delete: true, durable: false).message_count).to eq 0
 
+        q.delete
         ch.close
       end
     end

@@ -21,7 +21,7 @@ unless ENV["CI"]
       m = Mutex.new
       acks = 0
       pubs = 0
-      last = Time.now
+      last = Bunny::Timestamp.now
 
       q.subscribe(manual_ack: true) do |delivery_info, _, _|
         sleep(0) if rand < 0.01
@@ -29,7 +29,7 @@ unless ENV["CI"]
 
         m.synchronize do
           acks += 1
-          now = Time.now
+          now = Bunny::Timestamp.now
           if now - last > 0.5
             puts "Ack multi-message: acks=#{acks} pubs=#{pubs}"
             last = now

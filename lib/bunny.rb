@@ -1,4 +1,5 @@
 # -*- encoding: utf-8; mode: ruby -*-
+# frozen_string_literal: true
 
 require "timeout"
 
@@ -10,7 +11,7 @@ require "bunny/framing"
 require "bunny/exceptions"
 
 require "bunny/socket"
-
+require "bunny/timestamp"
 require "bunny/timeout"
 
 begin

@@ -19,7 +19,7 @@ describe Bunny::Queue, "#subscribe" do
   end
 
   context "with automatic acknowledgement mode" do
-    let(:queue_name) { "bunny.basic_consume#{rand}" }
+    let(:queue_name) { "bunny.basic_consume.read-only.#{rand}" }
 
     it "registers the consumer" do
       delivered_keys = []
@@ -54,7 +54,13 @@ describe Bunny::Queue, "#subscribe" do
 
       expect(ch.queue(queue_name, auto_delete: true, durable: false).message_count).to eq 0
 
+      c3 = Bunny::new
+      c3.start
+      ch3 = c3.create_channel
+      ch3.queue_delete(queue_name)
+
       ch.close
+      ch3.close
     end
   end
 end # describe

@@ -47,36 +47,33 @@ Specific examples:
 
 Modern Bunny versions support
 
- * CRuby 2.6 through 3.1 (inclusive)
+ * CRuby 3.2 through 3.4 (inclusive)
  * [TruffleRuby](https://www.graalvm.org/ruby/)
 
 For environments that use TLS, Bunny expects Ruby installations to use a recent enough OpenSSL version that
-**includes support for TLS 1.3**.
+**includes support for [TLS 1.3](https://www.rabbitmq.com/docs/ssl#tls1.3)**.
 
 ### JRuby
 
-Bunny works sufficiently well on JRuby but there are known
-JRuby bugs in versions prior to JRuby 9000 that cause high CPU burn. JRuby users should
-use [March Hare](http://rubymarchhare.info).
+Bunny no longer supports JRuby.
 
-Bunny `1.7.x` was the last version to support CRuby 1.9.3 and 1.8.7
+JRuby users should use [March Hare](http://rubymarchhare.info), which has a similar API
+and is built on top of the RabbitMQ Java client specifically for JRuby.
 
 
 ## Supported RabbitMQ Versions
 
-Modern Bunny releases target [currently supported RabbitMQ release series](https://www.rabbitmq.com/versions.html).
+Modern Bunny releases target [currently community supported RabbitMQ release series](https://www.rabbitmq.com/release-information).
+
+The protocol implemented by Bunny was first introduced in RabbitMQ 2.0 and has evolved
+via extensions and with next to no breaking changes, so all key Bunny operations can be used with a wide range
+of RabbitMQ versions, accounting for the few potentially breaking changes they
+may introduce, e.g. the idempotency of `queue.delete` operations.
 
 
 ## Change Log
 
-Bunny is a mature library (started in early 2009) with
-a stable public API.
-
-Change logs per release series:
-
- * [main](https://github.com/ruby-amqp/bunny/blob/main/ChangeLog.md) (most notable changes for all release series)
- * [2.19.x](https://github.com/ruby-amqp/bunny/blob/2.19.x-stable/ChangeLog.md)
-
+[Change log](https://github.com/ruby-amqp/bunny/blob/main/ChangeLog.md).
 
 
 ## Installation & Bundler Dependency
@@ -90,7 +87,7 @@ Change logs per release series:
 To use Bunny in a project managed with Bundler:
 
 ``` ruby
-gem "bunny", ">= 2.19.0"
+gem "bunny", ">= 2.23.0"
 ```
 
 ### With Rubygems
@@ -150,7 +147,7 @@ conn.close
 
 ### Getting Started
 
-For a 15 minute tutorial using more practical examples, see [Getting Started with RabbitMQ and Ruby using Bunny](http://rubybunny.info/articles/getting_started.html).
+For a 15 minute tutorial using more practical examples, see [Getting Started with RabbitMQ and Ruby using Bunny](https://github.com/ruby-amqp/bunny/blob/main/docs/guides/getting_started.md).
 
 ### Guides
 
@@ -168,15 +165,15 @@ Bunny documentation guides are [under `docs/guides` in this repository](https://
 
 Some highly relevant RabbitMQ documentation guides:
 
- * [Connections](https://www.rabbitmq.com/connections.html)
- * [Channels](https://www.rabbitmq.com/channels.html)
- * [Queues](https://www.rabbitmq.com/queues.html)
- * [Quorum queues](https://www.rabbitmq.com/quorum-queues.html)
- * [Streams](https://rabbitmq.com/streams.html) (Bunny can perform basic operations on streams even though it does not implement the [RabbitMQ Stream protocol](https://github.com/rabbitmq/rabbitmq-server/blob/v3.10.x/deps/rabbitmq_stream/docs/PROTOCOL.adoc))
- * [Publishers](https://www.rabbitmq.com/publishers.html)
- * [Consumers](https://www.rabbitmq.com/consumers.html)
- * Data safety: publisher and consumer [Confirmations](https://www.rabbitmq.com/confirms.html)
- * [Production Checklist](https://www.rabbitmq.com/production-checklist.html)
+ * [Connections](https://www.rabbitmq.com/docs/connections)
+ * [Channels](https://www.rabbitmq.com/docs/channels)
+ * [Queues](https://www.rabbitmq.com/docs/queues)
+ * [Quorum queues](https://www.rabbitmq.com/docs/quorum-queues)
+ * [Streams](https://rabbitmq.com/docs/streams) (Bunny can perform basic operations on streams even though it does not implement the [RabbitMQ Stream protocol](https://github.com/rabbitmq/rabbitmq-server/blob/v4.0.x/deps/rabbitmq_stream/docs/PROTOCOL.adoc))
+ * [Publishers](https://www.rabbitmq.com/docs/publishers)
+ * [Consumers](https://www.rabbitmq.com/docs/consumers)
+ * Data safety: publisher and consumer [Confirmations](https://www.rabbitmq.com/docs/confirms)
+ * [Production Checklist](https://www.rabbitmq.com/docs/production-checklist)
 
 ### API Reference
 
@@ -187,17 +184,14 @@ Some highly relevant RabbitMQ documentation guides:
 
 ### Mailing List
 
-[Bunny has a mailing list](http://groups.google.com/group/ruby-amqp). Please use it for all questions,
-investigations, and discussions. GitHub issues should be used for specific, well understood, actionable
+Please use [GitHub Discussions](https://github.com/ruby-amqp/bunny/discussions) for questions.
+
+GitHub issues should be used for specific, well understood, actionable
 maintainers and contributors can work on.
 
-We encourage you to also join the [RabbitMQ mailing list](https://groups.google.com/forum/#!forum/rabbitmq-users)
-mailing list. Feel free to ask any questions that you may have.
-
-
-## Continuous Integration
-
-[![Build Status](https://travis-ci.org/ruby-amqp/bunny.svg)](https://travis-ci.org/ruby-amqp/bunny/)
+We encourage you to keep an eye on [RabbitMQ Discussions](https://github.com/rabbitmq/rabbitmq-server/discussions),
+join the [RabbitMQ mailing list](https://groups.google.com/forum/#!forum/rabbitmq-users)
+and the [RabbitMQ Discord server](https://rabbitmq.com/discord).
 
 
 ### Reporting Issues

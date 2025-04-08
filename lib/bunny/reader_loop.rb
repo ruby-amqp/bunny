@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 require "thread"
 
 module Bunny
@@ -76,7 +78,7 @@ module Bunny
 
       if !frame.final? || frame.method_class.has_content?
         header   = @transport.read_next_frame
-        content  = ''
+        content  = +''
 
         if header.body_size > 0
           loop do

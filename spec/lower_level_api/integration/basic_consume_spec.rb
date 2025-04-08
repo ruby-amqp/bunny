@@ -59,6 +59,7 @@ describe Bunny::Channel, "#basic_consume" do
 
       expect(ch.queue(queue_name, auto_delete: true, durable: false).message_count).to eq 0
 
+      ch.queue_delete(@queue_name) rescue Bunny::NotFound => nil
       ch.close
     end
   end

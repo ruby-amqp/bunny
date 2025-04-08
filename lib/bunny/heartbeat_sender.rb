@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 require "thread"
 require "amq/protocol/client"
 require "amq/protocol/frame"
@@ -17,7 +19,7 @@ module Bunny
       @logger    = logger
       @mutex     = Monitor.new
 
-      @last_activity_time = Time.now
+      @last_activity_time = Bunny::Timestamp.monotonic
     end
 
     def start(period = 30)
@@ -38,7 +40,7 @@ module Bunny
     end
 
     def signal_activity!
-      @last_activity_time = Time.now
+      @last_activity_time = Bunny::Timestamp.monotonic
     end
 
     protected
@@ -53,14 +55,14 @@ module Bunny
       rescue IOError => ioe
         @logger.error "I/O error in the hearbeat sender: #{ioe.message}"
         stop
-      rescue Exception => e
+      rescue ::Exception => e
         @logger.error "Error in the hearbeat sender: #{e.message}"
         stop
       end
     end
 
     def beat
-      now = Time.now
+      now = Bunny::Timestamp.monotonic
 
       if now > (@last_activity_time + @interval)
         @logger.debug { "Sending a heartbeat, last activity time: #{@last_activity_time}, interval (s): #{@interval}" }

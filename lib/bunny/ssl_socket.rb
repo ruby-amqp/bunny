@@ -1,14 +1,9 @@
-# See #165. MK.
-if defined?(JRUBY_VERSION)
-  require "bunny/jruby/ssl_socket"
+# frozen_string_literal: true
 
-  module Bunny
-    SSLSocketImpl = JRuby::SSLSocket
-  end
-else
-  require "bunny/cruby/ssl_socket"
+require "bunny/cruby/ssl_socket"
 
-  module Bunny
-    SSLSocketImpl = SSLSocket
-  end
+module Bunny
+  # An alias for the standard SSLSocket,
+  # exists from the days of JRuby support.
+  SSLSocketImpl = SSLSocket
 end

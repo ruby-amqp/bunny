@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 require "bunny/get_response"
 
 module Bunny
@@ -352,6 +354,14 @@ module Bunny
       s[:consumer_count]
     end
 
+    def self.verify_type!(args0 = {})
+      # be extra defensive
+      args = args0 || {}
+      q_type = args["x-queue-type"] || args[:"x-queue-type"]
+      throw ArgumentError.new(
+        "unsupported queue type #{q_type.inspect}, supported ones: #{Types::KNOWN.join(', ')}") if (q_type and !Types.known?(q_type))
+    end
+
     #
     # Recovery
     #
@@ -419,9 +429,7 @@ module Bunny
     end
 
     def verify_type!(args)
-      q_type = (args || {})["x-queue-type"]
-      throw ArgumentError.new(
-        "unsupported queue type #{q_type.inspect}, supported ones: #{Types::KNOWN.join(', ')}") if (q_type and !Types.known?(q_type))
+      self.class.verify_type!(args)
     end
   end
 end

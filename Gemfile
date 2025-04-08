@@ -29,7 +29,8 @@ group :development do
 end
 
 group :test do
-  gem "rspec", "~> 3.12.0"
+  gem "rspec", "~> 3.13.0"
+  gem "base64"
   gem "rabbitmq_http_api_client", "~> 2.2.0", require: "rabbitmq/http/client"
   gem "toxiproxy", "~> 2"
 end
@@ -48,4 +49,4 @@ def custom_gem(name, options = Hash.new)
   end
 end
 
-custom_gem "amq-protocol", git: "https://github.com/ruby-amqp/amq-protocol", branch: "master"
+custom_gem "amq-protocol", git: "https://github.com/ruby-amqp/amq-protocol", branch: "main"

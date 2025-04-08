@@ -14,13 +14,13 @@ describe Bunny::Queue, "#subscribe" do
   let(:queue_name) { "bunny.basic_consume#{rand}" }
 
   it "provides delivery handler access to message properties" do
-    @now     = Time.now
+    @now     = Bunny::Timestamp.now
     metadata = {}
     envelope = {}
 
     t = Thread.new do
       ch = connection.create_channel
-      q = ch.queue(queue_name, auto_delete: true, durable: false)
+      q = ch.queue(queue_name, auto_delete: true, durable: false, exclusive: true)
       q.subscribe(exclusive: true, manual_ack: false) do |delivery_info, properties, payload|
         metadata = properties
         envelope = delivery_info

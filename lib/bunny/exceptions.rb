@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 module Bunny
   # Base class for all Bunny exceptions
   # @api public

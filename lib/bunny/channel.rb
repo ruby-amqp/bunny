@@ -1,4 +1,6 @@
 # -*- coding: utf-8 -*-
+# frozen_string_literal: true
+
 require "thread"
 require "monitor"
 require "set"
@@ -13,11 +15,7 @@ require "bunny/delivery_info"
 require "bunny/return_info"
 require "bunny/message_properties"
 
-if defined?(JRUBY_VERSION)
-  require "bunny/concurrent/linked_continuation_queue"
-else
-  require "bunny/concurrent/continuation_queue"
-end
+require "bunny/concurrent/continuation_queue"
 
 module Bunny
   # ## Channels in RabbitMQ
@@ -163,6 +161,8 @@ module Bunny
     # @return [Integer] active basic.qos prefetch global mode
     attr_reader :prefetch_global
 
+    attr_reader :cancel_consumers_before_closing
+
     DEFAULT_CONTENT_TYPE = "application/octet-stream".freeze
     SHORTSTR_LIMIT = 255
 
@@ -218,6 +218,8 @@ module Bunny
       @uncaught_exception_handler = Proc.new do |e, consumer|
         @logger.error "Uncaught exception from consumer #{consumer.to_s}: #{e.inspect} @ #{e.backtrace[0]}"
       end
+
+      @cancel_consumers_before_closing = false
     end
 
     attr_reader :recoveries_counter
@@ -250,6 +252,23 @@ module Bunny
     def close
       # see bunny#528
       raise_if_no_longer_open!
+
+      # This is a best-effort attempt to cancel all consumers before closing the channel.
+      # Retries are extremely unlikely to succeed, and the channel itself is about to be closed,
+      # so we don't bother retrying.
+      if self.cancel_consumers_before_closing?
+       # cancelling a consumer involves using the same mutex, so avoid holding the lock
+        keys = @consumer_mutex.synchronize { @consumers.keys }
+        keys.each do |ctag|
+          begin
+            self.basic_cancel(ctag)
+          rescue Bunny::Exception
+            # ignore
+          rescue Bunny::ClientTimeout
+            # ignore
+          end
+        end
+      end
 
       @connection.close_channel(self)
       @status = :closed
@@ -295,6 +314,23 @@ module Bunny
 
     # @endgroup
 
+    # @group Other settings
+
+    def configure(&block)
+      block.call(self) if block_given?
+
+      self
+    end
+
+    def cancel_consumers_before_closing!
+      @cancel_consumers_before_closing = true
+    end
+
+    def cancel_consumers_before_closing?
+      !!@cancel_consumers_before_closing
+    end
+
+    # @endgroup
 
     #
     # Higher-level API, similar to amqp gem
@@ -412,7 +448,7 @@ module Bunny
     # @option opts [Boolean] :durable (false) Should this queue be durable?
     # @option opts [Boolean] :auto-delete (false) Should this queue be automatically deleted when the last consumer disconnects?
     # @option opts [Boolean] :exclusive (false) Should this queue be exclusive (only can be used by this connection, removed when the connection is closed)?
-    # @option opts [Hash] :arguments ({}) Additional optional arguments (typically used by RabbitMQ extensions and plugins)
+    # @option opts [Hash] :arguments ({}) Optional arguments (x-arguments)
     #
     # @return [Bunny::Queue] Queue that was declared or looked up in the cache
     # @see http://rubybunny.info/articles/queues.html Queues and Consumers guide
@@ -431,7 +467,7 @@ module Bunny
     # @param [String] name Queue name. Empty (server-generated) names are not supported by this method.
     # @param  [Hash]  opts  Queue properties and other options. Durability, exclusivity, auto-deletion options will be ignored.
     #
-    # @option opts [Hash] :arguments ({}) Additional optional arguments (typically used by RabbitMQ extensions and plugins)
+    # @option opts [Hash] :arguments ({}) Optional arguments (x-arguments)
     #
     # @return [Bunny::Queue] Queue that was declared
     # @see #durable_queue
@@ -452,7 +488,7 @@ module Bunny
     # @param [String] name Stream name. Empty (server-generated) names are not supported by this method.
     # @param  [Hash]  opts  Queue properties and other options. Durability, exclusivity, auto-deletion options will be ignored.
     #
-    # @option opts [Hash] :arguments ({}) Additional optional arguments (typically used by RabbitMQ extensions and plugins)
+    # @option opts [Hash] :arguments ({}) Optional arguments (x-arguments)
     #
     #
     # @return [Bunny::Queue] Queue that was declared
@@ -472,7 +508,7 @@ module Bunny
     # @param [String] name Queue name. Empty (server-generated) names are not supported by this method.
     # @param  [Hash]  opts  Queue properties and other options. Durability, exclusivity, auto-deletion options will be ignored.
     #
-    # @option opts [Hash] :arguments ({}) Additional optional arguments (typically used by RabbitMQ extensions and plugins)
+    # @option opts [Hash] :arguments ({}) Optional arguments (x-arguments)
     #
     # @return [Bunny::Queue] Queue that was declared
     # @see #queue
@@ -500,7 +536,10 @@ module Bunny
     # @see #queue
     # @api public
     def temporary_queue(opts = {})
-      queue("", opts.merge(:exclusive => true))
+      temporary_queue_opts = {
+        :exclusive => true
+      }
+      queue("", opts.merge(temporary_queue_opts))
     end
 
     # @endgroup
@@ -1027,15 +1066,24 @@ module Bunny
     # it was on is auto-deleted and this consumer was the last one, the queue will be deleted.
     #
     # @param [String] consumer_tag Consumer tag (unique identifier) to cancel
+    # @param [Hash] arguments ({}) Optional arguments
     #
-    # @return [AMQ::Protocol::Basic::CancelOk] RabbitMQ response
+    # @option opts [Boolean] :no_wait (false) if set to true, this method won't receive a response and will
+    #                                         immediately return nil
+    #
+    # @return [AMQ::Protocol::Basic::CancelOk] RabbitMQ response or nil, if the no_wait option is used
     # @see http://rubybunny.info/articles/queues.html Queues and Consumers guide
     # @api public
-    def basic_cancel(consumer_tag)
-      @connection.send_frame(AMQ::Protocol::Basic::Cancel.encode(@id, consumer_tag, false))
+    def basic_cancel(consumer_tag, opts = {})
+      no_wait = opts.fetch(:no_wait, false)
+      @connection.send_frame(AMQ::Protocol::Basic::Cancel.encode(@id, consumer_tag, no_wait))
 
-      with_continuation_timeout do
-        @last_basic_cancel_ok = wait_on_continuations
+      if no_wait
+        @last_basic_cancel_ok = nil
+      else
+        with_continuation_timeout do
+          @last_basic_cancel_ok = wait_on_continuations
+        end
       end
 
       # reduces thread usage for channels that don't have any
@@ -1070,12 +1118,14 @@ module Bunny
     #                                          connection is closed
     # @option opts [Boolean] passive (false)   If true, queue will be checked for existence. If it does not
     #                                          exist, {Bunny::NotFound} will be raised.
-    #
+    # @option opts [Hash] :arguments ({}) Optional queue arguments (x-arguments)
     # @return [AMQ::Protocol::Queue::DeclareOk] RabbitMQ response
     # @see http://rubybunny.info/articles/queues.html Queues and Consumers guide
     # @api public
     def queue_declare(name, opts = {})
       raise_if_no_longer_open!
+
+      Bunny::Queue.verify_type!(opts[:arguments]) if opts[:arguments]
 
       # strip trailing new line and carriage returns
       # just like RabbitMQ does
@@ -1256,7 +1306,7 @@ module Bunny
           opts.fetch(:durable, false),
           opts.fetch(:auto_delete, false),
           opts.fetch(:internal, false),
-          false, # nowait
+          opts.fetch(:no_wait, false),
           opts[:arguments]))
       with_continuation_timeout do
         @last_exchange_declare_ok = wait_on_continuations
@@ -1536,7 +1586,8 @@ module Bunny
     # @return [String]  Unique string.
     # @api plugin
     def generate_consumer_tag(name = "bunny")
-      "#{name}-#{Time.now.to_i * 1000}-#{Kernel.rand(999_999_999_999)}"
+      t = Bunny::Timestamp.now
+      "#{name}-#{t.to_i * 1000}-#{Kernel.rand(999_999_999_999)}"
     end
 
     # @endgroup
@@ -1819,7 +1870,7 @@ module Bunny
 
     # @private
     def channel_level_exception_after_operation_that_has_no_response?(method)
-      method.reply_code == 406 && method.reply_text =~ /unknown delivery tag/
+      method.reply_code == 406 && (method.reply_text =~ /unknown delivery tag/ || method.reply_text =~ /delivery acknowledgement on channel \d+ timed out/)
     end
 
     # @private
@@ -2099,18 +2150,10 @@ module Bunny
       @basic_get_continuations = new_continuation
     end
 
-
-    if defined?(JRUBY_VERSION)
-      # @private
-      def new_continuation
-        Concurrent::LinkedContinuationQueue.new
-      end
-    else
-      # @private
-      def new_continuation
-        Concurrent::ContinuationQueue.new
-      end
-    end # if defined?
+    # @private
+    def new_continuation
+      Concurrent::ContinuationQueue.new
+    end
 
     # @private
     def guarding_against_stale_delivery_tags(tag, &block)

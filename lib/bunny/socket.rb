@@ -1,14 +1,9 @@
-# See #165. MK.
-if defined?(JRUBY_VERSION)
-  require "bunny/jruby/socket"
+# frozen_string_literal: true
 
-  module Bunny
-    SocketImpl = JRuby::Socket
-  end
-else
-  require "bunny/cruby/socket"
+require "bunny/cruby/socket"
 
-  module Bunny
-    SocketImpl = Socket
-  end
+module Bunny
+  # An alias for the standard MRI Socket,
+  # exists from the days of JRuby support.
+  SocketImpl = Socket
 end

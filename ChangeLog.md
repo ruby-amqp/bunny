@@ -1,6 +1,46 @@
-## Changes between Bunny 2.22.0 and 2.23.0 (in development)
+## Changes between Bunny 2.24.0 and 2.25.0 (in development)
 
 No changes yet.
+
+
+## Changes between Bunny 2.23.0 and 2.24.0 (March 23, 2025)
+
+### An Option that Will Cancel Consumers Before a Channel Closing is Initiated
+
+Sometimes it makes more sense to avoid any possible in-flight deliveires
+rather than trying to deal with them in a reasonable way, even though
+all outstanding deliveries that were not confirmed will be requeued after
+a channel closure event.
+
+Here is how this setting is supposed to be used:
+
+```ruby
+c = Bunny.new; c.start
+ch = c.create_channel.configure do |new_ch|
+  new_ch.prefetch(10)
+  new_ch.cancel_consumers_before_closing!
+end
+
+q = ch.quorum_queue("a.queue")
+```
+
+This setting is opt-in and disabled by default.
+
+
+## Changes between Bunny 2.22.0 and 2.23.0 (July 1, 2024)
+
+### Bunny::Channel#on_error invoked for [delivery acknowledgement timeouts](https://www.rabbitmq.com/docs/consumers#acknowledgement-timeout)
+
+Contributed by @dchompd.
+
+GitHub issue: [#684](https://github.com/ruby-amqp/bunny/pull/684)
+
+### Heartbeat sender now uses a monotonic clock function
+
+Contributed by @blowfishpro.
+
+GitHub issue: [#676](https://github.com/ruby-amqp/bunny/issues/676)
+
 
 ## Changes between Bunny 2.21.0 and 2.22.0 (June 12, 2023)
 
