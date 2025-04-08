@@ -1,6 +1,9 @@
 ## Changes between Bunny 2.24.0 and 2.25.0 (in development)
 
-No changes yet.
+### Limit Hostname Resolution Time
+
+Bunny now configures its TCP socket to limit the hostname resolution time,
+assuming that the OS kernel supports the underlying socket option. 
 
 
 ## Changes between Bunny 2.23.0 and 2.24.0 (March 23, 2025)
