@@ -1,4 +1,16 @@
-## Changes between Bunny 2.24.0 and 2.25.0 (in development)
+## Changes between Bunny 2.24.0 and 3.0.0 (in development)
+
+### RemovedVersioned Delivery Tags
+
+Versioned delivery tags introduced about as many problems as they have solved.
+
+Originally introduced in 2013 shortly after automatic connection recovery,
+they have been a polarizing feature for years.
+
+3.0 is a good opportunity to remove them.
+
+GitHub issue: [#700](https://github.com/ruby-amqp/bunny/issues/700).
+
 
 ### Limit Hostname Resolution Time
 
