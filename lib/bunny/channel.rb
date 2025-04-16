@@ -828,12 +828,10 @@ module Bunny
     # @see http://rubybunny.info/articles/queues.html Queues and Consumers guide
     # @api public
     def basic_reject(delivery_tag, requeue = false)
-      guarding_against_stale_delivery_tags(delivery_tag) do
-        raise_if_no_longer_open!
-        @connection.send_frame(AMQ::Protocol::Basic::Reject.encode(@id, delivery_tag, requeue))
+      raise_if_no_longer_open!
+      @connection.send_frame(AMQ::Protocol::Basic::Reject.encode(@id, delivery_tag, requeue))
 
-        nil
-      end
+      nil
     end
 
     # Acknowledges a delivery (message).
@@ -1875,7 +1873,7 @@ module Bunny
 
     # @private
     def handle_basic_get_ok(basic_get_ok, properties, content)
-      basic_get_ok.delivery_tag = VersionedDeliveryTag.new(basic_get_ok.delivery_tag, @recoveries_counter.get)
+      basic_get_ok.delivery_tag = basic_get_ok.delivery_tag
       @basic_get_continuations.push([basic_get_ok, properties, content])
     end
 
@@ -2158,16 +2156,7 @@ module Bunny
     # @private
     def guarding_against_stale_delivery_tags(tag, &block)
       case tag
-        # if a fixnum was passed, execute unconditionally. MK.
-      when Integer then
-        block.call
-        # versioned delivery tags should be checked to avoid
-        # sending out stale (invalid) tags after channel was reopened
-        # during network failure recovery. MK.
-      when VersionedDeliveryTag then
-        if !tag.stale?(@recoveries_counter.get)
-          block.call
-        end
+      when Integer then block.call
       end
     end
   end # Channel

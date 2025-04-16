@@ -1,7 +1,5 @@
 # frozen_string_literal: true
 
-require "bunny/versioned_delivery_tag"
-
 module Bunny
   # Wraps {AMQ::Protocol::Basic::GetOk} to
   # provide access to the delivery properties as immutable hash as
