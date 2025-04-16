@@ -1,7 +1,5 @@
 # frozen_string_literal: true
 
-require "bunny/versioned_delivery_tag"
-
 module Bunny
   # Wraps {AMQ::Protocol::Basic::Deliver} to
   # provide access to the delivery properties as immutable hash as
@@ -28,7 +26,7 @@ module Bunny
       @basic_deliver = basic_deliver
       @hash          = {
         :consumer_tag => basic_deliver.consumer_tag,
-        :delivery_tag => VersionedDeliveryTag.new(basic_deliver.delivery_tag, channel.recoveries_counter),
+        :delivery_tag => basic_deliver.delivery_tag,
         :redelivered  => basic_deliver.redelivered,
         :exchange     => basic_deliver.exchange,
         :routing_key  => basic_deliver.routing_key,

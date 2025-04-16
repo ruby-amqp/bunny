@@ -28,7 +28,7 @@ describe Bunny::Queue, "#pop" do
       expect(properties).to be_kind_of(Bunny::MessageProperties)
       expect(properties.content_type).to eq("application/octet-stream")
       expect(get_ok.routing_key).to eq(q.name)
-      expect(get_ok.delivery_tag).to be_kind_of(Bunny::VersionedDeliveryTag)
+      expect(get_ok.delivery_tag).to be_kind_of(Integer)
       expect(content).to eq(msg)
       expect(q.message_count).to eq 0
 
