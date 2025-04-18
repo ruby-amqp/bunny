@@ -20,7 +20,7 @@ describe Bunny::Channel do
       ch = connection.create_channel
       t  = Thread.new do
         ch2 = connection.create_channel
-        q   = ch2.queue(queue_name, auto_delete: true)
+        q   = ch2.durable_queue(queue_name, Bunny::Queue::Types::QUORUM, arguments: {"expires": 60000})
 
         q.subscribe(on_cancellation: Proc.new { cancelled = true })
       end
@@ -31,7 +31,7 @@ describe Bunny::Channel do
       x.publish("abc", routing_key: queue_name)
 
       sleep 0.5
-      ch.queue(queue_name, auto_delete: true).delete
+      ch.durable_queue(queue_name, Bunny::Queue::Types::QUORUM, arguments: {"expires": 60000}).delete
 
       sleep 0.5
       expect(cancelled).to eq true
@@ -60,7 +60,7 @@ describe Bunny::Channel do
       ch = connection.create_channel
       t  = Thread.new do
         ch2 = connection.create_channel
-        q   = ch2.queue(queue_name, auto_delete: true)
+        q   = ch2.durable_queue(queue_name, Bunny::Queue::Types::QUORUM, arguments: {"expires": 60000})
 
         consumer = ExampleConsumer.new(ch2, q, "")
         q.subscribe_with(consumer)
@@ -72,7 +72,7 @@ describe Bunny::Channel do
       x.publish("abc", routing_key: queue_name)
 
       sleep 0.5
-      ch.queue(queue_name, auto_delete: true).delete
+      ch.durable_queue(queue_name, Bunny::Queue::Types::QUORUM, arguments: {"expires": 60000}).delete
 
       sleep 0.5
       expect(consumer).to be_cancelled
@@ -86,7 +86,7 @@ describe Bunny::Channel do
   context "with consumer re-registration" do
     class ExampleConsumerThatReregisters < Bunny::Consumer
       def handle_cancellation(_)
-        @queue = @channel.queue("basic.consume.after_cancellation", auto_delete: true)
+        @queue = @channel.durable_queue("basic.consume.after_cancellation", Bunny::Queue::Types::QUORUM, arguments: {"expires": 60000})
         @channel.basic_consume_with(self)
       end
     end
@@ -100,7 +100,7 @@ describe Bunny::Channel do
       ch = connection.create_channel
       t  = Thread.new do
         ch2 = connection.create_channel
-        q   = ch2.queue(queue_name, auto_delete: true)
+        q   = ch2.durable_queue(queue_name)
 
         consumer = ExampleConsumerThatReregisters.new(ch2, q, "")
         consumer.on_delivery do |_, _, payload|
@@ -115,12 +115,12 @@ describe Bunny::Channel do
       x.publish("abc", routing_key: queue_name)
 
       sleep 0.5
-      ch.queue(queue_name, auto_delete: true).delete
+      ch.durable_queue("basic.consume.after_cancellation", Bunny::Queue::Types::QUORUM, arguments: {"expires": 60000}).delete
 
-      x.publish("abc", routing_key: queue_name)
-      sleep 0.5
-      q = ch.queue("basic.consume.after_cancellation", auto_delete: true)
+      q = ch.durable_queue("basic.consume.after_cancellation", Bunny::Queue::Types::QUORUM, arguments: {"expires": 60000})
       expect(xs).to eq ["abc"]
+
+      ch.durable_queue("basic.consume.after_cancellation", Bunny::Queue::Types::QUORUM, arguments: {"expires": 60000}).delete
 
       ch.close
     end
