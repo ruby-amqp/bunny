@@ -43,6 +43,8 @@ unless ENV["CI"]
       end
 
       sleep 0.1 while m.synchronize { acks < pubs }
+
+      q.delete
     end
   end
 end
