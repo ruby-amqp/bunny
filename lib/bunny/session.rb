@@ -298,7 +298,9 @@ module Bunny
     def configure_socket(&block)
       raise ArgumentError, "No block provided!" if block.nil?
 
-      @transport.configure_socket(&block)
+      @transport_mutex.synchronize do
+        @transport.configure_socket(&block)
+      end
     end
 
     # @return [Integer] Client socket port
@@ -324,10 +326,11 @@ module Bunny
         begin
           # close existing transport if we have one,
           # to not leak sockets
-          @transport.maybe_initialize_socket
-
-          @transport.post_initialize_socket
-          @transport.connect
+          @transport_mutex.synchronize do
+            @transport.maybe_initialize_socket
+            @transport.post_initialize_socket
+            @transport.connect
+          end
 
           self.init_connection
           self.open_connection
@@ -364,7 +367,7 @@ module Bunny
     end
 
     # Socket operation write timeout used by this connection
-    # @return [Integer]
+    # @return [Float]
     # @private
     def transport_write_timeout
       @transport.write_timeout
@@ -1359,19 +1362,22 @@ module Bunny
 
     # @private
     def initialize_transport
-      if address = @addresses[ @address_index ]
-        @address_index_mutex.synchronize { @address_index += 1 }
-        @transport.close rescue nil # Let's make sure the previous transport socket is closed
-        @transport = Transport.new(self,
-                                   host_from_address(address),
-                                   port_from_address(address),
-                                   @opts.merge(:session_error_handler => @session_error_handler)
-        )
+      address = @addresses[@address_index]
+      if address
+        @transport_mutex.synchronize do
+          @address_index_mutex.synchronize { @address_index += 1 }
+          @transport.close rescue nil # Let's make sure the previous transport socket is closed
+          @transport = Transport.new(self,
+                                     host_from_address(address),
+                                     port_from_address(address),
+                                     @opts.merge(:session_error_handler => @session_error_handler)
+          )
 
-        # Reset the cached progname for the logger only when no logger was provided
-        @default_logger.progname = self.to_s
+          # Reset the cached progname for the logger only when no logger was provided
+          @default_logger.progname = self.to_s
 
-        @transport
+          @transport
+        end
       else
         raise HostListDepleted
       end
@@ -1379,7 +1385,9 @@ module Bunny
 
     # @private
     def maybe_close_transport
-      @transport.close if @transport
+      @transport_mutex.synchronize do
+        @transport.close if @transport
+      end
     end
 
     # Sends AMQ protocol header (also known as preamble).
@@ -1393,7 +1401,7 @@ module Bunny
     # @private
     def encode_credentials(username, password)
       @credentials_encoder.encode_credentials(username, password)
-    end # encode_credentials(username, password)
+    end
 
     # @private
     def credentials_encoder_for(mechanism)
