@@ -16,7 +16,7 @@ unless ENV["CI"]
       ch = @connection.create_channel
       ch.confirm_select
 
-      q = ch.queue("multi-messages")
+      q = ch.quorum_queue("multi-messages")
 
       m = Mutex.new
       acks = 0
