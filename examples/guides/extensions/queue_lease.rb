@@ -11,7 +11,7 @@ conn = Bunny.new
 conn.start
 
 ch   = conn.create_channel
-q    = ch.queue("", :exclusive => true, :arguments => {"x-expires" => 300})
+q    = ch.queue("", exclusive: true, arguments: {"x-expires" => 300})
 
 sleep 0.4
 begin
