@@ -8,6 +8,7 @@ require "bunny/transport"
 require "bunny/channel_id_allocator"
 require "bunny/heartbeat_sender"
 require "bunny/reader_loop"
+require "bunny/topology_registry"
 require "bunny/authentication/credentials_encoder"
 require "bunny/authentication/plain_mechanism_encoder"
 require "bunny/authentication/external_mechanism_encoder"
@@ -60,7 +61,7 @@ module Bunny
       :product      => "Bunny",
       :platform     => ::RUBY_DESCRIPTION,
       :version      => Bunny::VERSION,
-      :information  => "http://rubybunny.info",
+      :information  => "https://github.com/ruby-amqp/bunny",
     }
 
     # @private
@@ -80,6 +81,7 @@ module Bunny
     attr_reader :status, :heartbeat, :user, :pass, :vhost, :frame_max, :channel_max, :threaded
     attr_reader :server_capabilities, :server_properties, :server_authentication_mechanisms, :server_locales
     attr_reader :channel_id_allocator
+    attr_reader :topology_registry
     # Authentication mechanism, e.g. "PLAIN" or "EXTERNAL"
     # @return [String]
     attr_reader :mechanism
@@ -222,9 +224,12 @@ module Bunny
 
       @channels            = Hash.new
 
+      @topology_mutex = @mutex_impl.new
+      @topology_registry = TopologyRegistry.new
+
       @recovery_attempt_started = opts[:recovery_attempt_started]
       @recovery_completed       = opts[:recovery_completed]
-      @recovery_attempts_exhausted          = opts[:recovery_attempts_exhausted]
+      @recovery_attempts_exhausted = opts[:recovery_attempts_exhausted]
 
       @session_error_handler = opts.fetch(:session_error_handler, Thread.current)
 
@@ -387,7 +392,11 @@ module Bunny
         if n && (ch = @channels[n])
           ch
         else
-          ch = Bunny::Channel.new(self, n, ConsumerWorkPool.new(consumer_pool_size || 1, consumer_pool_abort_on_exception, consumer_pool_shutdown_timeout))
+          work_pool = ConsumerWorkPool.new(consumer_pool_size || 1, consumer_pool_abort_on_exception, consumer_pool_shutdown_timeout)
+          ch = Bunny::Channel.new(self, n, {
+            work_pool: work_pool,
+            topology_registry: @topology_registry
+          })
           ch.open
           ch
         end
