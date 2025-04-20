@@ -88,7 +88,7 @@ module Bunny
 
       declare! unless opts[:no_declare] || predeclared? || (@name == AMQ::Protocol::EMPTY_STRING)
 
-      @channel.register_exchange(self)
+      @channel.record_exchange(self)
     end
 
     # @return [Boolean] true if this exchange was declared as durable (will survive broker restart).
@@ -155,7 +155,7 @@ module Bunny
     # @see http://rubybunny.info/articles/exchanges.html Exchanges and Publishing guide
     # @api public
     def delete(opts = {})
-      @channel.deregister_exchange(self)
+      @channel.delete_recorded_exchange(self)
       @channel.exchange_delete(@name, opts) unless predeclared?
     end
 

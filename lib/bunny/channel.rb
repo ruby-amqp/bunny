@@ -188,8 +188,6 @@ module Bunny
       end
 
       @status     = :opening
-      @topology_registry = opts[:topology_registry]
-
       @connection.register_channel(self)
 
       @queues     = Hash.new
@@ -463,6 +461,7 @@ module Bunny
 
       q = find_queue(name) || Bunny::Queue.new(self, name, opts)
 
+      record_queue(q)
       register_queue(q)
     end
 
@@ -530,6 +529,7 @@ module Bunny
       })
       q = find_queue(name) || Bunny::Queue.new(self, name, final_opts)
 
+      record_queue(q)
       register_queue(q)
     end
 
@@ -757,19 +757,19 @@ module Bunny
     # @see Bunny::Channel#prefetch
     # @see http://rubybunny.info/articles/queues.html Queues and Consumers guide
     # @api public
-    def basic_qos(count, global = false)
-      raise ArgumentError.new("prefetch count must be a positive integer, given: #{count}") if count < 0
-      raise ArgumentError.new("prefetch count must be no greater than #{MAX_PREFETCH_COUNT}, given: #{count}") if count > MAX_PREFETCH_COUNT
+    def basic_qos(prefetch_count, global = false)
+      raise ArgumentError.new("prefetch count must be a positive integer, given: #{prefetch_count}") if prefetch_count < 0
+      raise ArgumentError.new("prefetch count must be no greater than #{MAX_PREFETCH_COUNT}, given: #{prefetch_count}") if prefetch_count > MAX_PREFETCH_COUNT
       raise_if_no_longer_open!
 
-      @connection.send_frame(AMQ::Protocol::Basic::Qos.encode(@id, 0, count, global))
+      @connection.send_frame(AMQ::Protocol::Basic::Qos.encode(@id, 0, prefetch_count, global))
 
       with_continuation_timeout do
         @last_basic_qos_ok = wait_on_continuations
       end
       raise_if_continuation_resulted_in_a_channel_error!
 
-      @prefetch_count  = count
+      @prefetch_count  = prefetch_count
       @prefetch_global = global
 
       @last_basic_qos_ok
@@ -1057,6 +1057,12 @@ module Bunny
 
       # covers server-generated consumer tags
       register_consumer(@last_basic_consume_ok.consumer_tag, consumer)
+      record_consumer_with(self, consumer.consumer_tag,
+        consumer.queue_name,
+        consumer,
+        consumer.manual_acknowledgement?,
+        consumer.exclusive,
+        consumer.arguments)
 
       raise_if_continuation_resulted_in_a_channel_error!
 
@@ -1068,12 +1074,12 @@ module Bunny
     # it was on is auto-deleted and this consumer was the last one, the queue will be deleted.
     #
     # @param [String] consumer_tag Consumer tag (unique identifier) to cancel
-    # @param [Hash] arguments ({}) Optional arguments
+    # @param [Hash] opts ({}) Optional arguments
     #
     # @option opts [Boolean] :no_wait (false) if set to true, this method won't receive a response and will
     #                                         immediately return nil
     #
-    # @return [AMQ::Protocol::Basic::CancelOk] RabbitMQ response or nil, if the no_wait option is used
+    # @return [AMQ::Protocol::Basic::CancelOk, nil] RabbitMQ response or nil, if the no_wait option is used
     # @see http://rubybunny.info/articles/queues.html Queues and Consumers guide
     # @api public
     def basic_cancel(consumer_tag, opts = {})
@@ -1091,6 +1097,7 @@ module Bunny
       # reduces thread usage for channels that don't have any
       # consumers
       @work_pool.shutdown(true) unless self.any_consumers?
+      self.delete_recorded_consumer(consumer_tag)
 
       @last_basic_cancel_ok
     end
@@ -1132,16 +1139,24 @@ module Bunny
       # strip trailing new line and carriage returns
       # just like RabbitMQ does
       safe_name = name.gsub(/[\r\n]/, "")
+      is_server_named = (safe_name == AMQ::Protocol::EMPTY_STRING)
       @pending_queue_declare_name = safe_name
+
+      passive = opts.fetch(:passive, false)
+      durable = opts.fetch(:durable, false)
+      exclusive = opts.fetch(:exclusive, false)
+      auto_delete = opts.fetch(:auto_delete, false)
+      args = opts[:arguments]
+
       @connection.send_frame(
         AMQ::Protocol::Queue::Declare.encode(@id,
           @pending_queue_declare_name,
-          opts.fetch(:passive, false),
-          opts.fetch(:durable, false),
-          opts.fetch(:exclusive, false),
-          opts.fetch(:auto_delete, false),
+          passive,
+          durable,
+          exclusive,
+          auto_delete,
           false,
-          opts[:arguments]))
+          args))
 
       begin
         with_continuation_timeout do
@@ -1152,6 +1167,7 @@ module Bunny
         @pending_queue_declare_name = nil if @pending_queue_declare_name == safe_name
       end
       raise_if_continuation_resulted_in_a_channel_error!
+      self.record_queue_with(self, safe_name, is_server_named, durable, exclusive, auto_delete, args) unless passive
 
       @last_queue_declare_ok
     end
@@ -1179,6 +1195,7 @@ module Bunny
         @last_queue_delete_ok = wait_on_continuations
       end
       raise_if_continuation_resulted_in_a_channel_error!
+      self.delete_recorded_queue_named(name)
 
       @last_queue_delete_ok
     end
@@ -1225,17 +1242,22 @@ module Bunny
                         exchange
                       end
 
+      rk = (opts[:routing_key] || opts[:key])
+      args = opts[:arguments]
       @connection.send_frame(AMQ::Protocol::Queue::Bind.encode(@id,
-          name,
-          exchange_name,
-          (opts[:routing_key] || opts[:key]),
-          false,
-          opts[:arguments]))
+        name,
+        exchange_name,
+        rk,
+        false,
+        args))
+
       with_continuation_timeout do
         @last_queue_bind_ok = wait_on_continuations
       end
 
       raise_if_continuation_resulted_in_a_channel_error!
+      self.record_queue_binding_with(self, exchange_name, name, rk, args)
+
       @last_queue_bind_ok
     end
 
@@ -1261,16 +1283,20 @@ module Bunny
                         exchange
                       end
 
+      rk = (opts[:routing_key] || opts[:key])
+      args = opts[:arguments]
       @connection.send_frame(AMQ::Protocol::Queue::Unbind.encode(@id,
           name,
           exchange_name,
-          opts[:routing_key],
-          opts[:arguments]))
+          rk,
+          args))
       with_continuation_timeout do
         @last_queue_unbind_ok = wait_on_continuations
       end
 
       raise_if_continuation_resulted_in_a_channel_error!
+      self.delete_recorded_queue_binding(ch, exchange_name, name, rk, args)
+
       @last_queue_unbind_ok
     end
 
@@ -1301,20 +1327,32 @@ module Bunny
       # strip trailing new line and carriage returns
       # just like RabbitMQ does
       safe_name = name.gsub(/[\r\n]/, "")
+      passive = opts.fetch(:passive, false)
+      durable = opts.fetch(:durable, false)
+      auto_delete = opts.fetch(:auto_delete, false)
+      args = opts[:arguments]
+
       @connection.send_frame(AMQ::Protocol::Exchange::Declare.encode(@id,
           safe_name,
           type.to_s,
-          opts.fetch(:passive, false),
-          opts.fetch(:durable, false),
-          opts.fetch(:auto_delete, false),
+          passive,
+          durable,
+          auto_delete,
           opts.fetch(:internal, false),
           opts.fetch(:no_wait, false),
-          opts[:arguments]))
+          args))
       with_continuation_timeout do
         @last_exchange_declare_ok = wait_on_continuations
       end
 
       raise_if_continuation_resulted_in_a_channel_error!
+      self.record_exchange_with(self,
+        safe_name,
+        type.to_s,
+        durable,
+        auto_delete,
+        args) unless passive
+
       @last_exchange_declare_ok
     end
 
@@ -1340,6 +1378,8 @@ module Bunny
       end
 
       raise_if_continuation_resulted_in_a_channel_error!
+      self.delete_recorded_exchange_named(name)
+
       @last_exchange_delete_ok
     end
 
@@ -1373,17 +1413,21 @@ module Bunny
                            destination
                          end
 
+      rk = (opts[:routing_key] | opts[:key])
+      args = opts[:arguments]
       @connection.send_frame(AMQ::Protocol::Exchange::Bind.encode(@id,
           destination_name,
           source_name,
-          opts[:routing_key],
+          rk,
           false,
-          opts[:arguments]))
+          args))
       with_continuation_timeout do
         @last_exchange_bind_ok = wait_on_continuations
       end
 
       raise_if_continuation_resulted_in_a_channel_error!
+      self.record_exchange_binding_with(self, source_name, destination_name, rk, args)
+
       @last_exchange_bind_ok
     end
 
@@ -1417,17 +1461,21 @@ module Bunny
                            destination
                          end
 
+      rk = (opts[:routing_key] || opts[:key])
+      args = opts[:arguments]
       @connection.send_frame(AMQ::Protocol::Exchange::Unbind.encode(@id,
           destination_name,
           source_name,
-          opts[:routing_key],
+          rk,
           false,
-          opts[:arguments]))
+          args))
       with_continuation_timeout do
         @last_exchange_unbind_ok = wait_on_continuations
       end
 
       raise_if_continuation_resulted_in_a_channel_error!
+      self.delete_recorded_exchange_binding(ch, source_name, destination_name, rk, args)
+
       @last_exchange_unbind_ok
     end
 
@@ -1587,9 +1635,9 @@ module Bunny
     #
     # @return [String]  Unique string.
     # @api plugin
-    def generate_consumer_tag(name = "bunny")
+    def generate_consumer_tag(prefix = "bunny")
       t = Bunny::Timestamp.now
-      "#{name}-#{t.to_i * 1000}-#{Kernel.rand(999_999_999_999)}"
+      "#{prefix}-#{t.to_i * 1000}-#{Kernel.rand(999_999_999_999)}"
     end
 
     # @endgroup
@@ -1757,13 +1805,24 @@ module Bunny
       end
     end
 
+    # @param [String] queue_name
+    # @param [String] consumer_tag
+    # @param [Boolean] no_ack true means automative acknowledgement mode
+    # @param [Boolean] exclusive
+    # @param [Hash] arguments
     # @private
-    def add_consumer(queue, consumer_tag, no_ack, exclusive, arguments, &block)
+    def add_consumer(queue_name, consumer_tag, no_ack, exclusive, arguments, &block)
       @consumer_mutex.synchronize do
-        c = Consumer.new(self, queue, consumer_tag, no_ack, exclusive, arguments)
+        c = Consumer.new(self, queue_name, consumer_tag, no_ack, exclusive, arguments)
         c.on_delivery(&block) if block
         @consumers[consumer_tag] = c
       end
+      record_consumer_with(self, consumer_tag,
+          queue_name,
+          block,
+          !no_ack,
+          consumer.exclusive,
+          consumer.arguments)
     end
 
     # @private
@@ -2051,39 +2110,147 @@ module Bunny
       @connection.read_next_frame(options = {})
     end
 
-    # @private
-    def deregister_queue(queue)
-      @queue_mutex.synchronize { @queues.delete(queue.name) }
-    end
-
-    # @private
-    def deregister_queue_named(name)
-      @queue_mutex.synchronize { @queues.delete(name) }
-    end
-
-    # @private
-    def register_queue(queue)
-      @queue_mutex.synchronize { @queues[queue.name] = queue }
-    end
-
+    # @param [String] name
     # @private
     def find_queue(name)
       @queue_mutex.synchronize { @queues[name] }
     end
 
-    # @private
-    def deregister_exchange(exchange)
-      @exchange_mutex.synchronize { @exchanges.delete(exchange.name) }
-    end
-
-    # @private
-    def register_exchange(exchange)
-      @exchange_mutex.synchronize { @exchanges[exchange.name] = exchange }
-    end
-
+    # @param [String] name
     # @private
     def find_exchange(name)
       @exchange_mutex.synchronize { @exchanges[name] }
+    end
+
+    # @param [Bunny::Queue] queue
+    # @private
+    def register_queue(queue)
+      @queue_mutex.synchronize { @queues[queue.name] = queue }
+    end
+
+    # @param [Bunny::Queue] queue
+    # @private
+    def deregister_queue(queue)
+      @queue_mutex.synchronize { @queues.delete(queue.name) }
+    end
+
+    # @param [Bunny::Queue] queue
+    # @private
+    def record_queue(queue)
+      @connection.record_queue(queue)
+    end
+
+    # @param [Bunny::Channel] ch
+    # @param [String] name
+    # @param [Boolean] server_named
+    # @param [Boolean] durable
+    # @param [Boolean] auto_delete
+    # @param [Boolean] exclusive
+    # @param [Hash] arguments
+    def record_queue_with(ch, name, server_named, durable, auto_delete, exclusive, arguments)
+      @connection.record_queue_with(ch, name, server_named, durable, auto_delete, exclusive, arguments)
+    end
+
+    # @param [Bunny::Queue, Bunny::RecordedQueue] queue
+    # @private
+    def delete_recoreded_queue(queue)
+      @connection.delete_recorded_queue(queue)
+    end
+
+    # @param [String] name
+    # @private
+    def delete_recorded_queue_named(name)
+      @connection.delete_recorded_queue_named(name)
+    end
+
+    # @param [Bunny::Exchange] exchange
+    # @private
+    def record_exchange(exchange)
+      @connection.record_exchange(exchange)
+    end
+
+    # @param [Bunny::Channel] ch
+    # @param [String] name
+    # @param [String] type
+    # @param [Boolean] durable
+    # @param [Boolean] auto_delete
+    # @param [Hash] arguments
+    def record_exchange_with(ch, name, type, durable, auto_delete, arguments)
+      @connection.record_exchange_with(ch, name, type, durable, auto_delete, arguments)
+    end
+
+    # @param [Bunny::Exchange] exchange
+    # @private
+    def delete_recorded_exchange(exchange)
+      @connection.delete_recorded_exchange(exchange)
+    end
+
+    # @param [String] name
+    # @private
+    def delete_recorded_exchange_named(name)
+      @connection.delete_recorded_exchange_named(name)
+    end
+
+    # @param [Bunny::Channel] ch
+    # @param [String] exchange_name
+    # @param [String] queue_name
+    # @param [#call] callable
+    # @param [String] routing_key
+    # @param [Hash] arguments
+    # @private
+    def record_queue_binding_with(ch, exchange_name, queue_name, routing_key, arguments)
+      @connection.record_queue_binding_with(ch, exchange_name, queue_name, routing_key, arguments)
+    end
+
+    # @param [Bunny::Channel] ch
+    # @param [String] exchange_name
+    # @param [String] queue_name
+    # @param [#call] callable
+    # @param [String] routing_key
+    # @param [Hash] arguments
+    # @private
+    def delete_recorded_queue_binding(ch, exchange_name, queue_name, routing_key, arguments)
+      @connection.delete_recorded_queue_binding(ch, exchange_name, queue_name, routing_key, arguments)
+    end
+
+    # @param [Bunny::Channel] ch
+    # @param [String] source_name
+    # @param [String] destination_name
+    # @param [#call] callable
+    # @param [String] routing_key
+    # @param [Hash] arguments
+    # @private
+    def record_exchange_binding_with(ch, source_name, destination_name, routing_key, arguments)
+      @connection.record_exchange_binding_with(ch, source_name, destination_name, routing_key, arguments)
+    end
+
+    # @param [Bunny::Channel] ch
+    # @param [String] source_name
+    # @param [String] destination_name
+    # @param [#call] callable
+    # @param [String] routing_key
+    # @param [Hash] arguments
+    # @private
+    def delete_recorded_exchange_binding(ch, source_name, destination_name, routing_key, arguments)
+      @connection.delete_recorded_exchange_binding(ch, source_name, destination_name, routing_key, arguments)
+    end
+
+    # @param [Bunny::Channel] ch
+    # @param [String] consumer_tag
+    # @param [String] queue_name
+    # @param [#call] callable
+    # @param [Boolean] manual_ack
+    # @param [Boolean] exclusive
+    # @param [Hash] arguments
+    # @private
+    def record_consumer_with(ch, consumer_tag, queue_name, callable, manual_ack, exclusive, arguments)
+      @connection.record_consumer_with(ch, consumer_tag, queue_name, callable, manual_ack, exclusive, arguments)
+    end
+
+    # @param [String] consumer_tag
+    # @private
+    def delete_recorded_consumer(consumer_tag)
+      @connection.delete_recorded_consumer(consumer_tag)
     end
 
     protected

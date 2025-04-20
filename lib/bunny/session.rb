@@ -786,6 +786,17 @@ module Bunny
       @topology_registry.record_queue(queue)
     end
 
+    # @param [Bunny::Channel] ch
+    # @param [String] name
+    # @param [Boolean] server_named
+    # @param [Boolean] durable
+    # @param [Boolean] auto_delete
+    # @param [Boolean] exclusive
+    # @param [Hash] arguments
+    def record_queue_with(ch, name, server_named, durable, auto_delete, exclusive, arguments)
+      @topology_registry.record_queue_with(ch, name, server_named, durable, auto_delete, exclusive, arguments)
+    end
+
     # @param [Bunny::Queue, Bunny::RecordedQueue] queue
     # @private
     def delete_recoreded_queue(queue)
@@ -804,6 +815,16 @@ module Bunny
       @topology_registry.record_exchange(exchange)
     end
 
+    # @param [Bunny::Channel] ch
+    # @param [String] name
+    # @param [String] type
+    # @param [Boolean] durable
+    # @param [Boolean] auto_delete
+    # @param [Hash] arguments
+    def record_exchange_with(ch, name, type, durable, auto_delete, arguments)
+      @topology_registry.record_exchange_with(ch, name, type, durable, auto_delete, arguments)
+    end
+
     # @param [Bunny::Exchange] exchange
     # @private
     def delete_recorded_exchange(exchange)
@@ -812,7 +833,7 @@ module Bunny
 
     # @param [String] name
     # @private
-    def delete_recorded_exchange_name(name)
+    def delete_recorded_exchange_named(name)
       @topology_registry.delete_recorded_exchange_named(name)
     end
 
@@ -823,8 +844,8 @@ module Bunny
     # @param [String] routing_key
     # @param [Hash] arguments
     # @private
-    def record_queue_binding(ch, exchange_name, queue_name, routing_key, arguments)
-      @topology_registry.record_queue_binding(ch, exchange_name, queue_name, routing_key, arguments)
+    def record_queue_binding_with(ch, exchange_name, queue_name, routing_key, arguments)
+      @topology_registry.record_queue_binding_with(ch, exchange_name, queue_name, routing_key, arguments)
     end
 
     # @param [Bunny::Channel] ch
@@ -845,8 +866,8 @@ module Bunny
     # @param [String] routing_key
     # @param [Hash] arguments
     # @private
-    def record_exchange_binding(ch, source_name, destination_name, routing_key, arguments)
-      @topology_registry.record_exchange_binding(ch, source_name, destination_name, routing_key, arguments)
+    def record_exchange_binding_with(ch, source_name, destination_name, routing_key, arguments)
+      @topology_registry.record_exchange_binding_with(ch, source_name, destination_name, routing_key, arguments)
     end
 
     # @param [Bunny::Channel] ch
@@ -868,8 +889,8 @@ module Bunny
     # @param [Boolean] exclusive
     # @param [Hash] arguments
     # @private
-    def record_consumer(ch, consumer_tag, queue_name, callable, manual_ack, exclusive, arguments)
-      @topology_registry.record_consumer(ch, consumer_tag, queue_name, callable, manual_ack, exclusive, arguments)
+    def record_consumer_with(ch, consumer_tag, queue_name, callable, manual_ack, exclusive, arguments)
+      @topology_registry.record_consumer_with(ch, consumer_tag, queue_name, callable, manual_ack, exclusive, arguments)
     end
 
     # @param [String] consumer_tag

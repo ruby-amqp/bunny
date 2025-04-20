@@ -80,7 +80,7 @@ module Bunny
 
       declare! unless opts[:no_declare]
 
-      @channel.register_queue(self)
+      @channel.record_queue(self)
     end
 
     # @return [Boolean] true if this queue was declared as durable (will survive broker restart).
@@ -320,7 +320,7 @@ module Bunny
     # @see http://rubybunny.info/articles/queues.html Queues and Consumers guide
     # @api public
     def delete(opts = {})
-      @channel.deregister_queue(self)
+      @channel.delete_recorded_queue_named(self.name)
       @channel.queue_delete(@name, opts)
     end
 
@@ -372,12 +372,13 @@ module Bunny
         old_name = @name.dup
         @name    = AMQ::Protocol::EMPTY_STRING
 
-        @channel.deregister_queue_named(old_name)
+        @channel.delete_recorded_queue_named(old_name)
       end
 
       # TODO: inject and use logger
       # puts "Recovering queue #{@name}"
       begin
+        # This method update the topology registry for us
         declare! unless @options[:no_declare]
 
         @channel.register_queue(self)
