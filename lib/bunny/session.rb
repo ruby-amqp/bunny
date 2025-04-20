@@ -224,7 +224,6 @@ module Bunny
 
       @channels            = Hash.new
 
-      @topology_mutex = @mutex_impl.new
       @topology_registry = TopologyRegistry.new
 
       @recovery_attempt_started = opts[:recovery_attempt_started]
@@ -507,7 +506,7 @@ module Bunny
 
     # Parses an amqp[s] URI into a hash that {Bunny::Session#initialize} accepts.
     #
-    # @param [String] uri amqp or amqps URI to parse
+    # @param [String | Hash] uri amqp or amqps URI to parse
     # @return [Hash] Parsed URI as a hash
     def self.parse_uri(uri)
       AMQ::Settings.configure(uri)
@@ -769,15 +768,117 @@ module Bunny
       end
     end
 
+    # @return [Boolean]
     # @private
     def recoverable_network_failure?(exception)
       @recoverable_exceptions.any? {|x| exception.kind_of? x}
     end
 
+    # @return [Boolean]
     # @private
     def recovering_from_network_failure?
       @recovering_from_network_failure
     end
+
+    # @param [Bunny::Queue] queue
+    # @private
+    def record_queue(queue)
+      @topology_registry.record_queue(queue)
+    end
+
+    # @param [Bunny::Queue, Bunny::RecordedQueue] queue
+    # @private
+    def delete_recoreded_queue(queue)
+      @topology_registry.delete_recorded_queue(queue)
+    end
+
+    # @param [String] name
+    # @private
+    def delete_recorded_queue_named(name)
+      @topology_registry.delete_recorded_queue_named(name)
+    end
+
+    # @param [Bunny::Exchange] exchange
+    # @private
+    def record_exchange(exchange)
+      @topology_registry.record_exchange(exchange)
+    end
+
+    # @param [Bunny::Exchange] exchange
+    # @private
+    def delete_recorded_exchange(exchange)
+      @topology_registry.delete_recorded_exchange(exchange)
+    end
+
+    # @param [String] name
+    # @private
+    def delete_recorded_exchange_name(name)
+      @topology_registry.delete_recorded_exchange_named(name)
+    end
+
+    # @param [Bunny::Channel] ch
+    # @param [String] exchange_name
+    # @param [String] queue_name
+    # @param [#call] callable
+    # @param [String] routing_key
+    # @param [Hash] arguments
+    # @private
+    def record_queue_binding(ch, exchange_name, queue_name, routing_key, arguments)
+      @topology_registry.record_queue_binding(ch, exchange_name, queue_name, routing_key, arguments)
+    end
+
+    # @param [Bunny::Channel] ch
+    # @param [String] exchange_name
+    # @param [String] queue_name
+    # @param [#call] callable
+    # @param [String] routing_key
+    # @param [Hash] arguments
+    # @private
+    def delete_recorded_queue_binding(ch, exchange_name, queue_name, routing_key, arguments)
+      @topology_registry.delete_recorded_queue_binding(ch, exchange_name, queue_name, routing_key, arguments)
+    end
+
+    # @param [Bunny::Channel] ch
+    # @param [String] source_name
+    # @param [String] destination_name
+    # @param [#call] callable
+    # @param [String] routing_key
+    # @param [Hash] arguments
+    # @private
+    def record_exchange_binding(ch, source_name, destination_name, routing_key, arguments)
+      @topology_registry.record_exchange_binding(ch, source_name, destination_name, routing_key, arguments)
+    end
+
+    # @param [Bunny::Channel] ch
+    # @param [String] source_name
+    # @param [String] destination_name
+    # @param [#call] callable
+    # @param [String] routing_key
+    # @param [Hash] arguments
+    # @private
+    def delete_recorded_exchange_binding(ch, source_name, destination_name, routing_key, arguments)
+      @topology_registry.delete_recorded_exchange_binding(ch, source_name, destination_name, routing_key, arguments)
+    end
+
+    # @param [Bunny::Channel] ch
+    # @param [String] consumer_tag
+    # @param [String] queue_name
+    # @param [#call] callable
+    # @param [Boolean] manual_ack
+    # @param [Boolean] exclusive
+    # @param [Hash] arguments
+    # @private
+    def record_consumer(ch, consumer_tag, queue_name, callable, manual_ack, exclusive, arguments)
+      @topology_registry.record_consumer(ch, consumer_tag, queue_name, callable, manual_ack, exclusive, arguments)
+    end
+
+    # @param [String] consumer_tag
+    # @private
+    def delete_consumer(consumer_tag)
+      @topology_registry.delete_recorded_consumer(consumer_tag)
+    end
+
+
 
     # @private
     def announce_network_failure_recovery
