@@ -233,6 +233,28 @@ module Bunny
       end
     end
 
+    # @param [String] old_name
+    # @param [String] new_name
+    # @private
+    def propagate_queue_name_change_to_bindings(old_name, new_name)
+      @binding_mutex.synchronize do
+        @queue_bindings.each do |rb|
+          rb.update_destination_to(new_name) if rb.destination == old_name
+        end
+      end
+    end
+
+    # @param [String] old_name
+    # @param [String] new_name
+    # @private
+    def propagate_queue_name_change_to_consumers(old_name, new_name)
+      @consumer_mutex.synchronize do
+        @consumers.each do |_, rc|
+          rc.update_queue_name_to(new_name) if rc.queue_name == old_name
+        end
+      end
+    end
+
     #
     # Implementation
     #
@@ -429,6 +451,12 @@ module Bunny
       @arguments = nil
     end
 
+    # @param value [String]
+    def update_name_to(value)
+      @name = value
+      self
+    end
+
     # @param value [Boolean]
     def with_durable(value)
       @durable = value
@@ -531,11 +559,19 @@ module Bunny
       @arguments = Hash.new
     end
 
+    # @param value [String]
+    def update_queue_name_to(value)
+      @queue_name = value
+      self
+    end
+
+    # @param value [String]
     def with_queue_name(value)
       @queue_name = value
       self
     end
 
+    # @param value [String]
     def with_consumer_tag(value)
       @consumer_tag = value
       self
@@ -642,10 +678,14 @@ module Bunny
 
   # Represents a queue binding intent that can be repeated.
   class RecordedQueueBinding < RecordedBinding
+    # @param value [String]
+    def update_destination_to(value)
+      @destination = value
+      self
+    end
   end
 
   # Represents an exchange binding intent that can be repeated.
   class RecordedExchangeBinding < RecordedBinding
   end
-
 end
