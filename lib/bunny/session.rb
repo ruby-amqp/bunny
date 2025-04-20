@@ -394,8 +394,7 @@ module Bunny
         else
           work_pool = ConsumerWorkPool.new(consumer_pool_size || 1, consumer_pool_abort_on_exception, consumer_pool_shutdown_timeout)
           ch = Bunny::Channel.new(self, n, {
-            work_pool: work_pool,
-            topology_registry: @topology_registry
+            work_pool: work_pool
           })
           ch.open
           ch
@@ -759,7 +758,9 @@ module Bunny
             @reader_loop.stop if @reader_loop
             maybe_shutdown_heartbeat_sender
 
-            recover_from_network_failure
+            recover_connection_and_channels
+            recover_topology
+            notify_of_recovery_completion
           else
             @logger.error "Exception #{exception.message} is considered unrecoverable..."
           end
@@ -912,18 +913,17 @@ module Bunny
     end
 
     # @private
-    def recover_from_network_failure
+    def recover_connection_and_channels
       sleep @network_recovery_interval
       @logger.debug "Will attempt connection recovery..."
       notify_of_recovery_attempt_start
 
       self.initialize_transport
 
-      @logger.warn "Retrying connection on next host in line: #{@transport.host}:#{@transport.port}"
+      @logger.debug "Retrying connection on next host in line: #{@transport.host}:#{@transport.port}"
       self.start
 
       if open?
-
         @recovering_from_network_failure = false
         @logger.debug "Connection is now open"
         if @reset_recovery_attempt_counter_after_reconnection
@@ -934,8 +934,6 @@ module Bunny
         end
 
         recover_channels
-        recover_topology
-        notify_of_recovery_completion
       end
     rescue HostListDepleted
       reset_address_index
@@ -989,9 +987,6 @@ module Bunny
       @channel_mutex.synchronize do
         @channels.each do |n, ch|
           ch.open
-          # TODO: ruby-amqp/bunny#710
-          #       will have to inherit the offset,
-          #       and it could be initiated here
           ch.recover_from_network_failure
         end
       end
@@ -1003,21 +998,37 @@ module Bunny
       # The recovery sequence is the following:
       # 1. Recover exchanges
       @logger.debug "Will recover recorded exchanges"
-      @topology_registry.exchanges.values.each do |rx|
-        recover_exchange(rx)
+      @topology_registry.exchanges.values.reject { |x| x.predeclared? }.each do |rx|
+        begin
+          recover_exchange(rx)
+        rescue Exception => e
+          @logger.error "Caught an exception while re-declaring exchange #{rx.name}: #{e.inspect}"
+        end
       end
       # 2. Recover queues
       @logger.debug "Will recover recorded queues"
       @topology_registry.queues.values.each do |rq|
-        recover_queue(rq)
+        begin
+          recover_queue(rq)
+        rescue Exception => e
+          @logger.error "Caught an exception while re-declaring queue #{rq.name}: #{e.inspect}"
+        end
       end
       # 3. Recover bindings
       @logger.debug "Will recover recorded bindings"
-      @topology_registry.queue_bindings.values.each do |rb|
-        recover_queue_binding(rb)
+      @topology_registry.queue_bindings.each do |rb|
+        begin
+          recover_queue_binding(rb)
+        rescue Exception => e
+          @logger.error "Caught an exception while re-declaring a binding of queue #{rb.destination}: #{e.inspect}"
+        end
       end
-      @topology_registry.exchange_bindings.values.each do |rb|
-        recover_exchange_binding(rb)
+      @topology_registry.exchange_bindings.each do |rb|
+        begin
+          recover_exchange_binding(rb)
+        rescue Exception => e
+          @logger.error "Caught an exception while re-declaring a binding of exchange #{rb.source}: #{e.inspect}"
+        end
       end
 
       # 4. Recover consumers

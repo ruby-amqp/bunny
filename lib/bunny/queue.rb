@@ -120,6 +120,13 @@ module Bunny
       @arguments
     end
 
+    # @param value [String]
+    # @private
+    def update_name_to(value)
+      @name = value
+      self
+    end
+
     def to_s
       oid = ("0x%x" % (self.object_id << 1))
       "<#{self.class.name}:#{oid} @name=\"#{name}\" channel=#{@channel.to_s} @durable=#{@durable} @auto_delete=#{@auto_delete} @exclusive=#{@exclusive} @arguments=#{@arguments}>"

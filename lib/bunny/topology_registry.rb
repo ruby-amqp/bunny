@@ -71,7 +71,7 @@ module Bunny
       @queue_mutex.synchronize do
         @queues.delete(name)
 
-        bs = self.remove_recorded_bindings_with_destination(name)
+        bs = self.remove_recorded_bindings_with_queue_destination(name)
         bs.each do |b|
           self.maybe_delete_recorded_auto_delete_exchange(b.source)
         end
@@ -151,7 +151,7 @@ module Bunny
       @exchange_mutex.synchronize do
         @exchanges.delete(name)
         bs1 = self.remove_recorded_bindings_with_source(name)
-        bs2 = self.remove_recorded_bindings_with_destination(name)
+        bs2 = self.remove_recorded_bindings_with_exchange_destination(name)
 
         bs1.each do |b|
           self.maybe_delete_recorded_auto_delete_exchange(b.source)
@@ -326,17 +326,20 @@ module Bunny
 
     # @param name [String]
     # @return Set<Bunny::RecordedBinding>
-    def remove_recorded_bindings_with_destination(name)
+    def remove_recorded_bindings_with_queue_destination(name)
       @binding_mutex.synchronize do
-        matching_qbs = self.queue_bindings.filter { |b| b.destination == name }
-        matching_xbs = self.exchange_bindings.filter { |b| b.destination == name }
+        matches = self.queue_bindings.filter { |b| b.destination == name }
+        @queue_bindings = @queue_bindings.reject { |b| b.destination == name }
+        matches
+      end
+    end
 
-        matches = matching_qbs + matching_xbs
-        matches.each do |b|
-          @queue_bindings.delete(b)
-          @exchange_bindings.delete(b)
-        end
-
+    # @param name [String]
+    # @return Set<Bunny::RecordedBinding>
+    def remove_recorded_bindings_with_exchange_destination(name)
+      @binding_mutex.synchronize do
+        matches = self.exchange_bindings.filter { |b| b.destination == name }
+        @exchange_bindings = @exchange_bindings.reject { |b| b.destination == name }
         matches
       end
     end
@@ -408,6 +411,12 @@ module Bunny
       @auto_delete = false
       @arguments = nil
     end
+
+    # @return [Boolean] true if this exchange is a pre-defined one (amq.direct, amq.fanout, amq.match and so on)
+    def predefined?
+      (@name == AMQ::Protocol::EMPTY_STRING) || !!(@name =~ /^amq\.(direct|fanout|topic|headers|match)/i)
+    end # predefined?
+    alias predeclared? predefined?
 
     # @param value [Boolean]
     def with_durable(value)

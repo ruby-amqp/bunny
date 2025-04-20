@@ -206,8 +206,8 @@ describe "Connection recovery" do
       expect(c.topology_registry.queue_bindings.size).to be ==(1)
       expect(c.topology_registry.queues.size).to be ==(1)
       q.delete
-      expect(c.topology_registry.queue_bindings.size).to be ==(0)
       expect(c.topology_registry.queues.size).to be ==(0)
+      expect(c.topology_registry.queue_bindings.size).to be ==(0)
     end
   end
 
@@ -359,9 +359,9 @@ describe "Connection recovery" do
     #
     # MK.
     sleep 1.1
-    puts "Recovery: will close #{connections.size} client connections over the HTTP API…"
+    n = connections.size
+    puts "Recovery: will close #{n} client connections over the HTTP API…"
     connections.each do |conn_info|
-      puts conn_info.inspect
       close_ignoring_permitted_exceptions(conn_info.name)
     end
   end
