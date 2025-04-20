@@ -1771,6 +1771,8 @@ module Bunny
       recover_prefetch_setting
       recover_confirm_mode
       recover_tx_mode
+
+      # Topology is now recovered by [Bunny::Session] via the data in [Bunny::TopologyRegistry].
     end
 
     # Recovers basic.qos setting. Used by the Automatic Network Failure

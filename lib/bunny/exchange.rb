@@ -223,16 +223,6 @@ module Bunny
       @channel.wait_for_confirms
     end
 
-    # @private
-    def recover_from_network_failure
-      declare! unless @options[:no_declare] ||predefined?
-
-      @bindings.each do |b|
-        bind(b[:source], b[:opts])
-      end
-    end
-
-
     #
     # Implementation
     #
