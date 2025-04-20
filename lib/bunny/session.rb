@@ -998,16 +998,20 @@ module Bunny
 
     # @private
     def recover_topology
+      @logger.debug "Will recover topology now"
       # The recovery sequence is the following:
       # 1. Recover exchanges
+      @logger.debug "Will recover recorded exchanges"
       @topology_registry.exchanges.values.each do |rx|
         recover_exchange(rx)
       end
       # 2. Recover queues
+      @logger.debug "Will recover recorded queues"
       @topology_registry.queues.values.each do |rq|
         recover_queue(rq)
       end
       # 3. Recover bindings
+      @logger.debug "Will recover recorded bindings"
       @topology_registry.queue_bindings.values.each do |rb|
         recover_queue_binding(rb)
       end
@@ -1016,6 +1020,7 @@ module Bunny
       end
 
       # 4. Recover consumers
+      @logger.debug "Will recover recorded consumers"
       @topology_registry.consumers.values.each do |rc|
         recover_consumer(rc)
       end
