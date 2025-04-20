@@ -13,9 +13,14 @@ describe Bunny::Exchange do
 
   it "unbinds two existing exchanges" do
     ch          = connection.create_channel
+    sx_name     = "bunny.exchanges.source#{rand}"
+    dx_name     = "bunny.exchanges.destination#{rand}"
 
-    source      = ch.fanout("bunny.exchanges.source#{rand}")
-    destination = ch.fanout("bunny.exchanges.destination#{rand}")
+    ch.exchange_delete(sx_name)
+    ch.exchange_delete(dx_name)
+
+    source      = ch.fanout(sx_name)
+    destination = ch.fanout(dx_name)
 
     queue       = ch.queue("", exclusive: true)
     queue.bind(destination)
@@ -25,10 +30,14 @@ describe Bunny::Exchange do
     sleep 0.5
 
     expect(queue.message_count).to eq 1
-    queue.pop(manual_ack: true)
+    queue.purge
 
     destination.unbind(source)
-    source.publish("")
+    sleep 0.5
+
+    3.times do
+      source.publish("")
+    end
     sleep 0.5
 
     expect(queue.message_count).to eq 0
