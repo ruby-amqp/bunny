@@ -181,12 +181,20 @@ describe "Connection recovery" do
     with_open do |c|
       ch = c.create_channel
       q  = ch.queue("", exclusive: true)
+      old_name = q.name
+
       close_all_connections!
       wait_for_recovery_with { connections.any? }
       expect(ch).to be_open
+
+      expect(q.name).to_not be ==(old_name)
+
+      # queue name has changed
+      expect(c.topology_registry.queues.size).to be ==(1)
+      expect(c.topology_registry.queues[old_name]).to be(nil)
+
       ensure_queue_recovery(ch, q)
 
-      expect(c.topology_registry.queues.size).to be ==(1)
       q.delete
       expect(c.topology_registry.queues.size).to be ==(0)
     end
