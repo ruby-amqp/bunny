@@ -434,8 +434,10 @@ describe Bunny::TopologyRegistry do
 
     q1_new_name = "bunny.q1.new_name"
     q2_new_name = "bunny.q2.new_name"
-    subject.propagate_queue_name_change_to_bindings(q1_name, q1_new_name)
-    subject.propagate_queue_name_change_to_bindings(q2_name, q2_new_name)
+    expect(subject.queues.size).to be ==(2)
+    subject.record_queue_name_change(q1_name, q1_new_name)
+    subject.record_queue_name_change(q2_name, q2_new_name)
+    expect(subject.queues.size).to be ==(2)
 
     expect(subject.queue_bindings.any? { |rb| rb.destination == q1_name }).to be ==(false)
     expect(subject.queue_bindings.any? { |rb| rb.destination == q1_new_name }).to be ==(true)
@@ -443,12 +445,18 @@ describe Bunny::TopologyRegistry do
     expect(subject.queue_bindings.any? { |rb| rb.destination == q2_name }).to be ==(false)
     expect(subject.queue_bindings.any? { |rb| rb.destination == q2_new_name }).to be ==(true)
 
+    expect(subject.queues.any? { |_, rq| rq.name == q1_name }).to be ==(false)
+    expect(subject.queues.any? { |_, rq| rq.name == q1_new_name }).to be ==(true)
+
+    expect(subject.queues.any? { |_, rq| rq.name == q2_name }).to be ==(false)
+    expect(subject.queues.any? { |_, rq| rq.name == q2_new_name }).to be ==(true)
+
     q1.delete
     q2.delete
     x.delete
   end
 
-  it "can update binding destinations when server-named queue name changes" do
+  it "can update consumers when server-named queue name changes" do
     x_name = "bunny.topology_registry.x.fanout.1"
     ch.exchange_delete(x_name)
     x = ch.fanout(x_name, durable: true, auto_delete: true)
@@ -484,14 +492,20 @@ describe Bunny::TopologyRegistry do
 
     q1_new_name = "bunny.q1.new_name"
     q2_new_name = "bunny.q2.new_name"
-    subject.propagate_queue_name_change_to_consumers(q1_name, q1_new_name)
-    subject.propagate_queue_name_change_to_consumers(q2_name, q2_new_name)
+    subject.record_queue_name_change(q1_name, q1_new_name)
+    subject.record_queue_name_change(q2_name, q2_new_name)
 
     expect(subject.consumers.any? { |_, rc| rc.queue_name == q1_name }).to be ==(false)
     expect(subject.consumers.any? { |_, rc| rc.queue_name == q1_new_name }).to be ==(true)
 
     expect(subject.consumers.any? { |_, rc| rc.queue_name == q2_name }).to be ==(false)
     expect(subject.consumers.any? { |_, rc| rc.queue_name == q2_new_name }).to be ==(true)
+
+    expect(subject.queues.any? { |_, rq| rq.name == q1_name }).to be ==(false)
+    expect(subject.queues.any? { |_, rq| rq.name == q1_new_name }).to be ==(true)
+
+    expect(subject.queues.any? { |_, rq| rq.name == q2_name }).to be ==(false)
+    expect(subject.queues.any? { |_, rq| rq.name == q2_new_name }).to be ==(true)
 
     q1.delete
     q2.delete
