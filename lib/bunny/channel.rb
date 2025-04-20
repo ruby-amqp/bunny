@@ -1774,6 +1774,7 @@ module Bunny
       recover_prefetch_setting
       recover_confirm_mode
       recover_tx_mode
+
       recover_exchanges
       # this includes recovering bindings
       recover_queues
