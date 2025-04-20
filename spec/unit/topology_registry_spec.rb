@@ -42,7 +42,7 @@ describe Bunny::TopologyRegistry do
     tag = "consumer_tag.32947239847"
 
     expect(subject.consumers.size).to be ==(0)
-    subject.record_consumer(ch, tag, q.name, cons, true, false, {})
+    subject.record_consumer_with(ch, tag, q.name, cons, true, false, {})
     expect(subject.consumers.size).to be ==(1)
     subject.delete_recorded_consumer(tag)
     expect(subject.queues.size).to be ==(0)
@@ -69,12 +69,12 @@ describe Bunny::TopologyRegistry do
     dest_name = "bunny.topology_registry.x.topic"
 
     expect(subject.exchange_bindings.size).to be ==(0)
-    subject.record_exchange_binding(ch, source_name, dest_name, "#", {})
+    subject.record_exchange_binding_with(ch, source_name, dest_name, "#", {})
     expect(subject.exchange_bindings.size).to be ==(1)
     subject.delete_recorded_exchange_binding(ch, source_name, dest_name, "#", {})
     expect(subject.exchanges.size).to be ==(0)
 
-    subject.record_exchange_binding(ch, source_name, dest_name, "#", {})
+    subject.record_exchange_binding_with(ch, source_name, dest_name, "#", {})
     expect(subject.exchange_bindings.size).to be ==(1)
 
     (1..100).to_a.each do |i|
@@ -95,12 +95,12 @@ describe Bunny::TopologyRegistry do
     q_name = "bunny.topology_registry.qq.2"
 
     expect(subject.queue_bindings.size).to be ==(0)
-    subject.record_queue_binding(ch, x_name, q_name, "#", {})
+    subject.record_queue_binding_with(ch, x_name, q_name, "#", {})
     expect(subject.queue_bindings.size).to be ==(1)
     subject.delete_recorded_queue_binding(ch, x_name, q_name, "#", {})
     expect(subject.queue_bindings.size).to be ==(0)
 
-    subject.record_queue_binding(ch, x_name, q_name, "#", {})
+    subject.record_queue_binding_with(ch, x_name, q_name, "#", {})
     expect(subject.queue_bindings.size).to be ==(1)
 
     (1..100).to_a.each do |i|
@@ -124,7 +124,7 @@ describe Bunny::TopologyRegistry do
     tag = "consumer_tag.07298594826739847"
 
     expect(subject.consumers.size).to be ==(0)
-    subject.record_consumer(ch, tag, q.name, cons, true, false, {})
+    subject.record_consumer_with(ch, tag, q.name, cons, true, false, {})
     expect(subject.consumers.size).to be ==(1)
     # deleting this consumer deletes its auto_delete queue
     subject.delete_recorded_consumer(tag)
@@ -150,8 +150,8 @@ describe Bunny::TopologyRegistry do
     expect(subject.queues.size).to be ==(1)
 
     expect(subject.consumers.size).to be ==(0)
-    subject.record_consumer(ch, tag1, q.name, cons1, true, false, {})
-    subject.record_consumer(ch, tag2, q.name, cons2, true, false, {})
+    subject.record_consumer_with(ch, tag1, q.name, cons1, true, false, {})
+    subject.record_consumer_with(ch, tag2, q.name, cons2, true, false, {})
     expect(subject.consumers.size).to be ==(2)
     # deleting this consumer should not delete the auto_delete queue
     subject.delete_recorded_consumer(tag1)
@@ -177,7 +177,7 @@ describe Bunny::TopologyRegistry do
     expect(subject.exchanges.size).to be ==(1)
 
     expect(subject.exchange_bindings.size).to be ==(0)
-    subject.record_exchange_binding(ch, x.name, q.name, "#", {})
+    subject.record_exchange_binding_with(ch, x.name, q.name, "#", {})
     expect(subject.exchange_bindings.size).to be ==(1)
 
     subject.delete_recorded_exchange_binding(ch, x.name, q.name, "#", {})
@@ -208,8 +208,8 @@ describe Bunny::TopologyRegistry do
     expect(subject.exchanges.size).to be ==(2)
 
     expect(subject.exchange_bindings.size).to be ==(0)
-    subject.record_exchange_binding(ch, x1.name, q.name, "#", {})
-    subject.record_exchange_binding(ch, x1.name, x2.name, "#", {})
+    subject.record_exchange_binding_with(ch, x1.name, q.name, "#", {})
+    subject.record_exchange_binding_with(ch, x1.name, x2.name, "#", {})
     expect(subject.exchange_bindings.size).to be ==(2)
 
     subject.delete_recorded_exchange_binding(ch, x1.name, q.name, "#", {})
@@ -246,8 +246,8 @@ describe Bunny::TopologyRegistry do
     expect(subject.exchanges.size).to be ==(1)
 
     expect(subject.exchange_bindings.size).to be ==(0)
-    subject.record_exchange_binding(ch, x.name, q1.name, "#", {})
-    subject.record_exchange_binding(ch, x.name, q2.name, "#", {})
+    subject.record_exchange_binding_with(ch, x.name, q1.name, "#", {})
+    subject.record_exchange_binding_with(ch, x.name, q2.name, "#", {})
     expect(subject.exchange_bindings.size).to be ==(2)
 
     expect(subject.exchanges.size).to be ==(1)
@@ -285,8 +285,8 @@ describe Bunny::TopologyRegistry do
     expect(subject.exchanges.size).to be ==(1)
 
     expect(subject.queue_bindings.size).to be ==(0)
-    subject.record_queue_binding(ch, x.name, q1.name, "#", {})
-    subject.record_queue_binding(ch, x.name, q2.name, "#", {})
+    subject.record_queue_binding_with(ch, x.name, q1.name, "#", {})
+    subject.record_queue_binding_with(ch, x.name, q2.name, "#", {})
     expect(subject.queue_bindings.size).to be ==(2)
 
     subject.delete_recorded_exchange_named(x_name)
@@ -318,8 +318,8 @@ describe Bunny::TopologyRegistry do
     expect(subject.exchanges.size).to be ==(1)
 
     expect(subject.queue_bindings.size).to be ==(0)
-    subject.record_queue_binding(ch, x.name, q1.name, "#", {})
-    subject.record_queue_binding(ch, x.name, q2.name, "#", {})
+    subject.record_queue_binding_with(ch, x.name, q1.name, "#", {})
+    subject.record_queue_binding_with(ch, x.name, q2.name, "#", {})
     expect(subject.queue_bindings.size).to be ==(2)
 
 
@@ -354,8 +354,8 @@ describe Bunny::TopologyRegistry do
     expect(subject.exchanges.size).to be ==(3)
 
     expect(subject.exchange_bindings.size).to be ==(0)
-    subject.record_exchange_binding(ch, x1.name, x2.name, "#", {})
-    subject.record_exchange_binding(ch, x1.name, x3.name, "#", {})
+    subject.record_exchange_binding_with(ch, x1.name, x2.name, "#", {})
+    subject.record_exchange_binding_with(ch, x1.name, x3.name, "#", {})
     expect(subject.exchange_bindings.size).to be ==(2)
 
     subject.delete_recorded_exchange_named(rand.to_s)
@@ -389,8 +389,8 @@ describe Bunny::TopologyRegistry do
     expect(subject.exchanges.size).to be ==(3)
 
     expect(subject.exchange_bindings.size).to be ==(0)
-    subject.record_exchange_binding(ch, x1.name, x2.name, "#", {})
-    subject.record_exchange_binding(ch, x1.name, x3.name, "#", {})
+    subject.record_exchange_binding_with(ch, x1.name, x2.name, "#", {})
+    subject.record_exchange_binding_with(ch, x1.name, x3.name, "#", {})
     expect(subject.exchange_bindings.size).to be ==(2)
 
     subject.delete_recorded_exchange_named(rand.to_s)

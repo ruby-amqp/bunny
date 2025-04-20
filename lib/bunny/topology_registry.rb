@@ -36,6 +36,24 @@ module Bunny
       @queue_mutex.synchronize { @queues[queue.name] = RecordedQueue::from(queue) }
     end
 
+    # @param [Bunny::Channel] ch
+    # @param [String] name
+    # @param [Boolean] server_named
+    # @param [Boolean] durable
+    # @param [Boolean] auto_delete
+    # @param [Boolean] exclusive
+    # @param [Hash] arguments
+    def record_queue_with(ch, name, server_named, durable, auto_delete, exclusive, arguments)
+      queue = RecordedQueue.new(ch, name)
+        .with_server_named(server_named)
+        .with_durable(durable)
+        .with_auto_delete(auto_delete)
+        .with_exclusive(exclusive)
+        .with_arguments(arguments)
+
+        @queue_mutex.synchronize { @queues[queue.name] = queue }
+    end
+
     # @param [Bunny::Queue, Bunny::RecordedQueue] queue
     def delete_recorded_queue(queue)
       self.delete_recorded_queue_named(queue.name)
@@ -67,7 +85,7 @@ module Bunny
     # @param [Boolean] manual_ack
     # @param [Boolean] exclusive
     # @param [Hash] arguments
-    def record_consumer(ch, consumer_tag, queue_name, callable, manual_ack, exclusive, arguments)
+    def record_consumer_with(ch, consumer_tag, queue_name, callable, manual_ack, exclusive, arguments)
       @consumer_mutex.synchronize do
         cons = RecordedConsumer.new(ch, queue_name)
           .with_consumer_tag(consumer_tag)
@@ -98,6 +116,22 @@ module Bunny
     # @param [Bunny::Exchange] exchange
     def record_exchange(exchange)
       @exchange_mutex.synchronize { @exchanges[exchange.name] = RecordedExchange::from(exchange) }
+    end
+
+    # @param [Bunny::Channel] ch
+    # @param [String] name
+    # @param [String] type
+    # @param [Boolean] durable
+    # @param [Boolean] auto_delete
+    # @param [Hash] arguments
+    def record_exchange_with(ch, name, type, durable, auto_delete, arguments)
+      exchange = RecordedExchange.new(ch, name)
+        .with_type(type)
+        .with_durable(durable)
+        .with_auto_delete(auto_delete)
+        .with_arguments(arguments)
+
+        @exchange_mutex.synchronize { @exchanges[exchange.name] = exchange }
     end
 
     # @param [Bunny::Exchange, Bunny::RecordedExchange] exchange
@@ -137,7 +171,7 @@ module Bunny
     # @param [#call] callable
     # @param [String] routing_key
     # @param [Hash] arguments
-    def record_queue_binding(ch, exchange_name, queue_name, routing_key, arguments)
+    def record_queue_binding_with(ch, exchange_name, queue_name, routing_key, arguments)
       b = RecordedQueueBinding.new(ch)
         .with_source(exchange_name)
         .with_destination(queue_name)
@@ -169,7 +203,7 @@ module Bunny
     # @param [#call] callable
     # @param [String] routing_key
     # @param [Hash] arguments
-    def record_exchange_binding(ch, source_name, destination_name, routing_key, arguments)
+    def record_exchange_binding_with(ch, source_name, destination_name, routing_key, arguments)
       b = RecordedExchangeBinding.new(ch)
         .with_source(source_name)
         .with_destination(destination_name)
