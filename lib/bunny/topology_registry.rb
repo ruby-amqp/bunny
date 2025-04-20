@@ -329,7 +329,7 @@ module Bunny
     def remove_recorded_bindings_with_queue_destination(name)
       @binding_mutex.synchronize do
         matches = self.queue_bindings.filter { |b| b.destination == name }
-        @queue_bindings = @queue_bindings.reject { |b| b.destination == name }
+        @queue_bindings = Set.new(@queue_bindings.reject { |b| b.destination == name })
         matches
       end
     end
@@ -339,7 +339,7 @@ module Bunny
     def remove_recorded_bindings_with_exchange_destination(name)
       @binding_mutex.synchronize do
         matches = self.exchange_bindings.filter { |b| b.destination == name }
-        @exchange_bindings = @exchange_bindings.reject { |b| b.destination == name }
+        @exchange_bindings = Set.new(@exchange_bindings.reject { |b| b.destination == name })
         matches
       end
     end
