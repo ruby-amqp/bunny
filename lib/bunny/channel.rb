@@ -1890,13 +1890,14 @@ module Bunny
         c = Consumer.new(self, queue_name, consumer_tag, no_ack, exclusive, arguments)
         c.on_delivery(&block) if block
         @consumers[consumer_tag] = c
+        c
       end
       record_consumer_with(self, consumer_tag,
           queue_name,
           block,
           !no_ack,
-          consumer.exclusive,
-          consumer.arguments)
+          exclusive,
+          arguments)
     end
 
     # @private
