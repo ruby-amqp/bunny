@@ -88,6 +88,9 @@ module Bunny
 
       declare! unless opts[:no_declare] || predeclared? || (@name == AMQ::Protocol::EMPTY_STRING)
 
+      # for basic.return dispatch and such
+      @channel.register_exchange(self)
+      # for topology recovery
       @channel.record_exchange(self)
     end
 

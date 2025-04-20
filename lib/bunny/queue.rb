@@ -80,6 +80,9 @@ module Bunny
 
       declare! unless opts[:no_declare]
 
+      # for basic.deliver dispatch and such
+      @channel.register_queue(self)
+      # for topology recovery
       @channel.record_queue(self)
     end
 
@@ -321,6 +324,7 @@ module Bunny
     # @api public
     def delete(opts = {})
       @channel.delete_recorded_queue_named(self.name)
+      @channel.deregister_queue(self)
       @channel.queue_delete(@name, opts)
     end
 

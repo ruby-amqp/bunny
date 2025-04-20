@@ -341,7 +341,14 @@ module Bunny
 
   # Represents an exchange declaration intent that can be repeated.
   class RecordedExchange < RecordedNamedEntity
-    attr_reader :type, :durable, :auto_delete, :arguments
+    # @return [String]
+    attr_reader :type
+    # @return [Boolean]
+    attr_reader :durable
+    # @return [Boolean]
+    attr_reader :auto_delete
+    # @return [Hash]
+    attr_reader :arguments
 
     def initialize(ch, name)
       super(ch, name)
@@ -631,24 +638,14 @@ module Bunny
         other.routing_key == self.routing_key &&
         other.arguments == self.arguments
     end
-
-    def recover
-      raise NotImplementedError.new
-    end
   end
 
   # Represents a queue binding intent that can be repeated.
   class RecordedQueueBinding < RecordedBinding
-    def recover
-
-    end
   end
 
   # Represents an exchange binding intent that can be repeated.
   class RecordedExchangeBinding < RecordedBinding
-    def recover
-
-    end
   end
 
 end

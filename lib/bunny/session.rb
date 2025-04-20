@@ -895,7 +895,7 @@ module Bunny
 
     # @param [String] consumer_tag
     # @private
-    def delete_consumer(consumer_tag)
+    def delete_recorded_consumer(consumer_tag)
       @topology_registry.delete_recorded_consumer(consumer_tag)
     end
 
@@ -933,6 +933,7 @@ module Bunny
         end
 
         recover_channels
+        recover_topology
         notify_of_recovery_completion
       end
     rescue HostListDepleted
@@ -987,8 +988,90 @@ module Bunny
       @channel_mutex.synchronize do
         @channels.each do |n, ch|
           ch.open
+          # TODO: ruby-amqp/bunny#710
+          #       will have to inherit the offset,
+          #       and it could be initiated here
           ch.recover_from_network_failure
         end
+      end
+    end
+
+    # @private
+    def recover_topology
+      # The recovery sequence is the following:
+      # 1. Recover exchanges
+      @topology_registry.exchanges.values.each do |rx|
+        recover_exchange(rx)
+      end
+      # 2. Recover queues
+      @topology_registry.queues.values.each do |rq|
+        recover_queue(rq)
+      end
+      # 3. Recover bindings
+      @topology_registry.queue_bindings.values.each do |rb|
+        recover_queue_binding(rb)
+      end
+      @topology_registry.exchange_bindings.values.each do |rb|
+        recover_exchange_binding(rb)
+      end
+
+      # 4. Recover consumers
+      @topology_registry.consumers.values.each do |rc|
+        recover_consumer(rc)
+      end
+    end
+
+    # @param [Bunny::RecordedExchange] x
+    # @private
+    def recover_exchange(x)
+      opts = {
+        durable: x.durable,
+        auto_delete: x.auto_delete,
+        arguments: x.arguments
+      }
+      x.channel.exchange_declare_without_recording_topology(x.name, x.type, opts)
+    end
+
+    # @param [Bunny::RecordedQueue] q
+    # @private
+    def recover_queue(q)
+      opts = {
+        durable: q.durable,
+        auto_delete: q.auto_delete,
+        exclusive: q.exclusive,
+        arguments: q.arguments
+      }
+
+      q.channel.queue_declare_without_recording_topology(q.name_to_use_for_recovery, opts)
+    end
+
+    # @param [Bunny::RecordedQueueBinding] rb
+    # @private
+    def recover_queue_binding(rb)
+      opts = {
+        routing_key: rb.routing_key,
+        arguments: rb.arguments
+      }
+
+      rb.channel.queue_bind_without_recording_topology(rb.destination, rb.source, opts)
+    end
+
+    # @param [Bunny::RecordedExchangeBindingBinding] rb
+    # @private
+    def recover_exchange_binding(rb)
+      opts = {
+        routing_key: rb.routing_key,
+        arguments: rb.arguments
+      }
+
+      rb.channel.exchange_bind_without_recording_topology(rb.source, rb.destination, opts)
+    end
+
+    # @param [Bunny::RecordedConsumer] c
+    # @private
+    def recover_consumer(c)
+      c.channel.basic_consume(c.queue_name, c.consumer_tag, !c.manual_ack, c.exclusive, c.arguments) do |*args|
+        c.callable.call(*args)
       end
     end
 
