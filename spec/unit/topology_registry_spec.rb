@@ -406,4 +406,95 @@ describe Bunny::TopologyRegistry do
     x2.delete
     x3.delete
   end
+
+  it "can update binding destinations when server-named queue name changes" do
+    x_name = "bunny.topology_registry.x.fanout.1"
+    ch.exchange_delete(x_name)
+    x = ch.fanout(x_name, durable: true, auto_delete: true)
+
+    q1_name = "bunny.topology_registry.cq.10"
+    ch.queue_delete(q1_name)
+    q1 = ch.queue(q1_name, durable: true, exclusive: false, auto_delete: false)
+
+    q2_name = "bunny.topology_registry.cq.11"
+    ch.queue_delete(q2_name)
+    q2 = ch.queue(q2_name, durable: true, exclusive: false, auto_delete: false)
+
+    subject.record_queue(q1)
+    subject.record_queue(q2)
+    expect(subject.queues.size).to be ==(2)
+
+    subject.record_exchange(x)
+    expect(subject.exchanges.size).to be ==(1)
+
+    expect(subject.queue_bindings.size).to be ==(0)
+    subject.record_queue_binding_with(ch, x.name, q1.name, "#", {})
+    subject.record_queue_binding_with(ch, x.name, q2.name, "#", {})
+    expect(subject.queue_bindings.size).to be ==(2)
+
+    q1_new_name = "bunny.q1.new_name"
+    q2_new_name = "bunny.q2.new_name"
+    subject.propagate_queue_name_change_to_bindings(q1_name, q1_new_name)
+    subject.propagate_queue_name_change_to_bindings(q2_name, q2_new_name)
+
+    expect(subject.queue_bindings.any? { |rb| rb.destination == q1_name }).to be ==(false)
+    expect(subject.queue_bindings.any? { |rb| rb.destination == q1_new_name }).to be ==(true)
+
+    expect(subject.queue_bindings.any? { |rb| rb.destination == q2_name }).to be ==(false)
+    expect(subject.queue_bindings.any? { |rb| rb.destination == q2_new_name }).to be ==(true)
+
+    q1.delete
+    q2.delete
+    x.delete
+  end
+
+  it "can update binding destinations when server-named queue name changes" do
+    x_name = "bunny.topology_registry.x.fanout.1"
+    ch.exchange_delete(x_name)
+    x = ch.fanout(x_name, durable: true, auto_delete: true)
+
+    q1_name = "bunny.topology_registry.cq.10"
+    ch.queue_delete(q1_name)
+    q1 = ch.queue(q1_name, durable: true, exclusive: false, auto_delete: false)
+
+    q2_name = "bunny.topology_registry.cq.11"
+    ch.queue_delete(q2_name)
+    q2 = ch.queue(q2_name, durable: true, exclusive: false, auto_delete: false)
+
+    subject.record_queue(q1)
+    subject.record_queue(q2)
+    expect(subject.queues.size).to be ==(2)
+
+    subject.record_exchange(x)
+    expect(subject.exchanges.size).to be ==(1)
+
+    expect(subject.queue_bindings.size).to be ==(0)
+    subject.record_queue_binding_with(ch, x.name, q1.name, "#", {})
+    subject.record_queue_binding_with(ch, x.name, q2.name, "#", {})
+    expect(subject.queue_bindings.size).to be ==(2)
+
+    ctag1 = "bunny.ctags.#{rand}.1"
+    ctag2 = "bunny.ctags.#{rand}.2"
+    callable = proc { |*args| args }
+
+    expect(subject.consumers.size).to be ==(0)
+    subject.record_consumer_with(ch, ctag1, q1_name, callable, true, false, {})
+    subject.record_consumer_with(ch, ctag2, q2_name, callable, true, false, {})
+    expect(subject.consumers.size).to be ==(2)
+
+    q1_new_name = "bunny.q1.new_name"
+    q2_new_name = "bunny.q2.new_name"
+    subject.propagate_queue_name_change_to_consumers(q1_name, q1_new_name)
+    subject.propagate_queue_name_change_to_consumers(q2_name, q2_new_name)
+
+    expect(subject.consumers.any? { |_, rc| rc.queue_name == q1_name }).to be ==(false)
+    expect(subject.consumers.any? { |_, rc| rc.queue_name == q1_new_name }).to be ==(true)
+
+    expect(subject.consumers.any? { |_, rc| rc.queue_name == q2_name }).to be ==(false)
+    expect(subject.consumers.any? { |_, rc| rc.queue_name == q2_new_name }).to be ==(true)
+
+    q1.delete
+    q2.delete
+    x.delete
+  end
 end

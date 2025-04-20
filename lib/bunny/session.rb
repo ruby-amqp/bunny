@@ -1034,7 +1034,7 @@ module Bunny
         auto_delete: x.auto_delete,
         arguments: x.arguments
       }
-      x.channel.exchange_declare_without_recording_topology(x.name, x.type, opts)
+      x.channel.exchange_declare(x.name, x.type, opts)
     end
 
     # @param [Bunny::RecordedQueue] q
@@ -1047,7 +1047,31 @@ module Bunny
         arguments: q.arguments
       }
 
-      q.channel.queue_declare_without_recording_topology(q.name_to_use_for_recovery, opts)
+      old_name = q.name
+      # this response carries the server-generated name
+      queue_declare_ok = q.channel.queue_declare(q.name_to_use_for_recovery, opts)
+      new_name = queue_declare_ok.queue
+
+      # if the name has changed, update all the bindings where
+      # this queue is the destination, then all consumers
+      if new_name != old_name
+        propagate_queue_name_change_to_bindings(old_name, new_name)
+        propagate_queue_name_change_to_consumers(old_name, new_name)
+      end
+    end
+
+    # @param [String] old_name
+    # @param [String] new_name
+    # @private
+    def propagate_queue_name_change_to_bindings(old_name, new_name)
+      @topology_registry.propagate_queue_name_change_to_bindings(old_name, new_name)
+    end
+
+    # @param [String] old_name
+    # @param [String] new_name
+    # @private
+    def propagate_queue_name_change_to_consumers(old_name, new_name)
+      @topology_registry.propagate_queue_name_change_to_consumers(old_name, new_name)
     end
 
     # @param [Bunny::RecordedQueueBinding] rb

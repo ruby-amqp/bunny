@@ -1145,7 +1145,7 @@ module Bunny
       args = opts[:arguments]
 
       result = self.queue_declare_without_recording_topology(name, opts)
-      self.record_queue_with(self, safe_name, is_server_named, durable, exclusive, auto_delete, args) unless passive
+      self.record_queue_with(self, result.queue, is_server_named, durable, exclusive, auto_delete, args) unless passive
 
       result
     end
