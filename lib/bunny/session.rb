@@ -1056,6 +1056,7 @@ module Bunny
       # this queue is the destination, then all consumers
       if new_name != old_name
         record_queue_name_change(old_name, new_name)
+        q.channel.record_queue_name_change(old_name, new_name)
       end
     end
 
@@ -1091,6 +1092,7 @@ module Bunny
     # @param [Bunny::RecordedConsumer] c
     # @private
     def recover_consumer(c)
+      c.channel.maybe_reinitialize_consumer_pool!
       c.channel.basic_consume(c.queue_name, c.consumer_tag, !c.manual_ack, c.exclusive, c.arguments) do |*args|
         c.callable.call(*args)
       end
