@@ -1055,23 +1055,15 @@ module Bunny
       # if the name has changed, update all the bindings where
       # this queue is the destination, then all consumers
       if new_name != old_name
-        propagate_queue_name_change_to_bindings(old_name, new_name)
-        propagate_queue_name_change_to_consumers(old_name, new_name)
+        record_queue_name_change(old_name, new_name)
       end
     end
 
     # @param [String] old_name
     # @param [String] new_name
     # @private
-    def propagate_queue_name_change_to_bindings(old_name, new_name)
-      @topology_registry.propagate_queue_name_change_to_bindings(old_name, new_name)
-    end
-
-    # @param [String] old_name
-    # @param [String] new_name
-    # @private
-    def propagate_queue_name_change_to_consumers(old_name, new_name)
-      @topology_registry.propagate_queue_name_change_to_consumers(old_name, new_name)
+    def record_queue_name_change(old_name, new_name)
+      @topology_registry.record_queue_name_change(old_name, new_name)
     end
 
     # @param [Bunny::RecordedQueueBinding] rb

@@ -60,6 +60,13 @@ module Bunny
     end
 
     # @param [String] name
+    def delete_recorded_queue_named_without_cascading(name)
+      @queue_mutex.synchronize do
+        @queues.delete(name)
+      end
+    end
+
+    # @param [String] name
     def delete_recorded_queue_named(name)
       @queue_mutex.synchronize do
         @queues.delete(name)
@@ -231,6 +238,27 @@ module Bunny
           self.maybe_delete_recorded_auto_delete_exchange(source_name)
         end
       end
+    end
+
+    # @param [String] old_name
+    # @param [String] new_name
+    # @private
+    def record_queue_name_change(old_name, new_name)
+      # update the recorded queue itself
+      @queue_mutex.synchronize do
+        if (orig = @queues[old_name])
+          @queues.delete(old_name)
+
+          orig.update_name_to(new_name)
+          @queues[new_name] = orig.dup
+        end
+      end
+
+      self.propagate_queue_name_change_to_bindings(old_name, new_name)
+      self.propagate_queue_name_change_to_consumers(old_name, new_name)
+      # Make sure the original name is removed and won't be recovered
+      # but do not cascade
+      self.delete_recorded_queue_named_without_cascading(old_name)
     end
 
     # @param [String] old_name
