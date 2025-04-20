@@ -359,6 +359,7 @@ describe "Connection recovery" do
     #
     # MK.
     sleep 1.1
+    puts "Recovery: will close #{connections.size} client connections over the HTTP API…"
     connections.each do |conn_info|
       puts conn_info.inspect
       close_ignoring_permitted_exceptions(conn_info.name)
