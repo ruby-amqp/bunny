@@ -30,7 +30,7 @@ describe Bunny::TopologyRegistry do
     expect(subject.queues.size).to be ==(0)
     subject.record_queue(q)
     expect(subject.queues.size).to be ==(1)
-    subject.delete_queue(q)
+    subject.delete_recorded_queue(q)
     expect(subject.queues.size).to be ==(0)
 
     q.delete
@@ -44,7 +44,7 @@ describe Bunny::TopologyRegistry do
     expect(subject.consumers.size).to be ==(0)
     subject.record_consumer(ch, tag, q.name, cons, true, false, {})
     expect(subject.consumers.size).to be ==(1)
-    subject.delete_consumer(tag)
+    subject.delete_recorded_consumer(tag)
     expect(subject.queues.size).to be ==(0)
 
     q.delete
@@ -58,7 +58,7 @@ describe Bunny::TopologyRegistry do
     expect(subject.exchanges.size).to be ==(0)
     subject.record_exchange(x)
     expect(subject.exchanges.size).to be ==(1)
-    subject.delete_exchange(x)
+    subject.delete_recorded_exchange(x)
     expect(subject.exchanges.size).to be ==(0)
 
     x.delete
@@ -71,19 +71,19 @@ describe Bunny::TopologyRegistry do
     expect(subject.exchange_bindings.size).to be ==(0)
     subject.record_exchange_binding(ch, source_name, dest_name, "#", {})
     expect(subject.exchange_bindings.size).to be ==(1)
-    subject.delete_exchange_binding(ch, source_name, dest_name, "#", {})
+    subject.delete_recorded_exchange_binding(ch, source_name, dest_name, "#", {})
     expect(subject.exchanges.size).to be ==(0)
 
     subject.record_exchange_binding(ch, source_name, dest_name, "#", {})
     expect(subject.exchange_bindings.size).to be ==(1)
 
     (1..100).to_a.each do |i|
-      subject.delete_exchange_binding(ch, source_name, dest_name, "another-rk-#{i}", {})
+      subject.delete_recorded_exchange_binding(ch, source_name, dest_name, "another-rk-#{i}", {})
     end
     expect(subject.exchange_bindings.size).to be ==(1)
 
     (1..100).to_a.each do |i|
-      subject.delete_exchange_binding(ch, "#{source_name}-#{i}", dest_name, "#", {})
+      subject.delete_recorded_exchange_binding(ch, "#{source_name}-#{i}", dest_name, "#", {})
     end
     expect(subject.exchange_bindings.size).to be ==(1)
 
@@ -97,19 +97,19 @@ describe Bunny::TopologyRegistry do
     expect(subject.queue_bindings.size).to be ==(0)
     subject.record_queue_binding(ch, x_name, q_name, "#", {})
     expect(subject.queue_bindings.size).to be ==(1)
-    subject.delete_queue_binding(ch, x_name, q_name, "#", {})
+    subject.delete_recorded_queue_binding(ch, x_name, q_name, "#", {})
     expect(subject.queue_bindings.size).to be ==(0)
 
     subject.record_queue_binding(ch, x_name, q_name, "#", {})
     expect(subject.queue_bindings.size).to be ==(1)
 
     (1..100).to_a.each do |i|
-      subject.delete_queue_binding(ch, x_name, q_name, "another-rk-#{i}", {})
+      subject.delete_recorded_queue_binding(ch, x_name, q_name, "another-rk-#{i}", {})
     end
     expect(subject.queue_bindings.size).to be ==(1)
 
     (1..100).to_a.each do |i|
-      subject.delete_queue_binding(ch, "#{x_name}-#{i}", q_name, "#", {})
+      subject.delete_recorded_queue_binding(ch, "#{x_name}-#{i}", q_name, "#", {})
     end
     expect(subject.queue_bindings.size).to be ==(1)
 
@@ -127,7 +127,7 @@ describe Bunny::TopologyRegistry do
     subject.record_consumer(ch, tag, q.name, cons, true, false, {})
     expect(subject.consumers.size).to be ==(1)
     # deleting this consumer deletes its auto_delete queue
-    subject.delete_consumer(tag)
+    subject.delete_recorded_consumer(tag)
     expect(subject.queues.size).to be ==(0)
 
     q.delete
@@ -154,7 +154,7 @@ describe Bunny::TopologyRegistry do
     subject.record_consumer(ch, tag2, q.name, cons2, true, false, {})
     expect(subject.consumers.size).to be ==(2)
     # deleting this consumer should not delete the auto_delete queue
-    subject.delete_consumer(tag1)
+    subject.delete_recorded_consumer(tag1)
 
     expect(subject.queues.size).to be ==(1)
     q.delete
@@ -180,7 +180,7 @@ describe Bunny::TopologyRegistry do
     subject.record_exchange_binding(ch, x.name, q.name, "#", {})
     expect(subject.exchange_bindings.size).to be ==(1)
 
-    subject.delete_exchange_binding(ch, x.name, q.name, "#", {})
+    subject.delete_recorded_exchange_binding(ch, x.name, q.name, "#", {})
     expect(subject.exchanges.size).to be ==(0)
 
     x.delete
@@ -212,10 +212,10 @@ describe Bunny::TopologyRegistry do
     subject.record_exchange_binding(ch, x1.name, x2.name, "#", {})
     expect(subject.exchange_bindings.size).to be ==(2)
 
-    subject.delete_exchange_binding(ch, x1.name, q.name, "#", {})
+    subject.delete_recorded_exchange_binding(ch, x1.name, q.name, "#", {})
     expect(subject.exchanges.size).to be ==(2)
 
-    subject.delete_exchange_binding(ch, x1.name, x2.name, "#", {})
+    subject.delete_recorded_exchange_binding(ch, x1.name, x2.name, "#", {})
     expect(subject.exchanges.size).to be ==(1)
 
     x1.delete
@@ -251,10 +251,10 @@ describe Bunny::TopologyRegistry do
     expect(subject.exchange_bindings.size).to be ==(2)
 
     expect(subject.exchanges.size).to be ==(1)
-    subject.delete_exchange_binding(ch, x.name, q1.name, "#", {})
+    subject.delete_recorded_exchange_binding(ch, x.name, q1.name, "#", {})
     expect(subject.exchanges.size).to be ==(1)
 
-    subject.delete_exchange_binding(ch, x.name, q2.name, "#", {})
+    subject.delete_recorded_exchange_binding(ch, x.name, q2.name, "#", {})
     expect(subject.exchanges.size).to be ==(0)
 
     q1.delete
@@ -289,7 +289,7 @@ describe Bunny::TopologyRegistry do
     subject.record_queue_binding(ch, x.name, q2.name, "#", {})
     expect(subject.queue_bindings.size).to be ==(2)
 
-    subject.delete_exchange_named(x_name)
+    subject.delete_recorded_exchange_named(x_name)
     expect(subject.queue_bindings.size).to be ==(0)
 
     q1.delete
@@ -323,10 +323,10 @@ describe Bunny::TopologyRegistry do
     expect(subject.queue_bindings.size).to be ==(2)
 
 
-    subject.delete_queue_named(q1_name)
+    subject.delete_recorded_queue_named(q1_name)
     expect(subject.queue_bindings.size).to be ==(1)
 
-    subject.delete_queue_named(q2_name)
+    subject.delete_recorded_queue_named(q2_name)
     expect(subject.queue_bindings.size).to be ==(0)
 
     q1.delete
@@ -358,10 +358,10 @@ describe Bunny::TopologyRegistry do
     subject.record_exchange_binding(ch, x1.name, x3.name, "#", {})
     expect(subject.exchange_bindings.size).to be ==(2)
 
-    subject.delete_exchange_named(rand.to_s)
+    subject.delete_recorded_exchange_named(rand.to_s)
     expect(subject.exchange_bindings.size).to be ==(2)
 
-    subject.delete_exchange_named(x1_name)
+    subject.delete_recorded_exchange_named(x1_name)
     expect(subject.exchange_bindings.size).to be ==(0)
 
     x1.delete
@@ -393,13 +393,13 @@ describe Bunny::TopologyRegistry do
     subject.record_exchange_binding(ch, x1.name, x3.name, "#", {})
     expect(subject.exchange_bindings.size).to be ==(2)
 
-    subject.delete_exchange_named(rand.to_s)
+    subject.delete_recorded_exchange_named(rand.to_s)
     expect(subject.exchange_bindings.size).to be ==(2)
 
-    subject.delete_exchange_named(x2_name)
+    subject.delete_recorded_exchange_named(x2_name)
     expect(subject.exchange_bindings.size).to be ==(1)
 
-    subject.delete_exchange_named(x3_name)
+    subject.delete_recorded_exchange_named(x3_name)
     expect(subject.exchange_bindings.size).to be ==(0)
 
     x1.delete

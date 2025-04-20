@@ -37,16 +37,16 @@ module Bunny
     end
 
     # @param [Bunny::Queue, Bunny::RecordedQueue] queue
-    def delete_queue(queue)
-      self.delete_queue_named(queue.name)
+    def delete_recorded_queue(queue)
+      self.delete_recorded_queue_named(queue.name)
     end
 
     # @param [String] name
-    def delete_queue_named(name)
+    def delete_recorded_queue_named(name)
       @queue_mutex.synchronize do
         @queues.delete(name)
 
-        bs = self.remove_bindings_with_destination(name)
+        bs = self.remove_recorded_bindings_with_destination(name)
         bs.each do |b|
           self.maybe_delete_recorded_auto_delete_exchange(b.source)
         end
@@ -60,6 +60,7 @@ module Bunny
     # @return [Hash<String, Bunny::RecordedConsumer>]
     attr_reader :consumers
 
+    # @param [Bunny::Channel] ch
     # @param [String] consumer_tag
     # @param [String] queue_name
     # @param [#call] callable
@@ -80,7 +81,7 @@ module Bunny
     end
 
     # @param [String] consumer_tag
-    def delete_consumer(consumer_tag)
+    def delete_recorded_consumer(consumer_tag)
       @consumer_mutex.synchronize do
         if (val = @consumers.delete(consumer_tag))
           self.maybe_delete_recorded_auto_delete_queue(val.queue_name)
@@ -94,17 +95,22 @@ module Bunny
 
     attr_reader :exchanges
 
+    # @param [Bunny::Exchange] exchange
+    def record_exchange(exchange)
+      @exchange_mutex.synchronize { @exchanges[exchange.name] = RecordedExchange::from(exchange) }
+    end
+
     # @param [Bunny::Exchange, Bunny::RecordedExchange] exchange
-    def delete_exchange(exchange)
-      self.delete_exchange_named(exchange.name)
+    def delete_recorded_exchange(exchange)
+      self.delete_recorded_exchange_named(exchange.name)
     end
 
     # @param [String] name
-    def delete_exchange_named(name)
+    def delete_recorded_exchange_named(name)
       @exchange_mutex.synchronize do
         @exchanges.delete(name)
-        bs1 = self.remove_bindings_with_source(name)
-        bs2 = self.remove_bindings_with_destination(name)
+        bs1 = self.remove_recorded_bindings_with_source(name)
+        bs2 = self.remove_recorded_bindings_with_destination(name)
 
         bs1.each do |b|
           self.maybe_delete_recorded_auto_delete_exchange(b.source)
@@ -116,11 +122,6 @@ module Bunny
       end
     end
 
-    # @param [Bunny::Exchange] exchange
-    def record_exchange(exchange)
-      @exchange_mutex.synchronize { @exchanges[exchange.name] = RecordedExchange::from(exchange) }
-    end
-
     #
     # Bindings
     #
@@ -130,6 +131,12 @@ module Bunny
     # @return Set<Bunny::RecordedExchangeBinding>
     attr_reader :exchange_bindings
 
+    # @param [Bunny::Channel] ch
+    # @param [String] exchange_name
+    # @param [String] queue_name
+    # @param [#call] callable
+    # @param [String] routing_key
+    # @param [Hash] arguments
     def record_queue_binding(ch, exchange_name, queue_name, routing_key, arguments)
       b = RecordedQueueBinding.new(ch)
         .with_source(exchange_name)
@@ -140,7 +147,13 @@ module Bunny
       @binding_mutex.synchronize { @queue_bindings.add(b) }
     end
 
-    def delete_queue_binding(ch, exchange_name, queue_name, routing_key, arguments)
+    # @param [Bunny::Channel] ch
+    # @param [String] exchange_name
+    # @param [String] queue_name
+    # @param [#call] callable
+    # @param [String] routing_key
+    # @param [Hash] arguments
+    def delete_recorded_queue_binding(ch, exchange_name, queue_name, routing_key, arguments)
       b = RecordedQueueBinding.new(ch)
       .with_source(exchange_name)
       .with_destination(queue_name)
@@ -150,6 +163,12 @@ module Bunny
       @binding_mutex.synchronize { @queue_bindings.delete(b) }
     end
 
+    # @param [Bunny::Channel] ch
+    # @param [String] source_name
+    # @param [String] destination_name
+    # @param [#call] callable
+    # @param [String] routing_key
+    # @param [Hash] arguments
     def record_exchange_binding(ch, source_name, destination_name, routing_key, arguments)
       b = RecordedExchangeBinding.new(ch)
         .with_source(source_name)
@@ -160,7 +179,13 @@ module Bunny
       @binding_mutex.synchronize { @exchange_bindings.add(b) }
     end
 
-    def delete_exchange_binding(ch, source_name, destination_name, routing_key, arguments)
+    # @param [Bunny::Channel] ch
+    # @param [String] source_name
+    # @param [String] destination_name
+    # @param [#call] callable
+    # @param [String] routing_key
+    # @param [Hash] arguments
+    def delete_recorded_exchange_binding(ch, source_name, destination_name, routing_key, arguments)
       b = RecordedExchangeBinding.new(ch)
         .with_source(source_name)
         .with_destination(destination_name)
@@ -183,7 +208,7 @@ module Bunny
       @queue_mutex.synchronize do
         unless self.has_more_consumers_on_queue?(@consumers.values, name)
           if (q = @queues[name])
-            self.delete_queue(q)
+            self.delete_recorded_queue(q)
           end
         end
       end
@@ -193,14 +218,14 @@ module Bunny
     def maybe_delete_recorded_auto_delete_exchange(name)
       @exchange_mutex.synchronize do
         unless self.has_more_destinations_bound_to_exchange?(@queue_bindings.dup, @exchange_bindings.dup, name)
-          self.delete_exchange_named(name)
+          self.delete_recorded_exchange_named(name)
         end
       end
     end
 
     # @param name [String]
     # @return Set<Bunny::RecordedBinding>
-    def remove_bindings_with_source(name)
+    def remove_recorded_bindings_with_source(name)
       @binding_mutex.synchronize do
         matching_qbs = self.queue_bindings.filter { |b| b.source == name }
         matching_xbs = self.exchange_bindings.filter { |b| b.source == name }
@@ -217,7 +242,7 @@ module Bunny
 
     # @param name [String]
     # @return Set<Bunny::RecordedBinding>
-    def remove_bindings_with_destination(name)
+    def remove_recorded_bindings_with_destination(name)
       @binding_mutex.synchronize do
         matching_qbs = self.queue_bindings.filter { |b| b.destination == name }
         matching_xbs = self.exchange_bindings.filter { |b| b.destination == name }
