@@ -38,12 +38,19 @@ module Bunny
 
     # @param [Bunny::Queue, Bunny::RecordedQueue] queue
     def delete_queue(queue)
-      @queue_mutex.synchronize { @queues.delete(queue.name) }
+      self.delete_queue_named(queue.name)
     end
 
     # @param [String] name
     def delete_queue_named(name)
-      @queue_mutex.synchronize { @queues.delete(name) }
+      @queue_mutex.synchronize do
+        @queues.delete(name)
+
+        bs = self.remove_bindings_with_destination(name)
+        bs.each do |b|
+          self.maybe_delete_recorded_auto_delete_exchange(b.source)
+        end
+      end
     end
 
     #
@@ -89,17 +96,27 @@ module Bunny
 
     # @param [Bunny::Exchange, Bunny::RecordedExchange] exchange
     def delete_exchange(exchange)
-      @exchange_mutex.synchronize do
-        @exchanges.delete(exchange.name)
-      end
+      self.delete_exchange_named(exchange.name)
     end
 
     # @param [String] name
     def delete_exchange_named(name)
-      @exchange_mutex.synchronize { @exchanges.delete(name) }
+      @exchange_mutex.synchronize do
+        @exchanges.delete(name)
+        bs1 = self.remove_bindings_with_source(name)
+        bs2 = self.remove_bindings_with_destination(name)
+
+        bs1.each do |b|
+          self.maybe_delete_recorded_auto_delete_exchange(b.source)
+        end
+
+        bs2.each do |b|
+          self.maybe_delete_recorded_auto_delete_exchange(b.source)
+        end
+      end
     end
 
-    # @param [Bunny::Exchange, Bunny::RecordedExchange] exchange
+    # @param [Bunny::Exchange] exchange
     def record_exchange(exchange)
       @exchange_mutex.synchronize { @exchanges[exchange.name] = RecordedExchange::from(exchange) }
     end
@@ -108,7 +125,10 @@ module Bunny
     # Bindings
     #
 
-    attr_reader :queue_bindings, :exchange_bindings
+    # @return Set<Bunny::RecordedQueueBinding>
+    attr_reader :queue_bindings
+    # @return Set<Bunny::RecordedExchangeBinding>
+    attr_reader :exchange_bindings
 
     def record_queue_binding(ch, exchange_name, queue_name, routing_key, arguments)
       b = RecordedQueueBinding.new(ch)
@@ -175,6 +195,40 @@ module Bunny
         unless self.has_more_destinations_bound_to_exchange?(@queue_bindings.dup, @exchange_bindings.dup, name)
           self.delete_exchange_named(name)
         end
+      end
+    end
+
+    # @param name [String]
+    # @return Set<Bunny::RecordedBinding>
+    def remove_bindings_with_source(name)
+      @binding_mutex.synchronize do
+        matching_qbs = self.queue_bindings.filter { |b| b.source == name }
+        matching_xbs = self.exchange_bindings.filter { |b| b.source == name }
+
+        matches = matching_qbs + matching_xbs
+        matches.each do |b|
+          @queue_bindings.delete(b)
+          @exchange_bindings.delete(b)
+        end
+
+        matches
+      end
+    end
+
+    # @param name [String]
+    # @return Set<Bunny::RecordedBinding>
+    def remove_bindings_with_destination(name)
+      @binding_mutex.synchronize do
+        matching_qbs = self.queue_bindings.filter { |b| b.destination == name }
+        matching_xbs = self.exchange_bindings.filter { |b| b.destination == name }
+
+        matches = matching_qbs + matching_xbs
+        matches.each do |b|
+          @queue_bindings.delete(b)
+          @exchange_bindings.delete(b)
+        end
+
+        matches
       end
     end
 
@@ -322,7 +376,7 @@ module Bunny
     end
 
     def auto_delete?
-      !!@auto_delete
+      @auto_delete
     end
 
     # @param value [Boolean]
@@ -332,7 +386,7 @@ module Bunny
     end
 
     def exclusive?
-      !!@exclusive
+      @exclusive
     end
 
     # @param value [Boolean]
@@ -462,7 +516,13 @@ module Bunny
 
   class RecordedBinding < RecordedEntity
     # @return [String]
-    attr_reader :source, :destination, :routing_key, :arguments
+    attr_reader :source
+    # @return [String]
+    attr_reader :destination
+    # @return [String]
+    attr_reader :routing_key
+    # @return [Hash]
+    attr_reader :arguments
 
     def initialize(ch)
       super ch

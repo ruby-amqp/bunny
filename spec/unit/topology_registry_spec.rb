@@ -261,4 +261,149 @@ describe Bunny::TopologyRegistry do
     q2.delete
     x.delete
   end
+
+  it "removes queue bindings when their exchange is removed" do
+    x_name = "bunny.topology_registry.x.fanout.8"
+    ch.exchange_delete(x_name)
+    x = ch.fanout(x_name, durable: true, auto_delete: true)
+
+    q1_name = "bunny.topology_registry.cq.6"
+    ch.queue_delete(q1_name)
+    q1 = ch.queue(q1_name, durable: true, exclusive: false, auto_delete: false)
+
+    q2_name = "bunny.topology_registry.cq.7"
+    ch.queue_delete(q2_name)
+    q2 = ch.queue(q2_name, durable: true, exclusive: false, auto_delete: false)
+
+    expect(subject.queues.size).to be ==(0)
+    subject.record_queue(q1)
+    subject.record_queue(q2)
+    expect(subject.queues.size).to be ==(2)
+
+    expect(subject.exchanges.size).to be ==(0)
+    subject.record_exchange(x)
+    expect(subject.exchanges.size).to be ==(1)
+
+    expect(subject.queue_bindings.size).to be ==(0)
+    subject.record_queue_binding(ch, x.name, q1.name, "#", {})
+    subject.record_queue_binding(ch, x.name, q2.name, "#", {})
+    expect(subject.queue_bindings.size).to be ==(2)
+
+    subject.delete_exchange_named(x_name)
+    expect(subject.queue_bindings.size).to be ==(0)
+
+    q1.delete
+    q2.delete
+    x.delete
+  end
+
+  it "removes queue bindings when their queue is removed" do
+    x_name = "bunny.topology_registry.x.fanout.0"
+    ch.exchange_delete(x_name)
+    x = ch.fanout(x_name, durable: true, auto_delete: true)
+
+    q1_name = "bunny.topology_registry.cq.8"
+    ch.queue_delete(q1_name)
+    q1 = ch.queue(q1_name, durable: true, exclusive: false, auto_delete: false)
+
+    q2_name = "bunny.topology_registry.cq.9"
+    ch.queue_delete(q2_name)
+    q2 = ch.queue(q2_name, durable: true, exclusive: false, auto_delete: false)
+
+    subject.record_queue(q1)
+    subject.record_queue(q2)
+    expect(subject.queues.size).to be ==(2)
+
+    subject.record_exchange(x)
+    expect(subject.exchanges.size).to be ==(1)
+
+    expect(subject.queue_bindings.size).to be ==(0)
+    subject.record_queue_binding(ch, x.name, q1.name, "#", {})
+    subject.record_queue_binding(ch, x.name, q2.name, "#", {})
+    expect(subject.queue_bindings.size).to be ==(2)
+
+
+    subject.delete_queue_named(q1_name)
+    expect(subject.queue_bindings.size).to be ==(1)
+
+    subject.delete_queue_named(q2_name)
+    expect(subject.queue_bindings.size).to be ==(0)
+
+    q1.delete
+    q2.delete
+    x.delete
+  end
+
+  it "removes exchange bindings when their source exchange is removed" do
+    x1_name = "bunny.topology_registry.x.fanout.8"
+    ch.exchange_delete(x1_name)
+    x1 = ch.fanout(x1_name, durable: true, auto_delete: true)
+
+    x2_name = "bunny.topology_registry.x.fanout.9"
+    ch.exchange_delete(x2_name)
+    x2 = ch.fanout(x2_name, durable: true, auto_delete: true)
+
+    x3_name = "bunny.topology_registry.x.fanout.10"
+    ch.exchange_delete(x3_name)
+    x3 = ch.fanout(x3_name, durable: true, auto_delete: true)
+
+    expect(subject.exchanges.size).to be ==(0)
+    subject.record_exchange(x1)
+    subject.record_exchange(x2)
+    subject.record_exchange(x3)
+    expect(subject.exchanges.size).to be ==(3)
+
+    expect(subject.exchange_bindings.size).to be ==(0)
+    subject.record_exchange_binding(ch, x1.name, x2.name, "#", {})
+    subject.record_exchange_binding(ch, x1.name, x3.name, "#", {})
+    expect(subject.exchange_bindings.size).to be ==(2)
+
+    subject.delete_exchange_named(rand.to_s)
+    expect(subject.exchange_bindings.size).to be ==(2)
+
+    subject.delete_exchange_named(x1_name)
+    expect(subject.exchange_bindings.size).to be ==(0)
+
+    x1.delete
+    x2.delete
+    x3.delete
+  end
+
+  it "removes exchange bindings when their destination exchange is removed" do
+    x1_name = "bunny.topology_registry.x.fanout.11"
+    ch.exchange_delete(x1_name)
+    x1 = ch.fanout(x1_name, durable: true, auto_delete: true)
+
+    x2_name = "bunny.topology_registry.x.fanout.12"
+    ch.exchange_delete(x2_name)
+    x2 = ch.fanout(x2_name, durable: true, auto_delete: true)
+
+    x3_name = "bunny.topology_registry.x.fanout.13"
+    ch.exchange_delete(x3_name)
+    x3 = ch.fanout(x3_name, durable: true, auto_delete: true)
+
+    expect(subject.exchanges.size).to be ==(0)
+    subject.record_exchange(x1)
+    subject.record_exchange(x2)
+    subject.record_exchange(x3)
+    expect(subject.exchanges.size).to be ==(3)
+
+    expect(subject.exchange_bindings.size).to be ==(0)
+    subject.record_exchange_binding(ch, x1.name, x2.name, "#", {})
+    subject.record_exchange_binding(ch, x1.name, x3.name, "#", {})
+    expect(subject.exchange_bindings.size).to be ==(2)
+
+    subject.delete_exchange_named(rand.to_s)
+    expect(subject.exchange_bindings.size).to be ==(2)
+
+    subject.delete_exchange_named(x2_name)
+    expect(subject.exchange_bindings.size).to be ==(1)
+
+    subject.delete_exchange_named(x3_name)
+    expect(subject.exchange_bindings.size).to be ==(0)
+
+    x1.delete
+    x2.delete
+    x3.delete
+  end
 end
