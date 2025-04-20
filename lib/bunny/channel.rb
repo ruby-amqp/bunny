@@ -216,15 +216,12 @@ module Bunny
       @next_publish_seq_no = 0
       @delivery_tag_offset = 0
 
-      @recoveries_counter = Bunny::Concurrent::AtomicFixnum.new(0)
       @uncaught_exception_handler = Proc.new do |e, consumer|
         @logger.error "Uncaught exception from consumer #{consumer.to_s}: #{e.inspect} @ #{e.backtrace[0]}"
       end
 
       @cancel_consumers_before_closing = false
     end
-
-    attr_reader :recoveries_counter
 
     # @private
     def wait_on_continuations_timeout
@@ -1774,12 +1771,6 @@ module Bunny
       recover_prefetch_setting
       recover_confirm_mode
       recover_tx_mode
-
-      recover_exchanges
-      # this includes recovering bindings
-      recover_queues
-      recover_consumers
-      increment_recoveries_counter
     end
 
     # Recovers basic.qos setting. Used by the Automatic Network Failure
@@ -1813,45 +1804,31 @@ module Bunny
       tx_select if @tx_mode
     end
 
-    # Recovers exchanges. Used by the Automatic Network Failure
+    # Used by the Automatic Network Failure
     # Recovery feature.
     #
-    # @api plugin
-    def recover_exchanges
-      @exchange_mutex.synchronize { @exchanges.values }.each do |x|
-        x.recover_from_network_failure
+    # @param [String] old_name
+    # @param [String] new_name
+    # @private
+    def record_queue_name_change(old_name, new_name)
+      @queue_mutex.synchronize do
+        if (orig = @queues[old_name])
+          @queues.delete(old_name)
+
+          orig.update_name_to(new_name)
+          @queues[new_name] = orig.dup
+        end
       end
     end
 
-    # Recovers queues and bindings. Used by the Automatic Network Failure
-    # Recovery feature.
+    # Used by the Automatic Network Failure Recovery feature.
     #
-    # @api plugin
-    def recover_queues
-      @queue_mutex.synchronize { @queues.values }.each do |q|
-        @logger.debug { "Recovering queue #{q.name}" }
-        q.recover_from_network_failure
-      end
-    end
-
-    # Recovers consumers. Used by the Automatic Network Failure
-    # Recovery feature.
-    #
-    # @api plugin
-    def recover_consumers
+    # @api private
+    def maybe_reinitialize_consumer_pool!
       unless @consumers.empty?
         @work_pool = ConsumerWorkPool.new(@work_pool.size, @work_pool.abort_on_exception)
         @work_pool.start
       end
-
-      @consumer_mutex.synchronize { @consumers.values }.each do |c|
-        c.recover_from_network_failure
-      end
-    end
-
-    # @private
-    def increment_recoveries_counter
-      @recoveries_counter.increment
     end
 
     # @api public
