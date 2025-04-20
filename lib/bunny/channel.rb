@@ -168,8 +168,11 @@ module Bunny
 
     # @param [Bunny::Session] connection AMQP 0.9.1 connection
     # @param [Integer] id Channel id, pass nil to make Bunny automatically allocate it
-    # @param [Bunny::ConsumerWorkPool] work_pool Thread pool for delivery processing, by default of size 1
-    def initialize(connection = nil, id = nil, work_pool = ConsumerWorkPool.new(1))
+    # @param [HashMap] opts Additional options
+    # @option opts [Bunny::ConsumerWorkPool] work_pool Thread pool for delivery processing, by default of size 1
+    def initialize(connection = nil, id = nil, opts = {})
+      work_pool = opts.fetch(:work_pool, ConsumerWorkPool.new(1))
+
       @connection = connection
       @logger     = connection.logger
       @id         = id || @connection.next_channel_id
@@ -185,6 +188,7 @@ module Bunny
       end
 
       @status     = :opening
+      @topology_registry = opts[:topology_registry]
 
       @connection.register_channel(self)
 
