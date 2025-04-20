@@ -367,43 +367,6 @@ module Bunny
     end
 
     #
-    # Recovery
-    #
-
-    # @private
-    def recover_from_network_failure
-      if self.server_named?
-        old_name = @name.dup
-        @name    = AMQ::Protocol::EMPTY_STRING
-
-        @channel.delete_recorded_queue_named(old_name)
-      end
-
-      # TODO: inject and use logger
-      # puts "Recovering queue #{@name}"
-      begin
-        # This method update the topology registry for us
-        declare! unless @options[:no_declare]
-
-        @channel.register_queue(self)
-      rescue Exception => e
-        # TODO: inject and use logger
-        puts "Caught #{e.inspect} while redeclaring and registering #{@name}!"
-      end
-      recover_bindings
-    end
-
-    # @private
-    def recover_bindings
-      @bindings.each do |b|
-        # TODO: inject and use logger
-        # puts "Recovering binding #{b.inspect}"
-        self.bind(b[:exchange], b)
-      end
-    end
-
-
-    #
     # Implementation
     #
 
