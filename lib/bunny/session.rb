@@ -81,6 +81,7 @@ module Bunny
     attr_reader :status, :heartbeat, :user, :pass, :vhost, :frame_max, :channel_max, :threaded
     attr_reader :server_capabilities, :server_properties, :server_authentication_mechanisms, :server_locales
     attr_reader :channel_id_allocator
+    # @return [Bunny::TopologyRegistry]
     attr_reader :topology_registry
     # Authentication mechanism, e.g. "PLAIN" or "EXTERNAL"
     # @return [String]
