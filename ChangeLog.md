@@ -26,6 +26,38 @@ are now logged at debug level to reduce log noise.
 
 GitHub issue: [#711](https://github.com/ruby-amqp/bunny/issues/711)
 
+### Topology Recovery Filters
+
+```ruby
+class ExampleTopologyFilter < Bunny::TopologyRecoveryFilter
+  def filter_queues(qs)
+    qs.filter { |rq| rq.name.start_with?(/^filter-me/) }
+  end
+
+  def filter_exchanges(xs)
+    xs.filter { |rx| rx.name.start_with?(/^filter-me/) }
+  end
+
+  def filter_queue_bindings(bs)
+    bs.filter { |rb| rb.destination.start_with?(/^filter-me/) }
+  end
+
+  def filter_exchange_bindings(bs)
+    bs.filter { |rb| rb.destination.start_with?(/^filter-me/) }
+  end
+
+  def filter_consumers(bs)
+    bs.filter { |rc| rc.consumer_tag.start_with?(/filter-me/) }
+  end
+end
+
+tf = ExampleTopologyFilter.new
+# Will use the above filter to determine what queues, exchanges, bindings,
+# and consumers must be retained (recovered) during topology recovery
+c = Bunny::Session.new(topology_recovery_filter: tf)
+c.start
+```
+
 
 ### RemovedVersioned Delivery Tags
 
