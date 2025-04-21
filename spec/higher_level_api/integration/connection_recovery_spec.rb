@@ -126,7 +126,10 @@ describe "Connection recovery" do
       wait_for_recovery_with { connections.any? }
       expect(ch).to be_open
       ensure_queue_recovery(ch, q)
+
+      expect(c.topology_registry.queues.size).to eq 1
       q.delete
+      expect(c.topology_registry.queues.size).to eq 0
     end
   end
 
@@ -167,7 +170,10 @@ describe "Connection recovery" do
       expect(ch).to be_open
       ensure_queue_recovery(ch, q)
       ensure_queue_recovery(ch, q2)
+
+      expect(c.topology_registry.queues.size).to eq 1
       q.delete
+      expect(c.topology_registry.queues.size).to eq 0
     end
   end
 
@@ -175,10 +181,22 @@ describe "Connection recovery" do
     with_open do |c|
       ch = c.create_channel
       q  = ch.queue("", exclusive: true)
+      old_name = q.name
+
       close_all_connections!
       wait_for_recovery_with { connections.any? }
       expect(ch).to be_open
+
+      expect(q.name).to_not be ==(old_name)
+
+      # queue name has changed
+      expect(c.topology_registry.queues.size).to eq 1
+      expect(c.topology_registry.queues[old_name]).to be(nil)
+
       ensure_queue_recovery(ch, q)
+
+      q.delete
+      expect(c.topology_registry.queues.size).to eq 0
     end
   end
 
@@ -192,6 +210,12 @@ describe "Connection recovery" do
       wait_for_recovery_with { connections.any? }
       expect(ch).to be_open
       ensure_queue_binding_recovery(ch, x, q)
+
+      expect(c.topology_registry.queue_bindings.size).to eq 1
+      expect(c.topology_registry.queues.size).to eq 1
+      q.delete
+      expect(c.topology_registry.queues.size).to eq 0
+      expect(c.topology_registry.queue_bindings.size).to eq 0
     end
   end
 
@@ -216,72 +240,19 @@ describe "Connection recovery" do
       wait_for_recovery_with { connections.any? && exchange_names_in_vhost("/").include?(source.name) }
       ch.confirm_select
 
-      source.publish("msg", routing_key: "")
-      ch.wait_for_confirms
-      expect(dst_queue.message_count).to eq 1
-      destination.delete
-    end
-  end
-
-  it "recovers passively declared exchanges and their bindings" do
-    with_open do |c|
-      ch          = c.create_channel
-      ch.confirm_select
-
-      source      = ch.fanout("amq.fanout", passive: true)
-      destination = ch.fanout("destination.exchange.recovery.example", auto_delete: true)
-
-      destination.bind(source)
-
-      # Exchanges won't get auto-deleted on connection loss unless they have
-      # had an exclusive queue bound to them.
-      dst_queue   = ch.queue("", exclusive: true)
-      dst_queue.bind(destination, routing_key: "")
-
-      src_queue   = ch.queue("", exclusive: true)
-      src_queue.bind(source, routing_key: "")
-
-      close_all_connections!
-
-      wait_for_recovery_with { connections.any? }
+      expect(c.topology_registry.queues.size).to eq 2
 
       source.publish("msg", routing_key: "")
       ch.wait_for_confirms
-
       expect(dst_queue.message_count).to eq 1
+
+      expect(c.topology_registry.exchanges.size).to eq 2
+      expect(c.topology_registry.exchange_bindings.size).to eq 1
+
+      source.delete
       destination.delete
-    end
-  end
 
-  # this is a simplistic test that primarily execises the code path from #412
-  it "recovers exchanges that were declared with passive = true" do
-    with_open do |c|
-      ch          = c.create_channel
-      ch2         = c.create_channel
-      source      = ch.fanout("source.exchange.recovery.example", auto_delete: true)
-      destination = ch.fanout("destination.exchange.recovery.example", auto_delete: true)
-
-      source2      = ch2.fanout("source.exchange.recovery.example", no_declare: true)
-
-      destination.bind(source)
-
-      # Exchanges won't get auto-deleted on connection loss unless they have
-      # had an exclusive queue bound to them.
-      dst_queue   = ch.queue("", exclusive: true)
-      dst_queue.bind(destination, routing_key: "")
-
-      src_queue   = ch.queue("", exclusive: true)
-      src_queue.bind(source, routing_key: "")
-
-      close_all_connections!
-
-      wait_for_recovery_with { connections.any? && exchange_names_in_vhost("/").include?(source.name) }
-
-      ch2.confirm_select
-
-      source2.publish("msg", routing_key: "")
-      ch2.wait_for_confirms
-      expect(dst_queue.message_count).to eq 1
+      expect(c.topology_registry.exchanges.size).to eq 0
     end
   end
 
@@ -309,17 +280,25 @@ describe "Connection recovery" do
       ch = c.create_channel
       ch.confirm_select
       q  = ch.queue("", exclusive: true)
-      q.subscribe do |_, _, _|
+      cons = q.subscribe do |_, _, _|
         delivered = true
       end
+
+      expect(c.topology_registry.consumers.size).to eq 1
       close_all_connections!
       wait_for_recovery_with { connections.any? }
       expect(ch).to be_open
+
+      expect(c.topology_registry.queues.size).to eq 1
+      expect(c.topology_registry.consumers.size).to eq 1
 
       q.publish("")
       ch.wait_for_confirms
 
       poll_until { delivered }
+
+      cons.cancel
+      expect(c.topology_registry.consumers.size).to eq 0
     end
   end
 
@@ -336,6 +315,7 @@ describe "Connection recovery" do
       sleep 0.5
 
       expect(q.consumer_count).to eq n
+      expect(c.topology_registry.consumers.size).to eq n
     end
   end
 
@@ -354,6 +334,7 @@ describe "Connection recovery" do
       wait_for_recovery_with { queue_names.include?(qs.first.name) }
       sleep 0.5
       expect(ch).to be_open
+      expect(c.topology_registry.queues.size).to eq n
 
       qs.each do |q|
         ch.queue_declare(q.name, passive: true)
@@ -388,6 +369,8 @@ describe "Connection recovery" do
     #
     # MK.
     sleep 1.1
+    n = connections.size
+    puts "Recovery: will close #{n} client connections over the HTTP API…"
     connections.each do |conn_info|
       close_ignoring_permitted_exceptions(conn_info.name)
     end

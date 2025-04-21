@@ -88,7 +88,10 @@ module Bunny
 
       declare! unless opts[:no_declare] || predeclared? || (@name == AMQ::Protocol::EMPTY_STRING)
 
+      # for basic.return dispatch and such
       @channel.register_exchange(self)
+      # for topology recovery
+      @channel.record_exchange(self)
     end
 
     # @return [Boolean] true if this exchange was declared as durable (will survive broker restart).
@@ -155,7 +158,7 @@ module Bunny
     # @see http://rubybunny.info/articles/exchanges.html Exchanges and Publishing guide
     # @api public
     def delete(opts = {})
-      @channel.deregister_exchange(self)
+      @channel.delete_recorded_exchange(self)
       @channel.exchange_delete(@name, opts) unless predeclared?
     end
 
@@ -219,16 +222,6 @@ module Bunny
     def wait_for_confirms
       @channel.wait_for_confirms
     end
-
-    # @private
-    def recover_from_network_failure
-      declare! unless @options[:no_declare] ||predefined?
-
-      @bindings.each do |b|
-        bind(b[:source], b[:opts])
-      end
-    end
-
 
     #
     # Implementation

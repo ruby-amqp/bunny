@@ -99,13 +99,13 @@ module Bunny
     # @return [Boolean] true if this consumer uses automatic acknowledgement mode
     # @api public
     def automatic_acknowledgement?
-      @no_ack == true
+      @no_ack
     end
 
     # @return [Boolean] true if this consumer uses manual (explicit) acknowledgement mode
     # @api public
     def manual_acknowledgement?
-      @no_ack == false
+      !@no_ack
     end
 
     # @return [String] Name of the queue this consumer is on
@@ -116,15 +116,6 @@ module Bunny
       else
         @queue
       end
-    end
-
-    #
-    # Recovery
-    #
-
-    # @private
-    def recover_from_network_failure
-      @channel.basic_consume_with(self)
     end
   end
 end
