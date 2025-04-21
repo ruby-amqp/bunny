@@ -9,6 +9,7 @@ require "bunny/channel_id_allocator"
 require "bunny/heartbeat_sender"
 require "bunny/reader_loop"
 require "bunny/topology_registry"
+require "bunny/topology_recovery_filter"
 require "bunny/authentication/credentials_encoder"
 require "bunny/authentication/plain_mechanism_encoder"
 require "bunny/authentication/external_mechanism_encoder"
@@ -133,6 +134,7 @@ module Bunny
     # @option connection_string_or_opts [Boolean] :recover_from_connection_close (true) Should this connection recover after receiving a server-sent connection.close (e.g. connection was force closed)?
     # @option connection_string_or_opts [Object] :session_error_handler (Thread.current) Object which responds to #raise that will act as a session error handler. Defaults to Thread.current, which will raise asynchronous exceptions in the thread that created the session.
     #
+    # @option connection_string_or_opts [Bunny::TopologyRecoveryFilter] if provided, will be used for object filtering during topology recovery
     # @option optz [String] :auth_mechanism ("PLAIN") Authentication mechanism, PLAIN or EXTERNAL
     # @option optz [String] :locale ("PLAIN") Locale RabbitMQ should use
     # @option optz [String] :connection_name (nil) Client-provided connection name, if any. Note that the value returned does not uniquely identify a connection and cannot be used as a connection identifier in HTTP API requests.
@@ -842,7 +844,6 @@ module Bunny
     # @param [Bunny::Channel] ch
     # @param [String] exchange_name
     # @param [String] queue_name
-    # @param [#call] callable
     # @param [String] routing_key
     # @param [Hash] arguments
     # @private
@@ -853,7 +854,6 @@ module Bunny
     # @param [Bunny::Channel] ch
     # @param [String] exchange_name
     # @param [String] queue_name
-    # @param [#call] callable
     # @param [String] routing_key
     # @param [Hash] arguments
     # @private
@@ -864,7 +864,6 @@ module Bunny
     # @param [Bunny::Channel] ch
     # @param [String] source_name
     # @param [String] destination_name
-    # @param [#call] callable
     # @param [String] routing_key
     # @param [Hash] arguments
     # @private
@@ -875,7 +874,6 @@ module Bunny
     # @param [Bunny::Channel] ch
     # @param [String] source_name
     # @param [String] destination_name
-    # @param [#call] callable
     # @param [String] routing_key
     # @param [Hash] arguments
     # @private
