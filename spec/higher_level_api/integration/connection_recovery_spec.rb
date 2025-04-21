@@ -334,6 +334,7 @@ describe "Connection recovery" do
       wait_for_recovery_with { queue_names.include?(qs.first.name) }
       sleep 0.5
       expect(ch).to be_open
+      expect(c.topology_registry.queues.size).to eq n
 
       qs.each do |q|
         ch.queue_declare(q.name, passive: true)
