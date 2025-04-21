@@ -14,18 +14,18 @@ module Bunny
   # This registry takes care of dropping auto-delete exchanges or queues
   # when their respective conditions for removal hold.
   #
-  # @see [#record_queue]
-  # @see [#delete_recorded_queue]
-  # @see [#delete_recorded_queue_named]
-  # @see [#record_exchange]
-  # @see [#delete_recorded_exchange]
-  # @see [#delete_recorded_exchange_named]
-  # @see [#record_exchange_binding_with]
-  # @see [#delete_recorded_exchange_binding]
-  # @see [#record_queue_binding_with]
-  # @see [#delete_recorded_queue_binding]
-  # @see [#record_consumer_with]
-  # @see [#delete_recorded_consumer]
+  # @see #record_queue
+  # @see #delete_recorded_queue
+  # @see #delete_recorded_queue_named
+  # @see #record_exchange
+  # @see #delete_recorded_exchange
+  # @see #delete_recorded_exchange_named
+  # @see #record_exchange_binding_with
+  # @see #delete_recorded_exchange_binding
+  # @see #record_queue_binding_with
+  # @see #delete_recorded_queue_binding
+  # @see #record_consumer_with
+  # @see #delete_recorded_consumer
   class TopologyRegistry
     def initialize(opts = {})
       self.reset!
@@ -159,6 +159,7 @@ module Bunny
 
     # @!group Exchanges
 
+    # @return [Hash<String, Bunny::RecordedExchange>]
     attr_reader :exchanges
 
     # @param [Bunny::Exchange] exchange
@@ -212,15 +213,14 @@ module Bunny
 
     # !@group Bindings
 
-    # @return Set<Bunny::RecordedQueueBinding>
+    # @return [Set<Bunny::RecordedQueueBinding>]
     attr_reader :queue_bindings
-    # @return Set<Bunny::RecordedExchangeBinding>
+    # @return [Set<Bunny::RecordedExchangeBinding>]
     attr_reader :exchange_bindings
 
     # @param [Bunny::Channel] ch
     # @param [String] exchange_name
     # @param [String] queue_name
-    # @param [#call] callable
     # @param [String] routing_key
     # @param [Hash] arguments
     def record_queue_binding_with(ch, exchange_name, queue_name, routing_key, arguments)
@@ -236,7 +236,6 @@ module Bunny
     # @param [Bunny::Channel] ch
     # @param [String] exchange_name
     # @param [String] queue_name
-    # @param [#call] callable
     # @param [String] routing_key
     # @param [Hash] arguments
     def delete_recorded_queue_binding(ch, exchange_name, queue_name, routing_key, arguments)
@@ -252,7 +251,6 @@ module Bunny
     # @param [Bunny::Channel] ch
     # @param [String] source_name
     # @param [String] destination_name
-    # @param [#call] callable
     # @param [String] routing_key
     # @param [Hash] arguments
     def record_exchange_binding_with(ch, source_name, destination_name, routing_key, arguments)
@@ -268,7 +266,6 @@ module Bunny
     # @param [Bunny::Channel] ch
     # @param [String] source_name
     # @param [String] destination_name
-    # @param [#call] callable
     # @param [String] routing_key
     # @param [Hash] arguments
     def delete_recorded_exchange_binding(ch, source_name, destination_name, routing_key, arguments)
@@ -344,7 +341,7 @@ module Bunny
     end
 
     # @param name [String]
-    # @return Set<Bunny::RecordedBinding>
+    # @return [Array<Bunny::RecordedBinding>]
     def remove_recorded_bindings_with_source(name)
       @binding_mutex.synchronize do
         matching_qbs = self.queue_bindings.filter { |b| b.source == name }
@@ -361,7 +358,7 @@ module Bunny
     end
 
     # @param name [String]
-    # @return Set<Bunny::RecordedBinding>
+    # @return [Array<Bunny::RecordedBinding>]
     def remove_recorded_bindings_with_queue_destination(name)
       @binding_mutex.synchronize do
         matches = self.queue_bindings.filter { |b| b.destination == name }
@@ -371,7 +368,7 @@ module Bunny
     end
 
     # @param name [String]
-    # @return Set<Bunny::RecordedBinding>
+    # @return [Array<Bunny::RecordedBinding>]
     def remove_recorded_bindings_with_exchange_destination(name)
       @binding_mutex.synchronize do
         matches = self.exchange_bindings.filter { |b| b.destination == name }
@@ -481,7 +478,7 @@ module Bunny
       self
     end
 
-    # @param [Integer]
+    # @return [Integer]
     def hash
       [self.class, self.channel, self.name, @type, @durable, @auto_delete, @arguments].hash
     end

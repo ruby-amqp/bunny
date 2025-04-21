@@ -2294,7 +2294,6 @@ module Bunny
     # @param [Bunny::Channel] ch
     # @param [String] exchange_name
     # @param [String] queue_name
-    # @param [#call] callable
     # @param [String] routing_key
     # @param [Hash] arguments
     # @private
@@ -2305,7 +2304,6 @@ module Bunny
     # @param [Bunny::Channel] ch
     # @param [String] exchange_name
     # @param [String] queue_name
-    # @param [#call] callable
     # @param [String] routing_key
     # @param [Hash] arguments
     # @private
@@ -2316,7 +2314,6 @@ module Bunny
     # @param [Bunny::Channel] ch
     # @param [String] source_name
     # @param [String] destination_name
-    # @param [#call] callable
     # @param [String] routing_key
     # @param [Hash] arguments
     # @private
@@ -2327,7 +2324,6 @@ module Bunny
     # @param [Bunny::Channel] ch
     # @param [String] source_name
     # @param [String] destination_name
-    # @param [#call] callable
     # @param [String] routing_key
     # @param [Hash] arguments
     # @private

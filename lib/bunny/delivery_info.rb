@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 
 module Bunny
-  # Wraps {AMQ::Protocol::Basic::Deliver} to
+  # Wraps [AMQ::Protocol::Basic::Deliver] to
   # provide access to the delivery properties as immutable hash as
   # well as methods.
   class DeliveryInfo
