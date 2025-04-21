@@ -2,6 +2,7 @@
 # frozen_string_literal: true
 
 require "set"
+require "bunny/topology_recovery_filter"
 
 module Bunny
   # As queues, exchanges, bindings are created and deleted,
@@ -13,6 +14,9 @@ module Bunny
   #
   # This registry takes care of dropping auto-delete exchanges or queues
   # when their respective conditions for removal hold.
+  #
+  # @param opts [Hash<Symbol, Object>]
+  # @option opts :topology_recovery_filter Filters out objects so that they are skipped during topology recovery
   #
   # @see #record_queue
   # @see #delete_recorded_queue
@@ -28,6 +32,8 @@ module Bunny
   # @see #delete_recorded_consumer
   class TopologyRegistry
     def initialize(opts = {})
+      @filter = opts.fetch(:topology_recovery_filter, DefaultTopologyRecoveryFilter.new)
+
       self.reset!
     end
 
@@ -52,6 +58,12 @@ module Bunny
 
     # @return [Hash<String, Bunny::RecordedQueue>]
     attr_reader :queues
+
+    # @return [Array<Bunny::RecordedQueue>]
+    # @see Bunny::TopologyRecoveryFilter
+    def filtered_queues
+      @filter.filter_queues(@queues.values)
+    end
 
     # @param [Bunny::Queue] queue
     def record_queue(queue)
@@ -111,6 +123,12 @@ module Bunny
     # @return [Hash<String, Bunny::RecordedConsumer>]
     attr_reader :consumers
 
+    # @return [Array<Bunny::RecordedConsumer>]
+    # @see Bunny::TopologyRecoveryFilter
+    def filtered_consumers
+      @filter.filter_consumers(@consumers.values)
+    end
+
     # @param [Bunny::Channel] ch
     # @param [String] consumer_tag
     # @param [String] queue_name
@@ -161,6 +179,12 @@ module Bunny
 
     # @return [Hash<String, Bunny::RecordedExchange>]
     attr_reader :exchanges
+
+    # @return [Array<Bunny::RecordedExchange>]
+    # @see Bunny::TopologyRecoveryFilter
+    def filtered_exchanges
+      @filter.filter_exchanges(@exchanges.values)
+    end
 
     # @param [Bunny::Exchange] exchange
     def record_exchange(exchange)
@@ -215,8 +239,21 @@ module Bunny
 
     # @return [Set<Bunny::RecordedQueueBinding>]
     attr_reader :queue_bindings
+
+    # @return [Array<Bunny::RecordedQueueBinding>]
+    # @see Bunny::TopologyRecoveryFilter
+    def filtered_queue_bindings
+      @filter.filter_queue_bindings(@queue_bindings)
+    end
+
     # @return [Set<Bunny::RecordedExchangeBinding>]
     attr_reader :exchange_bindings
+
+    # @return [Array<Bunny::RecordedExchangeBinding>]
+    # @see Bunny::TopologyRecoveryFilter
+    def filtered_exchange_bindings
+      @filter.filter_exchange_bindings(@exchange_bindings)
+    end
 
     # @param [Bunny::Channel] ch
     # @param [String] exchange_name

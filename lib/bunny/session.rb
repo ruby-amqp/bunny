@@ -134,7 +134,7 @@ module Bunny
     # @option connection_string_or_opts [Boolean] :recover_from_connection_close (true) Should this connection recover after receiving a server-sent connection.close (e.g. connection was force closed)?
     # @option connection_string_or_opts [Object] :session_error_handler (Thread.current) Object which responds to #raise that will act as a session error handler. Defaults to Thread.current, which will raise asynchronous exceptions in the thread that created the session.
     #
-    # @option connection_string_or_opts [Bunny::TopologyRecoveryFilter] if provided, will be used for object filtering during topology recovery
+    # @option connection_string_or_opts [Bunny::TopologyRecoveryFilter] :topology_recovery_filter if provided, will be used for object filtering during topology recovery
     # @option optz [String] :auth_mechanism ("PLAIN") Authentication mechanism, PLAIN or EXTERNAL
     # @option optz [String] :locale ("PLAIN") Locale RabbitMQ should use
     # @option optz [String] :connection_name (nil) Client-provided connection name, if any. Note that the value returned does not uniquely identify a connection and cannot be used as a connection identifier in HTTP API requests.
@@ -227,7 +227,8 @@ module Bunny
 
       @channels            = Hash.new
 
-      @topology_registry = TopologyRegistry.new
+      trf = @opts.fetch(:topology_recovery_filter, DefaultTopologyRecoveryFilter.new)
+      @topology_registry = TopologyRegistry.new(topology_recovery_filter: trf)
 
       @recovery_attempt_started = opts[:recovery_attempt_started]
       @recovery_completed       = opts[:recovery_completed]
@@ -996,7 +997,7 @@ module Bunny
       # The recovery sequence is the following:
       # 1. Recover exchanges
       @logger.debug "Will recover recorded exchanges"
-      @topology_registry.exchanges.values.reject { |x| x.predeclared? }.each do |rx|
+      @topology_registry.filtered_exchanges.reject { |x| x.predeclared? }.each do |rx|
         begin
           recover_exchange(rx)
         rescue Exception => e
@@ -1005,7 +1006,7 @@ module Bunny
       end
       # 2. Recover queues
       @logger.debug "Will recover recorded queues"
-      @topology_registry.queues.values.each do |rq|
+      @topology_registry.filtered_queues.each do |rq|
         begin
           recover_queue(rq)
         rescue Exception => e
@@ -1014,14 +1015,14 @@ module Bunny
       end
       # 3. Recover bindings
       @logger.debug "Will recover recorded bindings"
-      @topology_registry.queue_bindings.each do |rb|
+      @topology_registry.filtered_queue_bindings.each do |rb|
         begin
           recover_queue_binding(rb)
         rescue Exception => e
           @logger.error "Caught an exception while re-declaring a binding of queue #{rb.destination}: #{e.inspect}"
         end
       end
-      @topology_registry.exchange_bindings.each do |rb|
+      @topology_registry.filtered_exchange_bindings.each do |rb|
         begin
           recover_exchange_binding(rb)
         rescue Exception => e
@@ -1031,7 +1032,7 @@ module Bunny
 
       # 4. Recover consumers
       @logger.debug "Will recover recorded consumers"
-      @topology_registry.consumers.values.each do |rc|
+      @topology_registry.filtered_consumers.each do |rc|
         recover_consumer(rc)
       end
     end
