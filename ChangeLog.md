@@ -1,5 +1,25 @@
 ## Changes between Bunny 2.24.0 and 3.0.0 (in development)
 
+### Topology Recovery Improvements
+
+Back in 2013-2014, RabbitMQ Java client's connection recovery was heavily
+influenced by what was available in Bunny.
+
+In 2025, Bunny starts adopting the features Java client has developed
+over the years, starting with connection-level topology tracking.
+
+Now all exchanges, queues, bindings recorded for topology recovery are stored
+and maintained by `Bunny::Session` and not `Bunny::Channel`. This makes
+recovery somewhat simpler and eliminates a class of problems where,
+say, a queue was declared on one channel, deleted on another, and re-created
+by Bunny's connection recovery contrary to the user's intent.
+
+The only potentially breaking change here is: the client now intentionally skips
+tracking queue and exchange declarations with `passive: true`.
+
+GitHub issues: [#704](https://github.com/ruby-amqp/bunny/issues/704), [#711](https://github.com/ruby-amqp/bunny/issues/711)
+
+
 ### RemovedVersioned Delivery Tags
 
 Versioned delivery tags introduced about as many problems as they have solved.
