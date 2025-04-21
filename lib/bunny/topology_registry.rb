@@ -4,10 +4,30 @@
 require "set"
 
 module Bunny
+  # As queues, exchanges, bindings are created and deleted,
+  # connections keep track of the topology using this registry.
+  #
+  # Then, when the conneciton and its channels are recovered,
+  # this registry is used as the source of truth during topology
+  # recovery.
+  #
+  # This registry takes care of dropping auto-delete exchanges or queues
+  # when their respective conditions for removal hold.
+  #
+  # @see [#record_queue]
+  # @see [#delete_recorded_queue]
+  # @see [#delete_recorded_queue_named]
+  # @see [#record_exchange]
+  # @see [#delete_recorded_exchange]
+  # @see [#delete_recorded_exchange_named]
+  # @see [#record_exchange_binding_with]
+  # @see [#delete_recorded_exchange_binding]
+  # @see [#record_queue_binding_with]
+  # @see [#delete_recorded_queue_binding]
+  # @see [#record_consumer_with]
+  # @see [#delete_recorded_consumer]
   class TopologyRegistry
     def initialize(opts = {})
-      @mutex_impl = Monitor
-
       self.reset!
     end
 
@@ -18,15 +38,17 @@ module Bunny
       @exchange_bindings = Set.new
       @consumers = {}
 
-      @queue_mutex = @mutex_impl.new
-      @exchange_mutex = @mutex_impl.new
-      @binding_mutex = @mutex_impl.new
-      @consumer_mutex = @mutex_impl.new
+      @queue_mutex = Monitor.new
+      @exchange_mutex = Monitor.new
+      @binding_mutex = Monitor.new
+      @consumer_mutex = Monitor.new
     end
 
     #
     # Queues
     #
+
+    # @!group Queues
 
     # @return [Hash<String, Bunny::RecordedQueue>]
     attr_reader :queues
@@ -78,9 +100,13 @@ module Bunny
       end
     end
 
+    # @!endgroup
+
     #
     # Consumers
     #
+
+    # @!group Consumers
 
     # @return [Hash<String, Bunny::RecordedConsumer>]
     attr_reader :consumers
@@ -114,9 +140,24 @@ module Bunny
       end
     end
 
+    # @param [String] old_name
+    # @param [String] new_name
+    # @private
+    def propagate_queue_name_change_to_consumers(old_name, new_name)
+      @consumer_mutex.synchronize do
+        @consumers.each do |_, rc|
+          rc.update_queue_name_to(new_name) if rc.queue_name == old_name
+        end
+      end
+    end
+
+    # @!endgroup
+
     #
     # Exchanges
     #
+
+    # @!group Exchanges
 
     attr_reader :exchanges
 
@@ -163,9 +204,13 @@ module Bunny
       end
     end
 
+    # @!endgroup
+
     #
     # Bindings
     #
+
+    # !@group Bindings
 
     # @return Set<Bunny::RecordedQueueBinding>
     attr_reader :queue_bindings
@@ -272,16 +317,7 @@ module Bunny
       end
     end
 
-    # @param [String] old_name
-    # @param [String] new_name
-    # @private
-    def propagate_queue_name_change_to_consumers(old_name, new_name)
-      @consumer_mutex.synchronize do
-        @consumers.each do |_, rc|
-          rc.update_queue_name_to(new_name) if rc.queue_name == old_name
-        end
-      end
-    end
+    # @!endgroup
 
     #
     # Implementation
@@ -369,6 +405,7 @@ module Bunny
   # Recordable, Recoverable Entities
   #
 
+  # @abstract
   class RecordedEntity
     # @return [Bunny::Channel]
     attr_reader :channel
@@ -378,7 +415,7 @@ module Bunny
       @channel = ch
     end
   end
-
+  # @abstract Represents a named topology entity
   class RecordedNamedEntity < RecordedEntity
     # @return [String]
     attr_reader :name
@@ -403,6 +440,8 @@ module Bunny
     # @return [Hash]
     attr_reader :arguments
 
+    # @param ch [Bunny::Channel]
+    # @param name [String]
     def initialize(ch, name)
       super(ch, name)
 
@@ -442,14 +481,17 @@ module Bunny
       self
     end
 
+    # @param [Integer]
     def hash
       [self.class, self.channel, self.name, @type, @durable, @auto_delete, @arguments].hash
     end
 
+    # @return [Boolean]
     def eql?(other)
       self == other
     end
 
+    # @return [Boolean]
     def ==(other)
       other.class == self.class &&
         other.name == self.name &&
@@ -476,8 +518,13 @@ module Bunny
   class RecordedQueue < RecordedNamedEntity
     EMPTY_STRING = "".freeze
 
-    attr_reader :durable, :auto_delete, :exclusive, :arguments
+    # @return [Boolean]
+    attr_reader :durable, :auto_delete, :exclusive
+    # @return [Hash]
+    attr_reader :arguments
 
+    # @param ch [Bunny::Channel]
+    # @param name [String]
     def initialize(ch, name)
       super ch, name
 
@@ -526,6 +573,7 @@ module Bunny
       self
     end
 
+    # @return [Boolean]
     def server_named?
       !!@server_named
     end
@@ -545,10 +593,12 @@ module Bunny
       end
     end
 
+    # @return [Boolean]
     def eql?(other)
       self == other
     end
 
+    # @return [Boolean]
     def ==(other)
       other.class == self.class &&
         other.name == self.name &&
@@ -585,6 +635,8 @@ module Bunny
     # @return [Hash]
     attr_reader :arguments
 
+    # @param ch [Bunny::Channel]
+    # @param queue_name [String]
     def initialize(ch, queue_name)
       super ch
 
@@ -614,6 +666,7 @@ module Bunny
       self
     end
 
+    # @param value [#call, Proc]
     def with_callable(value)
       @callable = value
       self
@@ -629,6 +682,7 @@ module Bunny
       self
     end
 
+    # @param value [Hash]
     def with_arguments(value)
       @arguments = value
       self
@@ -638,6 +692,8 @@ module Bunny
       self == other
     end
 
+    # @param other [Bunny::RecordedConsumer]
+    # @return [Boolean]
     def ==(other)
       other.class == self.class &&
         other.channel == self.channel &&
@@ -700,10 +756,14 @@ module Bunny
       [self.class, @source, @destination, @routing_key, @arguments].hash
     end
 
+    # @param other [Bunny::RecordedBinding]
+    # @return [Boolean]
     def eql?(other)
       self == other
     end
 
+    # @param other [Bunny::RecordedBinding]
+    # @return [Boolean]
     def ==(other)
       other.class == self.class &&
         other.source == self.source &&
