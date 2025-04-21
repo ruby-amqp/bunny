@@ -19,6 +19,13 @@ tracking queue and exchange declarations with `passive: true`.
 
 GitHub issues: [#704](https://github.com/ruby-amqp/bunny/issues/704), [#711](https://github.com/ruby-amqp/bunny/issues/711)
 
+### Reduced Connection Recovery Logging
+
+On connections that have connection recovery enabled, certain I/O exceptions
+are now logged at debug level to reduce log noise.
+
+GitHub issue: [#711](https://github.com/ruby-amqp/bunny/issues/711)
+
 
 ### RemovedVersioned Delivery Tags
 
