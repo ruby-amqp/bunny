@@ -6,6 +6,9 @@ module Bunny
   class Exception < ::StandardError
   end
 
+  # Used when a list of endpoints (hostnames) to connect to
+  # has been fully traversed, that is, there are no more endpoints (hostnames)
+  # to try.
   class HostListDepleted < Exception
     def initialize
       super("No more hosts to try in the supplied list of hosts")
