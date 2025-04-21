@@ -12,20 +12,20 @@ conn = Bunny.new(heartbeat_timeout: 8)
 conn.start
 
 ch1 = conn.create_channel
-x1  = ch1.topic("bunny.examples.recovery.e1", :durable => false)
-q1  = ch1.queue("bunny.examples.recovery.q1", :durable => false)
+x1  = ch1.topic("bunny.examples.recovery.e1", durable: true)
+q1  = ch1.queue("bunny.examples.recovery.q1", durable: true)
 
-q1.bind(x1, :routing_key => "abc").bind(x1, :routing_key => "def")
+q1.bind(x1, routing_key: "abc").bind(x1, routing_key: "def")
 
 ch2 = conn.create_channel
-x2  = ch2.topic("bunny.examples.recovery.e2", :durable => false)
-q2  = ch2.queue("bunny.examples.recovery.q2", :durable => false)
+x2  = ch2.topic("bunny.examples.recovery.e2", durable: true)
+q2  = ch2.queue("bunny.examples.recovery.q2", durable: true)
 
-q2.bind(x2, :routing_key => "abc").bind(x2, :routing_key => "def")
+q2.bind(x2, routing_key: "abc").bind(x2, routing_key: "def")
 
 q1.subscribe do |delivery_info, metadata, payload|
   puts "Consumed #{payload} at stage one"
-  x2.publish(payload, :routing_key => ["abc", "def", "xyz"].sample)
+  x2.publish(payload, routing_key: %w[abc def xyz].sample)
 end
 
 q2.subscribe do |delivery_info, metadata, payload|
@@ -34,11 +34,11 @@ end
 
 loop do
   sleep 2
-  rk = ["abc", "def", "ghi", "xyz"].sample
+  rk = %w[abc def ghi xyz].sample
   puts "Publishing with routing key #{rk}"
 
   begin
-    x1.publish(rand.to_s, :routing_key => rk)
+    x1.publish(rand.to_s, routing_key: rk)
   # happens when a message is published before the connection
   # is recovered
   rescue Bunny::ConnectionClosedError => e

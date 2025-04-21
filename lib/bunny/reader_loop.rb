@@ -45,7 +45,7 @@ module Bunny
 
           @network_is_down = true
           if @session.automatically_recover?
-            log_exception(e, level: :warn)
+            log_exception(e, level: :debug)
             @session.handle_network_failure(e)
           else
             log_exception(e)

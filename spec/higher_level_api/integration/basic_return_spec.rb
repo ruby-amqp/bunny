@@ -12,7 +12,7 @@ describe Bunny::Exchange, "#publish" do
   end
 
 
-  context "with mandatory: true and a bad [no routes] routing key" do
+  context "with mandatory: true and an unroutable routing key" do
     it "causes a message to be returned" do
       ch = connection.create_channel
       x  = ch.default_exchange

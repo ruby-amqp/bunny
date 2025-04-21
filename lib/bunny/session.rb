@@ -8,6 +8,7 @@ require "bunny/transport"
 require "bunny/channel_id_allocator"
 require "bunny/heartbeat_sender"
 require "bunny/reader_loop"
+require "bunny/topology_registry"
 require "bunny/authentication/credentials_encoder"
 require "bunny/authentication/plain_mechanism_encoder"
 require "bunny/authentication/external_mechanism_encoder"
@@ -60,7 +61,7 @@ module Bunny
       :product      => "Bunny",
       :platform     => ::RUBY_DESCRIPTION,
       :version      => Bunny::VERSION,
-      :information  => "http://rubybunny.info",
+      :information  => "https://github.com/ruby-amqp/bunny",
     }
 
     # @private
@@ -80,6 +81,8 @@ module Bunny
     attr_reader :status, :heartbeat, :user, :pass, :vhost, :frame_max, :channel_max, :threaded
     attr_reader :server_capabilities, :server_properties, :server_authentication_mechanisms, :server_locales
     attr_reader :channel_id_allocator
+    # @return [Bunny::TopologyRegistry]
+    attr_reader :topology_registry
     # Authentication mechanism, e.g. "PLAIN" or "EXTERNAL"
     # @return [String]
     attr_reader :mechanism
@@ -222,9 +225,11 @@ module Bunny
 
       @channels            = Hash.new
 
+      @topology_registry = TopologyRegistry.new
+
       @recovery_attempt_started = opts[:recovery_attempt_started]
       @recovery_completed       = opts[:recovery_completed]
-      @recovery_attempts_exhausted          = opts[:recovery_attempts_exhausted]
+      @recovery_attempts_exhausted = opts[:recovery_attempts_exhausted]
 
       @session_error_handler = opts.fetch(:session_error_handler, Thread.current)
 
@@ -387,7 +392,10 @@ module Bunny
         if n && (ch = @channels[n])
           ch
         else
-          ch = Bunny::Channel.new(self, n, ConsumerWorkPool.new(consumer_pool_size || 1, consumer_pool_abort_on_exception, consumer_pool_shutdown_timeout))
+          work_pool = ConsumerWorkPool.new(consumer_pool_size || 1, consumer_pool_abort_on_exception, consumer_pool_shutdown_timeout)
+          ch = Bunny::Channel.new(self, n, {
+            work_pool: work_pool
+          })
           ch.open
           ch
         end
@@ -498,7 +506,7 @@ module Bunny
 
     # Parses an amqp[s] URI into a hash that {Bunny::Session#initialize} accepts.
     #
-    # @param [String] uri amqp or amqps URI to parse
+    # @param [String | Hash] uri amqp or amqps URI to parse
     # @return [Hash] Parsed URI as a hash
     def self.parse_uri(uri)
       AMQ::Settings.configure(uri)
@@ -750,7 +758,9 @@ module Bunny
             @reader_loop.stop if @reader_loop
             maybe_shutdown_heartbeat_sender
 
-            recover_from_network_failure
+            recover_connection_and_channels
+            recover_topology
+            notify_of_recovery_completion
           else
             @logger.error "Exception #{exception.message} is considered unrecoverable..."
           end
@@ -760,15 +770,138 @@ module Bunny
       end
     end
 
+    # @return [Boolean]
     # @private
     def recoverable_network_failure?(exception)
       @recoverable_exceptions.any? {|x| exception.kind_of? x}
     end
 
+    # @return [Boolean]
     # @private
     def recovering_from_network_failure?
       @recovering_from_network_failure
     end
+
+    # @param [Bunny::Queue] queue
+    # @private
+    def record_queue(queue)
+      @topology_registry.record_queue(queue)
+    end
+
+    # @param [Bunny::Channel] ch
+    # @param [String] name
+    # @param [Boolean] server_named
+    # @param [Boolean] durable
+    # @param [Boolean] auto_delete
+    # @param [Boolean] exclusive
+    # @param [Hash] arguments
+    def record_queue_with(ch, name, server_named, durable, auto_delete, exclusive, arguments)
+      @topology_registry.record_queue_with(ch, name, server_named, durable, auto_delete, exclusive, arguments)
+    end
+
+    # @param [Bunny::Queue, Bunny::RecordedQueue] queue
+    # @private
+    def delete_recoreded_queue(queue)
+      @topology_registry.delete_recorded_queue(queue)
+    end
+
+    # @param [String] name
+    # @private
+    def delete_recorded_queue_named(name)
+      @topology_registry.delete_recorded_queue_named(name)
+    end
+
+    # @param [Bunny::Exchange] exchange
+    # @private
+    def record_exchange(exchange)
+      @topology_registry.record_exchange(exchange)
+    end
+
+    # @param [Bunny::Channel] ch
+    # @param [String] name
+    # @param [String] type
+    # @param [Boolean] durable
+    # @param [Boolean] auto_delete
+    # @param [Hash] arguments
+    def record_exchange_with(ch, name, type, durable, auto_delete, arguments)
+      @topology_registry.record_exchange_with(ch, name, type, durable, auto_delete, arguments)
+    end
+
+    # @param [Bunny::Exchange] exchange
+    # @private
+    def delete_recorded_exchange(exchange)
+      @topology_registry.delete_recorded_exchange(exchange)
+    end
+
+    # @param [String] name
+    # @private
+    def delete_recorded_exchange_named(name)
+      @topology_registry.delete_recorded_exchange_named(name)
+    end
+
+    # @param [Bunny::Channel] ch
+    # @param [String] exchange_name
+    # @param [String] queue_name
+    # @param [#call] callable
+    # @param [String] routing_key
+    # @param [Hash] arguments
+    # @private
+    def record_queue_binding_with(ch, exchange_name, queue_name, routing_key, arguments)
+      @topology_registry.record_queue_binding_with(ch, exchange_name, queue_name, routing_key, arguments)
+    end
+
+    # @param [Bunny::Channel] ch
+    # @param [String] exchange_name
+    # @param [String] queue_name
+    # @param [#call] callable
+    # @param [String] routing_key
+    # @param [Hash] arguments
+    # @private
+    def delete_recorded_queue_binding(ch, exchange_name, queue_name, routing_key, arguments)
+      @topology_registry.delete_recorded_queue_binding(ch, exchange_name, queue_name, routing_key, arguments)
+    end
+
+    # @param [Bunny::Channel] ch
+    # @param [String] source_name
+    # @param [String] destination_name
+    # @param [#call] callable
+    # @param [String] routing_key
+    # @param [Hash] arguments
+    # @private
+    def record_exchange_binding_with(ch, source_name, destination_name, routing_key, arguments)
+      @topology_registry.record_exchange_binding_with(ch, source_name, destination_name, routing_key, arguments)
+    end
+
+    # @param [Bunny::Channel] ch
+    # @param [String] source_name
+    # @param [String] destination_name
+    # @param [#call] callable
+    # @param [String] routing_key
+    # @param [Hash] arguments
+    # @private
+    def delete_recorded_exchange_binding(ch, source_name, destination_name, routing_key, arguments)
+      @topology_registry.delete_recorded_exchange_binding(ch, source_name, destination_name, routing_key, arguments)
+    end
+
+    # @param [Bunny::Channel] ch
+    # @param [String] consumer_tag
+    # @param [String] queue_name
+    # @param [#call] callable
+    # @param [Boolean] manual_ack
+    # @param [Boolean] exclusive
+    # @param [Hash] arguments
+    # @private
+    def record_consumer_with(ch, consumer_tag, queue_name, callable, manual_ack, exclusive, arguments)
+      @topology_registry.record_consumer_with(ch, consumer_tag, queue_name, callable, manual_ack, exclusive, arguments)
+    end
+
+    # @param [String] consumer_tag
+    # @private
+    def delete_recorded_consumer(consumer_tag)
+      @topology_registry.delete_recorded_consumer(consumer_tag)
+    end
+
+
 
     # @private
     def announce_network_failure_recovery
@@ -780,18 +913,17 @@ module Bunny
     end
 
     # @private
-    def recover_from_network_failure
+    def recover_connection_and_channels
       sleep @network_recovery_interval
       @logger.debug "Will attempt connection recovery..."
       notify_of_recovery_attempt_start
 
       self.initialize_transport
 
-      @logger.warn "Retrying connection on next host in line: #{@transport.host}:#{@transport.port}"
+      @logger.debug "Retrying connection on next host in line: #{@transport.host}:#{@transport.port}"
       self.start
 
       if open?
-
         @recovering_from_network_failure = false
         @logger.debug "Connection is now open"
         if @reset_recovery_attempt_counter_after_reconnection
@@ -802,7 +934,6 @@ module Bunny
         end
 
         recover_channels
-        notify_of_recovery_completion
       end
     rescue HostListDepleted
       reset_address_index
@@ -858,6 +989,124 @@ module Bunny
           ch.open
           ch.recover_from_network_failure
         end
+      end
+    end
+
+    # @private
+    def recover_topology
+      @logger.debug "Will recover topology now"
+      # The recovery sequence is the following:
+      # 1. Recover exchanges
+      @logger.debug "Will recover recorded exchanges"
+      @topology_registry.exchanges.values.reject { |x| x.predeclared? }.each do |rx|
+        begin
+          recover_exchange(rx)
+        rescue Exception => e
+          @logger.error "Caught an exception while re-declaring exchange #{rx.name}: #{e.inspect}"
+        end
+      end
+      # 2. Recover queues
+      @logger.debug "Will recover recorded queues"
+      @topology_registry.queues.values.each do |rq|
+        begin
+          recover_queue(rq)
+        rescue Exception => e
+          @logger.error "Caught an exception while re-declaring queue #{rq.name}: #{e.inspect}"
+        end
+      end
+      # 3. Recover bindings
+      @logger.debug "Will recover recorded bindings"
+      @topology_registry.queue_bindings.each do |rb|
+        begin
+          recover_queue_binding(rb)
+        rescue Exception => e
+          @logger.error "Caught an exception while re-declaring a binding of queue #{rb.destination}: #{e.inspect}"
+        end
+      end
+      @topology_registry.exchange_bindings.each do |rb|
+        begin
+          recover_exchange_binding(rb)
+        rescue Exception => e
+          @logger.error "Caught an exception while re-declaring a binding of exchange #{rb.source}: #{e.inspect}"
+        end
+      end
+
+      # 4. Recover consumers
+      @logger.debug "Will recover recorded consumers"
+      @topology_registry.consumers.values.each do |rc|
+        recover_consumer(rc)
+      end
+    end
+
+    # @param [Bunny::RecordedExchange] x
+    # @private
+    def recover_exchange(x)
+      opts = {
+        durable: x.durable,
+        auto_delete: x.auto_delete,
+        arguments: x.arguments
+      }
+      x.channel.exchange_declare(x.name, x.type, opts)
+    end
+
+    # @param [Bunny::RecordedQueue] q
+    # @private
+    def recover_queue(q)
+      opts = {
+        durable: q.durable,
+        auto_delete: q.auto_delete,
+        exclusive: q.exclusive,
+        arguments: q.arguments
+      }
+
+      old_name = q.name
+      # this response carries the server-generated name
+      queue_declare_ok = q.channel.queue_declare(q.name_to_use_for_recovery, opts)
+      new_name = queue_declare_ok.queue
+
+      # if the name has changed, update all the bindings where
+      # this queue is the destination, then all consumers
+      if new_name != old_name
+        record_queue_name_change(old_name, new_name)
+        q.channel.record_queue_name_change(old_name, new_name)
+      end
+    end
+
+    # @param [String] old_name
+    # @param [String] new_name
+    # @private
+    def record_queue_name_change(old_name, new_name)
+      @topology_registry.record_queue_name_change(old_name, new_name)
+    end
+
+    # @param [Bunny::RecordedQueueBinding] rb
+    # @private
+    def recover_queue_binding(rb)
+      opts = {
+        routing_key: rb.routing_key,
+        arguments: rb.arguments
+      }
+
+      rb.channel.queue_bind_without_recording_topology(rb.destination, rb.source, opts)
+    end
+
+    # @param [Bunny::RecordedExchangeBindingBinding] rb
+    # @private
+    def recover_exchange_binding(rb)
+      opts = {
+        routing_key: rb.routing_key,
+        arguments: rb.arguments
+      }
+
+      rb.channel.exchange_bind_without_recording_topology(rb.source, rb.destination, opts)
+    end
+
+    # @param [Bunny::RecordedConsumer] c
+    # @private
+    def recover_consumer(c)
+      c.channel.maybe_reinitialize_consumer_pool!
+      c.channel.basic_consume(c.queue_name, c.consumer_tag, !c.manual_ack, c.exclusive, c.arguments) do |*args|
+        c.callable.call(*args)
       end
     end
 
