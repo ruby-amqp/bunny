@@ -127,9 +127,9 @@ describe "Connection recovery" do
       expect(ch).to be_open
       ensure_queue_recovery(ch, q)
 
-      expect(c.topology_registry.queues.size).to be ==(1)
+      expect(c.topology_registry.queues.size).to eq 1
       q.delete
-      expect(c.topology_registry.queues.size).to be ==(0)
+      expect(c.topology_registry.queues.size).to eq 0
     end
   end
 
@@ -171,9 +171,9 @@ describe "Connection recovery" do
       ensure_queue_recovery(ch, q)
       ensure_queue_recovery(ch, q2)
 
-      expect(c.topology_registry.queues.size).to be ==(1)
+      expect(c.topology_registry.queues.size).to eq 1
       q.delete
-      expect(c.topology_registry.queues.size).to be ==(0)
+      expect(c.topology_registry.queues.size).to eq 0
     end
   end
 
@@ -190,13 +190,13 @@ describe "Connection recovery" do
       expect(q.name).to_not be ==(old_name)
 
       # queue name has changed
-      expect(c.topology_registry.queues.size).to be ==(1)
+      expect(c.topology_registry.queues.size).to eq 1
       expect(c.topology_registry.queues[old_name]).to be(nil)
 
       ensure_queue_recovery(ch, q)
 
       q.delete
-      expect(c.topology_registry.queues.size).to be ==(0)
+      expect(c.topology_registry.queues.size).to eq 0
     end
   end
 
@@ -211,11 +211,11 @@ describe "Connection recovery" do
       expect(ch).to be_open
       ensure_queue_binding_recovery(ch, x, q)
 
-      expect(c.topology_registry.queue_bindings.size).to be ==(1)
-      expect(c.topology_registry.queues.size).to be ==(1)
+      expect(c.topology_registry.queue_bindings.size).to eq 1
+      expect(c.topology_registry.queues.size).to eq 1
       q.delete
-      expect(c.topology_registry.queues.size).to be ==(0)
-      expect(c.topology_registry.queue_bindings.size).to be ==(0)
+      expect(c.topology_registry.queues.size).to eq 0
+      expect(c.topology_registry.queue_bindings.size).to eq 0
     end
   end
 
@@ -240,19 +240,19 @@ describe "Connection recovery" do
       wait_for_recovery_with { connections.any? && exchange_names_in_vhost("/").include?(source.name) }
       ch.confirm_select
 
-      expect(c.topology_registry.queues.size).to be ==(2)
+      expect(c.topology_registry.queues.size).to eq 2
 
       source.publish("msg", routing_key: "")
       ch.wait_for_confirms
       expect(dst_queue.message_count).to eq 1
 
-      expect(c.topology_registry.exchanges.size).to be ==(2)
-      expect(c.topology_registry.exchange_bindings.size).to be ==(1)
+      expect(c.topology_registry.exchanges.size).to eq 2
+      expect(c.topology_registry.exchange_bindings.size).to eq 1
 
       source.delete
       destination.delete
 
-      expect(c.topology_registry.exchanges.size).to be ==(0)
+      expect(c.topology_registry.exchanges.size).to eq 0
     end
   end
 
@@ -284,13 +284,13 @@ describe "Connection recovery" do
         delivered = true
       end
 
-      expect(c.topology_registry.consumers.size).to be ==(1)
+      expect(c.topology_registry.consumers.size).to eq 1
       close_all_connections!
       wait_for_recovery_with { connections.any? }
       expect(ch).to be_open
 
-      expect(c.topology_registry.queues.size).to be ==(1)
-      expect(c.topology_registry.consumers.size).to be ==(1)
+      expect(c.topology_registry.queues.size).to eq 1
+      expect(c.topology_registry.consumers.size).to eq 1
 
       q.publish("")
       ch.wait_for_confirms
@@ -298,7 +298,7 @@ describe "Connection recovery" do
       poll_until { delivered }
 
       cons.cancel
-      expect(c.topology_registry.consumers.size).to be ==(0)
+      expect(c.topology_registry.consumers.size).to eq 0
     end
   end
 
@@ -315,6 +315,7 @@ describe "Connection recovery" do
       sleep 0.5
 
       expect(q.consumer_count).to eq n
+      expect(c.topology_registry.consumers.size).to eq n
     end
   end
 
