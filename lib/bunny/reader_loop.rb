@@ -43,7 +43,11 @@ module Bunny
                OpenSSL::OpenSSLError => e
           break if terminate? || @session.closing? || @session.closed?
 
-          @network_is_down = true
+          @mutex.synchronize do
+            @stopping = true
+            @network_is_down = true
+          end
+
           if @session.automatically_recover?
             log_exception(e, level: :debug)
             @session.handle_network_failure(e)
@@ -62,10 +66,6 @@ module Bunny
             @network_is_down = true
             @session_error_handler.raise(Bunny::NetworkFailure.new("caught an unexpected exception in the network loop: #{e.message}", e))
           end
-        rescue Errno::EBADF => _ebadf
-          break if terminate?
-          # ignored, happens when we loop after the transport has already been closed
-          @mutex.synchronize { @stopping = true }
         end
       end
 
