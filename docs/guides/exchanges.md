@@ -972,8 +972,8 @@ conn.start
 ch   = conn.create_channel
 x    = ch.headers("headers")
 
-q1   = ch.queue("", :exclusive => true).bind(x, :arguments => {"os" => "linux", "cores" => 8, "x-match" => "all"})
-q2   = ch.queue("", :exclusive => true).bind(x, :arguments => {"os" => "osx",   "cores" => 4, "x-match" => "any"})
+q1   = ch.queue("headers.q1.linux.8cores").bind(x, :arguments => {"os" => "linux", "cores" => 8, "x-match" => "all"})
+q2   = ch.queue("headers.q2.macos.any", exclusive: true).bind(x, :arguments => {"os" => "macos",   "cores" => 4, "x-match" => "any"})
 
 q1.subscribe do |delivery_info, properties, content|
   puts "#{q1.name} received #{content}"
@@ -983,7 +983,7 @@ q2.subscribe do |delivery_info, properties, content|
 end
 
 x.publish("8 cores/Linux", :headers => {"os" => "linux", "cores" => 8})
-x.publish("8 cores/OS X",  :headers => {"os" => "osx",   "cores" => 8})
+x.publish("8 cores/OS X",  :headers => {"os" => "macos",   "cores" => 8})
 x.publish("4 cores/Linux", :headers => {"os" => "linux", "cores" => 4})
 
 sleep 0.5
@@ -1079,18 +1079,18 @@ A quote from the project README:
 > In various scenarios, you may wish to ensure that messages sent to an exchange are consistently and equally distributed across a number of different queues based on
 > the routing key of the message. You could arrange for this to occur yourself by using a direct or topic exchange, binding queues to that exchange and then publishing
 > messages to that exchange that match the various binding keys.
-> 
+>
 > However, arranging things this way can be problematic:
-> 
+>
 > It is difficult to ensure that all queues bound to the exchange will receive a (roughly) equal number of messages without baking in to the publishers quite a lot of
 > knowledge about the number of queues and their bindings.
-> 
+>
 > If the number of queues changes, it is not easy to ensure that the new topology still distributes messages between the different queues evenly.
-> 
+>
 > Consistent Hashing is a hashing technique whereby each bucket appears at multiple points throughout the hash space, and the bucket selected is the nearest
 > higher (or lower, it doesn't matter, provided it's consistent) bucket to the computed hash (and the hash space wraps around). The effect of this is that when a new
 > bucket is added or an existing bucket removed, only a very few hashes change which bucket they are routed to.
-> 
+>
 > In the case of Consistent Hashing as an exchange type, the hash is calculated from the hash of the routing key of each message received. Thus messages that have
 > the same routing key will have the same hash computed, and thus will be routed to the same queue, assuming no bindings have changed.
 
