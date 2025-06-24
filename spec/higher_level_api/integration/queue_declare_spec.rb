@@ -414,6 +414,7 @@ describe Bunny::Queue do
       # see http://www.rabbitmq.com/maxlength.html for more info
       it "causes the queue to be bounded" do
         ch   = connection.create_channel
+        ch.confirm_select
 
         q = ch.queue("bunny.tests.queues.with-arguments.max-length", arguments:  args, exclusive: true)
         expect(q.arguments).to eq args
@@ -421,6 +422,8 @@ describe Bunny::Queue do
         (n * 10).times do
           q.publish("xyzzy")
         end
+        ch.wait_for_confirms
+        sleep 0.1
 
         expect(q.message_count).to eq n
         (n * 5).times do
