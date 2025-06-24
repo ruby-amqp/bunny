@@ -143,7 +143,8 @@ module Bunny
     # @see http://rubybunny.info/articles/exchanges.html Exchanges and Publishing guide
     # @api public
     def publish(payload, opts = {})
-      @channel.basic_publish(payload, self.name, (opts.delete(:routing_key) || opts.delete(:key)), opts)
+      rk = opts[:routing_key] || opts[:key]
+      @channel.basic_publish(payload, self.name, rk, opts)
 
       self
     end
