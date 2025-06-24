@@ -30,6 +30,7 @@ end
 
 group :test do
   gem "rspec", "~> 3.13.0"
+  gem "sorted_set", '~> 1', '>= 1.0.2'
   gem "base64"
   gem "rabbitmq_http_api_client", "~> 2.2.0", require: "rabbitmq/http/client"
   gem "toxiproxy", "~> 2"
