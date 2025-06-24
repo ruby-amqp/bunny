@@ -200,7 +200,7 @@ module Bunny
     # @private
     def send_frame(frame)
       if closed?
-        @session.handle_network_failure(ConnectionClosedError.new(frame))
+        @session.handle_network_failure(ConnectionClosedError.new(frame)) if @session.automatically_recover?
       else
         write(frame.encode)
       end
@@ -212,7 +212,7 @@ module Bunny
     # @private
     def send_frame_without_timeout(frame)
       if closed?
-        @session.handle_network_failure(ConnectionClosedError.new(frame))
+        @session.handle_network_failure(ConnectionClosedError.new(frame)) if @session.automatically_recover?
       else
         write_without_timeout(frame.encode)
       end
