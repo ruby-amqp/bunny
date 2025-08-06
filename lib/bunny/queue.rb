@@ -404,8 +404,13 @@ module Bunny
 
     # @private
     def declare!
-      queue_declare_ok = @channel.queue_declare(@name, @options)
-      @name = queue_declare_ok.queue
+      @queue_declare_ok = @channel.queue_declare(@name, @options)
+      @name = @queue_declare_ok.queue
+    rescue NoMethodError => e
+      puts "@@@@incident"
+      puts "NoMethodError: #{e.message}"
+      puts @queue_declare_ok.inspect
+      puts @queue_declare_ok&.queue&.inspect
     end
 
     protected
