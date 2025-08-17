@@ -15,8 +15,8 @@ jobs:
     strategy:
       matrix:
         ruby-version:
-          - "3.4.2"
-          - "3.3.7"
+          - "3.4.4"
+          - "3.3.9"
           - "3.2.7"
 
     env:
