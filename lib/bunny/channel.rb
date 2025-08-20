@@ -2007,7 +2007,14 @@ module Bunny
 
     # @private
     def channel_level_exception_after_operation_that_has_no_response?(method)
-      method.reply_code == 406 && (method.reply_text =~ /unknown delivery tag/ || method.reply_text =~ /delivery acknowledgement on channel \d+ timed out/)
+      re1 = /unknown delivery tag/
+      re2 = /delivery acknowledgement on channel \d+ timed out/
+      re3 = /larger than configured max size/
+
+      res = [re1, re2, re3]
+      desc = method.reply_text
+
+      method.reply_code == 406 && (res.any? { |re| desc =~ re })
     end
 
     # @private
