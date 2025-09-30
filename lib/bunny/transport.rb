@@ -297,7 +297,7 @@ module Bunny
     end
 
     def initialize_socket
-      @logger.debug("Usong connection timeout of #{@connect_timeout} when connecting to #{@host}:#{@port}")
+      @logger.debug("Using connection timeout of #{@connect_timeout} when connecting to #{@host}:#{@port}")
       begin
         @socket = Bunny::SocketImpl.open(@host, @port,
           :keepalive      => @opts[:keepalive],
