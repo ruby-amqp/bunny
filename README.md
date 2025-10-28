@@ -57,7 +57,7 @@ For environments that use TLS, Bunny expects Ruby installations to use a recent 
 
 Bunny no longer supports JRuby.
 
-JRuby users should use [March Hare](http://rubymarchhare.info), which has a similar API
+JRuby users should use [March Hare](https://github.com/ruby-amqp/march_hare), which has a similar API
 and is built on top of the RabbitMQ Java client specifically for JRuby.
 
 
