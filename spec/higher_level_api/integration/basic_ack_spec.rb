@@ -13,8 +13,9 @@ describe Bunny::Channel, "#ack" do
 
   context "with a valid (known) delivery tag" do
     it "acknowledges a message" do
+      qn = "bunny.basic.ack.manual-acks.#{rand.to_s[0..7]}"
       ch = connection.create_channel
-      q  = ch.queue("bunny.basic.ack.manual-acks", exclusive: true)
+      q  = ch.queue(qn, exclusive: true)
       x  = ch.default_exchange
 
       x.publish("bunneth", routing_key: q.name)
@@ -26,7 +27,7 @@ describe Bunny::Channel, "#ack" do
       ch.close
 
       ch = connection.create_channel
-      q  = ch.queue("bunny.basic.ack.manual-acks", exclusive: true)
+      q  = ch.queue(qn, exclusive: true)
       expect(q.message_count).to eq 0
       ch.close
     end
@@ -34,8 +35,9 @@ describe Bunny::Channel, "#ack" do
 
   context "with a valid (known) delivery tag (multiple = true)" do
     it "acknowledges a message" do
+      qn = "bunny.basic.ack.manual-acks.#{rand.to_s[0..7]}"
       ch = connection.create_channel
-      q  = ch.queue("bunny.basic.ack.manual-acks", exclusive: true)
+      q  = ch.queue(qn, exclusive: true)
       x  = ch.default_exchange
 
       x.publish("bunneth", routing_key: q.name)
@@ -49,7 +51,7 @@ describe Bunny::Channel, "#ack" do
       ch.close
 
       ch = connection.create_channel
-      q  = ch.queue("bunny.basic.ack.manual-acks", exclusive: true)
+      q  = ch.queue(qn, exclusive: true)
       expect(q.message_count).to eq 0
       ch.close
     end
@@ -57,8 +59,9 @@ describe Bunny::Channel, "#ack" do
 
   context "with a valid (known) delivery tag (multiple = false)" do
     it "acknowledges a message" do
+      qn = "bunny.basic.ack.manual-acks.#{rand.to_s[0..7]}"
       ch = connection.create_channel
-      q  = ch.queue("bunny.basic.ack.manual-acks", exclusive: true)
+      q  = ch.queue(qn, exclusive: true)
       x  = ch.default_exchange
 
       x.publish("bunneth", routing_key: q.name)
@@ -72,7 +75,7 @@ describe Bunny::Channel, "#ack" do
       ch.close
 
       ch = connection.create_channel
-      q  = ch.queue("bunny.basic.ack.manual-acks", exclusive: true)
+      q  = ch.queue(qn, exclusive: true)
       expect(q.message_count).to eq 1
       ch.close
     end
@@ -80,8 +83,9 @@ describe Bunny::Channel, "#ack" do
 
   context "with a valid (known) delivery tag and automatic ack mode" do
     it "results in a channel exception" do
+      qn = "bunny.basic.ack.manual-acks.#{rand.to_s[0..7]}"
       ch = connection.create_channel
-      q  = ch.queue("bunny.basic.ack.manual-acks", exclusive: true)
+      q  = ch.queue(qn, exclusive: true)
       x  = ch.default_exchange
 
       q.subscribe(manual_ack: false) do |delivery_info, properties, payload|
@@ -119,8 +123,9 @@ describe Bunny::Channel, "#ack" do
 
   context "with a valid (known) delivery tag" do
     it "gets a depricated message warning for using :ack" do
+      qn = "bunny.basic.ack.manual-acks.#{rand.to_s[0..7]}"
       ch = connection.create_channel
-      q  = ch.queue("bunny.basic.ack.manual-acks", exclusive: true)
+      q  = ch.queue(qn, exclusive: true)
       x  = ch.default_exchange
 
       x.publish("bunneth", routing_key: q.name)
@@ -141,7 +146,7 @@ describe Bunny::Channel, "#ack" do
       ch.close
 
       ch = connection.create_channel
-      q  = ch.queue("bunny.basic.ack.manual-acks", exclusive: true)
+      q  = ch.queue(qn, exclusive: true)
       expect(q.message_count).to eq 0
       ch.close
     end
@@ -161,8 +166,9 @@ describe Bunny::Channel, "#basic_ack" do
 
   context "with a valid (known) delivery tag (multiple = true)" do
     it "acknowledges a message" do
+      qn = "bunny.basic.ack.manual-acks.#{rand.to_s[0..7]}"
       ch = connection.create_channel
-      q  = ch.queue("bunny.basic.ack.manual-acks", exclusive: true)
+      q  = ch.queue(qn, exclusive: true)
       x  = ch.default_exchange
 
       x.publish("bunneth", routing_key: q.name)
@@ -176,7 +182,7 @@ describe Bunny::Channel, "#basic_ack" do
       ch.close
 
       ch = connection.create_channel
-      q  = ch.queue("bunny.basic.ack.manual-acks", exclusive: true)
+      q  = ch.queue(qn, exclusive: true)
       expect(q.message_count).to eq 0
       ch.close
     end
@@ -184,8 +190,9 @@ describe Bunny::Channel, "#basic_ack" do
 
   context "with a valid (known) delivery tag (multiple = false)" do
     it "acknowledges a message" do
+      qn = "bunny.basic.ack.manual-acks.#{rand.to_s[0..7]}"
       ch = connection.create_channel
-      q  = ch.queue("bunny.basic.ack.manual-acks", exclusive: true)
+      q  = ch.queue(qn, exclusive: true)
       x  = ch.default_exchange
 
       x.publish("bunneth", routing_key: q.name)
@@ -199,7 +206,7 @@ describe Bunny::Channel, "#basic_ack" do
       ch.close
 
       ch = connection.create_channel
-      q  = ch.queue("bunny.basic.ack.manual-acks", exclusive: true)
+      q  = ch.queue(qn, exclusive: true)
       expect(q.message_count).to eq 1
       ch.close
     end
@@ -207,8 +214,9 @@ describe Bunny::Channel, "#basic_ack" do
 
   context "with a valid (known) delivery tag (multiple = default)" do
     it "acknowledges a message" do
+      qn = "bunny.basic.ack.manual-acks.#{rand.to_s[0..7]}"
       ch = connection.create_channel
-      q  = ch.queue("bunny.basic.ack.manual-acks", exclusive: true)
+      q  = ch.queue(qn, exclusive: true)
       x  = ch.default_exchange
 
       x.publish("bunneth", routing_key: q.name)
@@ -222,7 +230,7 @@ describe Bunny::Channel, "#basic_ack" do
       ch.close
 
       ch = connection.create_channel
-      q  = ch.queue("bunny.basic.ack.manual-acks", exclusive: true)
+      q  = ch.queue(qn, exclusive: true)
       expect(q.message_count).to eq 1
       ch.close
     end
