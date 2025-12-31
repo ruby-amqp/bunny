@@ -240,6 +240,9 @@ module Bunny
       end
 
       @cancel_consumers_before_closing = false
+
+      @last_consumer_tag = nil
+      @last_consumer = nil
     end
 
     # @private
@@ -2017,6 +2020,9 @@ module Bunny
     def register_consumer(consumer_tag, consumer)
       @consumer_mutex.synchronize do
         @consumers[consumer_tag] = consumer
+        if @last_consumer_tag == consumer_tag
+          @last_consumer = consumer
+        end
       end
     end
 
@@ -2024,6 +2030,10 @@ module Bunny
     def unregister_consumer(consumer_tag)
       @consumer_mutex.synchronize do
         @consumers.delete(consumer_tag)
+        if @last_consumer_tag == consumer_tag
+          @last_consumer_tag = nil
+          @last_consumer = nil
+        end
       end
     end
 
@@ -2038,6 +2048,9 @@ module Bunny
         c = Consumer.new(self, queue_name, consumer_tag, no_ack, exclusive, arguments)
         c.on_delivery(&block) if block
         @consumers[consumer_tag] = c
+        if @last_consumer_tag == consumer_tag
+          @last_consumer = c
+        end
         c
       end
       record_consumer_with(self, consumer_tag,
@@ -2110,6 +2123,10 @@ module Bunny
                 consume_with(consumer)
               else
                 @consumers.delete(method.consumer_tag)
+                if @last_consumer_tag == method.consumer_tag
+                  @last_consumer_tag = nil
+                  @last_consumer = nil
+                end
                 consumer.handle_cancellation(method)
               end
             rescue Exception => e
@@ -2178,17 +2195,30 @@ module Bunny
 
     # @private
     def handle_frameset(basic_deliver, properties, content)
-      consumer = @consumers[basic_deliver.consumer_tag]
+      tag = basic_deliver.consumer_tag
+      if @last_consumer_tag == tag
+        consumer = @last_consumer
+      else
+        consumer = @consumers[tag]
+        @last_consumer_tag = tag
+        @last_consumer = consumer
+      end
+
       if consumer
         @work_pool.submit do
-          begin
-            consumer.call(DeliveryInfo.new(basic_deliver, consumer, self), MessageProperties.new(properties), content)
-          rescue StandardError => e
-            @uncaught_exception_handler.call(e, consumer) if @uncaught_exception_handler
-          end
+          deliver_to_consumer(consumer, basic_deliver, properties, content)
         end
       else
         @logger.warn "No consumer for tag #{basic_deliver.consumer_tag} on channel #{@id}!"
+      end
+    end
+
+    # @private
+    def deliver_to_consumer(consumer, basic_deliver, properties, content)
+      begin
+        consumer.call(DeliveryInfo.new(basic_deliver, consumer, self), MessageProperties.new(properties), content)
+      rescue StandardError => e
+        @uncaught_exception_handler.call(e, consumer) if @uncaught_exception_handler
       end
     end
 

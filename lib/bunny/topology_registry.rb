@@ -8,7 +8,7 @@ module Bunny
   # As queues, exchanges, bindings are created and deleted,
   # connections keep track of the topology using this registry.
   #
-  # Then, when the conneciton and its channels are recovered,
+  # Then, when the connection and its channels are recovered,
   # this registry is used as the source of truth during topology
   # recovery.
   #

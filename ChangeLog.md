@@ -58,7 +58,6 @@ c = Bunny::Session.new(topology_recovery_filter: tf)
 c.start
 ```
 
-
 ### Removed Versioned Delivery Tags
 
 Versioned delivery tags introduced about as many problems as they have solved.
@@ -73,7 +72,7 @@ GitHub issue: [#700](https://github.com/ruby-amqp/bunny/issues/700).
 ### Significant Publisher Performance Improvements
 
 **Performance** (100K messages, with [amq-protocol `2.4.0`](https://github.com/ruby-amqp/amq-protocol/releases/tag/v2.4.0))
-with autoamtic publisher confirm tracking enabled (documented below):
+with automatic publisher confirm tracking enabled (documented below):
 
 | Approach | Throughput | vs 2.x confirms |
 |----------|------------|-----------------|
@@ -142,6 +141,19 @@ With that single line you get automatic backpressure via publisher confirms and 
 features in those languages (this is very cheap: just suspends a task), Bunny in Ruby uses a watermark approach
 with a shared condition variable. This avoids per-message mutex contention that has a dramatic negative performance effect.
 
+### Consumer Delivery Performance Optimizations
+
+Several optimizations to reduce overhead in the consumer delivery hot path:
+
+ * `DeliveryInfo`: hash representation is now lazily created only when accessed via
+   `to_hash`, `each`, or `[]`; direct method access (e.g., `delivery_tag`, `routing_key`)
+   no longer allocates a hash, providing a roughly x2 speedup on microbenchmarks of very simplistic consumers
+
+ * Consumer lookup caching: channels now cache the last consumer lookup, benefiting
+   the common single-consumer-per-channel pattern
+
+ * Frame header buffer reuse: the transport layer now reuses a buffer when reading
+   frame headers, reducing per-frame allocations
 
 ### Limit Hostname Resolution Time
 
@@ -153,7 +165,7 @@ assuming that the OS kernel supports the underlying socket option.
 
 ### An Option that Will Cancel Consumers Before a Channel Closing is Initiated
 
-Sometimes it makes more sense to avoid any possible in-flight deliveires
+Sometimes it makes more sense to avoid any possible in-flight deliveries
 rather than trying to deal with them in a reasonable way, even though
 all outstanding deliveries that were not confirmed will be requeued after
 a channel closure event.
@@ -244,7 +256,7 @@ Github issue: [#650](https://github.com/ruby-amqp/bunny/issues/650).
 
 Starting with this release, Bunny **targets Ruby installations with TLSv1.3 support**.
 This means that some older distributions, e.g. Ubuntu 16.04, 18.04, CentOS 7
-**will not longer be supported**.
+**will no longer be supported**.
 
 Those distributions have usually reached their end of general support (there won't be
 maintenance releases besides security patches for paying customers of those distributions),
@@ -319,7 +331,7 @@ GitHub issue: [#621](https://github.com/ruby-amqp/bunny/pull/621)
 ### Correct Handling of Publisher Confirms with Multiple Flag Set
 
 Bunny was invoking a publisher confirms callback excessively when
-it encountered, wasting CPU cycles for no good reason and
+it encountered confirmations with the multiple flag set, wasting CPU cycles for no good reason and
 potentially resulting in incorrect or confusing publishing
 application behavior.
 
@@ -398,7 +410,7 @@ GitHub issue: [ruby-amqp/bunny#600](https://github.com/ruby-amqp/bunny/pull/600)
 
 ### Asynchronous Exception Delegate
 
-Bunny now can delete asynchronous connection (`Bunny::Session`) exception to an arbitrary
+Bunny now can delegate asynchronous connection (`Bunny::Session`) exceptions to an arbitrary
 delegate object. Use the `:session_error_handler` connection setting to pass it.
 The value defaults to `Thread.current`.
 
@@ -715,7 +727,7 @@ GitHub issue: [#524](https://github.com/ruby-amqp/bunny/pull/524)
 
 ## Changes between Bunny 2.7.0 and 2.7.1 (Sep 25th, 2017)
 
-### Sensible Socket Read Timeouts When RabbitMQ is Configured to Disabled Heartbeats
+### Sensible Socket Read Timeouts When RabbitMQ is Configured to Disable Heartbeats
 
 Bunny now correctly handles scenarios where server is configured
 to disable heartbeats (which is a terrible idea, don't do it!)
@@ -774,7 +786,7 @@ GitHub issue: [#462](https://github.com/ruby-amqp/bunny/issues/462)
 
 ### Recovery Attempt Counting Strategy Changed
 
-Previous behehavior is not unreasonable but is not what many users and
+Previous behavior is not unreasonable but is not what many users and
 even RabbitMQ team members come to expect. Therefore it can be
 considered a bug.
 
@@ -952,7 +964,7 @@ Contributed by Seamus Abshere.
 
 ### Explicit Transport Closure on Recovery
 
-Bunny now will explicitly close previosly used transport before starting
+Bunny now will explicitly close previously used transport before starting
 connection recovery.
 
 GitHub issue: [#377](https://github.com/ruby-amqp/bunny/pull/377).
@@ -1011,7 +1023,7 @@ It is highly
 advised that 2.1.0 is not mixed with earlier versions of Bunny
 in case your applications include integers in message headers.
 
-If that's not the case, Bunny 2.1 will integeroperate with any earlier version
+If that's not the case, Bunny 2.1 will interoperate with any earlier version
 starting with 0.9.0 just fine. Popular clients in other languages
 (e.g. Java and .NET) will interoperate with Bunny 2.1.0 without
 issues.
@@ -1079,7 +1091,7 @@ Contributed by Wayne Conrad.
 
 Setting the `@logger.progname` attribute changes the output of the logger.
 This is not expected behaviour when the client provides a custom logger.
-Behaviour remains unchainged when the internally initialized logger is used.
+Behaviour remains unchanged when the internally initialized logger is used.
 
 Contributed by Justin Carter.
 
@@ -1121,7 +1133,7 @@ Default connection timeout has been increased to 25 seconds. The older
 default of 5 seconds wasn't sufficient in some edge cases with DNS
 resolution (e.g. when primary DNS server is down).
 
-The value can be overriden at connection time.
+The value can be overridden at connection time.
 
 Contributed by Yury Batenko.
 
@@ -1140,7 +1152,7 @@ Bunny users who run on JRuby are highly recommended to switch to [March Hare](ht
 which has nearly identical API and is significantly more efficient.
 
 
-### Bunny::Session#with_channel Synchornisation Improvements
+### Bunny::Session#with_channel Synchronisation Improvements
 
 `Bunny::Session#with_channel` is now fully synchronised and won't run into `COMMAND_INVALID` errors
 when used from multiple threads that share a connection.
@@ -1885,7 +1897,7 @@ access to the consumer and channel they are associated with via the
 ``` ruby
 q.subscribe do |delivery_info, properties, payload|
   delivery_info.consumer # => the consumer this delivery is for
-  delivery_info.consumer # => the channel this delivery is on
+  delivery_info.channel  # => the channel this delivery is on
 end
 ```
 
@@ -2147,7 +2159,7 @@ Contributed by Greg Brockman.
 ### Automatic Network Failure Recovery
 
 Automatic Network Failure Recovery is a new Bunny feature that was earlier
-impemented and vetted out in [amqp gem](http://rubyamqp.info). What it does
+implemented and vetted out in [amqp gem](http://rubyamqp.info). What it does
 is, when a network activity loop detects an issue, it will try to
 periodically recover [first TCP, then] AMQP 0.9.1 connection, reopen
 all channels, recover all exchanges, queues, bindings and consumers
@@ -2357,7 +2369,7 @@ ch2 = connection.create_channel
 q1  = ch2.queue("", :auto_delete => true)
 
 consumer = ExampleConsumer.new(ch2, q)
-ch2.basic_consume_with.(consumer)
+ch2.basic_consume_with(consumer)
 ```
 
 ### RABBITMQ_URL ENV variable support
@@ -2460,7 +2472,7 @@ delivery_info, _, content = q.pop
 but not hash destructuring, like, say, Clojure does.
 
 In addition we return nil for content when it should be nil
-(basic.get-empty) and unify these arguments betwee
+(basic.get-empty) and unify these arguments between
 
  * Bunny::Queue#pop
 

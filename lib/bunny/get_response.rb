@@ -3,7 +3,7 @@
 module Bunny
   # Wraps {AMQ::Protocol::Basic::GetOk} to
   # provide access to the delivery properties as immutable hash as
-  # well as methods.
+  # well as methods. Hash representation is created lazily.
   class GetResponse
 
     #
@@ -21,32 +21,38 @@ module Bunny
 
     # @private
     def initialize(get_ok, channel)
-      @get_ok = get_ok
-      @hash          = {
-        :delivery_tag => @get_ok.delivery_tag,
-        :redelivered  => @get_ok.redelivered,
-        :exchange     => @get_ok.exchange,
-        :routing_key  => @get_ok.routing_key,
-        :channel      => channel
-      }
-      @channel       = channel
+      @get_ok  = get_ok
+      @channel = channel
     end
 
     # Iterates over the delivery properties
     # @see Enumerable#each
     def each(*args, &block)
-      @hash.each(*args, &block)
+      to_hash.each(*args, &block)
     end
 
     # Accesses delivery properties by key
     # @see Hash#[]
     def [](k)
-      @hash[k]
+      case k
+      when :delivery_tag then @get_ok.delivery_tag
+      when :redelivered  then @get_ok.redelivered
+      when :exchange     then @get_ok.exchange
+      when :routing_key  then @get_ok.routing_key
+      when :channel      then @channel
+      else nil
+      end
     end
 
     # @return [Hash] Hash representation of this delivery info
     def to_hash
-      @hash
+      @hash ||= {
+        :delivery_tag => @get_ok.delivery_tag,
+        :redelivered  => @get_ok.redelivered,
+        :exchange     => @get_ok.exchange,
+        :routing_key  => @get_ok.routing_key,
+        :channel      => @channel
+      }
     end
 
     # @private

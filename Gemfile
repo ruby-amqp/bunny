@@ -50,4 +50,4 @@ def custom_gem(name, options = Hash.new)
   end
 end
 
-custom_gem "amq-protocol", "~> 2.4.0"
+custom_gem "amq-protocol", "~> 2.5.0"

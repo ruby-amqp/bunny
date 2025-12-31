@@ -3,7 +3,7 @@
 module Bunny
   # Wraps [AMQ::Protocol::Basic::Deliver] to
   # provide access to the delivery properties as immutable hash as
-  # well as methods.
+  # well as methods. Hash representation is created lazily.
   class DeliveryInfo
 
     #
@@ -24,15 +24,6 @@ module Bunny
     # @private
     def initialize(basic_deliver, consumer, channel)
       @basic_deliver = basic_deliver
-      @hash          = {
-        :consumer_tag => basic_deliver.consumer_tag,
-        :delivery_tag => basic_deliver.delivery_tag,
-        :redelivered  => basic_deliver.redelivered,
-        :exchange     => basic_deliver.exchange,
-        :routing_key  => basic_deliver.routing_key,
-        :consumer     => consumer,
-        :channel      => channel
-      }
       @consumer      = consumer
       @channel       = channel
     end
@@ -40,18 +31,35 @@ module Bunny
     # Iterates over delivery properties
     # @see Enumerable#each
     def each(*args, &block)
-      @hash.each(*args, &block)
+      to_hash.each(*args, &block)
     end
 
     # Accesses delivery properties by key
     # @see Hash#[]
     def [](k)
-      @hash[k]
+      case k
+      when :consumer_tag then @basic_deliver.consumer_tag
+      when :delivery_tag then @basic_deliver.delivery_tag
+      when :redelivered  then @basic_deliver.redelivered
+      when :exchange     then @basic_deliver.exchange
+      when :routing_key  then @basic_deliver.routing_key
+      when :consumer     then @consumer
+      when :channel      then @channel
+      else nil
+      end
     end
 
     # @return [Hash] Hash representation of this delivery info
     def to_hash
-      @hash
+      @hash ||= {
+        :consumer_tag => @basic_deliver.consumer_tag,
+        :delivery_tag => @basic_deliver.delivery_tag,
+        :redelivered  => @basic_deliver.redelivered,
+        :exchange     => @basic_deliver.exchange,
+        :routing_key  => @basic_deliver.routing_key,
+        :consumer     => @consumer,
+        :channel      => @channel
+      }
     end
 
     # @private

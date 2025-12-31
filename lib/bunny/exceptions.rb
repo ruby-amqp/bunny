@@ -166,7 +166,7 @@ module Bunny
   class MessageError  < ConnectionLevelException; end
   # @private
   class ProtocolError < ConnectionLevelException; end
-  # Raised when RabbitMQ reports and internal error
+  # Raised when RabbitMQ reports an internal error
   class InternalError < ConnectionLevelException; end
 
   # Raised when read or write I/O operations time out (but only if

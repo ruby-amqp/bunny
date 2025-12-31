@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 
 module Bunny
-  # Abstracts away the Ruby (OS) method of retriving timestamps.
+  # Abstracts away the Ruby (OS) method of retrieving timestamps.
   #
   # @private
   class Timestamp

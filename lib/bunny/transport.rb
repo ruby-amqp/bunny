@@ -72,7 +72,7 @@ module Bunny
       @read_timeout = opts[:read_timeout] || DEFAULT_READ_TIMEOUT
       @read_timeout = nil if @read_timeout == 0
 
-      @write_timeout = opts[:socket_timeout] # Backwards compatability
+      @write_timeout = opts[:socket_timeout] # Backwards compatibility
 
       @write_timeout ||= opts[:write_timeout] || DEFAULT_WRITE_TIMEOUT
       @write_timeout = nil if @write_timeout == 0
@@ -259,7 +259,10 @@ module Bunny
     # Exposed primarily for Bunny::Channel
     # @private
     def read_next_frame(opts = {})
-      header              = read_fully(7)
+      @frame_header_buffer ||= String.new(capacity: 7)
+      @frame_header_buffer.clear
+      header = read_fully_into(@frame_header_buffer, 7)
+
       type, channel, size = AMQ::Protocol::Frame.decode_header(header)
       payload             = if size > 0
                               read_fully(size)
@@ -278,8 +281,26 @@ module Bunny
       AMQ::Protocol::Frame.new(type, payload, channel)
     end
 
+    # @private
+    def read_fully_into(buffer, count)
+      begin
+        @socket.read_fully_into(buffer, count, @read_timeout)
+      rescue SystemCallError, Timeout::Error, Bunny::ConnectionError, IOError => e
+        @logger.error "Got an exception when receiving data: #{e.message} (#{e.class.name})"
+        close
+        @status = :not_connected
 
-    def self.reacheable?(host, port, timeout)
+        if @session.automatically_recover?
+          raise
+        else
+          @session_error_handler.raise(Bunny::NetworkFailure.new("detected a network failure: #{e.message}", e))
+        end
+      end
+      buffer
+    end
+
+
+    def self.reachable?(host, port, timeout)
       begin
         s = Bunny::SocketImpl.open(host, port,
           :connect_timeout => timeout)
@@ -293,7 +314,7 @@ module Bunny
     end
 
     def self.ping!(host, port, timeout)
-      raise ConnectionTimeout.new("#{host}:#{port} is unreachable") if !reacheable?(host, port, timeout)
+      raise ConnectionTimeout.new("#{host}:#{port} is unreachable") if !reachable?(host, port, timeout)
     end
 
     def initialize_socket

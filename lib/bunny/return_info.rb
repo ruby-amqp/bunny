@@ -2,8 +2,8 @@
 
 module Bunny
   # Wraps AMQ::Protocol::Basic::Return to
-  # provide access to the delivery properties as immutable hash as
-  # well as methods.
+  # provide access to the return properties as immutable hash as
+  # well as methods. Hash representation is created lazily.
   class ReturnInfo
 
     #
@@ -18,29 +18,34 @@ module Bunny
 
     def initialize(basic_return)
       @basic_return = basic_return
-      @hash          = {
-        :reply_code   => basic_return.reply_code,
-        :reply_text   => basic_return.reply_text,
-        :exchange     => basic_return.exchange,
-        :routing_key  => basic_return.routing_key
-      }
     end
 
     # Iterates over the returned delivery properties
     # @see Enumerable#each
     def each(*args, &block)
-      @hash.each(*args, &block)
+      to_hash.each(*args, &block)
     end
 
     # Accesses returned delivery properties by key
     # @see Hash#[]
     def [](k)
-      @hash[k]
+      case k
+      when :reply_code  then @basic_return.reply_code
+      when :reply_text  then @basic_return.reply_text
+      when :exchange    then @basic_return.exchange
+      when :routing_key then @basic_return.routing_key
+      else nil
+      end
     end
 
     # @return [Hash] Hash representation of this returned delivery info
     def to_hash
-      @hash
+      @hash ||= {
+        :reply_code   => @basic_return.reply_code,
+        :reply_text   => @basic_return.reply_text,
+        :exchange     => @basic_return.exchange,
+        :routing_key  => @basic_return.routing_key
+      }
     end
 
     # @private

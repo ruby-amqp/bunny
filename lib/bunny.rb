@@ -89,7 +89,7 @@ module Bunny
   # @option connection_string_or_opts [Proc] :recovery_attempt_started (nil) Will be called before every connection recovery attempt
   # @option connection_string_or_opts [Proc] :recovery_completed (nil) Will be called after successful connection recovery
   # @option connection_string_or_opts [Boolean] :recover_from_connection_close (true) Should this connection recover after receiving a server-sent connection.close (e.g. connection was force closed)?
-  # @option connection_string_or_opts [Object] :session_error_handler (Thread.current) Object which responds to #raise that will act as a session error handler. Defaults to Thread.current, which will raise asynchronous exceptions in the thread that created the session.
+  # @option connection_string_or_opts [Object] :session_error_handler (ExceptionAccumulator.new) Object which responds to #raise that will act as a session error handler. Defaults to a Bunny::ExceptionAccumulator instance which stores exceptions for safe retrieval later. Can be set to Thread.current for legacy behavior (raises asynchronous exceptions in the creating thread).
   #
   # @option optz [String] :auth_mechanism ("PLAIN") Authentication mechanism, PLAIN or EXTERNAL
   # @option optz [String] :locale ("PLAIN") Locale RabbitMQ should use
