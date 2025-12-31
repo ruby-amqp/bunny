@@ -588,4 +588,49 @@ describe Bunny::Session do
       expect(conn.connection_name).to eq 'test_name4'
     end
   end
+
+  context "initialized with default session error handler" do
+    let(:conn) { Bunny.new }
+
+    after :each do
+      conn.close if conn.open?
+    end
+
+    it "uses ExceptionAccumulator as the default session error handler" do
+      expect(conn.session_error_handler).to be_a(Bunny::ExceptionAccumulator)
+    end
+
+    it "initially has no accumulated exceptions" do
+      expect(conn.exception_occurred?).to be false
+      expect(conn.exceptions).to be_empty
+    end
+
+    it "provides access to session error handler" do
+      expect(conn.session_error_handler).to respond_to(:raise)
+      expect(conn.session_error_handler).to respond_to(:any?)
+      expect(conn.session_error_handler).to respond_to(:all)
+    end
+
+    it "allows clearing accumulated exceptions" do
+      conn.session_error_handler.raise(RuntimeError.new("test error"))
+      expect(conn.exception_occurred?).to be true
+
+      cleared = conn.clear_exceptions
+      expect(cleared.size).to eq 1
+      expect(conn.exception_occurred?).to be false
+    end
+
+    it "allows raising accumulated exceptions at safe points" do
+      conn.session_error_handler.raise(RuntimeError.new("test error"))
+      expect { conn.raise_on_exception! }.to raise_error(RuntimeError, "test error")
+      expect(conn.exception_occurred?).to be false
+    end
+  end
+
+  context "initialized with Thread.current as session error handler (legacy behavior)" do
+    it "accepts Thread.current as session_error_handler" do
+      conn = Bunny.new(session_error_handler: Thread.current)
+      expect(conn.session_error_handler).to eq Thread.current
+    end
+  end
 end

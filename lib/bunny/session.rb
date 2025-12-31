@@ -15,6 +15,7 @@ require "bunny/authentication/plain_mechanism_encoder"
 require "bunny/authentication/external_mechanism_encoder"
 
 require "bunny/concurrent/continuation_queue"
+require "bunny/concurrent/exception_accumulator"
 
 require "amq/protocol/client"
 require "amq/settings"
@@ -132,7 +133,7 @@ module Bunny
     # @option connection_string_or_opts [Proc] :recovery_completed (nil) Will be called after successful connection recovery
     # @option connection_string_or_opts [Proc] :recovery_attempts_exhausted (nil) Will be called when the connection recovery failed after the specified amount of recovery attempts
     # @option connection_string_or_opts [Boolean] :recover_from_connection_close (true) Should this connection recover after receiving a server-sent connection.close (e.g. connection was force closed)?
-    # @option connection_string_or_opts [Object] :session_error_handler (Thread.current) Object which responds to #raise that will act as a session error handler. Defaults to Thread.current, which will raise asynchronous exceptions in the thread that created the session.
+    # @option connection_string_or_opts [Object] :session_error_handler (ExceptionAccumulator.new) Object which responds to #raise that will act as a session error handler. Defaults to a Bunny::ExceptionAccumulator instance which stores exceptions for safe retrieval later. Can be set to Thread.current for legacy behavior (raises asynchronous exceptions in the creating thread), or any object that responds to #raise.
     #
     # @option connection_string_or_opts [Bunny::TopologyRecoveryFilter] :topology_recovery_filter if provided, will be used for object filtering during topology recovery
     # @option optz [String] :auth_mechanism ("PLAIN") Authentication mechanism, PLAIN or EXTERNAL
@@ -234,7 +235,7 @@ module Bunny
       @recovery_completed       = opts[:recovery_completed]
       @recovery_attempts_exhausted = opts[:recovery_attempts_exhausted]
 
-      @session_error_handler = opts.fetch(:session_error_handler, Thread.current)
+      @session_error_handler = opts.fetch(:session_error_handler, ExceptionAccumulator.new)
 
       @recoverable_exceptions = DEFAULT_RECOVERABLE_EXCEPTIONS.dup
 
@@ -505,6 +506,56 @@ module Bunny
     # @see #on_unblocked
     def blocked?
       @blocked
+    end
+
+    # Returns the session error handler.
+    # By default, this is a Bunny::ExceptionAccumulator instance.
+    #
+    # @return [Object] the session error handler
+    # @api public
+    attr_reader :session_error_handler
+
+    # Returns true if any exceptions have been accumulated by the session error handler.
+    # Only works when using the default ExceptionAccumulator handler.
+    #
+    # @return [Boolean] true if exceptions have been accumulated
+    # @raise [NoMethodError] if the session error handler doesn't respond to #any?
+    # @api public
+    def exception_occurred?
+      @session_error_handler.any?
+    end
+
+    # Returns all accumulated exceptions from the session error handler.
+    # Only works when using the default ExceptionAccumulator handler.
+    #
+    # @return [Array<Exception>] all accumulated exceptions
+    # @raise [NoMethodError] if the session error handler doesn't respond to #all
+    # @api public
+    def exceptions
+      @session_error_handler.all
+    end
+
+    # Clears all accumulated exceptions from the session error handler.
+    # Only works when using the default ExceptionAccumulator handler.
+    #
+    # @return [Array<Exception>] the exceptions that were cleared
+    # @raise [NoMethodError] if the session error handler doesn't respond to #clear
+    # @api public
+    def clear_exceptions
+      @session_error_handler.clear
+    end
+
+    # Raises the first accumulated exception if any exist.
+    # Only works when using the default ExceptionAccumulator handler.
+    #
+    # This is useful for checking errors at safe points in your application,
+    # such as after completing a batch of operations.
+    #
+    # @raise [Exception] the first accumulated exception
+    # @raise [NoMethodError] if the session error handler doesn't respond to #raise_first!
+    # @api public
+    def raise_on_exception!
+      @session_error_handler.raise_first!
     end
 
     # Parses an amqp[s] URI into a hash that {Bunny::Session#initialize} accepts.

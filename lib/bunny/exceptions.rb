@@ -283,4 +283,18 @@ module Bunny
   # @private
   class MissingTLSKeyFile < Exception
   end
+
+  # Exception wrapper that holds multiple accumulated exceptions.
+  # Raised by ExceptionAccumulator#raise_all! when multiple exceptions occurred.
+  #
+  # @api public
+  class AccumulatedExceptions < Exception
+    attr_reader :exceptions
+
+    def initialize(exceptions)
+      @exceptions = exceptions
+      messages = exceptions.map { |e| "#{e.class}: #{e.message}" }
+      super("#{exceptions.count} exception(s) accumulated:\n  #{messages.join("\n  ")}")
+    end
+  end
 end
