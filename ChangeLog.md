@@ -59,7 +59,7 @@ c.start
 ```
 
 
-### RemovedVersioned Delivery Tags
+### Removed Versioned Delivery Tags
 
 Versioned delivery tags introduced about as many problems as they have solved.
 
@@ -71,10 +71,56 @@ they have been a polarizing feature for years.
 GitHub issue: [#700](https://github.com/ruby-amqp/bunny/issues/700).
 
 
+
+### Publisher Confirm Tracking
+
+Bunny now supports [publisher confirm](https://www.rabbitmq.com/docs/publishers#data-safety)
+tracking, inspired by the [.NET client 7.x](https://github.com/rabbitmq/rabbitmq-dotnet-client)
+and [Swift Bunny](https://github.com/michaelklishin/bunny-swift).
+
+Use `basic_publish_batch` for optimal throughput (batch sizes of 500-3000 recommended):
+
+```ruby
+ch.confirm_select(tracking: true)
+
+messages.each_slice(1000) do |batch|
+  ch.basic_publish_batch(batch, "", queue.name)
+end
+ch.wait_for_confirms
+```
+
+Single-message publishing is also supported but slower:
+
+```ruby
+ch.confirm_select(tracking: true)
+messages.each { |msg| x.publish(msg, routing_key: q.name) }
+```
+
+When `tracking` is set to `true`, `outstanding_limit` defaults to 1000 (this is an optimal value according to the benchmarks, see below).
+This provides backpressure when too many messages are unconfirmed.
+
+If the broker nacks a message, a `Bunny::MessageNacked` exception is raised.
+
+**Performance** (100K messages, with [amq-protocol `2.4.0`](https://github.com/ruby-amqp/amq-protocol/releases/tag/v2.4.0)):
+
+| Approach | Throughput | vs 2.x confirms |
+|----------|------------|-----------------|
+| 2.x `wait_for_confirms` | ~11k msg/s | baseline |
+| 3.x single publish | ~35k msg/s | 320% |
+| 3.x `basic_publish_batch(500)` | ~43k msg/s | 390% |
+| 3.x `basic_publish_batch(1000)` | ~45k msg/s | 410% |
+| 3.x `basic_publish_batch(2000)` | ~44k msg/s | 400% |
+| 3.x `basic_publish_batch(3000)` | ~43k msg/s | 390% |
+
+Bunny 3.0's confirm tracking is 3-4x faster than 2.x. Batch size of 1000
+provides optimal throughput. Avoid batches over 3000 (they will perform works due to
+connection flow control on the RabbitMQ end).
+
+
 ### Limit Hostname Resolution Time
 
 Bunny now configures its TCP socket to limit the hostname resolution time,
-assuming that the OS kernel supports the underlying socket option. 
+assuming that the OS kernel supports the underlying socket option.
 
 
 ## Changes between Bunny 2.23.0 and 2.24.0 (March 23, 2025)

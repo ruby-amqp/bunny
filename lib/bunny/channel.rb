@@ -153,6 +153,12 @@ module Bunny
     attr_reader :unconfirmed_set
     # @return [Set<Integer>] Set of nacked message indexes that have been nacked
     attr_reader :nacked_set
+    # @return [Boolean] true if publisher confirm tracking is enabled
+    attr_reader :confirms_tracking_enabled
+    # @return [Integer, nil] Maximum outstanding unconfirmed messages before throttling
+    attr_reader :outstanding_limit
+    # @return [Integer, nil] Timeout in milliseconds for waiting on publisher confirms
+    attr_reader :confirm_timeout
     # @return [Hash<String, Bunny::Consumer>] Consumer instances declared on this channel
     attr_reader :consumers
 
@@ -164,6 +170,10 @@ module Bunny
     attr_reader :cancel_consumers_before_closing
 
     DEFAULT_CONTENT_TYPE = "application/octet-stream".freeze
+
+    # Default outstanding limit for publisher confirms with tracking.
+    # Batch size of 1000 provides optimal throughput per benchmarks.
+    DEFAULT_OUTSTANDING_CONFIRMS_LIMIT = 1000
     SHORTSTR_LIMIT = 255
 
     # @param [Bunny::Session] connection AMQP 0.9.1 connection
@@ -203,6 +213,15 @@ module Bunny
       @exchange_mutex = @connection.mutex_impl.new
 
       @unconfirmed_set_mutex = @connection.mutex_impl.new
+
+      # Publisher confirm tracking (initialized before reset_continuations)
+      @confirms_tracking_enabled = false
+      @outstanding_limit = nil
+      @confirm_timeout = nil
+      @throttle_publishes = false
+      @per_message_continuations = {}
+      @per_message_continuations_mutex = @connection.mutex_impl.new
+      @outstanding_limit_cond = nil
 
       self.reset_continuations
 
@@ -661,10 +680,25 @@ module Bunny
       opts[:content_type]  ||= DEFAULT_CONTENT_TYPE
       opts[:priority]      ||= 0
 
+      seq_no = nil
+      continuation = nil
+
       if @next_publish_seq_no > 0
         @unconfirmed_set_mutex.synchronize do
-          @unconfirmed_set.add(@next_publish_seq_no)
+          # With outstanding_limit: wait for slot if at the limit
+          wait_for_outstanding_slot_locked if @throttle_publishes
+
+          seq_no = @next_publish_seq_no
+          @unconfirmed_set.add(seq_no)
           @next_publish_seq_no += 1
+
+          # Only create per-message continuation when blocking individually (no limit)
+          if @confirms_tracking_enabled && !@throttle_publishes
+            continuation = new_continuation
+            @per_message_continuations_mutex.synchronize do
+              @per_message_continuations[seq_no] = continuation
+            end
+          end
         end
       end
 
@@ -677,6 +711,85 @@ module Bunny
         false,
         @connection.frame_max)
       @connection.send_frameset(frames, self)
+
+      wait_for_publish_confirm(seq_no, continuation) if continuation
+
+      self
+    end
+
+    # Publishes multiple messages in a batch with a single mutex acquisition.
+    # More efficient than calling basic_publish repeatedly when using publisher
+    # confirms with tracking. Recommended batch sizes: 500-3000.
+    #
+    # @param [Array<String>] payloads Array of message payloads to publish
+    # @param [String, Bunny::Exchange] exchange Exchange name or object
+    # @param [String] routing_key Routing key
+    # @param [Hash] opts Publishing options (applied to all messages)
+    # @return [self]
+    #
+    # @example Batch publishing with confirms
+    #   ch.confirm_select(tracking: true)
+    #   messages = 100.times.map { |i| "message #{i}" }
+    #   ch.basic_publish_batch(messages, "", queue.name)
+    #
+    # @api public
+    def basic_publish_batch(payloads, exchange, routing_key, opts = {})
+      raise_if_no_longer_open!
+      raise ArgumentError, "payloads must be an Array" unless payloads.is_a?(Array)
+      raise ArgumentError, "routing key cannot be longer than #{SHORTSTR_LIMIT} characters" if routing_key && routing_key.size > SHORTSTR_LIMIT
+      return self if payloads.empty?
+
+      exchange_name = if exchange.respond_to?(:name)
+                        exchange.name
+                      else
+                        exchange
+                      end
+
+      mode = opts.fetch(:persistent, true) ? 2 : 1
+      opts = opts.dup
+      opts[:delivery_mode] ||= mode
+      opts[:content_type]  ||= DEFAULT_CONTENT_TYPE
+      opts[:priority]      ||= 0
+
+      batch_size = payloads.size
+
+      if @next_publish_seq_no > 0
+        @unconfirmed_set_mutex.synchronize do
+          # With throttling: wait until we have room for the batch
+          if @throttle_publishes
+            limit = @outstanding_limit
+            target = [limit - batch_size, 0].max
+            timeout_sec = (@confirm_timeout || @connection.continuation_timeout) / 1000.0
+            deadline = nil
+
+            while @unconfirmed_set.size > target
+              raise_if_no_longer_open!
+              deadline ||= Bunny::Timestamp.monotonic + timeout_sec
+              remaining = deadline - Bunny::Timestamp.monotonic
+              raise Timeout::Error, "Timed out waiting for publisher confirms (batch: #{batch_size}, limit: #{limit})" if remaining <= 0
+              @outstanding_limit_cond.wait(remaining)
+            end
+          end
+
+          # Register all sequence numbers at once
+          start_seq = @next_publish_seq_no
+          batch_size.times { |i| @unconfirmed_set.add(start_seq + i) }
+          @next_publish_seq_no = start_seq + batch_size
+        end
+      end
+
+      # Send all frames (outside the mutex)
+      payloads.each do |payload|
+        frames = AMQ::Protocol::Basic::Publish.encode(@id,
+          payload,
+          opts,
+          exchange_name,
+          routing_key,
+          opts[:mandatory],
+          false,
+          @connection.frame_max)
+        @connection.send_frameset(frames, self)
+      end
 
       self
     end
@@ -1669,14 +1782,25 @@ module Bunny
     alias using_publisher_confirms? using_publisher_confirmations?
 
     # Enables publisher confirms for the channel.
+    #
+    # @param [Proc] callback Optional callback invoked for each confirm. Receives (delivery_tag, multiple, nack).
+    # @param [Boolean] tracking When true, basic_publish blocks until the broker confirms receipt.
+    #   Raises Bunny::MessageNacked if the message is nacked.
+    # @param [Integer] outstanding_limit Max unconfirmed messages before basic_publish blocks.
+    #   Defaults to 1000 when tracking: true (optimal for throughput). Pass explicit value to override.
+    # @param [Integer] confirm_timeout Timeout in ms for confirms. Defaults to connection's continuation_timeout.
+    #
     # @return [AMQ::Protocol::Confirm::SelectOk] RabbitMQ response
     # @see #wait_for_confirms
     # @see #unconfirmed_set
     # @see #nacked_set
     # @see http://rubybunny.info/articles/extensions.html RabbitMQ Extensions guide
     # @api public
-    def confirm_select(callback = nil)
+    def confirm_select(callback = nil, tracking: false, outstanding_limit: nil, confirm_timeout: nil)
       raise_if_no_longer_open!
+      raise ArgumentError, "outstanding_limit requires tracking: true" if outstanding_limit && !tracking
+      raise ArgumentError, "outstanding_limit must be positive" if outstanding_limit && outstanding_limit < 1
+      raise ArgumentError, "confirm_timeout must be positive" if confirm_timeout && confirm_timeout < 1
 
       if @next_publish_seq_no == 0
         @confirms_continuations = new_continuation
@@ -1687,6 +1811,17 @@ module Bunny
       end
 
       @confirms_callback = callback
+      @confirms_tracking_enabled = tracking
+      # Default to optimal limit when tracking enabled (avoids per-message mutex)
+      @outstanding_limit = outstanding_limit || (tracking ? DEFAULT_OUTSTANDING_CONFIRMS_LIMIT : nil)
+      @confirm_timeout = confirm_timeout
+
+      # Cache combined check for fast path in basic_publish
+      @throttle_publishes = tracking && @outstanding_limit
+
+      if @outstanding_limit && !@outstanding_limit_cond
+        @outstanding_limit_cond = @unconfirmed_set_mutex.new_cond
+      end
 
       @connection.send_frame(AMQ::Protocol::Confirm::Select.encode(@id, false))
       with_continuation_timeout do
@@ -1789,13 +1924,26 @@ module Bunny
     #
     # @api plugin
     def recover_confirm_mode
-      if using_publisher_confirmations?
-        @unconfirmed_set_mutex.synchronize do
-          @unconfirmed_set.clear
-          @delivery_tag_offset = @next_publish_seq_no - 1
+      return unless using_publisher_confirmations?
+
+      @unconfirmed_set_mutex.synchronize do
+        @unconfirmed_set.clear
+        @delivery_tag_offset = @next_publish_seq_no - 1
+
+        if @confirms_tracking_enabled
+          @per_message_continuations_mutex.synchronize do
+            @per_message_continuations.each_value { |c| c.push(:network_error) }
+            @per_message_continuations.clear
+          end
         end
-        confirm_select(@confirms_callback)
+
+        @outstanding_limit_cond&.broadcast
       end
+
+      confirm_select(@confirms_callback,
+                     tracking: @confirms_tracking_enabled,
+                     outstanding_limit: @outstanding_limit,
+                     confirm_timeout: @confirm_timeout)
     end
 
     # Recovers transaction mode. Used by the Automatic Network Failure
@@ -2075,6 +2223,22 @@ module Bunny
 
         @confirms_continuations.push(true) if @unconfirmed_set.empty?
 
+        # Signal per-message continuations (only used when tracking without limit)
+        if @confirms_tracking_enabled && !@throttle_publishes
+          to_signal = []
+          @per_message_continuations_mutex.synchronize do
+            @per_message_continuations.each do |tag, cont|
+              to_signal << cont if tag >= confirmed_range_start && tag <= confirmed_range_end
+            end
+          end
+          result = nack ? :nack : :ack
+          to_signal.each { |c| c.push(result) }
+        end
+
+        # Wake publisher(s) waiting for outstanding limit slot
+        # Use broadcast since "multiple" acks can free many slots at once
+        @outstanding_limit_cond&.broadcast if @throttle_publishes
+
         if @confirms_callback
           confirmed_range.each { |tag| @confirms_callback.call(tag, false, nack) }
         end
@@ -2149,21 +2313,63 @@ module Bunny
       end
     end
 
+    # Waits for a slot when outstanding limit is reached.
+    # Assumes @unconfirmed_set_mutex is already held.
+    # @private
+    def wait_for_outstanding_slot_locked
+      limit = @outstanding_limit
+      return if @unconfirmed_set.size < limit
 
-    # Releases all continuations. Used by automatic network recovery.
+      timeout_sec = (@confirm_timeout || @connection.continuation_timeout) / 1000.0
+      deadline = Bunny::Timestamp.monotonic + timeout_sec
+
+      while @unconfirmed_set.size >= limit
+        raise_if_no_longer_open!
+
+        remaining = deadline - Bunny::Timestamp.monotonic
+        raise Timeout::Error, "Timed out waiting for publisher confirms (limit: #{limit})" if remaining <= 0
+
+        @outstanding_limit_cond.wait(remaining)
+      end
+    end
+
+    # @private
+    def wait_for_publish_confirm(seq_no, continuation)
+      t = Thread.current
+      @threads_waiting_on_confirms_continuations << t
+
+      begin
+        timeout = @confirm_timeout || @connection.continuation_timeout
+        case continuation.poll(timeout)
+        when :ack, true
+          # confirmed
+        when :nack
+          raise MessageNacked.new("Message #{seq_no} was nacked", seq_no)
+        when :network_error
+          raise NetworkFailure.new("Network failure waiting for confirm", nil)
+        when nil
+          raise Timeout::Error, "Timed out waiting for publisher confirm"
+        end
+      ensure
+        @threads_waiting_on_confirms_continuations.delete(t)
+        @per_message_continuations_mutex.synchronize do
+          @per_message_continuations.delete(seq_no)
+        end
+      end
+    end
+
+
     # @private
     def release_all_continuations
-      @threads_waiting_on_confirms_continuations.each do |t|
-        t.run
-      end
-      @threads_waiting_on_continuations.each do |t|
-        t.run
-      end
-      @threads_waiting_on_basic_get_continuations.each do |t|
-        t.run
+      @threads_waiting_on_confirms_continuations.each(&:run)
+      @threads_waiting_on_continuations.each(&:run)
+      @threads_waiting_on_basic_get_continuations.each(&:run)
+
+      if @outstanding_limit_cond
+        @unconfirmed_set_mutex.synchronize { @outstanding_limit_cond.broadcast }
       end
 
-      self.reset_continuations
+      reset_continuations
     end
 
     # Starts consumer work pool. Lazily called by #basic_consume to avoid creating new threads
@@ -2420,6 +2626,7 @@ module Bunny
       @continuations           = new_continuation
       @confirms_continuations  = new_continuation
       @basic_get_continuations = new_continuation
+      @per_message_continuations_mutex.synchronize { @per_message_continuations.clear }
     end
 
     # @private

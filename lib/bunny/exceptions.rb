@@ -212,6 +212,18 @@ module Bunny
     end
   end
 
+  # Raised when a published message is nacked by the broker
+  # and publisher confirm tracking is enabled.
+  # @api public
+  class MessageNacked < Exception
+    attr_reader :delivery_tag
+
+    def initialize(message, delivery_tag)
+      super(message)
+      @delivery_tag = delivery_tag
+    end
+  end
+
   # Raised when RabbitMQ responds with 406 PRECONDITION_FAILED
   class PreconditionFailed < ChannelLevelException
   end
