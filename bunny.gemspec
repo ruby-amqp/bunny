@@ -28,7 +28,7 @@ Gem::Specification.new do |s|
   s.email = ["michael.s.klishin@gmail.com"]
 
   # Dependencies
-  s.add_runtime_dependency 'amq-protocol', '~> 2.3'
+  s.add_runtime_dependency 'amq-protocol', '~> 2.4'
   s.add_runtime_dependency 'logger', '~> 1', '>= 1.7'
   s.add_runtime_dependency 'sorted_set', '~> 1', '>= 1.0.2'
 
