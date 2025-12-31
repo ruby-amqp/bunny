@@ -70,7 +70,26 @@ they have been a polarizing feature for years.
 
 GitHub issue: [#700](https://github.com/ruby-amqp/bunny/issues/700).
 
+### Significant Publisher Performance Improvements
 
+**Performance** (100K messages, with [amq-protocol `2.4.0`](https://github.com/ruby-amqp/amq-protocol/releases/tag/v2.4.0))
+with autoamtic publisher confirm tracking enabled (documented below):
+
+| Approach | Throughput | vs 2.x confirms |
+|----------|------------|-----------------|
+| 2.x `wait_for_confirms` | ~11k msg/s | baseline |
+| 3.x single publish | ~35k msg/s | 320% |
+| 3.x `basic_publish_batch(500)` | ~43k msg/s | 390% |
+| 3.x `basic_publish_batch(1000)` | ~45k msg/s | 410% |
+| 3.x `basic_publish_batch(2000)` | ~44k msg/s | 400% |
+| 3.x `basic_publish_batch(3000)` | ~43k msg/s | 390% |
+
+Bunny 3.0's confirm tracking is 3-4x faster than 2.x. Batch size of 1000
+provides optimal throughput. Avoid batches over 3000 (they will perform worse due to
+connection flow control on the RabbitMQ end).
+
+To migrate from `2.x`, simply replace `Channel#confirm_select` calls with with `Channel#confirm_select(tracking: true)`.
+That's it.
 
 ### Publisher Confirm Tracking
 
@@ -113,8 +132,15 @@ If the broker nacks a message, a `Bunny::MessageNacked` exception is raised.
 | 3.x `basic_publish_batch(3000)` | ~43k msg/s | 390% |
 
 Bunny 3.0's confirm tracking is 3-4x faster than 2.x. Batch size of 1000
-provides optimal throughput. Avoid batches over 3000 (they will perform works due to
+provides optimal throughput. Avoid batches over 3000 (they will perform worse due to
 connection flow control on the RabbitMQ end).
+
+To migrate from `2.x`, simply replace `Channel#confirm_select` calls with with `Channel#confirm_select(tracking: true)`.
+With that single line you get automatic backpressure via publisher confirms and three times better throughput.
+
+**Important design note**: unlike the .NET client 7.x and Swift Bunny, which both pause the caller per-message using the `async`/`await`
+features in those languages (this is very cheap: just suspends a task), Bunny in Ruby uses a watermark approach
+with a shared condition variable. This avoids per-message mutex contention that has a dramatic negative performance effect.
 
 
 ### Limit Hostname Resolution Time
