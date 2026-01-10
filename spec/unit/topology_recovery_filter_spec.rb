@@ -3,12 +3,6 @@
 require "spec_helper"
 
 describe Bunny::TopologyRegistry do
-  class ExampleConsumer < Bunny::Consumer
-    def call(delivery_info, metadata, payload)
-       # no-op
-    end
-  end
-
   describe "filter" do
     class NameDiscriminatingTopologyFilter < Bunny::TopologyRecoveryFilter
       def filter_queues(qs)
@@ -32,19 +26,9 @@ describe Bunny::TopologyRegistry do
       end
     end
 
-    let(:connection) do
-      c = Bunny.new(username: "bunny_gem", password: "bunny_password", vhost: "bunny_testbed")
-      c.start
-      c
-    end
-    let(:ch) do
-      connection.create_channel
-    end
-
-    after :each do
-      connection.close if connection.open?
-    end
-
+    # These tests use the _with methods which accept primitive values,
+    # so no real connection is needed.
+    let(:ch) { nil }
     let(:filter) { NameDiscriminatingTopologyFilter.new }
 
     subject do
@@ -52,50 +36,36 @@ describe Bunny::TopologyRegistry do
     end
 
     it "can filter queues" do
-      q1 = ch.durable_queue("bunny.topology_recovery_filtering.cq.1")
-      q2 = ch.durable_queue("filter-me.bunny.topology_recovery_filtering.cq.2")
+      q1_name = "bunny.topology_recovery_filtering.cq.1"
+      q2_name = "filter-me.bunny.topology_recovery_filtering.cq.2"
 
-      subject.record_queue(q1)
-      subject.record_queue(q2)
+      subject.record_queue_with(ch, q1_name, false, true, false, false, {})
+      subject.record_queue_with(ch, q2_name, false, true, false, false, {})
       expect(subject.queues.size).to be ==(2)
       expect(subject.filtered_queues.size).to be ==(1)
-
-      q1.delete
-      q2.delete
     end
 
     it "can filter consumers" do
-      q1 = ch.durable_queue("bunny.topology_recovery_filtering.cq.3")
-      q2 = ch.durable_queue("bunny.topology_recovery_filtering.cq.4")
-      cons1 = ExampleConsumer.new(ch, q1)
+      q1_name = "bunny.topology_recovery_filtering.cq.3"
+      q2_name = "bunny.topology_recovery_filtering.cq.4"
       tag1 = "consumer_tag.32947239847"
-      cons2 = ExampleConsumer.new(ch, q2)
       tag2 = "filter-me.consumer_tag.32947239847"
+      callable = proc { |*args| args }
 
-      subject.record_consumer_with(ch, tag1, q1.name, cons1, true, false, {})
-      subject.record_consumer_with(ch, tag2, q2.name, cons2, true, false, {})
+      subject.record_consumer_with(ch, tag1, q1_name, callable, true, false, {})
+      subject.record_consumer_with(ch, tag2, q2_name, callable, true, false, {})
       expect(subject.consumers.size).to be ==(2)
       expect(subject.filtered_consumers.size).to be ==(1)
-
-      q1.delete
-      q2.delete
     end
 
     it "can filter exchanges" do
       x1_name = "filter-me.bunny.topology_recovery_filtering.x.fanout.1"
       x2_name = "bunny.topology_recovery_filtering.x.fanout.2"
-      ch.exchange_delete(x1_name)
-      ch.exchange_delete(x2_name)
-      x1 = ch.fanout(x1_name, durable: true)
-      x2 = ch.fanout(x2_name, durable: true)
 
-      subject.record_exchange(x1)
-      subject.record_exchange(x2)
+      subject.record_exchange_with(ch, x1_name, :fanout, true, false, {})
+      subject.record_exchange_with(ch, x2_name, :fanout, true, false, {})
       expect(subject.exchanges.size).to be ==(2)
       expect(subject.filtered_exchanges.size).to be ==(1)
-
-      x1.delete
-      x2.delete
     end
 
     it "can filter exchange bindings" do
@@ -112,7 +82,7 @@ describe Bunny::TopologyRegistry do
       subject.reset!
     end
 
-    it "cna filter queue bindings" do
+    it "can filter queue bindings" do
       x1_name = "bunny.topology_recovery_filtering.x.fanout.1"
       q1_name = "bunny.topology_recovery_filtering.qq.4"
       x2_name = "filter-me.bunny.topology_recovery_filtering.x.fanout.2"
