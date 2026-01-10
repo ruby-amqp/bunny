@@ -69,6 +69,47 @@ module Bunny
         value
       end
 
+      # Reads given number of bytes into an existing buffer with an optional timeout
+      #
+      # @param [String] buffer Buffer to read into (will be appended to)
+      # @param [Integer] count How many bytes to read
+      # @param [Integer] timeout Timeout
+      #
+      # @return [String] The buffer with data appended
+      # @api public
+      def read_fully_into(buffer, count, timeout = nil)
+        return nil if @__bunny_socket_eof_flag__
+
+        bytes_read = 0
+        begin
+          loop do
+            chunk = read_nonblock(count - bytes_read)
+            buffer << chunk
+            bytes_read += chunk.bytesize
+            break if bytes_read >= count
+          end
+        rescue EOFError
+          @__bunny_socket_eof_flag__ = true
+        rescue OpenSSL::SSL::SSLError => e
+          if e.message == "read would block"
+            if IO.select([self], nil, nil, timeout)
+              retry
+            else
+              raise Timeout::Error, "IO timeout when reading #{count} bytes"
+            end
+          else
+            raise e
+          end
+        rescue *READ_RETRY_EXCEPTION_CLASSES
+          if IO.select([self], nil, nil, timeout)
+            retry
+          else
+            raise Timeout::Error, "IO timeout when reading #{count} bytes"
+          end
+        end
+        buffer
+      end
+
       # Writes provided data using IO#write_nonblock, taking care of handling
       # of exceptions it raises when writing would fail (e.g. due to socket buffer
       # being full).
