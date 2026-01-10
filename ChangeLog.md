@@ -71,7 +71,7 @@ GitHub issue: [#700](https://github.com/ruby-amqp/bunny/issues/700).
 
 ### Significant Publisher Performance Improvements
 
-**Performance** (100K messages, with [amq-protocol `2.4.0`](https://github.com/ruby-amqp/amq-protocol/releases/tag/v2.4.0))
+**Performance** (100K messages, with [amq-protocol `2.4.0`](https://github.com/ruby-amqp/amq-protocol/releases/tag/v2.4.0) or later)
 with automatic publisher confirm tracking enabled (documented below):
 
 | Approach | Throughput | vs 2.x confirms |
