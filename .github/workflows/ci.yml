@@ -10,7 +10,7 @@ on:
 
 jobs:
   test:
-    name: Ruby ${{ matrix.ruby }} / RabbitMQ ${{ matrix.rabbitmq }}
+    name: RabbitMQ ${{ matrix.rabbitmq }}, Ruby ${{ matrix.ruby }}
     runs-on: ubuntu-latest
 
     strategy:
@@ -60,7 +60,7 @@ jobs:
           RSPEC_RETRY_COUNT: 2
 
   tls-tests:
-    name: TLS Tests (Ruby ${{ matrix.ruby }} / RabbitMQ ${{ matrix.rabbitmq }})
+    name: TLS Tests (RabbitMQ ${{ matrix.rabbitmq }}, Ruby ${{ matrix.ruby }})
     runs-on: ubuntu-latest
 
     strategy:
