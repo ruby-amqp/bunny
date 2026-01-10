@@ -256,6 +256,7 @@ describe Bunny::Channel do
           Bunny::Timeout.timeout(15) do
             threads.each(&:join)
           end
+          ch.wait_for_confirms
 
           expect(q.message_count).to eq 30
           ch.close
