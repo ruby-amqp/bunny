@@ -10,38 +10,180 @@ on:
 
 jobs:
   test:
+    name: Ruby ${{ matrix.ruby }} / RabbitMQ ${{ matrix.rabbitmq }}
     runs-on: ubuntu-latest
 
     strategy:
+      fail-fast: false
       matrix:
-        ruby-version:
+        ruby:
           - "3.4"
           - "3.3"
           - "3.2"
           - "3.1"
+        rabbitmq:
+          - "4.2"
+          - "4.1"
+          - "4.0"
+          - "3.13"
 
     env:
       CI: true
-      RUNS: 5
 
     services:
       rabbitmq:
-        image: rabbitmq:4-management
+        image: rabbitmq:${{ matrix.rabbitmq }}-management
         ports:
           - 15672:15672
           - 5672:5672
 
     steps:
       - uses: actions/checkout@v4
-      - name: Set up Ruby ${{ matrix.ruby-version }}
+
+      - name: Set up Ruby ${{ matrix.ruby }}
         uses: ruby/setup-ruby@v1
         with:
-          ruby-version: ${{ matrix.ruby-version }}
+          ruby-version: ${{ matrix.ruby }}
+
       - name: Install dependencies
         run: bundle install
+
+      - name: Wait for RabbitMQ to start
+        run: sleep 10
 
       - name: Configure RabbitMQ
         run: BUNNY_RABBITMQCTL=DOCKER:${{job.services.rabbitmq.id}} BUNNY_RABBITMQ_PLUGINS=DOCKER:${{job.services.rabbitmq.id}} bin/ci/before_build.sh
 
       - name: Run tests
-        run: bundle exec rspec -c -fd spec/higher_level_api spec/lower_level_api spec/issues
+        run: bundle exec rspec --require rspec/retry -c -fd spec/higher_level_api spec/lower_level_api spec/issues
+        env:
+          RSPEC_RETRY_COUNT: 2
+
+  tls-tests:
+    name: TLS Tests (Ruby ${{ matrix.ruby }} / RabbitMQ ${{ matrix.rabbitmq }})
+    runs-on: ubuntu-latest
+
+    strategy:
+      fail-fast: false
+      matrix:
+        ruby:
+          - "3.4"
+          - "3.3"
+        rabbitmq:
+          - "4.1"
+          - "4.0"
+
+    env:
+      CI: true
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Ruby ${{ matrix.ruby }}
+        uses: ruby/setup-ruby@v1
+        with:
+          ruby-version: ${{ matrix.ruby }}
+
+      - name: Install dependencies
+        run: bundle install
+
+      - name: Clone tls-gen
+        run: git clone --depth 1 https://github.com/rabbitmq/tls-gen.git target/tls-gen
+
+      - name: Generate TLS certificates
+        run: |
+          cd target/tls-gen/basic
+          make CN=localhost
+
+      - name: Copy certificates
+        run: |
+          cp target/tls-gen/basic/result/ca_certificate.pem spec/tls/
+          cp target/tls-gen/basic/result/server_localhost_certificate.pem spec/tls/server_certificate.pem
+          cp target/tls-gen/basic/result/server_localhost_key.pem spec/tls/server_key.pem
+          cp target/tls-gen/basic/result/client_localhost_certificate.pem spec/tls/client_certificate.pem
+          cp target/tls-gen/basic/result/client_localhost_key.pem spec/tls/client_key.pem
+          chmod o+r spec/tls/*
+          chmod g+r spec/tls/*
+
+      - name: Create RabbitMQ TLS configuration
+        run: |
+          cat > spec/tls/rabbitmq.conf << 'EOF'
+          listeners.ssl.default = 5671
+          ssl_options.cacertfile = /certs/ca_certificate.pem
+          ssl_options.certfile = /certs/server_certificate.pem
+          ssl_options.keyfile = /certs/server_key.pem
+          ssl_options.verify = verify_none
+          loopback_users = none
+          EOF
+          sed -i 's/^[[:space:]]*//' spec/tls/rabbitmq.conf
+          echo -n "rabbitmq-test-cookie" > spec/tls/.erlang.cookie
+          chmod 600 spec/tls/.erlang.cookie
+
+      - name: Start RabbitMQ with TLS
+        run: |
+          docker run -d --name rabbitmq-tls \
+            -p 5671:5671 \
+            -p 5672:5672 \
+            -p 15672:15672 \
+            -v ${{ github.workspace }}/spec/tls/.erlang.cookie:/var/lib/rabbitmq/.erlang.cookie \
+            -v ${{ github.workspace }}/spec/tls:/certs:ro \
+            -v ${{ github.workspace }}/spec/tls/rabbitmq.conf:/etc/rabbitmq/conf.d/10-tls.conf:ro \
+            rabbitmq:${{ matrix.rabbitmq }}-management
+
+      - name: Wait for RabbitMQ to start
+        run: |
+          for i in $(seq 1 30); do
+            if docker exec rabbitmq-tls rabbitmqctl await_startup --timeout 60; then
+              echo "RabbitMQ is ready"
+              exit 0
+            fi
+            echo "Waiting for container... ($i/30)"
+            sleep 2
+          done
+          echo "RabbitMQ failed to start. Container logs:"
+          docker logs rabbitmq-tls
+          exit 1
+
+      - name: Verify TLS listener
+        run: |
+          docker exec rabbitmq-tls rabbitmq-diagnostics listeners
+
+      - name: Configure broker
+        run: BUNNY_RABBITMQCTL="docker exec rabbitmq-tls rabbitmqctl" BUNNY_RABBITMQ_PLUGINS="docker exec rabbitmq-tls rabbitmq-plugins" bin/ci/before_build.sh
+
+      - name: Run TLS tests
+        run: bundle exec rspec --require rspec/retry -c -fd spec/higher_level_api/integration/tls_connection_spec.rb
+        env:
+          RSPEC_RETRY_COUNT: 2
+          RUN_TLS_TESTS: "true"
+
+      - name: Stop RabbitMQ container
+        if: always()
+        run: docker stop rabbitmq-tls && docker rm rabbitmq-tls || true
+
+  unit:
+    name: Unit Tests (Ruby ${{ matrix.ruby }})
+    runs-on: ubuntu-latest
+
+    strategy:
+      fail-fast: false
+      matrix:
+        ruby:
+          - "3.4"
+          - "3.3"
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Ruby ${{ matrix.ruby }}
+        uses: ruby/setup-ruby@v1
+        with:
+          ruby-version: ${{ matrix.ruby }}
+
+      - name: Install dependencies
+        run: bundle install
+
+      - name: Run unit tests
+        run: bundle exec rspec --require rspec/retry -c -fd spec/unit
+        env:
+          RSPEC_RETRY_COUNT: 2

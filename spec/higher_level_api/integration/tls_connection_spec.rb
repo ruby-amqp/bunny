@@ -7,7 +7,7 @@ CERTIFICATE_DIR = ENV.fetch("BUNNY_CERTIFICATE_DIR", "./spec/tls")
 puts "Will use certificates from #{CERTIFICATE_DIR}"
 
 shared_examples_for "successful TLS connection" do
-  it "succeeds", skip: ENV["CI"] do
+  it "succeeds", skip: !ENV["RUN_TLS_TESTS"] do
     expect(subject).to be_tls
     ch = subject.create_channel
     ch.confirm_select
@@ -39,7 +39,7 @@ def local_hostname
   ENV.fetch("BUNNY_RABBITMQ_HOSTNAME", "localhost")
 end
 
-context "initialized with tls: true", skip: ENV["CI"] do
+context "initialized with tls: true", skip: !ENV["RUN_TLS_TESTS"] do
   let(:subject) do
     Bunny.new(
       hostname:  local_hostname(),
@@ -80,7 +80,7 @@ context "initialized with tls: true", skip: ENV["CI"] do
   end
 end
 
-describe "TLS connection to RabbitMQ with client certificates", skip: ENV["CI"] do
+describe "TLS connection to RabbitMQ with client certificates", skip: !ENV["RUN_TLS_TESTS"] do
   let(:subject) do
     c = Bunny.new(
       hostname: local_hostname(),
@@ -105,7 +105,7 @@ describe "TLS connection to RabbitMQ with client certificates", skip: ENV["CI"] 
 end
 
 
-describe "TLS connection to RabbitMQ without client certificates", skip: ENV["CI"] do
+describe "TLS connection to RabbitMQ without client certificates", skip: !ENV["RUN_TLS_TESTS"] do
   let(:subject) do
     c = Bunny.new(
       hostname: local_hostname(),
@@ -128,7 +128,7 @@ describe "TLS connection to RabbitMQ without client certificates", skip: ENV["CI
 end
 
 
-describe "TLS connection to RabbitMQ with a connection string", skip: ENV["CI"] do
+describe "TLS connection to RabbitMQ with a connection string", skip: !ENV["RUN_TLS_TESTS"] do
   let(:subject) do
     c = Bunny.new("amqps://bunny_gem:bunny_password@#{local_hostname()}/bunny_testbed",
       tls_protocol: :TLSv1_2,
@@ -164,7 +164,7 @@ describe "TLS connection to RabbitMQ with a connection string", skip: ENV["CI"] 
 end
 
 
-describe "TLS connection to RabbitMQ with a connection string and w/o client certificate and key", skip: ENV["CI"] do
+describe "TLS connection to RabbitMQ with a connection string and w/o client certificate and key", skip: !ENV["RUN_TLS_TESTS"] do
   let(:subject) do
     c = Bunny.new("amqps://bunny_gem:bunny_password@#{local_hostname()}/bunny_testbed",
       tls_ca_certificates: ["#{CERTIFICATE_DIR}/ca_certificate.pem"],
@@ -201,7 +201,7 @@ describe "TLS connection to RabbitMQ with a connection string and w/o client cer
   end
 end
 
-describe "TLS connection to RabbitMQ w/o client certificate", skip: ENV["CI"] do
+describe "TLS connection to RabbitMQ w/o client certificate", skip: !ENV["RUN_TLS_TESTS"] do
   let(:subject) do
     c = Bunny.new("amqps://bunny_gem:bunny_password@#{local_hostname()}/bunny_testbed",
       tls_ca_certificates: ["#{CERTIFICATE_DIR}/ca_certificate.pem"],
@@ -230,7 +230,7 @@ describe "TLS connection to RabbitMQ w/o client certificate", skip: ENV["CI"] do
 end
 
 
-describe "TLS connection to RabbitMQ with client certificates provided inline", skip: ENV["CI"] do
+describe "TLS connection to RabbitMQ with client certificates provided inline", skip: !ENV["RUN_TLS_TESTS"] do
   let(:subject) do
     c = Bunny.new(
       hostname: local_hostname(),

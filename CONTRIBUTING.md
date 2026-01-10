@@ -130,3 +130,9 @@ It is possible to run all tests:
 It is possible to run only integration and regression tests but exclude unit and stress tests:
 
     CI=true bundle exec rspec spec/higher_level_api/ spec/lower_level_api spec/issues spec/higher_level_api/integration/connection_recovery_spec.rb
+
+To run TLS connection tests locally, set the `RUN_TLS_TESTS` environment variable:
+
+    RUN_TLS_TESTS=true bundle exec rspec spec/higher_level_api/integration/tls_connection_spec.rb
+
+TLS tests require a RabbitMQ node configured with TLS certificates. See the "Using a locally installed RabbitMQ node" section above for certificate setup instructions
