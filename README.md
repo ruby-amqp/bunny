@@ -43,6 +43,14 @@ Specific examples:
    Web applications that display that information in the real time.
 
 
+## Ports to Other Languages
+
+Bunny has inspired a number of other RabbitMQ (AMQP 0-9-1) client libraries
+that closely follow its feature set and API shape, form and ergonomics.
+
+ * [Swift 6](https://github.com/michaelklishin/bunny-swift)
+
+
 ## Supported Ruby Versions
 
 Modern Bunny versions support
