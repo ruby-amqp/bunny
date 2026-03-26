@@ -180,8 +180,10 @@ module Bunny
     # Writes data to the socket without timeout checks
     def write_without_timeout(data, raise_exceptions = false)
       begin
-        @writes_mutex.synchronize { @socket.write(data) }
-        @socket.flush
+        @writes_mutex.synchronize do
+          @socket.write(data)
+          @socket.flush
+        end
       rescue SystemCallError, Bunny::ConnectionError, IOError => e
         close
         raise e if raise_exceptions

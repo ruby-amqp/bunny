@@ -71,7 +71,7 @@ GitHub issue: [#700](https://github.com/ruby-amqp/bunny/issues/700).
 
 ### Significant Publisher Performance Improvements
 
-**Performance** (100K messages, with [amq-protocol `2.4.0`](https://github.com/ruby-amqp/amq-protocol/releases/tag/v2.4.0) or later)
+Publisher performance improvements (100K messages, with [amq-protocol `2.4.0`](https://github.com/ruby-amqp/amq-protocol/releases/tag/v2.4.0) or later)
 with automatic publisher confirm tracking enabled (documented below):
 
 | Approach | Throughput | vs 2.x confirms |
@@ -89,6 +89,9 @@ connection flow control on the RabbitMQ end).
 
 To migrate from `2.x`, simply replace `Channel#confirm_select` calls with with `Channel#confirm_select(tracking: true)`.
 That's it.
+
+In addition, `Bunny::Channel#basic_publish_batch` benefits further from the write hot path optimizations
+that do not benefit `Bunny::Channel#basic_publish` much.
 
 ### Publisher Confirm Tracking
 

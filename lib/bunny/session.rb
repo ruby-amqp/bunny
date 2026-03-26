@@ -1474,7 +1474,8 @@ module Bunny
       # locking. See a note about "single frame" methods in a comment in `send_frameset`. MK.
       channel.synchronize do
         if open?
-          frames.each { |frame| self.send_frame_without_timeout(frame, false) }
+          data = frames.reduce(+"") { |acc, frame| acc << frame.encode }
+          @transport.write_without_timeout(data)
           signal_activity!
         else
           raise ConnectionClosedError.new(frames)
@@ -1490,10 +1491,14 @@ module Bunny
       # If we synchronize on the channel, however, this is both thread safe and pretty fine-grained
       # locking. Note that "single frame" methods do not need this kind of synchronization. MK.
       channel.synchronize do
-        @transport.write(data)
-        signal_activity!
+        if open?
+          @transport.write(data)
+          signal_activity!
+        else
+          raise ConnectionClosedError.new("pre-encoded data (#{data.bytesize} bytes)")
+        end
       end
-    end # send_frameset_without_timeout(frames)
+    end # send_raw_without_timeout(data)
 
     # @return [String]
     # @api public

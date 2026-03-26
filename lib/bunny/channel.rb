@@ -261,6 +261,7 @@ module Bunny
       @connection.open_channel(self)
       # clear last channel error
       @last_channel_error = nil
+      @frame_max = @connection.frame_max
 
       @status = :open
 
@@ -712,7 +713,7 @@ module Bunny
         routing_key,
         opts[:mandatory],
         false,
-        @connection.frame_max)
+        @frame_max)
       @connection.send_frameset(frames, self)
 
       wait_for_publish_confirm(seq_no, continuation) if continuation
@@ -781,7 +782,8 @@ module Bunny
         end
       end
 
-      # Send all frames (outside the mutex)
+      # Encode all messages into a single buffer and write once
+      data = +""
       payloads.each do |payload|
         frames = AMQ::Protocol::Basic::Publish.encode(@id,
           payload,
@@ -790,9 +792,10 @@ module Bunny
           routing_key,
           opts[:mandatory],
           false,
-          @connection.frame_max)
-        @connection.send_frameset(frames, self)
+          @frame_max)
+        frames.each { |frame| data << frame.encode }
       end
+      @connection.send_raw_without_timeout(data, self)
 
       self
     end
