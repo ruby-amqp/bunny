@@ -19,7 +19,7 @@ module Bunny
     # @return [String]
     attr_reader :name
 
-    # Type of this exchange (one of: :direct, :fanout, :topic, :headers).
+    # Type of this exchange (e.g. :direct, :fanout, :topic, :headers, "x-consistent-hash", "x-modulus-hash").
     # @return [Symbol]
     attr_reader :type
 
