@@ -627,6 +627,17 @@ module Bunny
       @recovery_attempts_exhausted = block
     end
 
+    # Recovers topology (exchanges, queues, bindings, consumers) for a single channel.
+    # Intended for use after {Bunny::Channel#reopen} to restore the channel to a
+    # working state with its original consumers.
+    #
+    # @param [Bunny::Channel] ch Channel whose topology should be recovered
+    # @api public
+    def recover_channel_topology(ch)
+      filter = Proc.new { |entity| entity.channel == ch }
+      recover_topology_with(filter)
+    end
+
     #
     # Implementation
     #
@@ -1045,46 +1056,63 @@ module Bunny
     # @private
     def recover_topology
       @logger.debug "Will recover topology now"
-      # The recovery sequence is the following:
-      # 1. Recover exchanges
-      @logger.debug "Will recover recorded exchanges"
-      @topology_registry.filtered_exchanges.reject { |x| x.predeclared? }.each do |rx|
-        begin
-          recover_exchange(rx)
-        rescue Exception => e
-          @logger.error "Caught an exception while re-declaring exchange #{rx.name}: #{e.inspect}"
-        end
+      recover_topology_with
+    end
+
+    # @private
+    def recover_topology_with(filter = nil)
+      exchanges = @topology_registry.filtered_exchanges.reject(&:predeclared?)
+      queues = @topology_registry.filtered_queues
+      queue_bindings = @topology_registry.filtered_queue_bindings
+      exchange_bindings = @topology_registry.filtered_exchange_bindings
+      consumers = @topology_registry.filtered_consumers
+
+      if filter
+        exchanges = exchanges.select(&filter)
+        queues = queues.select(&filter)
+        queue_bindings = queue_bindings.select(&filter)
+        exchange_bindings = exchange_bindings.select(&filter)
+        consumers = consumers.select(&filter)
       end
-      # 2. Recover queues
-      @logger.debug "Will recover recorded queues"
-      @topology_registry.filtered_queues.each do |rq|
+
+      @logger.debug { "Will recover #{exchanges.size} exchange(s)" }
+      exchanges.each do |x|
         begin
-          recover_queue(rq)
+          recover_exchange(x)
         rescue Exception => e
-          @logger.error "Caught an exception while re-declaring queue #{rq.name}: #{e.inspect}"
-        end
-      end
-      # 3. Recover bindings
-      @logger.debug "Will recover recorded bindings"
-      @topology_registry.filtered_queue_bindings.each do |rb|
-        begin
-          recover_queue_binding(rb)
-        rescue Exception => e
-          @logger.error "Caught an exception while re-declaring a binding of queue #{rb.destination}: #{e.inspect}"
-        end
-      end
-      @topology_registry.filtered_exchange_bindings.each do |rb|
-        begin
-          recover_exchange_binding(rb)
-        rescue Exception => e
-          @logger.error "Caught an exception while re-declaring a binding of exchange #{rb.source}: #{e.inspect}"
+          @logger.error "Caught an exception while recovering exchange #{x.name}: #{e.inspect}"
         end
       end
 
-      # 4. Recover consumers
-      @logger.debug "Will recover recorded consumers"
-      @topology_registry.filtered_consumers.each do |rc|
-        recover_consumer(rc)
+      @logger.debug { "Will recover #{queues.size} queue(s)" }
+      queues.each do |q|
+        begin
+          recover_queue(q)
+        rescue Exception => e
+          @logger.error "Caught an exception while recovering queue #{q.name}: #{e.inspect}"
+        end
+      end
+
+      @logger.debug { "Will recover #{queue_bindings.size + exchange_bindings.size} binding(s)" }
+      queue_bindings.each do |b|
+        begin
+          recover_queue_binding(b)
+        rescue Exception => e
+          @logger.error "Caught an exception while recovering a binding of queue #{b.destination}: #{e.inspect}"
+        end
+      end
+
+      exchange_bindings.each do |b|
+        begin
+          recover_exchange_binding(b)
+        rescue Exception => e
+          @logger.error "Caught an exception while recovering a binding of exchange #{b.source}: #{e.inspect}"
+        end
+      end
+
+      @logger.debug { "Will recover #{consumers.size} consumer(s)" }
+      consumers.each do |c|
+        recover_consumer(c)
       end
     end
 

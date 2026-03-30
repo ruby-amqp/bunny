@@ -41,14 +41,15 @@ gemspec
 
 # Use local clones if possible.
 # If you want to use your local copy, just symlink it to vendor.
-def custom_gem(name, options = Hash.new)
+def custom_gem(name, *args)
+  options = args.last.is_a?(Hash) ? args.pop : {}
   local_path = File.expand_path("../vendor/#{name}", __FILE__)
   if File.exist?(local_path)
     puts "Using #{name} from #{local_path}..."
     gem name, options.merge(path: local_path).delete_if { |key, _| [:git, :branch].include?(key) }
   else
-    gem name, options
+    gem name, *args, **options
   end
 end
 
-custom_gem "amq-protocol", "~> 2.5.0"
+custom_gem "amq-protocol", "~> 2.6"

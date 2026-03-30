@@ -298,6 +298,35 @@ module Bunny
       maybe_kill_consumer_work_pool!
     end
 
+    # Reopens a channel that was closed by the server (e.g. due to a consumer
+    # delivery acknowledgement timeout). The channel is reopened on the same
+    # connection, reusing its original channel id, and its prefetch, confirm,
+    # and transactional settings are recovered.
+    #
+    # This does NOT recover topology (queues, exchanges, bindings, consumers).
+    # Use {Bunny::Session#recover_channel_topology} for that.
+    #
+    # @return [Bunny::Channel] self
+    # @see Bunny::Session#recover_channel_topology
+    # @api public
+    def reopen
+      raise "Cannot reopen a channel that is not closed" unless closed?
+
+      existing = @connection.synchronised_find_channel(@id)
+      if existing && existing != self
+        raise "Channel id #{@id} has been reassigned to another channel"
+      end
+
+      @work_pool = ConsumerWorkPool.new(@work_pool.size, @work_pool.abort_on_exception)
+      @work_pool.start
+
+      open
+
+      recover_from_network_failure
+
+      self
+    end
+
     # @return [Boolean] true if this channel is open, false otherwise
     # @api public
     def open?
@@ -2175,14 +2204,7 @@ module Bunny
 
     # @private
     def channel_level_exception_after_operation_that_has_no_response?(method)
-      re1 = /unknown delivery tag/
-      re2 = /delivery acknowledgement on channel \d+ timed out/
-      re3 = /larger than configured max size/
-
-      res = [re1, re2, re3]
-      desc = method.reply_text
-
-      method.reply_code == 406 && (res.any? { |re| desc =~ re })
+      method.unknown_delivery_tag? || method.delivery_ack_timeout? || method.message_too_large?
     end
 
     # @private

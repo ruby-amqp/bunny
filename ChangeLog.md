@@ -158,6 +158,24 @@ Several optimizations to reduce overhead in the consumer delivery hot path:
  * Frame header buffer reuse: the transport layer now reuses a buffer when reading
    frame headers, reducing per-frame allocations
 
+### `Channel#reopen`
+
+A new method that reopens a channel after a server-initiated closure
+(e.g. due to a consumer delivery acknowledgement timeout or an unknown delivery tag).
+The channel is reopened on the same connection, reusing its original channel id,
+and its prefetch, confirm, and transactional settings are recovered.
+
+### `Session#recover_channel_topology`
+
+Recovers topology (exchanges, queues, bindings, consumers) for a single channel.
+Intended for use after `Channel#reopen`.
+
+### `amq-protocol` Bumped to `2.6.0` (or Later)
+
+Bunny now requires `amq-protocol` `2.6.0` or later for the `Channel::Close`
+predicate methods (`#unknown_delivery_tag?`, `#delivery_ack_timeout?`, `#message_too_large?`)
+that Bunny used to reinvent (with regular expression matches on `reply_text`)
+
 ### Limit Hostname Resolution Time
 
 Bunny now configures its TCP socket to limit the hostname resolution time,
