@@ -554,6 +554,67 @@ module Bunny
       durable_queue(name, Bunny::Queue::Types::STREAM, opts)
     end
 
+    # Declares a Tanzu RabbitMQ delayed queue (a durable, replicated queue type).
+    # This queue type must be durable, non-exclusive, and non-auto-delete.
+    #
+    # @param [String] name Queue name. Empty (server-generated) names are not supported by this method.
+    # @param [Hash]  opts  Queue properties
+    #
+    # @option opts [String] :delayed_retry_type ("all") Retry strategy: "all", "failed", or "returned"
+    # @option opts [Integer] :delayed_retry_min (nil) Minimum retry delay in milliseconds
+    # @option opts [Integer] :delayed_retry_max (nil) Maximum retry delay in milliseconds
+    # @option opts [Hash] :arguments ({}) Optional arguments (x-arguments)
+    #
+    # @return [Bunny::Queue] Queue that was declared
+    # @see #durable_queue
+    # @see #queue
+    # @api public
+    def delayed_queue(name, opts = {})
+      throw ArgumentError.new("delayed queue name must not be nil") if name.nil?
+      throw ArgumentError.new("delayed queue name must not be empty") if name.empty?
+
+      args = opts[:arguments] || {}
+      args[Bunny::Queue::XArgs::DELAYED_RETRY_TYPE] = opts[:delayed_retry_type] if opts[:delayed_retry_type]
+      args[Bunny::Queue::XArgs::DELAYED_RETRY_MIN]  = opts[:delayed_retry_min]  if opts[:delayed_retry_min]
+      args[Bunny::Queue::XArgs::DELAYED_RETRY_MAX]  = opts[:delayed_retry_max]  if opts[:delayed_retry_max]
+
+      final_opts = opts.merge(:arguments => args)
+      final_opts.delete(:delayed_retry_type)
+      final_opts.delete(:delayed_retry_min)
+      final_opts.delete(:delayed_retry_max)
+
+      durable_queue(name, Bunny::Queue::Types::DELAYED, final_opts)
+    end
+
+    # Declares a Tanzu RabbitMQ JMS queue (a durable, replicated queue type).
+    # This queue type must be durable, non-exclusive, and non-auto-delete.
+    #
+    # @param [String] name Queue name. Empty (server-generated) names are not supported by this method.
+    # @param [Hash]  opts  Queue properties
+    #
+    # @option opts [Array<String>] :selector_fields (nil) Fields available for JMS selector expressions (e.g. ["priority", "region"], or ["*"] for all)
+    # @option opts [Integer] :selector_field_max_bytes (nil) Maximum byte size per selector field
+    # @option opts [Hash] :arguments ({}) Optional arguments (x-arguments)
+    #
+    # @return [Bunny::Queue] Queue that was declared
+    # @see #durable_queue
+    # @see #queue
+    # @api public
+    def jms_queue(name, opts = {})
+      throw ArgumentError.new("JMS queue name must not be nil") if name.nil?
+      throw ArgumentError.new("JMS queue name must not be empty") if name.empty?
+
+      args = opts[:arguments] || {}
+      args[Bunny::Queue::XArgs::SELECTOR_FIELDS]          = opts[:selector_fields]          if opts[:selector_fields]
+      args[Bunny::Queue::XArgs::SELECTOR_FIELD_MAX_BYTES] = opts[:selector_field_max_bytes] if opts[:selector_field_max_bytes]
+
+      final_opts = opts.merge(:arguments => args)
+      final_opts.delete(:selector_fields)
+      final_opts.delete(:selector_field_max_bytes)
+
+      durable_queue(name, Bunny::Queue::Types::JMS, final_opts)
+    end
+
     # Declares a new server-named queue that is automatically deleted when the
     # connection is closed.
     #

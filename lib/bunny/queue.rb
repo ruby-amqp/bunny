@@ -17,8 +17,10 @@ module Bunny
       QUORUM  = "quorum"
       CLASSIC = "classic"
       STREAM  = "stream"
+      DELAYED = "delayed"
+      JMS     = "jms"
 
-      KNOWN = [CLASSIC, QUORUM, STREAM]
+      KNOWN = [CLASSIC, QUORUM, STREAM, DELAYED, JMS]
 
       def self.known?(q_type)
         KNOWN.include?(q_type)
@@ -28,6 +30,13 @@ module Bunny
     module XArgs
       MAX_LENGTH = "x-max-length",
       QUEUE_TYPE = "x-queue-type"
+
+      DELAYED_RETRY_TYPE = "x-delayed-retry-type"
+      DELAYED_RETRY_MIN  = "x-delayed-retry-min"
+      DELAYED_RETRY_MAX  = "x-delayed-retry-max"
+
+      SELECTOR_FIELDS          = "x-selector-fields"
+      SELECTOR_FIELD_MAX_BYTES = "x-selector-field-max-bytes"
     end
 
     # @return [Bunny::Channel] Channel this queue uses
@@ -44,7 +53,7 @@ module Bunny
     # @option opts [Boolean] :durable (false)      Should this queue be durable?
     # @option opts [Boolean] :auto_delete (false)  Should this queue be automatically deleted when the last consumer disconnects?
     # @option opts [Boolean] :exclusive (false)    Should this queue be exclusive (only can be used by this connection, removed when the connection is closed)?
-    # @option opts [String] :type (nil)            Type of the declared queue (classic, quorum or stream)
+    # @option opts [String] :type (nil)            Type of the declared queue (classic, quorum, stream, delayed, or jms)
     # @option opts [Hash] :arguments (nil)         Additional optional arguments (typically used by RabbitMQ extensions and plugins)
     #
     # @see Bunny::Channel#queue

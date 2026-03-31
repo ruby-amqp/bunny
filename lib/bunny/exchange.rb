@@ -10,6 +10,24 @@ module Bunny
   class Exchange
 
     #
+    # Exchange type constants
+    #
+
+    # Standard AMQP 0-9-1 exchange types
+    TYPE_DIRECT  = :direct
+    TYPE_FANOUT  = :fanout
+    TYPE_TOPIC   = :topic
+    TYPE_HEADERS = :headers
+
+    # In RabbitMQ core since 4.3.0
+    TYPE_MODULUS_HASH = :"x-modulus-hash"
+    # In RabbitMQ core since 4.2.0
+    TYPE_LOCAL_RANDOM = :"x-local-random"
+    # Provided by commonly used plugins
+    TYPE_CONSISTENT_HASH = :"x-consistent-hash"
+    TYPE_RANDOM = :"x-random"
+
+    #
     # API
     #
 
@@ -19,7 +37,7 @@ module Bunny
     # @return [String]
     attr_reader :name
 
-    # Type of this exchange (e.g. :direct, :fanout, :topic, :headers, "x-consistent-hash", "x-modulus-hash").
+    # Type of this exchange (e.g. :direct, :fanout, :topic, :headers, :"x-consistent-hash", :"x-modulus-hash").
     # @return [Symbol]
     attr_reader :type
 
