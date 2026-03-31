@@ -637,5 +637,25 @@ describe Bunny::Channel do
     end
 
     include_examples "publish confirms"
+
+    context "with tracking: true (single-threaded)" do
+      it "stores tracking configuration" do
+        ch = connection.create_channel
+        ch.confirm_select(tracking: true, outstanding_limit: 100, confirm_timeout: 5000)
+
+        expect(ch.confirms_tracking_enabled).to eq true
+        expect(ch.outstanding_limit).to eq 100
+        expect(ch.confirm_timeout).to eq 5000
+        ch.close
+      end
+
+      it "defaults outstanding_limit to 1000 when tracking enabled" do
+        ch = connection.create_channel
+        ch.confirm_select(tracking: true)
+
+        expect(ch.outstanding_limit).to eq 1000
+        ch.close
+      end
+    end
   end
 end

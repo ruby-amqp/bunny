@@ -343,6 +343,105 @@ describe Bunny::TopologyRegistry do
     expect(subject.queues.any? { |_, rq| rq.name == q2_new_name }).to be ==(true)
   end
 
+  it "retains a non-auto-delete queue when its last consumer is unregistered" do
+    q_name = "bunny.topology_registry.cq.nad.1"
+    tag = "consumer_tag.nad.001"
+    callable = proc { |*args| args }
+
+    subject.record_queue_with(ch, q_name, false, true, false, false, {})
+    subject.record_consumer_with(ch, tag, q_name, callable, true, false, {})
+    expect(subject.queues.size).to be ==(1)
+
+    subject.delete_recorded_consumer(tag)
+    expect(subject.consumers.size).to be ==(0)
+    expect(subject.queues.size).to be ==(1)
+  end
+
+  it "retains a non-auto-delete exchange when its last binding is removed" do
+    x_name = "bunny.topology_registry.x.nad.1"
+    q_name = "bunny.topology_registry.cq.nad.2"
+
+    subject.record_exchange_with(ch, x_name, :fanout, true, false, {})
+    subject.record_queue_with(ch, q_name, false, true, false, false, {})
+    subject.record_exchange_binding_with(ch, x_name, q_name, "#", {})
+    expect(subject.exchanges.size).to be ==(1)
+
+    subject.delete_recorded_exchange_binding(ch, x_name, q_name, "#", {})
+    expect(subject.exchange_bindings.size).to be ==(0)
+    expect(subject.exchanges.size).to be ==(1)
+  end
+
+  it "clears all state on reset!" do
+    callable = proc { |*args| args }
+
+    subject.record_queue_with(ch, "bunny.reset.q", false, true, false, false, {})
+    subject.record_exchange_with(ch, "bunny.reset.x", :fanout, true, false, {})
+    subject.record_queue_binding_with(ch, "bunny.reset.x", "bunny.reset.q", "#", {})
+    subject.record_exchange_binding_with(ch, "bunny.reset.x", "bunny.reset.x2", "#", {})
+    subject.record_consumer_with(ch, "bunny.reset.ctag", "bunny.reset.q", callable, true, false, {})
+
+    subject.reset!
+
+    expect(subject.queues.size).to be ==(0)
+    expect(subject.exchanges.size).to be ==(0)
+    expect(subject.queue_bindings.size).to be ==(0)
+    expect(subject.exchange_bindings.size).to be ==(0)
+    expect(subject.consumers.size).to be ==(0)
+  end
+
+  describe Bunny::RecordedQueue do
+    it "#name_to_use_for_recovery returns empty string for server-named queues" do
+      q = Bunny::RecordedQueue.new(ch, "amq.gen-abc123")
+        .with_server_named(true)
+      expect(q.name_to_use_for_recovery).to eq ""
+    end
+
+    it "#name_to_use_for_recovery returns the name for client-named queues" do
+      q = Bunny::RecordedQueue.new(ch, "my.queue")
+        .with_server_named(false)
+      expect(q.name_to_use_for_recovery).to eq "my.queue"
+    end
+  end
+
+  describe Bunny::RecordedExchange do
+    it "#predefined? returns true for amq.* exchanges" do
+      ["amq.direct", "amq.fanout", "amq.topic", "amq.headers", "amq.match"].each do |name|
+        x = Bunny::RecordedExchange.new(ch, name)
+        expect(x).to be_predefined
+      end
+    end
+
+    it "#predefined? returns true for the default (empty name) exchange" do
+      x = Bunny::RecordedExchange.new(ch, "")
+      expect(x).to be_predefined
+    end
+
+    it "#predefined? returns false for user-declared exchanges" do
+      x = Bunny::RecordedExchange.new(ch, "my.exchange")
+      expect(x).not_to be_predefined
+    end
+  end
+
+  describe "filtered methods with default filter" do
+    it "returns all entities when no custom filter is set" do
+      callable = proc { |*args| args }
+
+      subject.record_queue_with(ch, "bunny.filter.q1", false, true, false, false, {})
+      subject.record_exchange_with(ch, "bunny.filter.x1", :fanout, true, false, {})
+      subject.record_queue_binding_with(ch, "bunny.filter.x1", "bunny.filter.q1", "#", {})
+      subject.record_exchange_binding_with(ch, "bunny.filter.x1", "bunny.filter.x2", "#", {})
+      subject.record_consumer_with(ch, "bunny.filter.ctag", "bunny.filter.q1", callable, true, false, {})
+
+      expect(subject.filtered_queues.size).to eq(subject.queues.size)
+      expect(subject.filtered_exchanges.size).to eq(subject.exchanges.size)
+      expect(subject.filtered_queue_bindings.size).to eq(subject.queue_bindings.size)
+      expect(subject.filtered_exchange_bindings.size).to eq(subject.exchange_bindings.size)
+      expect(subject.filtered_consumers.size).to eq(subject.consumers.size)
+
+      subject.reset!
+    end
+  end
+
   it "can update consumers when server-named queue name changes" do
     x_name = "bunny.topology_registry.x.fanout.1"
     q1_name = "bunny.topology_registry.cq.10"

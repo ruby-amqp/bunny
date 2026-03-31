@@ -315,6 +315,10 @@ module Bunny
       end
     end
 
+    class << self
+      alias_method :reacheable?, :reachable?
+    end
+
     def self.ping!(host, port, timeout)
       raise ConnectionTimeout.new("#{host}:#{port} is unreachable") if !reachable?(host, port, timeout)
     end

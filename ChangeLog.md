@@ -87,7 +87,7 @@ Bunny 3.0's confirm tracking is 3-4x faster than 2.x. Batch size of 1000
 provides optimal throughput. Avoid batches over 3000 (they will perform worse due to
 connection flow control on the RabbitMQ end).
 
-To migrate from `2.x`, simply replace `Channel#confirm_select` calls with with `Channel#confirm_select(tracking: true)`.
+To migrate from `2.x`, simply replace `Channel#confirm_select` calls with `Channel#confirm_select(tracking: true)`.
 That's it.
 
 In addition, `Bunny::Channel#basic_publish_batch` benefits further from the write hot path optimizations
@@ -137,7 +137,7 @@ Bunny 3.0's confirm tracking is 3-4x faster than 2.x. Batch size of 1000
 provides optimal throughput. Avoid batches over 3000 (they will perform worse due to
 connection flow control on the RabbitMQ end).
 
-To migrate from `2.x`, simply replace `Channel#confirm_select` calls with with `Channel#confirm_select(tracking: true)`.
+To migrate from `2.x`, simply replace `Channel#confirm_select` calls with `Channel#confirm_select(tracking: true)`.
 With that single line you get automatic backpressure via publisher confirms and three times better throughput.
 
 **Important design note**: unlike the .NET client 7.x and Swift Bunny, which both pause the caller per-message using the `async`/`await`
@@ -198,6 +198,18 @@ that Bunny used to reinvent (with regular expression matches on `reply_text`)
 
 Bunny now configures its TCP socket to limit the hostname resolution time,
 assuming that the OS kernel supports the underlying socket option.
+
+### Breaking Changes
+
+Except for the `VersionedDeliveryTag` removal, all breaking changes in this release are minor and
+do not affect most codebases that use Bunny.
+
+ * `Bunny::Channel.new` signature has changed: the third positional argument is now `opts = {}` (an option hash) instead of a consumer work pool.
+   Use `Bunny::Session#create_channel` or pass the work pool as `opts[:work_pool]`
+ * `VersionedDeliveryTag` removed: delivery tags are now raw integers
+ * `Consumer#recover_from_network_failure` was removed: topology recovery is now handled by `Bunny::Session` via `TopologyRegistry`
+ * `Exchange#recover_from_network_failure` was removed: see above
+ * `Queue#recover_from_network_failure` and `Queue#recover_bindings` were removed: see above
 
 
 ## Changes between Bunny 2.23.0 and 2.24.0 (March 23, 2025)

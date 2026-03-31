@@ -250,6 +250,50 @@ describe Bunny::Queue do
     end
   end
 
+  context "when a durable_queue helper is used" do
+    it "declares a durable, non-exclusive, non-auto-delete queue" do
+      ch = connection.create_channel
+
+      q = ch.durable_queue("bunny.tests.queues.durable_helper.1", "classic")
+      expect(q).to be_durable
+      expect(q).not_to be_exclusive
+      expect(q).not_to be_auto_delete
+      q.delete
+
+      ch.close
+    end
+
+    it "ignores caller-supplied exclusivity and auto-delete" do
+      ch = connection.create_channel
+
+      q = ch.durable_queue("bunny.tests.queues.durable_helper.2", "classic", exclusive: true, auto_delete: true)
+      expect(q).to be_durable
+      expect(q).not_to be_exclusive
+      expect(q).not_to be_auto_delete
+      q.delete
+
+      ch.close
+    end
+  end
+
+  [:quorum_queue, :stream, :durable_queue].each do |helper|
+    context "when #{helper} is used with nil name" do
+      it "raises an error" do
+        ch = connection.create_channel
+        expect { ch.send(helper, nil) }.to raise_error(UncaughtThrowError)
+        ch.close
+      end
+    end
+
+    context "when #{helper} is used with empty name" do
+      it "raises an error" do
+        ch = connection.create_channel
+        expect { ch.send(helper, "") }.to raise_error(UncaughtThrowError)
+        ch.close
+      end
+    end
+  end
+
   context "when queue is declared with a mismatching auto-delete property value" do
     it "raises an exception" do
       ch   = connection.create_channel

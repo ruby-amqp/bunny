@@ -360,8 +360,8 @@ module Bunny
     # @param name [String] Auto-delete queue name
     def maybe_delete_recorded_auto_delete_queue(name)
       @queue_mutex.synchronize do
-        unless self.has_more_consumers_on_queue?(@consumers.values, name)
-          if (q = @queues[name])
+        if (q = @queues[name]) && q.auto_delete?
+          unless self.has_more_consumers_on_queue?(@consumers.values, name)
             self.delete_recorded_queue(q)
           end
         end
@@ -371,8 +371,10 @@ module Bunny
     # @param name [String] Auto-delete exchange name
     def maybe_delete_recorded_auto_delete_exchange(name)
       @exchange_mutex.synchronize do
-        unless self.has_more_destinations_bound_to_exchange?(@queue_bindings.dup, @exchange_bindings.dup, name)
-          self.delete_recorded_exchange_named(name)
+        if (x = @exchanges[name]) && x.auto_delete
+          unless self.has_more_destinations_bound_to_exchange?(@queue_bindings.dup, @exchange_bindings.dup, name)
+            self.delete_recorded_exchange_named(name)
+          end
         end
       end
     end

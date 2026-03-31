@@ -58,6 +58,25 @@ describe Bunny::Channel, "#reopen" do
     expect { ch.reopen }.to raise_error(RuntimeError, /not closed/)
   end
 
+  it "recovers publisher confirm mode after reopen" do
+    ch = connection.create_channel
+    ch.confirm_select(tracking: true, outstanding_limit: 42)
+
+    ch.ack(82, false)
+    sleep 0.25
+    expect(ch).to be_closed
+
+    ch.reopen
+    expect(ch).to be_open
+    expect(ch).to be_using_publisher_confirmations
+
+    q = ch.queue("bunny.test.channel-reopen.confirms.#{rand}", exclusive: true)
+    ch.basic_publish("hello", "", q.name)
+    ch.wait_for_confirms
+
+    expect(q.message_count).to eq 1
+  end
+
   context "with recover_channel_topology" do
     it "re-registers consumers that receive new messages" do
       ch = connection.create_channel
