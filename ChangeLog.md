@@ -158,6 +158,24 @@ Several optimizations to reduce overhead in the consumer delivery hot path:
  * Frame header buffer reuse: the transport layer now reuses a buffer when reading
    frame headers, reducing per-frame allocations
 
+### Exchange Type Constants
+
+`Bunny::Exchange` now provides constants for all built-in and commonly used
+exchange types: `TYPE_DIRECT`, `TYPE_FANOUT`, `TYPE_TOPIC`, `TYPE_HEADERS`,
+`TYPE_MODULUS_HASH`, `TYPE_LOCAL_RANDOM`, `TYPE_CONSISTENT_HASH`, `TYPE_RANDOM`.
+
+### Tanzu RabbitMQ Delayed Queue Support
+
+`Bunny::Queue::Types::DELAYED` and `Channel#delayed_queue` declare a
+Tanzu RabbitMQ delayed queue with optional `:delayed_retry_type`,
+`:delayed_retry_min`, and `:delayed_retry_max` options.
+
+### Tanzu RabbitMQ JMS Queue Support
+
+`Bunny::Queue::Types::JMS` and `Channel#jms_queue` declare a
+Tanzu RabbitMQ JMS queue with optional `:selector_fields` and
+`:selector_field_max_bytes` options.
+
 ### `Channel#reopen`
 
 A new method that reopens a channel after a server-initiated closure
