@@ -122,7 +122,7 @@ This provides backpressure when too many messages are unconfirmed.
 
 If the broker nacks a message, a `Bunny::MessageNacked` exception is raised.
 
-**Performance** (100K messages, with [amq-protocol `2.4.0`](https://github.com/ruby-amqp/amq-protocol/releases/tag/v2.4.0)):
+**Performance** (100K messages, with [amq-protocol `2.7.0`](https://github.com/ruby-amqp/amq-protocol/releases/tag/v2.7.0)):
 
 | Approach | Throughput | vs 2.x confirms |
 |----------|------------|-----------------|
@@ -188,9 +188,9 @@ and its prefetch, confirm, and transactional settings are recovered.
 Recovers topology (exchanges, queues, bindings, consumers) for a single channel.
 Intended for use after `Channel#reopen`.
 
-### `amq-protocol` Bumped to `2.6.0` (or Later)
+### `amq-protocol` Bumped to `2.7.0` (or Later)
 
-Bunny now requires `amq-protocol` `2.6.0` or later for the `Channel::Close`
+Bunny now requires `amq-protocol` `2.7.0` or later for the `Channel::Close`
 predicate methods (`#unknown_delivery_tag?`, `#delivery_ack_timeout?`, `#message_too_large?`)
 that Bunny used to reinvent (with regular expression matches on `reply_text`)
 
