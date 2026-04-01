@@ -123,7 +123,9 @@ conn.start
 
 # open a channel
 ch = conn.create_channel
-ch.confirm_select
+# enable publisher confirms with automatic tracking,
+# see https://www.rabbitmq.com/docs/publishers#data-safety
+ch.confirm_select(tracking: true)
 
 # declare a queue
 q  = ch.queue("test1")
@@ -135,10 +137,6 @@ end
 
 # publish a message to the default exchange which then gets routed to this queue
 q.publish("Hello, everybody!")
-
-# await confirmations from RabbitMQ, see
-# https://www.rabbitmq.com/publishers.html#data-safety for details
-ch.wait_for_confirms
 
 # give the above consumer some time consume the delivery and print out the message
 sleep 1

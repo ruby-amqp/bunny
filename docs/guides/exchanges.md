@@ -1107,39 +1107,67 @@ from the project README:
 This plugin is licensed under [Mozilla Public License
 1.1](http://www.mozilla.org/MPL/MPL-1.1.html), same as RabbitMQ.
 
-## Using the Publisher Confirms Extension
+## Publisher Confirms (Publisher Acknowledgements)
 
-Please refer to [RabbitMQ Extensions guide](/articles/extensions.html)
+The only reliable ways of making sure messages are not lost on the way to the broker
+are [publisher confirms](https://www.rabbitmq.com/docs/confirms) and transactions.
+Confirms are much more lightweight.
 
+### Publisher Confirm Tracking (Bunny 3.0+)
 
-### Message Acknowledgements and Their Relationship to Transactions and Publisher Confirms
+Enable confirm tracking on a channel with `Bunny::Channel#confirm_select`:
 
-Consumer applications (applications that receive and process messages)
-may occasionally fail to process individual messages, or might just
-crash. Additionally, network issues might be experienced. This raises
-a question - "when should the RabbitMQ remove messages from queues?"
-This topic is covered in depth in the [Queues
-guide](/articles/queues.html), including prefetching and examples.
+``` ruby
+ch.confirm_select(tracking: true)
+```
 
-In this guide, we will only mention how message acknowledgements are
-related to AMQP transactions and the Publisher Confirms extension. Let
-us consider a publisher application (P) that communications with a
-consumer (C) using AMQP 0.9.1. Their communication can be graphically
-represented like this:
+With tracking enabled, Bunny automatically applies backpressure when too many messages
+are unconfirmed. The default `outstanding_limit` is 1000. If the broker nacks a message,
+`Bunny::MessageNacked` is raised.
 
-<pre>
------       -----       -----
-|   |   S1  |   |   S2  |   |
-| P | ====> | B | ====> | C |
-|   |       |   |       |   |
------       -----       -----
-</pre>
+For best throughput when publishing groups of messages,
+use `basic_publish_batch`:
 
-We have two network segments, S1 and S2. Each of them may fail. A publisher (P) is concerned with making sure that messages cross S1, while the broker (B) and consumer (C) are concerned
-with ensuring that messages cross S2 and are only removed from the queue when they are processed successfully.
+``` ruby
+ch.confirm_select(tracking: true)
 
-Message acknowledgements cover reliable delivery over S2 as well as successful processing. For S1, P has to use transactions (a heavyweight solution) or the more
-lightweight Publisher Confirms, a RabbitMQ-specific extension.
+messages.each_slice(1000) do |batch|
+  ch.basic_publish_batch(batch, "", queue.name)
+end
+```
+
+Single-message publishing works too, just less efficiently
+when publishing groups (batches):
+
+``` ruby
+ch.confirm_select(tracking: true)
+messages.each { |msg| x.publish(msg, routing_key: q.name) }
+```
+
+### Without Tracking
+
+Without tracking, confirms are still available but you manage them yourself
+with `Bunny::Channel#wait_for_confirms`, a blocking method:
+
+``` ruby
+ch.confirm_select
+
+1000.times { x.publish("") }
+
+success = ch.wait_for_confirms
+unless success
+  ch.nacked_set.each do |n|
+    # handle the nacked message
+  end
+end
+```
+
+`wait_for_confirms` blocks until all outstanding messages are acked or nacked.
+Returns `false` if any were nacked. The nacked message IDs are in `channel.nacked_set`.
+
+### Learn More
+
+See RabbitMQ documentation on [Publisher Confirms](https://www.rabbitmq.com/docs/confirms) and [Publisher-side Data Safety](https://www.rabbitmq.com/docs/publishers#data-safety)
 
 
 ## Binding Queues to Exchanges
