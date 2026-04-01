@@ -123,8 +123,7 @@ describe "Connection recovery" do
       ch = c.create_channel
       q  = ch.queue("bunny.tests.recovery.client-named#{rand}", durable: false, exclusive: true)
       close_all_connections!
-      wait_for_recovery_with { connections.any? }
-      expect(ch).to be_open
+      poll_until { ch.open? }
       ensure_queue_recovery(ch, q)
 
       expect(c.topology_registry.queues.size).to eq 1
@@ -146,8 +145,7 @@ describe "Connection recovery" do
       q2  = ch2.queue(s, no_declare: true)
 
       close_all_connections!
-      wait_for_recovery_with { connections.any? }
-      expect(ch).to be_open
+      poll_until { ch.open? }
       ensure_queue_recovery(ch, q)
       q.delete
     end
@@ -166,8 +164,7 @@ describe "Connection recovery" do
       q2  = ch2.queue(s, passive: true)
 
       close_all_connections!
-      wait_for_recovery_with { connections.any? }
-      expect(ch).to be_open
+      poll_until { ch.open? }
       ensure_queue_recovery(ch, q)
       ensure_queue_recovery(ch, q2)
 
@@ -183,8 +180,7 @@ describe "Connection recovery" do
       q  = ch.queue("", exclusive: true)
 
       close_all_connections!
-      wait_for_recovery_with { connections.any? }
-      expect(ch).to be_open
+      poll_until { ch.open? }
 
       expect(q).to be_server_named
       expect(c.topology_registry.queues.size).to eq 1
@@ -203,8 +199,7 @@ describe "Connection recovery" do
       q  = ch.queue("", exclusive: true)
       q.bind(x)
       close_all_connections!
-      wait_for_recovery_with { connections.any? }
-      expect(ch).to be_open
+      poll_until { ch.open? }
       ensure_queue_binding_recovery(ch, x, q)
 
       expect(c.topology_registry.queue_bindings.size).to eq 1
