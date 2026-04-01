@@ -339,6 +339,11 @@ module Bunny
       @status == :closed
     end
 
+    # @private
+    def connection_closed!
+      @status = :closed
+    end
+
     #
     # @group Backwards compatibility with 0.8.0
     #

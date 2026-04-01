@@ -817,6 +817,7 @@ module Bunny
             announce_network_failure_recovery
             @channel_mutex.synchronize do
               @channels.each do |n, ch|
+                ch.connection_closed!
                 ch.maybe_kill_consumer_work_pool!
               end
             end
