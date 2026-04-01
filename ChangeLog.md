@@ -1,6 +1,10 @@
 ## Changes between Bunny 3.0.0 and 3.1.0 (unrelesed)
 
-(no changes yet)
+### `on_error` Callback Runs in a Separate Thread
+
+`Channel#on_error` callbacks are now invoked in a separate thread
+when triggered by the reader loop. This allows callbacks to perform
+blocking operations such as `Channel#reopen` without deadlocking.
 
 
 ## Changes between Bunny 2.24.0 and 3.0.0 (March 31, 2026)

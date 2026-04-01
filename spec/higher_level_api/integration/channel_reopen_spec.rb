@@ -1,4 +1,5 @@
 require "spec_helper"
+require "bunny/concurrent/condition"
 
 describe Bunny::Channel, "#reopen" do
   let(:connection) do
@@ -9,6 +10,25 @@ describe Bunny::Channel, "#reopen" do
 
   after :each do
     connection.close if connection.open?
+  end
+
+  it "can reopen a channel directly inside on_error" do
+    ch = connection.create_channel
+    done = Bunny::Concurrent::Condition.new
+
+    ch.on_error do |closed_ch, amq_close|
+      closed_ch.reopen
+      done.notify
+    end
+
+    ch.ack(82, false)
+    done.wait
+    expect(ch).to be_open
+
+    q = ch.queue("bunny.test.channel-reopen.on-error.#{rand}", exclusive: true)
+    ch.default_exchange.publish("hello", routing_key: q.name)
+    sleep 0.25
+    expect(q.message_count).to eq 1
   end
 
   it "reopens a channel after a server-initiated closure" do

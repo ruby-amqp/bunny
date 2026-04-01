@@ -2250,7 +2250,9 @@ module Bunny
 
         # basic.ack, basic.reject, basic.nack. MK.
         if channel_level_exception_after_operation_that_has_no_response?(method)
-          @on_error.call(self, method) if @on_error
+          # Runs outside the reader loop so that the callback can perform
+          # blocking operations such as channel.reopen.
+          Thread.new { @on_error.call(self, method) } if @on_error
         else
           @last_channel_error = instantiate_channel_level_exception(method)
           @continuations.push(method)
