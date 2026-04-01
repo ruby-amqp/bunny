@@ -55,7 +55,7 @@ that closely follow its feature set and API shape, form and ergonomics.
 
 Modern Bunny versions support
 
- * CRuby 3.2 through 3.4 (inclusive)
+ * CRuby 3.2 through 4.0 (inclusive)
  * [TruffleRuby](https://www.graalvm.org/ruby/)
 
 For environments that use TLS, Bunny expects Ruby installations to use a recent enough OpenSSL version that
@@ -95,7 +95,7 @@ may introduce, e.g. the idempotency of `queue.delete` operations.
 To use Bunny in a project managed with Bundler:
 
 ``` ruby
-gem "bunny", ">= 2.23.0"
+gem "bunny", ">= 3.0"
 ```
 
 ### With Rubygems
