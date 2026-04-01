@@ -1,4 +1,9 @@
-## Changes between Bunny 2.24.0 and 3.0.0 (in development)
+## Changes between Bunny 3.0.0 and 3.1.0 (unrelesed)
+
+(no changes yet)
+
+
+## Changes between Bunny 2.24.0 and 3.0.0 (March 31, 2026)
 
 ### Topology Recovery Improvements
 
