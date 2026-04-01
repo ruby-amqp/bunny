@@ -112,7 +112,6 @@ ch.confirm_select(tracking: true)
 messages.each_slice(1000) do |batch|
   ch.basic_publish_batch(batch, "", queue.name)
 end
-ch.wait_for_confirms
 ```
 
 Single-message publishing is also supported but slower:
