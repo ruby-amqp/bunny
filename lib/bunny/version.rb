@@ -3,5 +3,5 @@
 
 module Bunny
   # @return [String] Version of the library
-  VERSION = "3.1.0.pre"
+  VERSION = "3.1.0"
 end
