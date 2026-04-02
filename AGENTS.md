@@ -35,7 +35,7 @@ To produce a new release:
  4. Tag the commit: `git tag vX.(Y+1).0`
  5. Bump the dev version: add a new `## Changes between Bunny X.(Y+1).0 and X.(Y+2).0 (in development)` section to `ChangeLog.md` with `No changes yet.` underneath, and update `lib/bunny/version.rb` to the next dev version with a `.pre` suffix
  6. Commit with the message `Bump dev version`
- 7. Push: `git push && git push --tags`
+ 7. Push: `git push && git push origin vX.(Y+1).0`
 
 
 ## Git Instructions
