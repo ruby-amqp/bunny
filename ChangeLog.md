@@ -1,3 +1,8 @@
+## Changes between Bunny 3.1.0 and 3.2.0 (in development)
+
+No changes yet.
+
+
 ## Changes between Bunny 3.0.0 and 3.1.0 (Apr 1, 2026)
 
 ### `on_error` Callback Runs in a Separate Thread
