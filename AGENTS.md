@@ -32,10 +32,10 @@ To produce a new release:
  1. Update `ChangeLog.md`: replace `(in development)` with today's date, e.g. `(Mar 30, 2026)`. Make sure all notable changes since the previous release are listed
  2. Update the version in `lib/bunny/version.rb` to match (remove any `.pre` suffix)
  3. Commit with the message `X.(Y+1).0` (just the version number, nothing else)
- 4. Tag the commit: `git tag vX.(Y+1).0`
+ 4. Tag the commit: `git tag X.(Y+1).0`
  5. Bump the dev version: add a new `## Changes between Bunny X.(Y+1).0 and X.(Y+2).0 (in development)` section to `ChangeLog.md` with `No changes yet.` underneath, and update `lib/bunny/version.rb` to the next dev version with a `.pre` suffix
  6. Commit with the message `Bump dev version`
- 7. Push: `git push && git push origin vX.(Y+1).0`
+ 7. Push: `git push && git push origin X.(Y+1).0`
 
 
 ## Git Instructions
