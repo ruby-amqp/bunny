@@ -6,6 +6,14 @@
 when triggered by the reader loop. This allows callbacks to perform
 blocking operations such as `Channel#reopen` without deadlocking.
 
+### Internal Connection Recovery Improvements
+
+A detected connection failure now immediately marks all channels
+on the connection as closed.
+
+This has no practical consequences for most applications but
+helps make connection recovery tests more robust.
+
 
 ## Changes between Bunny 2.24.0 and 3.0.0 (March 31, 2026)
 
