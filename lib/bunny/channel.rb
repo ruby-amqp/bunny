@@ -344,6 +344,16 @@ module Bunny
       @status = :closed
     end
 
+    # @private
+    def recovering!
+      @status = :recovering
+    end
+
+    # @private
+    def recovery_completed!
+      @status = :open
+    end
+
     #
     # @group Backwards compatibility with 0.8.0
     #

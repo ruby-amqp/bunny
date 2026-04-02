@@ -826,6 +826,7 @@ module Bunny
 
             recover_connection_and_channels
             recover_topology
+            mark_channels_after_recovery!
             notify_of_recovery_completion
           else
             @logger.error "Exception #{exception.message} is considered unrecoverable..."
@@ -1049,7 +1050,17 @@ module Bunny
       @channel_mutex.synchronize do
         @channels.each do |n, ch|
           ch.open
+          ch.recovering!
           ch.recover_from_network_failure
+        end
+      end
+    end
+
+    # @private
+    def mark_channels_after_recovery!
+      @channel_mutex.synchronize do
+        @channels.each do |n, ch|
+          ch.recovery_completed!
         end
       end
     end
