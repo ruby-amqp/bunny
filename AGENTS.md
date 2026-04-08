@@ -46,3 +46,22 @@ To produce a new release:
 ## Style Guide
 
  * Never add full stops to Markdown list items
+
+
+## After Completing a Task
+
+### Iterative Reviews
+
+After completing a task, perform up to twenty iterative reviews of your changes.
+In every iteration, look for meaningful improvements that were missed, for gaps in test coverage,
+and for deviations from the instructions in this file.
+
+In particular, check that:
+
+ * The code targets Ruby 3.0 and does not rely on newer-version features
+ * Notable user-visible changes are listed in `ChangeLog.md` under the current `(in development)` section
+ * New behavior is covered by tests under `spec/unit`, `spec/higher_level_api`, or `spec/lower_level_api`
+ * No new runtime dependencies were introduced beyond `amq-protocol`
+
+If no meaningful improvements are found for three iterations in a row,
+report it and stop iterating.
