@@ -28,7 +28,7 @@ module Bunny
         @__bunny_socket_eof_flag__ = false
       end
       socket.extend self
-      socket.options = { :host => host, :port => port }.merge(options)
+      socket.options = { host: host, port: port }.merge(options)
       socket
     rescue Errno::ETIMEDOUT
       raise ClientTimeout
