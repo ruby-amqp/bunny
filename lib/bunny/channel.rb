@@ -519,7 +519,7 @@ module Bunny
     # @see http://rubybunny.info/articles/extensions.html RabbitMQ Extensions guide
     # @api public
     def queue(name = AMQ::Protocol::EMPTY_STRING, opts = {})
-      throw ArgumentError.new("queue name must not be nil") if name.nil?
+      raise ArgumentError, "queue name must not be nil" if name.nil?
 
       q = find_queue(name) || Bunny::Queue.new(self, name, opts)
 
@@ -539,8 +539,8 @@ module Bunny
     # @see #queue
     # @api public
     def quorum_queue(name, opts = {})
-      throw ArgumentError.new("quorum queue name must not be nil") if name.nil?
-      throw ArgumentError.new("quorum queue name must not be empty (server-named QQs do not make sense)") if name.empty?
+      raise ArgumentError, "quorum queue name must not be nil" if name.nil?
+      raise ArgumentError, "quorum queue name must not be empty (server-named QQs do not make sense)" if name.empty?
 
       durable_queue(name, Bunny::Queue::Types::QUORUM, opts)
     end
@@ -561,8 +561,8 @@ module Bunny
     # @see #queue
     # @api public
     def stream(name, opts = {})
-      throw ArgumentError.new("stream name must not be nil") if name.nil?
-      throw ArgumentError.new("stream name must not be empty (server-named QQs do not make sense)") if name.empty?
+      raise ArgumentError, "stream name must not be nil" if name.nil?
+      raise ArgumentError, "stream name must not be empty (server-named QQs do not make sense)" if name.empty?
 
       durable_queue(name, Bunny::Queue::Types::STREAM, opts)
     end
@@ -583,8 +583,8 @@ module Bunny
     # @see #queue
     # @api public
     def delayed_queue(name, opts = {})
-      throw ArgumentError.new("delayed queue name must not be nil") if name.nil?
-      throw ArgumentError.new("delayed queue name must not be empty") if name.empty?
+      raise ArgumentError, "delayed queue name must not be nil" if name.nil?
+      raise ArgumentError, "delayed queue name must not be empty" if name.empty?
 
       args = opts[:arguments] || {}
       args[Bunny::Queue::XArgs::DELAYED_RETRY_TYPE] = opts[:delayed_retry_type] if opts[:delayed_retry_type]
@@ -614,8 +614,8 @@ module Bunny
     # @see #queue
     # @api public
     def jms_queue(name, opts = {})
-      throw ArgumentError.new("JMS queue name must not be nil") if name.nil?
-      throw ArgumentError.new("JMS queue name must not be empty") if name.empty?
+      raise ArgumentError, "JMS queue name must not be nil" if name.nil?
+      raise ArgumentError, "JMS queue name must not be empty" if name.empty?
 
       args = opts[:arguments] || {}
       args[Bunny::Queue::XArgs::SELECTOR_FIELDS]          = opts[:selector_fields]          if opts[:selector_fields]
@@ -640,8 +640,8 @@ module Bunny
     # @see #queue
     # @api public
     def durable_queue(name, type = "classic", opts = {})
-      throw ArgumentError.new("queue name must not be nil") if name.nil?
-      throw ArgumentError.new("queue name must not be empty (server-named durable queues do not make sense)") if name.empty?
+      raise ArgumentError, "queue name must not be nil" if name.nil?
+      raise ArgumentError, "queue name must not be empty (server-named durable queues do not make sense)" if name.empty?
 
       final_opts = opts.merge({
         :type        => type,

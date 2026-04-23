@@ -378,8 +378,8 @@ module Bunny
       # be extra defensive
       args = args0 || {}
       q_type = args["x-queue-type"] || args[:"x-queue-type"]
-      throw ArgumentError.new(
-        "unsupported queue type #{q_type.inspect}, supported ones: #{Types::KNOWN.join(', ')}") if (q_type and !Types.known?(q_type))
+      raise ArgumentError,
+        "unsupported queue type #{q_type.inspect}, supported ones: #{Types::KNOWN.join(', ')}" if (q_type and !Types.known?(q_type))
     end
 
     #
