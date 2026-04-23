@@ -63,7 +63,7 @@ module Bunny
     # @example Publishing a messages to the tasks queue
     #   channel     = Bunny::Channel.new(connection)
     #   tasks_queue = channel.queue("tasks")
-    #   Bunny::Exchange.default(channel).publish("make clean", :routing_key => "tasks")
+    #   Bunny::Exchange.default(channel).publish("make clean", routing_key: "tasks")
     #
     # @see http://rubybunny.info/articles/exchanges.html Exchanges and Publishing guide
     # @see http://www.rabbitmq.com/resources/specs/amqp0-9-1.pdf AMQP 0.9.1 specification (Section 2.1.2.4)
@@ -72,7 +72,7 @@ module Bunny
     # @return [Exchange] An instance that corresponds to the default exchange (of type direct).
     # @api public
     def self.default(channel_or_connection)
-      self.new(channel_or_connection, :direct, AMQ::Protocol::EMPTY_STRING, :no_declare => true)
+      self.new(channel_or_connection, :direct, AMQ::Protocol::EMPTY_STRING, no_declare: true)
     end
 
     # @param [Bunny::Channel] channel Channel this exchange will use.
@@ -271,15 +271,15 @@ module Bunny
     # @private
     def self.add_default_options(name, opts)
       # :nowait is always false for Bunny
-      h = { :queue => name, :nowait => false }.merge(opts)
+      h = { queue: name, nowait: false }.merge(opts)
 
       if name.empty?
         {
-          :passive     => false,
-          :durable     => false,
-          :auto_delete => false,
-          :internal    => false,
-          :arguments   => nil
+          passive:     false,
+          durable:     false,
+          auto_delete: false,
+          internal:    false,
+          arguments:   nil
         }.merge(h)
       else
         h

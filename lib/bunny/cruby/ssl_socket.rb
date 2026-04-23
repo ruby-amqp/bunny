@@ -10,21 +10,10 @@ module Bunny
     # methods found in Bunny::Socket.
     class SSLSocket < OpenSSL::SSL::SSLSocket
 
-    READ_RETRY_EXCEPTION_CLASSES = if defined?(IO::EAGAINWaitReadable)
-                                     # Ruby 2.1+
-                                     [Errno::EAGAIN, Errno::EWOULDBLOCK, IO::WaitReadable,
-                                      IO::EAGAINWaitReadable, IO::EWOULDBLOCKWaitReadable]
-                                   else
-                                     # 2.0
-                                     [Errno::EAGAIN, Errno::EWOULDBLOCK, IO::WaitReadable]
-                                   end
-    WRITE_RETRY_EXCEPTION_CLASSES = if defined?(IO::EAGAINWaitWritable)
-                                      [Errno::EAGAIN, Errno::EWOULDBLOCK, IO::WaitWritable,
-                                       IO::EAGAINWaitWritable, IO::EWOULDBLOCKWaitWritable]
-                                    else
-                                      # 2.0
-                                      [Errno::EAGAIN, Errno::EWOULDBLOCK, IO::WaitWritable]
-                                    end
+    READ_RETRY_EXCEPTION_CLASSES = [Errno::EAGAIN, Errno::EWOULDBLOCK, IO::WaitReadable,
+                                    IO::EAGAINWaitReadable, IO::EWOULDBLOCKWaitReadable].freeze
+    WRITE_RETRY_EXCEPTION_CLASSES = [Errno::EAGAIN, Errno::EWOULDBLOCK, IO::WaitWritable,
+                                     IO::EAGAINWaitWritable, IO::EWOULDBLOCKWaitWritable].freeze
 
       def initialize(*args)
         super

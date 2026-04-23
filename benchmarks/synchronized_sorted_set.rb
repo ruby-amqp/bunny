@@ -3,7 +3,6 @@
 
 require "rubygems"
 require "sorted_set"
-require "thread"
 require "benchmark"
 
 require "bunny/concurrent/synchronized_sorted_set"

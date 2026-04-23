@@ -3,9 +3,7 @@
 
 require "rubygems"
 require "set"
-require "thread"
 require "benchmark"
-require "monitor"
 
 puts
 puts "-" * 80

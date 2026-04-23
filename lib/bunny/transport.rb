@@ -1,8 +1,6 @@
 # frozen_string_literal: true
 
 require "socket"
-require "thread"
-require "monitor"
 
 begin
   require "openssl"
@@ -305,7 +303,7 @@ module Bunny
     def self.reachable?(host, port, timeout)
       begin
         s = Bunny::SocketImpl.open(host, port,
-          :connect_timeout => timeout)
+          connect_timeout: timeout)
 
         true
       rescue SocketError, Timeout::Error => _e
@@ -327,8 +325,8 @@ module Bunny
       @logger.debug("Using connection timeout of #{@connect_timeout} when connecting to #{@host}:#{@port}")
       begin
         @socket = Bunny::SocketImpl.open(@host, @port,
-          :keepalive      => @opts[:keepalive],
-          :connect_timeout => @connect_timeout)
+          keepalive:       @opts[:keepalive],
+          connect_timeout: @connect_timeout)
       rescue StandardError, ClientTimeout => e
         @status = :not_connected
         raise Bunny::TCPConnectionFailed.new(e, self.hostname, self.port)

@@ -280,7 +280,7 @@ describe Bunny::Queue do
     context "when #{helper} is used with nil name" do
       it "raises an error" do
         ch = connection.create_channel
-        expect { ch.send(helper, nil) }.to raise_error(UncaughtThrowError)
+        expect { ch.send(helper, nil) }.to raise_error(ArgumentError)
         ch.close
       end
     end
@@ -288,7 +288,7 @@ describe Bunny::Queue do
     context "when #{helper} is used with empty name" do
       it "raises an error" do
         ch = connection.create_channel
-        expect { ch.send(helper, "") }.to raise_error(UncaughtThrowError)
+        expect { ch.send(helper, "") }.to raise_error(ArgumentError)
         ch.close
       end
     end

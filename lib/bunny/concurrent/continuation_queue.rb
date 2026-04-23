@@ -1,7 +1,5 @@
 # frozen_string_literal: true
 
-require "thread"
-
 module Bunny
   module Concurrent
     # Continuation queue implementation for MRI and Rubinius

@@ -1,46 +1,7 @@
-# encoding: utf-8
-
 source "https://rubygems.org"
-
-# Use local clones if possible.
-# If you want to use your local copy, just symlink it to vendor.
-# See http://blog.101ideas.cz/posts/custom-gems-in-gemfile.html
-extend Module.new {
-  def gem(name, *args)
-    options = args.last.is_a?(Hash) ? args.last : Hash.new
-
-    local_path = File.expand_path("../vendor/#{name}", __FILE__)
-    if File.exist?(local_path)
-      super name, options.merge(path: local_path).
-        delete_if { |key, _| [:git, :branch].include?(key) }
-    else
-      super name, *args
-    end
-  end
-}
-
-gem "rake", ">= 12.3.1"
-
-group :development do
-  gem "yard"
-
-  gem "redcarpet", platform: :mri
-  gem "ruby-prof", platform: :mri
-end
-
-group :test do
-  gem "rspec", "~> 3.13.0"
-  gem "rspec-retry", "~> 0.6"
-  gem "sorted_set", '~> 1', '>= 1.0.2'
-  gem "base64"
-  gem "rabbitmq_http_api_client", "~> 3.2.0", require: "rabbitmq/http/client"
-  gem "toxiproxy", "~> 2"
-end
 
 gemspec
 
-# Use local clones if possible.
-# If you want to use your local copy, just symlink it to vendor.
 def custom_gem(name, *args)
   options = args.last.is_a?(Hash) ? args.pop : {}
   local_path = File.expand_path("../vendor/#{name}", __FILE__)
@@ -52,4 +13,22 @@ def custom_gem(name, *args)
   end
 end
 
-custom_gem "amq-protocol", "~> 2.6"
+custom_gem "amq-protocol", "~> 2.7"
+
+gem "rake", ">= 12.3.1"
+
+group :development do
+  gem "yard"
+  gem "redcarpet", platform: :mri
+  gem "ruby-prof", platform: :mri
+  gem "benchmark"
+end
+
+group :test do
+  gem "rspec", "~> 3.13"
+  gem "rspec-retry", "~> 0.6"
+  gem "sorted_set", "~> 1", ">= 1.0.2"
+  gem "base64"
+  gem "rabbitmq_http_api_client", "~> 3.2", require: "rabbitmq/http/client"
+  gem "toxiproxy", "~> 2"
+end

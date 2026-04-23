@@ -1,7 +1,5 @@
 # frozen_string_literal: true
 
-require "thread"
-
 module Bunny
   module Concurrent
     # A thread-safe exception accumulator that stores exceptions for later retrieval

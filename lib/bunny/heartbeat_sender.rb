@@ -1,6 +1,5 @@
 # frozen_string_literal: true
 
-require "thread"
 require "amq/protocol/client"
 require "amq/protocol/frame"
 
@@ -31,7 +30,7 @@ module Bunny
         @interval = [(period / 2) - 1, 0.4].max
 
         @thread = Thread.new(&method(:run))
-        @thread.report_on_exception = false if @thread.respond_to?(:report_on_exception)
+        @thread.report_on_exception = false
       end
     end
 

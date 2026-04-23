@@ -1,8 +1,6 @@
 # frozen_string_literal: true
 
 require "socket"
-require "thread"
-require "monitor"
 
 require "bunny/transport"
 require "bunny/channel_id_allocator"
@@ -51,19 +49,19 @@ module Bunny
 
     # RabbitMQ client metadata
     DEFAULT_CLIENT_PROPERTIES = {
-      :capabilities => {
-        :publisher_confirms           => true,
-        :consumer_cancel_notify       => true,
-        :exchange_exchange_bindings   => true,
+      capabilities: {
+        publisher_confirms:           true,
+        consumer_cancel_notify:       true,
+        exchange_exchange_bindings:   true,
         :"basic.nack"                 => true,
         :"connection.blocked"         => true,
         # See http://www.rabbitmq.com/auth-notification.html
-        :authentication_failure_close => true
+        authentication_failure_close: true
       },
-      :product      => "Bunny",
-      :platform     => ::RUBY_DESCRIPTION,
-      :version      => Bunny::VERSION,
-      :information  => "https://github.com/ruby-amqp/bunny",
+      product:     "Bunny",
+      platform:    ::RUBY_DESCRIPTION,
+      version:     Bunny::VERSION,
+      information: "https://github.com/ruby-amqp/bunny",
     }
 
     # @private
@@ -577,7 +575,7 @@ module Bunny
     def queue_exists?(name)
       ch = create_channel
       begin
-        ch.queue(name, :passive => true)
+        ch.queue(name, passive: true)
         true
       rescue Bunny::ResourceLocked => _
         true
@@ -599,7 +597,7 @@ module Bunny
     def exchange_exists?(name)
       ch = create_channel
       begin
-        ch.exchange(name, :passive => true)
+        ch.exchange(name, passive: true)
         true
       rescue Bunny::NotFound => _
         false
@@ -786,16 +784,13 @@ module Bunny
     # @private
     def handle_frameset(ch_number, frames)
       method = frames.first
+      ch = @channels[ch_number]
 
       case method
-      when AMQ::Protocol::Basic::GetOk then
-        @channels[ch_number].handle_basic_get_ok(*frames)
-      when AMQ::Protocol::Basic::GetEmpty then
-        @channels[ch_number].handle_basic_get_empty(*frames)
-      when AMQ::Protocol::Basic::Return then
-        @channels[ch_number].handle_basic_return(*frames)
-      else
-        @channels[ch_number].handle_frameset(*frames)
+      when AMQ::Protocol::Basic::GetOk    then ch.handle_basic_get_ok(*frames)
+      when AMQ::Protocol::Basic::GetEmpty then ch.handle_basic_get_empty(*frames)
+      when AMQ::Protocol::Basic::Return   then ch.handle_basic_return(*frames)
+      else                                     ch.handle_frameset(*frames)
       end
     end
 
@@ -1714,7 +1709,7 @@ module Bunny
           @transport = Transport.new(self,
                                      host_from_address(address),
                                      port_from_address(address),
-                                     @opts.merge(:session_error_handler => @session_error_handler)
+                                     @opts.merge(session_error_handler: @session_error_handler)
           )
 
           # Reset the cached progname for the logger only when no logger was provided

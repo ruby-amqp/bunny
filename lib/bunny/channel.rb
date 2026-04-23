@@ -1,8 +1,6 @@
 # -*- coding: utf-8 -*-
 # frozen_string_literal: true
 
-require "thread"
-require "monitor"
 require "set"
 
 require "bunny/concurrent/atomic_fixnum"
@@ -112,8 +110,8 @@ module Bunny
   #     ch2 = conn.create_channel
   #     q   = "bunny.examples.recovery.q#{rand}"
   #
-  #     ch2.queue_declare(q, :durable => false)
-  #     ch2.queue_declare(q, :durable => true)
+  #     ch2.queue_declare(q, durable: false)
+  #     ch2.queue_declare(q, durable: true)
   #   rescue Bunny::PreconditionFailed => e
   #     puts "Channel-level exception! Code: #{e.channel_close.reply_code}, message: #{e.channel_close.reply_text}"
   #   ensure
@@ -521,7 +519,7 @@ module Bunny
     # @see http://rubybunny.info/articles/extensions.html RabbitMQ Extensions guide
     # @api public
     def queue(name = AMQ::Protocol::EMPTY_STRING, opts = {})
-      throw ArgumentError.new("queue name must not be nil") if name.nil?
+      raise ArgumentError, "queue name must not be nil" if name.nil?
 
       q = find_queue(name) || Bunny::Queue.new(self, name, opts)
 
@@ -541,8 +539,8 @@ module Bunny
     # @see #queue
     # @api public
     def quorum_queue(name, opts = {})
-      throw ArgumentError.new("quorum queue name must not be nil") if name.nil?
-      throw ArgumentError.new("quorum queue name must not be empty (server-named QQs do not make sense)") if name.empty?
+      raise ArgumentError, "quorum queue name must not be nil" if name.nil?
+      raise ArgumentError, "quorum queue name must not be empty (server-named QQs do not make sense)" if name.empty?
 
       durable_queue(name, Bunny::Queue::Types::QUORUM, opts)
     end
@@ -563,8 +561,8 @@ module Bunny
     # @see #queue
     # @api public
     def stream(name, opts = {})
-      throw ArgumentError.new("stream name must not be nil") if name.nil?
-      throw ArgumentError.new("stream name must not be empty (server-named QQs do not make sense)") if name.empty?
+      raise ArgumentError, "stream name must not be nil" if name.nil?
+      raise ArgumentError, "stream name must not be empty (server-named QQs do not make sense)" if name.empty?
 
       durable_queue(name, Bunny::Queue::Types::STREAM, opts)
     end
@@ -585,15 +583,15 @@ module Bunny
     # @see #queue
     # @api public
     def delayed_queue(name, opts = {})
-      throw ArgumentError.new("delayed queue name must not be nil") if name.nil?
-      throw ArgumentError.new("delayed queue name must not be empty") if name.empty?
+      raise ArgumentError, "delayed queue name must not be nil" if name.nil?
+      raise ArgumentError, "delayed queue name must not be empty" if name.empty?
 
       args = opts[:arguments] || {}
       args[Bunny::Queue::XArgs::DELAYED_RETRY_TYPE] = opts[:delayed_retry_type] if opts[:delayed_retry_type]
       args[Bunny::Queue::XArgs::DELAYED_RETRY_MIN]  = opts[:delayed_retry_min]  if opts[:delayed_retry_min]
       args[Bunny::Queue::XArgs::DELAYED_RETRY_MAX]  = opts[:delayed_retry_max]  if opts[:delayed_retry_max]
 
-      final_opts = opts.merge(:arguments => args)
+      final_opts = opts.merge(arguments: args)
       final_opts.delete(:delayed_retry_type)
       final_opts.delete(:delayed_retry_min)
       final_opts.delete(:delayed_retry_max)
@@ -616,14 +614,14 @@ module Bunny
     # @see #queue
     # @api public
     def jms_queue(name, opts = {})
-      throw ArgumentError.new("JMS queue name must not be nil") if name.nil?
-      throw ArgumentError.new("JMS queue name must not be empty") if name.empty?
+      raise ArgumentError, "JMS queue name must not be nil" if name.nil?
+      raise ArgumentError, "JMS queue name must not be empty" if name.empty?
 
       args = opts[:arguments] || {}
       args[Bunny::Queue::XArgs::SELECTOR_FIELDS]          = opts[:selector_fields]          if opts[:selector_fields]
       args[Bunny::Queue::XArgs::SELECTOR_FIELD_MAX_BYTES] = opts[:selector_field_max_bytes] if opts[:selector_field_max_bytes]
 
-      final_opts = opts.merge(:arguments => args)
+      final_opts = opts.merge(arguments: args)
       final_opts.delete(:selector_fields)
       final_opts.delete(:selector_field_max_bytes)
 
@@ -642,16 +640,16 @@ module Bunny
     # @see #queue
     # @api public
     def durable_queue(name, type = "classic", opts = {})
-      throw ArgumentError.new("queue name must not be nil") if name.nil?
-      throw ArgumentError.new("queue name must not be empty (server-named durable queues do not make sense)") if name.empty?
+      raise ArgumentError, "queue name must not be nil" if name.nil?
+      raise ArgumentError, "queue name must not be empty (server-named durable queues do not make sense)" if name.empty?
 
-      final_opts = opts.merge({
-        :type        => type,
-        :durable     => true,
+      final_opts = opts.merge(
+        type:        type,
+        durable:     true,
         # exclusive or auto-delete QQs do not make much sense
-        :exclusive   => false,
-        :auto_delete => false
-      })
+        exclusive:   false,
+        auto_delete: false
+      )
       q = find_queue(name) || Bunny::Queue.new(self, name, final_opts)
 
       record_queue(q)
@@ -666,7 +664,7 @@ module Bunny
     # @api public
     def temporary_queue(opts = {})
       temporary_queue_opts = {
-        :exclusive => true
+        exclusive: true
       }
       queue("", opts.merge(temporary_queue_opts))
     end
@@ -773,11 +771,7 @@ module Bunny
       raise_if_no_longer_open!
       raise ArgumentError, "routing key cannot be longer than #{SHORTSTR_LIMIT} characters" if routing_key && routing_key.size > SHORTSTR_LIMIT
 
-      exchange_name = if exchange.respond_to?(:name)
-                        exchange.name
-                      else
-                        exchange
-                      end
+      exchange_name = exchange.is_a?(Bunny::Exchange) ? exchange.name : exchange
 
       mode = if opts.fetch(:persistent, true)
                2
@@ -848,11 +842,7 @@ module Bunny
       raise ArgumentError, "routing key cannot be longer than #{SHORTSTR_LIMIT} characters" if routing_key && routing_key.size > SHORTSTR_LIMIT
       return self if payloads.empty?
 
-      exchange_name = if exchange.respond_to?(:name)
-                        exchange.name
-                      else
-                        exchange
-                      end
+      exchange_name = exchange.is_a?(Bunny::Exchange) ? exchange.name : exchange
 
       mode = opts.fetch(:persistent, true) ? 2 : 1
       opts = opts.dup
@@ -922,12 +912,12 @@ module Bunny
     #   conn.start
     #   ch   = conn.create_channel
     #   # here we assume the queue already exists and has messages
-    #   delivery_info, properties, payload = ch.basic_get("bunny.examples.queue1", :manual_ack => true)
+    #   delivery_info, properties, payload = ch.basic_get("bunny.examples.queue1", manual_ack: true)
     #   ch.acknowledge(delivery_info.delivery_tag)
     # @see Bunny::Queue#pop
     # @see http://rubybunny.info/articles/queues.html Queues and Consumers guide
     # @api public
-    def basic_get(queue, opts = {:manual_ack => true})
+    def basic_get(queue, opts = { manual_ack: true })
       raise_if_no_longer_open!
 
       unless opts[:ack].nil?
@@ -1046,7 +1036,7 @@ module Bunny
     #
     #   ch    = conn.create_channel
     #   # we assume the queue exists and has messages
-    #   delivery_info, properties, payload = ch.basic_get("bunny.examples.queue3", :manual_ack => true)
+    #   delivery_info, properties, payload = ch.basic_get("bunny.examples.queue3", manual_ack: true)
     #   ch.basic_reject(delivery_info.delivery_tag, true)
     #
     # @see Bunny::Channel#basic_nack
@@ -1081,7 +1071,7 @@ module Bunny
     #
     #   ch    = conn.create_channel
     #   # we assume the queue exists and has messages
-    #   delivery_info, properties, payload = ch.basic_get("bunny.examples.queue3", :manual_ack => true)
+    #   delivery_info, properties, payload = ch.basic_get("bunny.examples.queue3", manual_ack: true)
     #   ch.basic_ack(delivery_info.delivery_tag.to_i)
     #
     # @example Ack multiple messages fetched via basic.get
@@ -1090,9 +1080,9 @@ module Bunny
     #
     #   ch    = conn.create_channel
     #   # we assume the queue exists and has messages
-    #   _, _, payload1 = ch.basic_get("bunny.examples.queue3", :manual_ack => true)
-    #   _, _, payload2 = ch.basic_get("bunny.examples.queue3", :manual_ack => true)
-    #   delivery_info, properties, payload3 = ch.basic_get("bunny.examples.queue3", :manual_ack => true)
+    #   _, _, payload1 = ch.basic_get("bunny.examples.queue3", manual_ack: true)
+    #   _, _, payload2 = ch.basic_get("bunny.examples.queue3", manual_ack: true)
+    #   delivery_info, properties, payload3 = ch.basic_get("bunny.examples.queue3", manual_ack: true)
     #   # ack all fetched messages up to payload3
     #   ch.basic_ack(delivery_info.delivery_tag.to_i, true)
     #
@@ -1141,7 +1131,7 @@ module Bunny
     #
     #   ch    = conn.create_channel
     #   # we assume the queue exists and has messages
-    #   delivery_info, properties, payload = ch.basic_get("bunny.examples.queue3", :manual_ack => true)
+    #   delivery_info, properties, payload = ch.basic_get("bunny.examples.queue3", manual_ack: true)
     #   ch.basic_nack(delivery_info.delivery_tag, false, true)
     #
     #
@@ -1151,9 +1141,9 @@ module Bunny
     #
     #   ch    = conn.create_channel
     #   # we assume the queue exists and has messages
-    #   _, _, payload1 = ch.basic_get("bunny.examples.queue3", :manual_ack => true)
-    #   _, _, payload2 = ch.basic_get("bunny.examples.queue3", :manual_ack => true)
-    #   delivery_info, properties, payload3 = ch.basic_get("bunny.examples.queue3", :manual_ack => true)
+    #   _, _, payload1 = ch.basic_get("bunny.examples.queue3", manual_ack: true)
+    #   _, _, payload2 = ch.basic_get("bunny.examples.queue3", manual_ack: true)
+    #   delivery_info, properties, payload3 = ch.basic_get("bunny.examples.queue3", manual_ack: true)
     #   # requeue all fetched messages up to payload3
     #   ch.basic_nack(delivery_info.delivery_tag, true, true)
     #
@@ -1189,11 +1179,7 @@ module Bunny
       raise_if_no_longer_open!
       maybe_start_consumer_work_pool!
 
-      queue_name = if queue.respond_to?(:name)
-                     queue.name
-                   else
-                     queue
-                   end
+      queue_name = queue.is_a?(Bunny::Queue) ? queue.name : queue
 
       # helps avoid race condition between basic.consume-ok and basic.deliver if there are messages
       # in the queue already. MK.
@@ -1479,11 +1465,7 @@ module Bunny
     def queue_bind(name, exchange, opts = {})
       raise_if_no_longer_open!
 
-      exchange_name = if exchange.respond_to?(:name)
-                        exchange.name
-                      else
-                        exchange
-                      end
+      exchange_name = exchange.is_a?(Bunny::Exchange) ? exchange.name : exchange
       rk = (opts[:routing_key] || opts[:key])
       args = opts[:arguments]
 
@@ -1499,11 +1481,7 @@ module Bunny
     def queue_bind_without_recording_topology(name, exchange, opts = {})
       raise_if_no_longer_open!
 
-      exchange_name = if exchange.respond_to?(:name)
-                        exchange.name
-                      else
-                        exchange
-                      end
+      exchange_name = exchange.is_a?(Bunny::Exchange) ? exchange.name : exchange
 
       rk = (opts[:routing_key] || opts[:key])
       args = opts[:arguments]
@@ -1540,11 +1518,7 @@ module Bunny
     def queue_unbind(name, exchange, opts = {})
       raise_if_no_longer_open!
 
-      exchange_name = if exchange.respond_to?(:name)
-                        exchange.name
-                      else
-                        exchange
-                      end
+      exchange_name = exchange.is_a?(Bunny::Exchange) ? exchange.name : exchange
 
       rk = (opts[:routing_key] || opts[:key])
       args = opts[:arguments]
@@ -1693,16 +1667,8 @@ module Bunny
     def exchange_bind(source, destination, opts = {})
       result = self.exchange_bind_without_recording_topology(source, destination, opts)
 
-      source_name = if source.respond_to?(:name)
-                      source.name
-                    else
-                      source
-                    end
-      destination_name = if destination.respond_to?(:name)
-                           destination.name
-                         else
-                           destination
-                         end
+      source_name = source.is_a?(Bunny::Exchange) ? source.name : source
+      destination_name = destination.is_a?(Bunny::Exchange) ? destination.name : destination
       rk = (opts[:routing_key] || opts[:key])
       args = opts[:arguments]
       self.record_exchange_binding_with(self, source_name, destination_name, rk, args)
@@ -1716,17 +1682,9 @@ module Bunny
     def exchange_bind_without_recording_topology(source, destination, opts = {})
       raise_if_no_longer_open!
 
-      source_name = if source.respond_to?(:name)
-                      source.name
-                    else
-                      source
-                    end
+      source_name = source.is_a?(Bunny::Exchange) ? source.name : source
 
-      destination_name = if destination.respond_to?(:name)
-                           destination.name
-                         else
-                           destination
-                         end
+      destination_name = destination.is_a?(Bunny::Exchange) ? destination.name : destination
 
       rk = (opts[:routing_key] || opts[:key])
       args = opts[:arguments]
@@ -1764,17 +1722,9 @@ module Bunny
     def exchange_unbind(source, destination, opts = {})
       raise_if_no_longer_open!
 
-      source_name = if source.respond_to?(:name)
-                      source.name
-                    else
-                      source
-                    end
+      source_name = source.is_a?(Bunny::Exchange) ? source.name : source
 
-      destination_name = if destination.respond_to?(:name)
-                           destination.name
-                         else
-                           destination
-                         end
+      destination_name = destination.is_a?(Bunny::Exchange) ? destination.name : destination
 
       rk = (opts[:routing_key] || opts[:key])
       args = opts[:arguments]

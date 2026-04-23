@@ -11,21 +11,10 @@ module Bunny
   module Socket
     attr_accessor :options
 
-    READ_RETRY_EXCEPTION_CLASSES = if defined?(IO::EAGAINWaitReadable)
-                                     # Ruby 2.1+
-                                     [Errno::EAGAIN, Errno::EWOULDBLOCK, IO::WaitReadable,
-                                      IO::EAGAINWaitReadable, IO::EWOULDBLOCKWaitReadable]
-                                   else
-                                     # 2.0
-                                     [Errno::EAGAIN, Errno::EWOULDBLOCK, IO::WaitReadable]
-                                   end
-    WRITE_RETRY_EXCEPTION_CLASSES = if defined?(IO::EAGAINWaitWritable)
-                                      [Errno::EAGAIN, Errno::EWOULDBLOCK, IO::WaitWritable,
-                                       IO::EAGAINWaitWritable, IO::EWOULDBLOCKWaitWritable]
-                                    else
-                                      # 2.0
-                                      [Errno::EAGAIN, Errno::EWOULDBLOCK, IO::WaitWritable]
-                                    end
+    READ_RETRY_EXCEPTION_CLASSES = [Errno::EAGAIN, Errno::EWOULDBLOCK, IO::WaitReadable,
+                                    IO::EAGAINWaitReadable, IO::EWOULDBLOCKWaitReadable].freeze
+    WRITE_RETRY_EXCEPTION_CLASSES = [Errno::EAGAIN, Errno::EWOULDBLOCK, IO::WaitWritable,
+                                     IO::EAGAINWaitWritable, IO::EWOULDBLOCKWaitWritable].freeze
 
     def self.open(host, port, options = {})
       socket = ::Socket.tcp(host, port, nil, nil,
@@ -39,7 +28,7 @@ module Bunny
         @__bunny_socket_eof_flag__ = false
       end
       socket.extend self
-      socket.options = { :host => host, :port => port }.merge(options)
+      socket.options = { host: host, port: port }.merge(options)
       socket
     rescue Errno::ETIMEDOUT
       raise ClientTimeout

@@ -52,13 +52,13 @@ module Bunny
     # @return [Hash] Hash representation of this delivery info
     def to_hash
       @hash ||= {
-        :consumer_tag => @basic_deliver.consumer_tag,
-        :delivery_tag => @basic_deliver.delivery_tag,
-        :redelivered  => @basic_deliver.redelivered,
-        :exchange     => @basic_deliver.exchange,
-        :routing_key  => @basic_deliver.routing_key,
-        :consumer     => @consumer,
-        :channel      => @channel
+        consumer_tag: @basic_deliver.consumer_tag,
+        delivery_tag: @basic_deliver.delivery_tag,
+        redelivered:  @basic_deliver.redelivered,
+        exchange:     @basic_deliver.exchange,
+        routing_key:  @basic_deliver.routing_key,
+        consumer:     @consumer,
+        channel:      @channel
       }
     end
 
