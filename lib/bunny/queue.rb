@@ -159,7 +159,7 @@ module Bunny
     def bind(exchange, opts = {})
       @channel.queue_bind(@name, exchange, opts)
 
-      exchange_name = if exchange.respond_to?(:name)
+      exchange_name = if exchange.is_a?(Bunny::Exchange)
                         exchange.name
                       else
                         exchange
@@ -188,7 +188,7 @@ module Bunny
     def unbind(exchange, opts = {})
       @channel.queue_unbind(@name, exchange, opts)
 
-      exchange_name = if exchange.respond_to?(:name)
+      exchange_name = if exchange.is_a?(Bunny::Exchange)
                         exchange.name
                       else
                         exchange

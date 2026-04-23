@@ -111,7 +111,7 @@ module Bunny
     # @return [String] Name of the queue this consumer is on
     # @api public
     def queue_name
-      if @queue.respond_to?(:name)
+      if @queue.is_a?(Bunny::Queue)
         @queue.name
       else
         @queue

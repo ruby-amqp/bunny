@@ -771,11 +771,7 @@ module Bunny
       raise_if_no_longer_open!
       raise ArgumentError, "routing key cannot be longer than #{SHORTSTR_LIMIT} characters" if routing_key && routing_key.size > SHORTSTR_LIMIT
 
-      exchange_name = if exchange.respond_to?(:name)
-                        exchange.name
-                      else
-                        exchange
-                      end
+      exchange_name = exchange.is_a?(Bunny::Exchange) ? exchange.name : exchange
 
       mode = if opts.fetch(:persistent, true)
                2
@@ -846,11 +842,7 @@ module Bunny
       raise ArgumentError, "routing key cannot be longer than #{SHORTSTR_LIMIT} characters" if routing_key && routing_key.size > SHORTSTR_LIMIT
       return self if payloads.empty?
 
-      exchange_name = if exchange.respond_to?(:name)
-                        exchange.name
-                      else
-                        exchange
-                      end
+      exchange_name = exchange.is_a?(Bunny::Exchange) ? exchange.name : exchange
 
       mode = opts.fetch(:persistent, true) ? 2 : 1
       opts = opts.dup
@@ -1187,11 +1179,7 @@ module Bunny
       raise_if_no_longer_open!
       maybe_start_consumer_work_pool!
 
-      queue_name = if queue.respond_to?(:name)
-                     queue.name
-                   else
-                     queue
-                   end
+      queue_name = queue.is_a?(Bunny::Queue) ? queue.name : queue
 
       # helps avoid race condition between basic.consume-ok and basic.deliver if there are messages
       # in the queue already. MK.
@@ -1477,11 +1465,7 @@ module Bunny
     def queue_bind(name, exchange, opts = {})
       raise_if_no_longer_open!
 
-      exchange_name = if exchange.respond_to?(:name)
-                        exchange.name
-                      else
-                        exchange
-                      end
+      exchange_name = exchange.is_a?(Bunny::Exchange) ? exchange.name : exchange
       rk = (opts[:routing_key] || opts[:key])
       args = opts[:arguments]
 
@@ -1497,11 +1481,7 @@ module Bunny
     def queue_bind_without_recording_topology(name, exchange, opts = {})
       raise_if_no_longer_open!
 
-      exchange_name = if exchange.respond_to?(:name)
-                        exchange.name
-                      else
-                        exchange
-                      end
+      exchange_name = exchange.is_a?(Bunny::Exchange) ? exchange.name : exchange
 
       rk = (opts[:routing_key] || opts[:key])
       args = opts[:arguments]
@@ -1538,11 +1518,7 @@ module Bunny
     def queue_unbind(name, exchange, opts = {})
       raise_if_no_longer_open!
 
-      exchange_name = if exchange.respond_to?(:name)
-                        exchange.name
-                      else
-                        exchange
-                      end
+      exchange_name = exchange.is_a?(Bunny::Exchange) ? exchange.name : exchange
 
       rk = (opts[:routing_key] || opts[:key])
       args = opts[:arguments]
@@ -1691,16 +1667,8 @@ module Bunny
     def exchange_bind(source, destination, opts = {})
       result = self.exchange_bind_without_recording_topology(source, destination, opts)
 
-      source_name = if source.respond_to?(:name)
-                      source.name
-                    else
-                      source
-                    end
-      destination_name = if destination.respond_to?(:name)
-                           destination.name
-                         else
-                           destination
-                         end
+      source_name = source.is_a?(Bunny::Exchange) ? source.name : source
+      destination_name = destination.is_a?(Bunny::Exchange) ? destination.name : destination
       rk = (opts[:routing_key] || opts[:key])
       args = opts[:arguments]
       self.record_exchange_binding_with(self, source_name, destination_name, rk, args)
@@ -1714,17 +1682,9 @@ module Bunny
     def exchange_bind_without_recording_topology(source, destination, opts = {})
       raise_if_no_longer_open!
 
-      source_name = if source.respond_to?(:name)
-                      source.name
-                    else
-                      source
-                    end
+      source_name = source.is_a?(Bunny::Exchange) ? source.name : source
 
-      destination_name = if destination.respond_to?(:name)
-                           destination.name
-                         else
-                           destination
-                         end
+      destination_name = destination.is_a?(Bunny::Exchange) ? destination.name : destination
 
       rk = (opts[:routing_key] || opts[:key])
       args = opts[:arguments]
@@ -1762,17 +1722,9 @@ module Bunny
     def exchange_unbind(source, destination, opts = {})
       raise_if_no_longer_open!
 
-      source_name = if source.respond_to?(:name)
-                      source.name
-                    else
-                      source
-                    end
+      source_name = source.is_a?(Bunny::Exchange) ? source.name : source
 
-      destination_name = if destination.respond_to?(:name)
-                           destination.name
-                         else
-                           destination
-                         end
+      destination_name = destination.is_a?(Bunny::Exchange) ? destination.name : destination
 
       rk = (opts[:routing_key] || opts[:key])
       args = opts[:arguments]

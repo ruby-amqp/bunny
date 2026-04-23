@@ -784,16 +784,13 @@ module Bunny
     # @private
     def handle_frameset(ch_number, frames)
       method = frames.first
+      ch = @channels[ch_number]
 
       case method
-      when AMQ::Protocol::Basic::GetOk then
-        @channels[ch_number].handle_basic_get_ok(*frames)
-      when AMQ::Protocol::Basic::GetEmpty then
-        @channels[ch_number].handle_basic_get_empty(*frames)
-      when AMQ::Protocol::Basic::Return then
-        @channels[ch_number].handle_basic_return(*frames)
-      else
-        @channels[ch_number].handle_frameset(*frames)
+      when AMQ::Protocol::Basic::GetOk    then ch.handle_basic_get_ok(*frames)
+      when AMQ::Protocol::Basic::GetEmpty then ch.handle_basic_get_empty(*frames)
+      when AMQ::Protocol::Basic::Return   then ch.handle_basic_return(*frames)
+      else                                     ch.handle_frameset(*frames)
       end
     end
 
