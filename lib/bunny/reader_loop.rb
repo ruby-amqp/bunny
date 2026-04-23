@@ -1,7 +1,5 @@
 # frozen_string_literal: true
 
-require "thread"
-
 module Bunny
   # Network activity loop that reads and passes incoming AMQP 0.9.1 methods for
   # processing. They are dispatched further down the line in Bunny::Session and Bunny::Channel.

@@ -1,8 +1,5 @@
 # frozen_string_literal: true
 
-require "thread"
-require "monitor"
-
 module Bunny
   # @private
   module Concurrent

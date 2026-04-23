@@ -1,8 +1,6 @@
 # frozen_string_literal: true
 
 require "set"
-require "thread"
-require "monitor"
 
 module Bunny
   module Concurrent

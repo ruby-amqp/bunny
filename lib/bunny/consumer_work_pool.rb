@@ -1,7 +1,5 @@
 # frozen_string_literal: true
 
-require "thread"
-
 module Bunny
   # Thread pool that dispatches consumer deliveries. Not supposed to be shared between channels
   # or threads.

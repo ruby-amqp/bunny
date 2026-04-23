@@ -1,8 +1,6 @@
 # -*- coding: utf-8 -*-
 # frozen_string_literal: true
 
-require "thread"
-require "monitor"
 require "set"
 
 require "bunny/concurrent/atomic_fixnum"

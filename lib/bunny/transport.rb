@@ -1,8 +1,6 @@
 # frozen_string_literal: true
 
 require "socket"
-require "thread"
-require "monitor"
 
 begin
   require "openssl"

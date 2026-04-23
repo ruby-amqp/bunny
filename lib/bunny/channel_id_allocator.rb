@@ -1,7 +1,5 @@
 # frozen_string_literal: true
 
-require "thread"
-require "monitor"
 require "amq/int_allocator"
 
 module Bunny
