@@ -41,10 +41,10 @@ module Bunny
     # @return [Hash] Hash representation of this returned delivery info
     def to_hash
       @hash ||= {
-        :reply_code   => @basic_return.reply_code,
-        :reply_text   => @basic_return.reply_text,
-        :exchange     => @basic_return.exchange,
-        :routing_key  => @basic_return.routing_key
+        reply_code:   @basic_return.reply_code,
+        reply_text:   @basic_return.reply_text,
+        exchange:     @basic_return.exchange,
+        routing_key:  @basic_return.routing_key
       }
     end
 

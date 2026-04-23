@@ -110,8 +110,8 @@ module Bunny
   #     ch2 = conn.create_channel
   #     q   = "bunny.examples.recovery.q#{rand}"
   #
-  #     ch2.queue_declare(q, :durable => false)
-  #     ch2.queue_declare(q, :durable => true)
+  #     ch2.queue_declare(q, durable: false)
+  #     ch2.queue_declare(q, durable: true)
   #   rescue Bunny::PreconditionFailed => e
   #     puts "Channel-level exception! Code: #{e.channel_close.reply_code}, message: #{e.channel_close.reply_text}"
   #   ensure
@@ -591,7 +591,7 @@ module Bunny
       args[Bunny::Queue::XArgs::DELAYED_RETRY_MIN]  = opts[:delayed_retry_min]  if opts[:delayed_retry_min]
       args[Bunny::Queue::XArgs::DELAYED_RETRY_MAX]  = opts[:delayed_retry_max]  if opts[:delayed_retry_max]
 
-      final_opts = opts.merge(:arguments => args)
+      final_opts = opts.merge(arguments: args)
       final_opts.delete(:delayed_retry_type)
       final_opts.delete(:delayed_retry_min)
       final_opts.delete(:delayed_retry_max)
@@ -621,7 +621,7 @@ module Bunny
       args[Bunny::Queue::XArgs::SELECTOR_FIELDS]          = opts[:selector_fields]          if opts[:selector_fields]
       args[Bunny::Queue::XArgs::SELECTOR_FIELD_MAX_BYTES] = opts[:selector_field_max_bytes] if opts[:selector_field_max_bytes]
 
-      final_opts = opts.merge(:arguments => args)
+      final_opts = opts.merge(arguments: args)
       final_opts.delete(:selector_fields)
       final_opts.delete(:selector_field_max_bytes)
 
@@ -643,13 +643,13 @@ module Bunny
       raise ArgumentError, "queue name must not be nil" if name.nil?
       raise ArgumentError, "queue name must not be empty (server-named durable queues do not make sense)" if name.empty?
 
-      final_opts = opts.merge({
-        :type        => type,
-        :durable     => true,
+      final_opts = opts.merge(
+        type:        type,
+        durable:     true,
         # exclusive or auto-delete QQs do not make much sense
-        :exclusive   => false,
-        :auto_delete => false
-      })
+        exclusive:   false,
+        auto_delete: false
+      )
       q = find_queue(name) || Bunny::Queue.new(self, name, final_opts)
 
       record_queue(q)
@@ -664,7 +664,7 @@ module Bunny
     # @api public
     def temporary_queue(opts = {})
       temporary_queue_opts = {
-        :exclusive => true
+        exclusive: true
       }
       queue("", opts.merge(temporary_queue_opts))
     end
@@ -912,12 +912,12 @@ module Bunny
     #   conn.start
     #   ch   = conn.create_channel
     #   # here we assume the queue already exists and has messages
-    #   delivery_info, properties, payload = ch.basic_get("bunny.examples.queue1", :manual_ack => true)
+    #   delivery_info, properties, payload = ch.basic_get("bunny.examples.queue1", manual_ack: true)
     #   ch.acknowledge(delivery_info.delivery_tag)
     # @see Bunny::Queue#pop
     # @see http://rubybunny.info/articles/queues.html Queues and Consumers guide
     # @api public
-    def basic_get(queue, opts = {:manual_ack => true})
+    def basic_get(queue, opts = { manual_ack: true })
       raise_if_no_longer_open!
 
       unless opts[:ack].nil?
@@ -1036,7 +1036,7 @@ module Bunny
     #
     #   ch    = conn.create_channel
     #   # we assume the queue exists and has messages
-    #   delivery_info, properties, payload = ch.basic_get("bunny.examples.queue3", :manual_ack => true)
+    #   delivery_info, properties, payload = ch.basic_get("bunny.examples.queue3", manual_ack: true)
     #   ch.basic_reject(delivery_info.delivery_tag, true)
     #
     # @see Bunny::Channel#basic_nack
@@ -1071,7 +1071,7 @@ module Bunny
     #
     #   ch    = conn.create_channel
     #   # we assume the queue exists and has messages
-    #   delivery_info, properties, payload = ch.basic_get("bunny.examples.queue3", :manual_ack => true)
+    #   delivery_info, properties, payload = ch.basic_get("bunny.examples.queue3", manual_ack: true)
     #   ch.basic_ack(delivery_info.delivery_tag.to_i)
     #
     # @example Ack multiple messages fetched via basic.get
@@ -1080,9 +1080,9 @@ module Bunny
     #
     #   ch    = conn.create_channel
     #   # we assume the queue exists and has messages
-    #   _, _, payload1 = ch.basic_get("bunny.examples.queue3", :manual_ack => true)
-    #   _, _, payload2 = ch.basic_get("bunny.examples.queue3", :manual_ack => true)
-    #   delivery_info, properties, payload3 = ch.basic_get("bunny.examples.queue3", :manual_ack => true)
+    #   _, _, payload1 = ch.basic_get("bunny.examples.queue3", manual_ack: true)
+    #   _, _, payload2 = ch.basic_get("bunny.examples.queue3", manual_ack: true)
+    #   delivery_info, properties, payload3 = ch.basic_get("bunny.examples.queue3", manual_ack: true)
     #   # ack all fetched messages up to payload3
     #   ch.basic_ack(delivery_info.delivery_tag.to_i, true)
     #
@@ -1131,7 +1131,7 @@ module Bunny
     #
     #   ch    = conn.create_channel
     #   # we assume the queue exists and has messages
-    #   delivery_info, properties, payload = ch.basic_get("bunny.examples.queue3", :manual_ack => true)
+    #   delivery_info, properties, payload = ch.basic_get("bunny.examples.queue3", manual_ack: true)
     #   ch.basic_nack(delivery_info.delivery_tag, false, true)
     #
     #
@@ -1141,9 +1141,9 @@ module Bunny
     #
     #   ch    = conn.create_channel
     #   # we assume the queue exists and has messages
-    #   _, _, payload1 = ch.basic_get("bunny.examples.queue3", :manual_ack => true)
-    #   _, _, payload2 = ch.basic_get("bunny.examples.queue3", :manual_ack => true)
-    #   delivery_info, properties, payload3 = ch.basic_get("bunny.examples.queue3", :manual_ack => true)
+    #   _, _, payload1 = ch.basic_get("bunny.examples.queue3", manual_ack: true)
+    #   _, _, payload2 = ch.basic_get("bunny.examples.queue3", manual_ack: true)
+    #   delivery_info, properties, payload3 = ch.basic_get("bunny.examples.queue3", manual_ack: true)
     #   # requeue all fetched messages up to payload3
     #   ch.basic_nack(delivery_info.delivery_tag, true, true)
     #

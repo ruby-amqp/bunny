@@ -168,7 +168,7 @@ module Bunny
 
       # store bindings for automatic recovery. We need to be very careful to
       # not cause an infinite rebinding loop here when we recover. MK.
-      binding = { :exchange => exchange_name, :routing_key => (opts[:routing_key] || opts[:key]), :arguments => opts[:arguments] }
+      binding = { exchange: exchange_name, routing_key: (opts[:routing_key] || opts[:key]), arguments: opts[:arguments] }
       @bindings.push(binding) unless @bindings.include?(binding)
 
       self
@@ -214,11 +214,11 @@ module Bunny
     # @see http://rubybunny.info/articles/queues.html Queues and Consumers guide
     # @api public
     def subscribe(opts = {
-                    :consumer_tag    => @channel.generate_consumer_tag,
-                    :manual_ack      => false,
-                    :exclusive       => false,
-                    :block           => false,
-                    :on_cancellation => nil
+                    consumer_tag:    @channel.generate_consumer_tag,
+                    manual_ack:      false,
+                    exclusive:       false,
+                    block:           false,
+                    on_cancellation: nil
                   }, &block)
 
       unless opts[:ack].nil?
@@ -256,7 +256,7 @@ module Bunny
     #
     # @see http://rubybunny.info/articles/queues.html Queues and Consumers guide
     # @api public
-    def subscribe_with(consumer, opts = {:block => false})
+    def subscribe_with(consumer, opts = { block: false })
       @channel.basic_consume_with(consumer)
 
       @channel.work_pool.join if opts[:block]
@@ -281,13 +281,13 @@ module Bunny
     #   ch   = conn.create_channel
     #   q = ch.queue("test1")
     #   x = ch.default_exchange
-    #   x.publish("Hello, everybody!", :routing_key => 'test1')
+    #   x.publish("Hello, everybody!", routing_key: 'test1')
     #
     #   delivery_info, properties, payload = q.pop
     #
     #   puts "This is the message: " + payload + "\n\n"
     #   conn.close
-    def pop(opts = {:manual_ack => false}, &block)
+    def pop(opts = { manual_ack: false }, &block)
       unless opts[:ack].nil?
         warn "[DEPRECATION] `:ack` is deprecated.  Please use `:manual_ack` instead."
         opts[:manual_ack] = opts[:ack]
@@ -323,7 +323,7 @@ module Bunny
     # @see Bunny::Channel#default_exchange
     # @see http://rubybunny.info/articles/exchanges.html Exchanges and Publishing guide
     def publish(payload, opts = {})
-      @channel.default_exchange.publish(payload, opts.merge(:routing_key => @name))
+      @channel.default_exchange.publish(payload, opts.merge(routing_key: @name))
 
       self
     end
@@ -357,9 +357,9 @@ module Bunny
     # @see #message_count
     # @see #consumer_count
     def status
-      queue_declare_ok = @channel.queue_declare(@name, @options.merge(:passive => true))
-      {:message_count => queue_declare_ok.message_count,
-        :consumer_count => queue_declare_ok.consumer_count}
+      queue_declare_ok = @channel.queue_declare(@name, @options.merge(passive: true))
+      { message_count: queue_declare_ok.message_count,
+        consumer_count: queue_declare_ok.consumer_count }
     end
 
     # @return [Integer] How many messages the queue has ready (e.g. not delivered but not unacknowledged)
@@ -397,15 +397,15 @@ module Bunny
     # @private
     def self.add_default_options(name, opts)
       # :nowait is always false for Bunny
-      h = { :queue => name, :nowait => false }.merge(opts)
+      h = { queue: name, nowait: false }.merge(opts)
 
       if name.empty?
         {
-          :passive     => false,
-          :durable     => false,
-          :exclusive   => false,
-          :auto_delete => false,
-          :arguments   => nil
+          passive:     false,
+          durable:     false,
+          exclusive:   false,
+          auto_delete: false,
+          arguments:   nil
         }.merge(h)
       else
         h

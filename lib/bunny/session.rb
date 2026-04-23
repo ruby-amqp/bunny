@@ -49,19 +49,19 @@ module Bunny
 
     # RabbitMQ client metadata
     DEFAULT_CLIENT_PROPERTIES = {
-      :capabilities => {
-        :publisher_confirms           => true,
-        :consumer_cancel_notify       => true,
-        :exchange_exchange_bindings   => true,
+      capabilities: {
+        publisher_confirms:           true,
+        consumer_cancel_notify:       true,
+        exchange_exchange_bindings:   true,
         :"basic.nack"                 => true,
         :"connection.blocked"         => true,
         # See http://www.rabbitmq.com/auth-notification.html
-        :authentication_failure_close => true
+        authentication_failure_close: true
       },
-      :product      => "Bunny",
-      :platform     => ::RUBY_DESCRIPTION,
-      :version      => Bunny::VERSION,
-      :information  => "https://github.com/ruby-amqp/bunny",
+      product:     "Bunny",
+      platform:    ::RUBY_DESCRIPTION,
+      version:     Bunny::VERSION,
+      information: "https://github.com/ruby-amqp/bunny",
     }
 
     # @private
@@ -575,7 +575,7 @@ module Bunny
     def queue_exists?(name)
       ch = create_channel
       begin
-        ch.queue(name, :passive => true)
+        ch.queue(name, passive: true)
         true
       rescue Bunny::ResourceLocked => _
         true
@@ -597,7 +597,7 @@ module Bunny
     def exchange_exists?(name)
       ch = create_channel
       begin
-        ch.exchange(name, :passive => true)
+        ch.exchange(name, passive: true)
         true
       rescue Bunny::NotFound => _
         false
@@ -1709,7 +1709,7 @@ module Bunny
           @transport = Transport.new(self,
                                      host_from_address(address),
                                      port_from_address(address),
-                                     @opts.merge(:session_error_handler => @session_error_handler)
+                                     @opts.merge(session_error_handler: @session_error_handler)
           )
 
           # Reset the cached progname for the logger only when no logger was provided

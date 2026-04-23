@@ -47,11 +47,11 @@ module Bunny
     # @return [Hash] Hash representation of this delivery info
     def to_hash
       @hash ||= {
-        :delivery_tag => @get_ok.delivery_tag,
-        :redelivered  => @get_ok.redelivered,
-        :exchange     => @get_ok.exchange,
-        :routing_key  => @get_ok.routing_key,
-        :channel      => @channel
+        delivery_tag: @get_ok.delivery_tag,
+        redelivered:  @get_ok.redelivered,
+        exchange:     @get_ok.exchange,
+        routing_key:  @get_ok.routing_key,
+        channel:      @channel
       }
     end
 
