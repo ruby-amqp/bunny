@@ -3,7 +3,6 @@
 module Bunny
   # @private
   module Framing
-    ENCODINGS_SUPPORTED = defined? Encoding
     HEADER_SLICE = (0..6).freeze
     DATA_SLICE = (7..-1).freeze
     PAYLOAD_SLICE = (0..-2).freeze
@@ -18,7 +17,7 @@ module Bunny
           payload             = data[PAYLOAD_SLICE]
           frame_end           = data[-1, 1]
 
-          frame_end.force_encoding(AMQ::Protocol::Frame::FINAL_OCTET.encoding) if ENCODINGS_SUPPORTED
+          frame_end.force_encoding(AMQ::Protocol::Frame::FINAL_OCTET.encoding)
 
           # 1) the size is miscalculated
           if payload.bytesize != size
