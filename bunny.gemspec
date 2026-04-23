@@ -29,6 +29,6 @@ Gem::Specification.new do |s|
   s.add_runtime_dependency "sorted_set", "~> 1", ">= 1.0.2"
 
   s.extra_rdoc_files = ["README.md"]
-  s.files = Dir["lib/**/*", "README.md", "LICENSE", "ChangeLog.md"]
+  s.files = Dir["lib/**/*", "README.md", "LICENSE", "ChangeLog.md"].select { |f| File.file?(f) }
   s.require_paths = ["lib"]
 end
