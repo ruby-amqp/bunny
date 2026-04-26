@@ -298,17 +298,25 @@ describe "Connection recovery" do
     with_open do |c|
       ch = c.create_channel
 
-      n.times do
-        qs << ch.queue("", exclusive: true)
+      n.times do |i|
+        qs << ch.queue("bunny.recovery.topology.queues.#{i}", durable: true)
       end
       close_all_connections!
 
-      wait_for_recovery_with { ch.open? && queue_names.include?(qs.first.name) }
+      wait_for_recovery_with { c.open? && queue_names.include?(qs.first.name) }
       expect(c.topology_registry.queues.size).to eq n
+
+      poll_until { c.open? && ch.open? }
       expect(ch).to be_open
 
       qs.each do |q|
+        # the queue should exist after recovery
         ch.queue_declare(q.name, passive: true)
+      end
+
+      ch2 = c.create_channel
+      qs.each do |q|
+        ch2.queue_delete(q.name)
       end
     end
   end
