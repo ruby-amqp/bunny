@@ -26,17 +26,16 @@ describe Bunny::Queue, "#subscribe" do
       delivered_data = []
 
       ch = publisher_connection.create_channel
-      # declare the queue because the read-only user won't be able to issue
-      # queue.declare
+      # declare the queue because the read-only user won't be able
+      # to declare a queue
       q  = ch.queue(queue_name, auto_delete: true, durable: false)
 
       t = Thread.new do
         # give the main thread a bit of time to declare the queue
         sleep 0.5
         ch = consumer_connection.create_channel
-        # this connection is read only, use passive declare to only get
-        # a reference to the queue
-        q  = ch.queue(queue_name, auto_delete: true, durable: false, passive: true)
+        # this connection is read only, avoid a declaration and get
+        # a reference to the queue object in the channel cache
         q.subscribe(exclusive: false) do |delivery_info, properties, payload|
           delivered_keys << delivery_info.routing_key
           delivered_data << payload
@@ -52,11 +51,10 @@ describe Bunny::Queue, "#subscribe" do
       expect(delivered_keys).to include(queue_name)
       expect(delivered_data).to include("hello")
 
-      expect(ch.queue(queue_name, auto_delete: true, durable: false).message_count).to eq 0
-
       c3 = Bunny::new
       c3.start
       ch3 = c3.create_channel
+      expect(ch3.queue(queue_name, auto_delete: true, durable: false).message_count).to eq 0
       ch3.queue_delete(queue_name)
 
       ch.close
