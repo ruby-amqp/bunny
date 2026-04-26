@@ -1,6 +1,12 @@
 ## Changes between Bunny 3.1.0 and 3.2.0 (in development)
 
-No changes yet.
+### Internal Improvements
+
+ * Modernization for Ruby 3.x
+
+   Contributed by @eglitobias.
+
+   GitHub issue: [#735](https://github.com/ruby-amqp/bunny/pull/735)
 
 
 ## Changes between Bunny 3.0.0 and 3.1.0 (Apr 1, 2026)
