@@ -1,12 +1,15 @@
 ## Changes between Bunny 3.1.0 and 3.2.0 (in development)
 
-### Internal Improvements
+### Modernization for Ruby 3.x
 
- * Modernization for Ruby 3.x
+Contributed by @eglitobias.
 
-   Contributed by @eglitobias.
+GitHub issue: [#735](https://github.com/ruby-amqp/bunny/pull/735)
 
-   GitHub issue: [#735](https://github.com/ruby-amqp/bunny/pull/735)
+ ### `amq-protocol` Bump to `2.8.0`
+
+ This version optimizes deserialization of a few frame types,
+ most benefitting applications that primarily consume messages.
 
 
 ## Changes between Bunny 3.0.0 and 3.1.0 (Apr 1, 2026)
