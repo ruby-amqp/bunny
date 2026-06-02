@@ -11,6 +11,21 @@ GitHub issue: [#735](https://github.com/ruby-amqp/bunny/pull/735)
  This version optimizes deserialization of a few frame types,
  most benefitting applications that primarily consume messages.
 
+### Bug Fixes
+
+#### `Bunny::Consumer` Identity Preserved on Recovery
+
+Consumers registered via `Queue#subscribe_with` or `Channel#basic_consume_with`
+are no longer replaced with a freshly constructed `Bunny::Consumer` during
+automatic connection recovery.
+
+The original instance is restored, so callbacks such as `on_cancellation` defined
+before recovery continue to function.
+
+Contributed by @jollpre.
+
+GitHub issue: [#737](https://github.com/ruby-amqp/bunny/issues/737)
+
 
 ## Changes between Bunny 3.0.0 and 3.1.0 (Apr 1, 2026)
 
