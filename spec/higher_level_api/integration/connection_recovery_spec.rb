@@ -275,6 +275,61 @@ describe "Connection recovery" do
     end
   end
 
+  it "preserves Consumer instance identity and cancellation callbacks across recovery" do
+    with_open do |c|
+      cancelled = false
+
+      ch = c.create_channel
+      q  = ch.queue("", exclusive: true)
+      consumer = Bunny::Consumer.new(ch, q)
+      consumer.on_cancellation { cancelled = true }
+      q.subscribe_with(consumer)
+
+      original_tag = consumer.consumer_tag
+      close_all_connections!
+      wait_for_recovery_with { connections.any? && ch.open? }
+
+      expect(ch.consumers[original_tag]).to equal(consumer)
+
+      q.delete
+      poll_until { cancelled }
+    end
+  end
+
+  it "recovers block-form Queue#subscribe consumers and delivers messages after recovery" do
+    with_open do |c|
+      delivered = false
+
+      ch = c.create_channel
+      ch.confirm_select
+      q  = ch.queue("", exclusive: true)
+      q.subscribe { |_, _, _| delivered = true }
+
+      close_all_connections!
+      wait_for_recovery_with { connections.any? && ch.open? }
+
+      q.publish("")
+      ch.wait_for_confirms
+      poll_until { delivered }
+    end
+  end
+
+  it "does not duplicate or corrupt the topology registry entry after recovery via basic_consume_with" do
+    with_open do |c|
+      ch = c.create_channel
+      q  = ch.queue("", exclusive: true)
+      consumer = Bunny::Consumer.new(ch, q)
+      q.subscribe_with(consumer)
+
+      original_tag = consumer.consumer_tag
+      close_all_connections!
+      wait_for_recovery_with { connections.any? && ch.open? }
+
+      expect(c.topology_registry.consumers.size).to eq 1
+      expect(c.topology_registry.consumers[original_tag].callable).to equal(consumer)
+    end
+  end
+
   it "recovers all consumers" do
     n = 32
 
