@@ -1190,8 +1190,12 @@ module Bunny
     # @private
     def recover_consumer(c)
       c.channel.maybe_reinitialize_consumer_pool!
-      c.channel.basic_consume(c.queue_name, c.consumer_tag, !c.manual_ack, c.exclusive, c.arguments) do |*args|
-        c.callable.call(*args)
+      if c.callable.is_a?(Bunny::Consumer)
+        c.channel.basic_consume_with(c.callable)
+      else
+        c.channel.basic_consume(c.queue_name, c.consumer_tag, !c.manual_ack, c.exclusive, c.arguments) do |*args|
+          c.callable.call(*args)
+        end
       end
     end
 
