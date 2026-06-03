@@ -22,7 +22,7 @@ automatic connection recovery.
 The original instance is restored, so callbacks such as `on_cancellation` defined
 before recovery continue to function.
 
-Contributed by @jollpre.
+Contributed by @jollopre.
 
 GitHub issue: [#737](https://github.com/ruby-amqp/bunny/issues/737)
 
