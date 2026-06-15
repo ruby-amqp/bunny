@@ -14,7 +14,7 @@ describe Bunny::Channel, "#reject" do
   context "with requeue = true" do
     it "requeues a message" do
       ch = connection.create_channel
-      q  = ch.queue("bunny.basic.reject.manual-acks", exclusive: true)
+      q  = ch.queue("bunny.basic.reject.reject.manual-acks", exclusive: true)
       x  = ch.default_exchange
 
       x.publish("bunneth", routing_key: q.name)
@@ -33,7 +33,7 @@ describe Bunny::Channel, "#reject" do
   context "with requeue = false" do
     it "rejects a message" do
       ch = connection.create_channel
-      q  = ch.queue("bunny.basic.reject.with-requeue-false", exclusive: true)
+      q  = ch.queue("bunny.basic.reject.reject.with-requeue-false", exclusive: true)
       x  = ch.default_exchange
 
       x.publish("bunneth", routing_key: q.name)
@@ -43,11 +43,8 @@ describe Bunny::Channel, "#reject" do
 
       ch.reject(delivery_info.delivery_tag, false)
       sleep(0.5)
-      ch.close
-
-      ch = connection.create_channel
-      q  = ch.queue("bunny.basic.reject.with-requeue-false", exclusive: true)
       expect(q.message_count).to eq 0
+
       ch.close
     end
   end
@@ -56,7 +53,7 @@ describe Bunny::Channel, "#reject" do
   context "with an invalid (random) delivery tag" do
     it "causes a channel-level error" do
       ch = connection.create_channel
-      q  = ch.queue("bunny.basic.reject.unknown-delivery-tag", exclusive: true)
+      q  = ch.queue("bunny.basic.reject.reject.unknown-delivery-tag", exclusive: true)
       x  = ch.default_exchange
 
       x.publish("bunneth", routing_key: q.name)
@@ -90,7 +87,7 @@ describe Bunny::Channel, "#basic_reject" do
   context "with requeue = true" do
     it "requeues a message" do
       ch = connection.create_channel
-      q  = ch.queue("bunny.basic.reject.manual-acks", exclusive: true)
+      q  = ch.queue("bunny.basic.reject.basic_reject.manual-acks", exclusive: true)
       x  = ch.default_exchange
 
       x.publish("bunneth", routing_key: q.name)
@@ -109,7 +106,7 @@ describe Bunny::Channel, "#basic_reject" do
   context "with requeue = false" do
     it "rejects a message" do
       ch = connection.create_channel
-      q  = ch.queue("bunny.basic.reject.with-requeue-false", exclusive: true)
+      q  = ch.queue("bunny.basic.reject.basic_reject.with-requeue-false", exclusive: true)
       x  = ch.default_exchange
 
       x.publish("bunneth", routing_key: q.name)
@@ -119,11 +116,8 @@ describe Bunny::Channel, "#basic_reject" do
 
       ch.basic_reject(delivery_info.delivery_tag.to_i, false)
       sleep(0.5)
-      ch.close
-
-      ch = connection.create_channel
-      q  = ch.queue("bunny.basic.reject.with-requeue-false", exclusive: true)
       expect(q.message_count).to eq 0
+
       ch.close
     end
   end
@@ -131,7 +125,7 @@ describe Bunny::Channel, "#basic_reject" do
   context "with requeue = default" do
     it "rejects a message" do
       ch = connection.create_channel
-      q  = ch.queue("bunny.basic.reject.with-requeue-false", exclusive: true)
+      q  = ch.queue("bunny.basic.reject.basic_reject.with-requeue-default", exclusive: true)
       x  = ch.default_exchange
 
       x.publish("bunneth", routing_key: q.name)
@@ -141,11 +135,8 @@ describe Bunny::Channel, "#basic_reject" do
 
       ch.basic_reject(delivery_info.delivery_tag.to_i)
       sleep(0.5)
-      ch.close
-
-      ch = connection.create_channel
-      q  = ch.queue("bunny.basic.reject.with-requeue-false", exclusive: true)
       expect(q.message_count).to eq 0
+
       ch.close
     end
   end
