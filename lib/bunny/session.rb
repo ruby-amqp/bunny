@@ -846,11 +846,7 @@ module Bunny
               decrement_recovery_attemp_counter!
               announce_network_failure_recovery
             else
-              @logger.error "Ran out of recovery attempts (limit set to #{@max_recovery_attempts}), giving up"
-              @transport.close
-              self.close(false)
-              @manually_closed = false
-              notify_of_recovery_attempts_exhausted
+              give_up_on_recovery
               break
             end
           end
@@ -1037,16 +1033,21 @@ module Bunny
           announce_network_failure_recovery
           retry
         else
-          @logger.error "Ran out of recovery attempts (limit set to #{@max_recovery_attempts}), giving up"
-          @transport.close
-          self.close(false)
-          @manually_closed = false
-          notify_of_recovery_attempts_exhausted
+          give_up_on_recovery
           false
         end
       else
         raise e
       end
+    end
+
+    # @private
+    def give_up_on_recovery
+      @logger.error "Ran out of recovery attempts (limit set to #{@max_recovery_attempts}), giving up"
+      @transport.close
+      self.close(false)
+      @manually_closed = false
+      notify_of_recovery_attempts_exhausted
     end
 
     # @private
@@ -1687,7 +1688,10 @@ module Bunny
       unless connection_open_ok.is_a?(AMQ::Protocol::Connection::OpenOk)
         if connection_open_ok.is_a?(AMQ::Protocol::Connection::Close)
           e = instantiate_connection_level_exception(connection_open_ok)
-          raise e if automatically_recover?
+          if automatically_recover?
+            close_transport
+            raise e
+          end
 
           begin
             shut_down_all_consumer_work_pools!
