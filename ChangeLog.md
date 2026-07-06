@@ -15,37 +15,26 @@ GitHub issue: [#735](https://github.com/ruby-amqp/bunny/pull/735)
 
 #### Connection Recovery Survives connection.close During Negotiation and Repeated Failures Mid-Recovery
 
-Connection recovery could previously terminate silently - leaving the client
-permanently disconnected with no further retries or log lines - when the
-connection was lost again while a recovery was already in progress, e.g. when
-a node that is being drained (put into maintenance mode) closes client
-connections repeatedly, including during connection negotiation
-(`connection.close` in response to `connection.open`).
+Overlapping (concurrent) connection recovery attempts could leave a client
+permanently disconnected, in particular when target node was put into maintenance mode
+which closes all client connections before the node is restarted.
 
 Several changes address this scenario:
 
- * The recovery guard flag is now updated atomically and stays in effect until
-   channel and topology recovery complete, so concurrent failure signals
-   (from the reader loop and from publishing threads) can no longer start
-   overlapping recoveries that used to sabotage each other
- * If the connection is lost again while channels or topology are being
-   recovered, another full recovery round is performed instead of silently
-   dropping the failure
- * A `connection.close` received during negotiation with automatic recovery
-   enabled is now raised in the recovery thread and handled by the recovery
-   retry logic, instead of being delivered to the session error handler while
-   the recovery round terminates without retrying
+ * Connection recovery now uses a mutex to avoid concurrent attempts
  * The connection status is set to `:open` and the heartbeat sender is started
    only after `connection.open-ok` is actually received
- * Connection negotiation now always uses a finite socket read timeout, even
-   when read timeouts are disabled for the connection's lifetime: a peer that
-   accepts a TCP connection but never responds at the protocol level - such as
-   a suspended listener of a node in maintenance mode — could previously block
-   the handshake, and therefore the recovery loop, indefinitely
- * A failure to re-register an individual entity during topology recovery no
-   longer aborts recovery of the remaining ones: the per-entity rescue clauses
-   now use an explicit `::StandardError` (a bare `Exception` resolves to
-   `Bunny::Exception` inside this library and did not catch `Timeout::Error`)
+ * A `connection.close` received during negotiation with automatic recovery
+   enabled is now raised in the recovery thread and handled by the recovery
+   retry logic, instead of being delivered to the session error handler
+ * Socket read timeout is now applied early, which means that a disabled
+   (by maintenance mode) protocol listener would not cause client connections
+   to linger waiting for a socket event that will never arrive
+
+
+In addition, a failure to redeclare a single entity during topology recovery no
+longer aborts the entire recovery process and will catch transport timeout
+exceptions.
 
 #### `Bunny::Consumer` Identity Preserved on Recovery
 
