@@ -223,6 +223,7 @@ module Bunny
       @transport_mutex     = @mutex_impl.new
       @status_mutex        = @mutex_impl.new
       @address_index_mutex = @mutex_impl.new
+      @recovery_mutex      = @mutex_impl.new
 
       @channels            = Hash.new
 
@@ -337,6 +338,10 @@ module Bunny
             @transport.maybe_initialize_socket
             @transport.post_initialize_socket
             @transport.connect
+          end
+
+          if @transport.read_timeout.nil?
+            @transport.read_timeout = @transport.connect_timeout || Transport::DEFAULT_READ_TIMEOUT
           end
 
           self.init_connection
@@ -805,30 +810,55 @@ module Bunny
 
       @status_mutex.synchronize { @status = :disconnected }
 
-      if !recovering_from_network_failure?
-        begin
+      acquired = @recovery_mutex.synchronize do
+        if @recovering_from_network_failure
+          false
+        else
           @recovering_from_network_failure = true
-          if recoverable_network_failure?(exception)
-            announce_network_failure_recovery
-            @channel_mutex.synchronize do
-              @channels.each do |n, ch|
-                ch.connection_closed!
-                ch.maybe_kill_consumer_work_pool!
-              end
-            end
-            @reader_loop.stop if @reader_loop
-            maybe_shutdown_heartbeat_sender
-
-            recover_connection_and_channels
-            recover_topology
-            mark_channels_after_recovery!
-            notify_of_recovery_completion
-          else
-            @logger.error "Exception #{exception.message} is considered unrecoverable..."
-          end
-        ensure
-          @recovering_from_network_failure = false
         end
+      end
+      return unless acquired
+
+      begin
+        if recoverable_network_failure?(exception)
+          announce_network_failure_recovery
+          @channel_mutex.synchronize do
+            @channels.each do |n, ch|
+              ch.connection_closed!
+              ch.maybe_kill_consumer_work_pool!
+            end
+          end
+          @reader_loop.stop if @reader_loop
+          maybe_shutdown_heartbeat_sender
+
+          loop do
+            break unless recover_connection_and_channels
+
+            recover_topology
+
+            if open?
+              mark_channels_after_recovery!
+              notify_of_recovery_completion
+              break
+            end
+
+            if should_retry_recovery?
+              decrement_recovery_attemp_counter!
+              announce_network_failure_recovery
+            else
+              @logger.error "Ran out of recovery attempts (limit set to #{@max_recovery_attempts}), giving up"
+              @transport.close
+              self.close(false)
+              @manually_closed = false
+              notify_of_recovery_attempts_exhausted
+              break
+            end
+          end
+        else
+          @logger.error "Exception #{exception.message} is considered unrecoverable..."
+        end
+      ensure
+        @recovery_mutex.synchronize { @recovering_from_network_failure = false }
       end
     end
 
@@ -841,7 +871,7 @@ module Bunny
     # @return [Boolean]
     # @private
     def recovering_from_network_failure?
-      @recovering_from_network_failure
+      @recovery_mutex.synchronize { @recovering_from_network_failure }
     end
 
     # @param [Bunny::Queue] queue
@@ -982,7 +1012,6 @@ module Bunny
       self.start
 
       if open?
-        @recovering_from_network_failure = false
         @logger.debug "Connection is now open"
         if @reset_recovery_attempt_counter_after_reconnection
           @logger.debug "Resetting recovery attempt counter after successful reconnection"
@@ -992,6 +1021,9 @@ module Bunny
         end
 
         recover_channels
+        true
+      else
+        raise TCPConnectionFailed.new("connection is not open after a connection recovery attempt", @transport.host, @transport.port)
       end
     rescue HostListDepleted
       reset_address_index
@@ -1010,6 +1042,7 @@ module Bunny
           self.close(false)
           @manually_closed = false
           notify_of_recovery_attempts_exhausted
+          false
         end
       else
         raise e
@@ -1086,7 +1119,7 @@ module Bunny
       exchanges.each do |x|
         begin
           recover_exchange(x)
-        rescue Exception => e
+        rescue ::StandardError => e
           @logger.error "Caught an exception while recovering exchange #{x.name}: #{e.inspect}"
         end
       end
@@ -1095,7 +1128,7 @@ module Bunny
       queues.each do |q|
         begin
           recover_queue(q)
-        rescue Exception => e
+        rescue ::StandardError => e
           @logger.error "Caught an exception while recovering queue #{q.name}: #{e.inspect}"
         end
       end
@@ -1104,7 +1137,7 @@ module Bunny
       queue_bindings.each do |b|
         begin
           recover_queue_binding(b)
-        rescue Exception => e
+        rescue ::StandardError => e
           @logger.error "Caught an exception while recovering a binding of queue #{b.destination}: #{e.inspect}"
         end
       end
@@ -1112,14 +1145,18 @@ module Bunny
       exchange_bindings.each do |b|
         begin
           recover_exchange_binding(b)
-        rescue Exception => e
+        rescue ::StandardError => e
           @logger.error "Caught an exception while recovering a binding of exchange #{b.source}: #{e.inspect}"
         end
       end
 
       @logger.debug { "Will recover #{consumers.size} consumer(s)" }
       consumers.each do |c|
-        recover_consumer(c)
+        begin
+          recover_consumer(c)
+        rescue ::StandardError => e
+          @logger.error "Caught an exception while recovering consumer #{c.consumer_tag} on queue #{c.queue_name}: #{e.inspect}"
+        end
       end
     end
 
@@ -1612,9 +1649,11 @@ module Bunny
       # We set the read_write_timeout to twice the heartbeat value,
       # and then some padding for edge cases.
       # This allows us to miss a single heartbeat before we time out the socket.
-      # If heartbeats are disabled, assume that TCP keepalives or a similar mechanism will be used
-      # and disable socket read timeouts. See ruby-amqp/bunny#551.
-      @transport.read_timeout = @heartbeat * 2.2
+      # If heartbeats are disabled, socket read timeouts will be disabled as well,
+      # but only after negotiation completes: a peer that accepts TCP connections
+      # without servicing them must not be able to block the handshake
+      # indefinitely. See ruby-amqp/bunny#551.
+      @transport.read_timeout = @heartbeat * 2.2 if @heartbeat > 0
       @logger.debug { "Will use socket read timeout of #{@transport.read_timeout.to_i} seconds" }
 
       # if there are existing channels we've just recovered from
@@ -1645,33 +1684,38 @@ module Bunny
       end
       connection_open_ok = frame2.decode_payload
 
-      @status_mutex.synchronize { @status = :open }
-      if @heartbeat && @heartbeat > 0
-        initialize_heartbeat_sender
-      end
-
       unless connection_open_ok.is_a?(AMQ::Protocol::Connection::OpenOk)
         if connection_open_ok.is_a?(AMQ::Protocol::Connection::Close)
           e = instantiate_connection_level_exception(connection_open_ok)
+          raise e if automatically_recover?
+
           begin
             shut_down_all_consumer_work_pools!
             maybe_shutdown_reader_loop
           rescue ShutdownSignal => _sse
             # no-op
-          rescue Exception => e
-            @logger.warn "Caught an exception when cleaning up after receiving connection.close: #{e.message}"
+          rescue Exception => cleanup_exception
+            @logger.warn "Caught an exception when cleaning up after receiving connection.close: #{cleanup_exception.message}"
           ensure
             close_transport
           end
 
           if threaded?
             @session_error_handler.raise(e)
+            return
           else
             raise e
           end
         else
           raise "could not open connection: server did not respond with connection.open-ok but #{connection_open_ok.inspect} instead"
         end
+      end
+
+      @status_mutex.synchronize { @status = :open }
+      if @heartbeat && @heartbeat > 0
+        initialize_heartbeat_sender
+      else
+        @transport.read_timeout = 0
       end
     end
 
