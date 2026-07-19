@@ -20,6 +20,31 @@ module Bunny
         @__bunny_socket_eof_flag__ = false
       end
 
+      # Performs the TLS handshake with an optional time limit
+      def connect_with_deadline(timeout = nil)
+        return connect if timeout.nil? || timeout <= 0
+
+        deadline = Bunny::Timestamp.monotonic + timeout
+        begin
+          connect_nonblock
+        rescue *READ_RETRY_EXCEPTION_CLASSES
+          remaining = deadline - Bunny::Timestamp.monotonic
+          if remaining > 0 && IO.select([self], nil, nil, remaining)
+            retry
+          else
+            raise ClientTimeout, "TLS handshake timed out after #{timeout} seconds"
+          end
+        rescue *WRITE_RETRY_EXCEPTION_CLASSES
+          remaining = deadline - Bunny::Timestamp.monotonic
+          if remaining > 0 && IO.select(nil, [self], nil, remaining)
+            retry
+          else
+            raise ClientTimeout, "TLS handshake timed out after #{timeout} seconds"
+          end
+        end
+        self
+      end
+
       # Reads given number of bytes with an optional timeout
       #
       # @param [Integer] count How many bytes to read

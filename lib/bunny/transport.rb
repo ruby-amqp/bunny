@@ -108,7 +108,11 @@ module Bunny
     def connect
       if uses_tls?
         begin
-          @socket.connect
+          @socket.connect_with_deadline(@connect_timeout)
+        rescue ClientTimeout => e
+          @logger.error { "TLS handshake timed out after #{@connect_timeout} seconds" }
+          close
+          raise e
         rescue OpenSSL::SSL::SSLError => e
           @logger.error { "TLS connection failed: #{e.message}" }
           raise e
