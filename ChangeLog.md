@@ -36,6 +36,12 @@ In addition, a failure to redeclare a single entity during topology recovery no
 longer aborts the entire recovery process and will catch transport timeout
 exceptions.
 
+#### Reader Loop No Longer Crashes on a Frameset for an Already Closed Channel
+
+`Session#handle_frameset` now guards against a missing channel like `Session#handle_frame` already did.
+
+GitHub issue: [#741](https://github.com/ruby-amqp/bunny/issues/741)
+
 #### `Bunny::Consumer` Identity Preserved on Recovery
 
 Consumers registered via `Queue#subscribe_with` or `Channel#basic_consume_with`

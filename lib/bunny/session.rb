@@ -789,7 +789,12 @@ module Bunny
     # @private
     def handle_frameset(ch_number, frames)
       method = frames.first
-      ch = @channels[ch_number]
+      ch = find_channel(ch_number)
+
+      unless ch
+        @logger.warn "Channel #{ch_number} is not open on this connection!"
+        return
+      end
 
       case method
       when AMQ::Protocol::Basic::GetOk    then ch.handle_basic_get_ok(*frames)
