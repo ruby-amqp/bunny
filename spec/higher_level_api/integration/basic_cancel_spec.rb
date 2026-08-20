@@ -19,7 +19,7 @@ describe Bunny::Consumer, "#cancel" do
 
       t = Thread.new do
         ch         = connection.create_channel
-        q          = ch.queue(queue_name, auto_delete: true, durable: false)
+        q          = ch.queue(queue_name, auto_delete: true, durable: true)
         consumer = q.subscribe do |_, _, payload|
           delivered_data << payload
         end
@@ -51,7 +51,7 @@ describe Bunny::Consumer, "#cancel" do
 
       t = Thread.new do
         ch         = connection.create_channel
-        q          = ch.queue(queue_name, auto_delete: true, durable: false)
+        q          = ch.queue(queue_name, auto_delete: true, durable: true)
 
         consumer   = Bunny::Consumer.new(ch, q)
         consumer.on_delivery do |_, _, payload|
@@ -83,7 +83,7 @@ describe Bunny::Consumer, "#cancel" do
 
       t = Thread.new do
         ch         = connection.create_channel(nil, 1, false, 5)
-        q          = ch.queue(queue_name, auto_delete: true, durable: false)
+        q          = ch.queue(queue_name, auto_delete: true, durable: true)
 
         consumer   = Bunny::Consumer.new(ch, q)
         consumer.on_delivery do |_, _, payload|
@@ -114,7 +114,7 @@ describe Bunny::Consumer, "#cancel" do
 
       t = Thread.new do
         ch         = connection.create_channel(nil, 1, false, 1)
-        q          = ch.queue(queue_name, auto_delete: true, durable: false)
+        q          = ch.queue(queue_name, auto_delete: true, durable: true)
 
         consumer   = Bunny::Consumer.new(ch, q)
         consumer.on_delivery do |_, _, payload|

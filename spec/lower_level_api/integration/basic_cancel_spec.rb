@@ -33,7 +33,7 @@ describe Bunny::Channel, "#basic_cancel" do
 
       t = Thread.new do
         ch         = @connection.create_channel
-        q          = ch.queue(queue_name, :auto_delete => true, :durable => false)
+        q          = ch.queue(queue_name, :auto_delete => true, :durable => true)
         consume_ok = ch.basic_consume(q, "", true, false) do |_, _, payload|
           delivered_data << payload
         end
@@ -63,7 +63,7 @@ describe Bunny::Channel, "#basic_cancel" do
 
       t = Thread.new do
         ch         = @connection.create_channel
-        q          = ch.queue(queue_name, auto_delete: true, durable: false)
+        q          = ch.queue(queue_name, auto_delete: true, durable: true)
         consume_ok = ch.basic_consume(q, "", true, false) do |_, _, payload|
           delivered_data << payload
         end

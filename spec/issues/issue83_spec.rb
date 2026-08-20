@@ -24,7 +24,7 @@ describe Bunny::Channel, "#open" do
     ch.open
 
     # should not raise
-    q = ch.queue("bunny.tests.my.queue")
+    q = ch.queue("bunny.tests.my.queue", durable: true)
     q.delete
   end
 end

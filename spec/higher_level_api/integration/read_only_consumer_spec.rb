@@ -28,7 +28,7 @@ describe Bunny::Queue, "#subscribe" do
       ch = publisher_connection.create_channel
       # declare the queue because the read-only user won't be able
       # to declare a queue
-      q  = ch.queue(queue_name, auto_delete: true, durable: false)
+      q  = ch.queue(queue_name, auto_delete: true, durable: true)
 
       t = Thread.new do
         # give the main thread a bit of time to declare the queue
@@ -54,7 +54,7 @@ describe Bunny::Queue, "#subscribe" do
       c3 = Bunny::new
       c3.start
       ch3 = c3.create_channel
-      expect(ch3.queue(queue_name, auto_delete: true, durable: false).message_count).to eq 0
+      expect(ch3.queue(queue_name, auto_delete: true, durable: true).message_count).to eq 0
       ch3.queue_delete(queue_name)
 
       ch.close

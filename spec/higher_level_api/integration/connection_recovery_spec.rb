@@ -124,7 +124,7 @@ describe "Connection recovery" do
       n   = rand
       s   = "bunny.tests.recovery.client-named#{n}"
 
-      q   = ch.queue(s)
+      q   = ch.queue(s, durable: true)
       q2  = ch2.queue(s, no_declare: true)
 
       close_all_connections!
@@ -143,7 +143,7 @@ describe "Connection recovery" do
       n   = rand
       s   = "bunny.tests.recovery.client-named#{n}"
 
-      q   = ch.queue(s)
+      q   = ch.queue(s, durable: true)
       q2  = ch2.queue(s, passive: true)
 
       close_all_connections!

@@ -16,8 +16,8 @@ describe "Registering 2nd exclusive consumer on queue" do
 
     ch1 = @connection.create_channel
     ch2 = @connection.create_channel
-    q1  = ch1.queue("", :auto_delete => true)
-    q2  = ch2.queue(q1.name, :auto_delete => true, :passive => true)
+    q1  = ch1.queue("", :auto_delete => true, :durable => true)
+    q2  = ch2.queue(q1.name, :auto_delete => true, :durable => true, :passive => true)
 
     c1  = q1.subscribe(exclusive: true) do |_, _, payload|
       xs << payload

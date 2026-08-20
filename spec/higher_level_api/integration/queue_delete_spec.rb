@@ -16,7 +16,7 @@ describe Bunny::Queue, "#delete" do
   context "with a name of an existing queue" do
     it "deletes that queue" do
       ch = connection.create_channel
-      q  = ch.queue("")
+      q  = ch.queue("", exclusive: true)
 
       q.delete
       # no exception as of RabbitMQ 3.2. MK.

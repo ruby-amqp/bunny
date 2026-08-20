@@ -40,7 +40,7 @@ describe Bunny::Channel, "#basic_consume" do
 
       t = Thread.new do
         ch = @connection.create_channel
-        q = ch.queue(queue_name, :auto_delete => true, :durable => false)
+        q = ch.queue(queue_name, :auto_delete => true, :durable => true)
         ch.basic_consume(q, "", true, false) do |delivery_info, properties, payload|
           delivered_keys << delivery_info.routing_key
           delivered_data << payload
@@ -57,7 +57,7 @@ describe Bunny::Channel, "#basic_consume" do
       expect(delivered_keys).to include queue_name
       expect(delivered_data).to include "hello"
 
-      expect(ch.queue(queue_name, auto_delete: true, durable: false).message_count).to eq 0
+      expect(ch.queue(queue_name, auto_delete: true, durable: true).message_count).to eq 0
 
       ch.queue_delete(@queue_name) rescue Bunny::NotFound => nil
       ch.close
@@ -73,7 +73,7 @@ describe Bunny::Channel, "#basic_consume" do
 
       t = Thread.new do
         ch = @connection.create_channel
-        q = ch.queue(queue_name, auto_delete: true, durable: false)
+        q = ch.queue(queue_name, auto_delete: true, durable: true)
         ch.basic_consume(q, "", false, false) do |delivery_info, properties, payload|
           delivered_keys << delivery_info.routing_key
           delivered_data << payload
@@ -92,7 +92,7 @@ describe Bunny::Channel, "#basic_consume" do
       expect(delivered_keys).to include queue_name
       expect(delivered_data).to include "hello"
 
-      expect(ch.queue(queue_name, auto_delete: true, durable: false).message_count).to eq 0
+      expect(ch.queue(queue_name, auto_delete: true, durable: true).message_count).to eq 0
 
       ch.close
     end

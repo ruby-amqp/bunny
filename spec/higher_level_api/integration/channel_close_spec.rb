@@ -69,10 +69,10 @@ describe Bunny::Channel do
       s  = "bunny-temp-q-#{rand}"
 
       expect(ch).to be_open
-      ch.queue_declare(s, durable: false)
+      ch.queue_declare(s, durable: true)
 
       expect do
-        ch.queue_declare(s, durable: true)
+        ch.queue_declare(s, durable: false)
       end.to raise_error(Bunny::PreconditionFailed)
 
       # channel.close is sent and handled concurrently with the test

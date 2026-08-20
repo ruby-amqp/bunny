@@ -17,7 +17,7 @@ describe Bunny::Queue do
     it "declares a new queue with that name" do
       ch   = connection.create_channel
 
-      q    = ch.queue(name)
+      q    = ch.queue(name, durable: true)
       expect(q.name).to eq name
 
       q.delete
@@ -27,8 +27,8 @@ describe Bunny::Queue do
     it "caches that queue" do
       ch   = connection.create_channel
 
-      q = ch.queue(name)
-      expect(ch.queue(name).object_id).to eq q.object_id
+      q = ch.queue(name, durable: true)
+      expect(ch.queue(name, durable: true).object_id).to eq q.object_id
 
       q.delete
       ch.close
@@ -40,7 +40,7 @@ describe Bunny::Queue do
     it "uses server-assigned queue name" do
       ch   = connection.create_channel
 
-      q = ch.queue("")
+      q = ch.queue("", exclusive: true)
       expect(q.name).not_to be_empty
       expect(q.name).to match /^amq.gen.+/
       expect(q).to be_server_named
@@ -96,10 +96,10 @@ describe Bunny::Queue do
     it "declares it as auto-delete" do
       ch   = connection.create_channel
 
-      q = ch.queue("bunny.tests.queues.auto-delete", auto_delete: true)
+      q = ch.queue("bunny.tests.queues.auto-delete", auto_delete: true, durable: true)
       expect(q).to be_auto_delete
       expect(q).not_to be_exclusive
-      expect(q).not_to be_durable
+      expect(q).to be_durable
       q.delete
 
       ch.close
@@ -298,10 +298,10 @@ describe Bunny::Queue do
     it "raises an exception" do
       ch   = connection.create_channel
 
-      q = ch.queue("bunny.tests.queues.auto-delete", auto_delete: true, durable: false)
+      q = ch.queue("bunny.tests.queues.auto-delete", auto_delete: true, durable: true)
       expect {
         # force re-declaration
-        ch.queue_declare(q.name, auto_delete: false, durable: false)
+        ch.queue_declare(q.name, auto_delete: false, durable: true)
       }.to raise_error(Bunny::PreconditionFailed)
 
       expect(ch).to be_closed
@@ -349,10 +349,10 @@ describe Bunny::Queue do
     it "raises an exception" do
       ch   = connection.create_channel
 
-      q = ch.queue("bunny.tests.queues.proprty-equivalence", auto_delete: true, durable: false)
+      q = ch.queue("bunny.tests.queues.proprty-equivalence", auto_delete: true, durable: true)
       expect {
         # force re-declaration
-        ch.queue_declare(q.name, auto_delete: false, durable: true)
+        ch.queue_declare(q.name, auto_delete: false, durable: false)
       }.to raise_error(Bunny::PreconditionFailed)
 
       expect(ch).to be_closed
