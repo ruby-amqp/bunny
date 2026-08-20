@@ -1,4 +1,4 @@
-## Changes between Bunny 3.1.0 and 3.2.0 (in development)
+## Changes between Bunny 3.1.0 and 3.2.0 (Aug 19, 2026)
 
 ### Modernization for Ruby 3.x
 
