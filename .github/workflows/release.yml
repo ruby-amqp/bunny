@@ -1,0 +1,56 @@
+name: Push gem
+
+on:
+  push:
+    tags:
+      - "[0-9]+.[0-9]+.[0-9]+*"
+
+permissions:
+  contents: read
+
+jobs:
+  push:
+    name: Push Bunny to RubyGems.org
+    # Tags pushed in a fork must not attempt a release
+    if: github.repository == 'ruby-amqp/bunny'
+    runs-on: ubuntu-latest
+
+    concurrency:
+      group: push-gem
+      cancel-in-progress: false
+
+    environment:
+      name: release
+      url: https://rubygems.org/gems/bunny
+
+    permissions:
+      contents: read
+      id-token: write
+
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - name: Set up Ruby
+        uses: ruby/setup-ruby@95ef2b042f9d7a56d8268cba8559e2842e2ad01b # v1.321.0
+        with:
+          ruby-version: "4.0"
+
+      - name: Verify the tag matches Bunny::VERSION
+        env:
+          TAG: ${{ github.ref_name }}
+        run: test "$TAG" = "$(ruby -Ilib -rbunny/version -e 'print Bunny::VERSION')"
+
+      - name: Configure trusted publishing credentials
+        uses: rubygems/configure-rubygems-credentials@dc5a8d8553e6ee01fc26761a49e99e733d17954a # v2.1.0
+
+      - name: Build the gem
+        env:
+          TAG: ${{ github.ref_name }}
+        run: gem build bunny.gemspec --output "bunny-${TAG}.gem"
+
+      - name: Push to RubyGems.org
+        env:
+          TAG: ${{ github.ref_name }}
+        run: gem push "bunny-${TAG}.gem"
