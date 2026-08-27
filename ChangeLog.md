@@ -1,6 +1,10 @@
 ## Changes between Bunny 3.2.0 and 3.3.0 (in development)
 
-No changes yet.
+### `amq-protocol` Bump to `2.9.0`
+
+[`2.9.0` release notes](https://github.com/ruby-amqp/amq-protocol/releases/tag/v2.9.0).
+
+This version requires Ruby `3.2.0` or later.
 
 
 ## Changes between Bunny 3.1.0 and 3.2.0 (Aug 19, 2026)
