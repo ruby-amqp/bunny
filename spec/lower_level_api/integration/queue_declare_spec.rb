@@ -11,10 +11,31 @@ describe Bunny::Queue do
     connection.close if connection.open?
   end
 
+  def server_version_at_least?(connection, version)
+    reported = connection.server_properties["version"].to_s.split("-").first
+    Gem::Version.new(reported) >= Gem::Version.new(version)
+  end
+
   #
   # These lower-level tests primarily exist to test redeclaration, because the
   # low-level API bypasses channel object caching.
   #
+
+  context "when a queue is declared with the low-level API" do
+    it "records auto_delete and exclusive in the topology registry" do
+      name = "bunny.tests.low-level.queues.recorded-properties"
+
+      ch = connection.create_channel
+      ch.queue_declare(name, durable: true, auto_delete: true, exclusive: false)
+
+      recorded = connection.topology_registry.queues[name]
+      expect(recorded.auto_delete?).to be true
+      expect(recorded.exclusive?).to be false
+
+      ch.queue_delete(name)
+      ch.close
+    end
+  end
 
   context "when queue is declared with optional arguments" do
     it "declares it with those arguments" do
@@ -165,8 +186,12 @@ describe Bunny::Queue do
     end
   end
 
-  RSpec.shared_examples "enforces optional x-argument equivalence" do |arg, val1, val2, extra_args = {}|
+  RSpec.shared_examples "enforces optional x-argument equivalence" do |arg, val1, val2, extra_args = {}, min_server_version = nil|
     it "raises an exception when optional argument #{arg} values do not match that of the original declaration" do
+      if min_server_version && !server_version_at_least?(connection, min_server_version)
+        skip "RabbitMQ #{min_server_version} or later is required to enforce #{arg} equivalence"
+      end
+
       queue_name = "bunny.tests.low-level.queues.proprty-equivalence.x-args.#{arg}"
 
       ch   = connection.create_channel
@@ -189,9 +214,10 @@ describe Bunny::Queue do
   include_examples "enforces optional x-argument equivalence", "x-max-length-bytes", 1000000, 99900000
   include_examples "enforces optional x-argument equivalence", "x-expires", 2200000, 5500000
   include_examples "enforces optional x-argument equivalence", "x-message-ttl", 3000, 5000
-  # x-consumer-timeout is a queue argument for quorum queues only
+  # x-consumer-timeout is a quorum queue argument. RabbitMQ 4.2 and earlier
+  # do not enforce its equivalence
   include_examples "enforces optional x-argument equivalence", "x-consumer-timeout", 10_000, 20_000,
-                   {Bunny::Queue::XArgs::QUEUE_TYPE => Bunny::Queue::Types::QUORUM}
+                   {Bunny::Queue::XArgs::QUEUE_TYPE => Bunny::Queue::Types::QUORUM}, "4.3.0"
 
 
   RSpec.shared_examples "leniently verifies optional x-argument equivalence" do |arg, val1, val2, extra_args = {}|

@@ -445,6 +445,40 @@ describe Bunny::Queue do
   end
 
 
+  context "when a queue is declared with passive: true" do
+    let(:name) { "bunny.tests.queues.passive-declaration" }
+
+    it "does not overwrite what topology recovery recorded for it" do
+      ch  = connection.create_channel
+      ch2 = connection.create_channel
+
+      q = ch.queue(name, durable: true)
+      ch2.queue(name, passive: true)
+
+      recorded = connection.topology_registry.queues[name]
+      expect(recorded).not_to be_nil
+      expect(recorded.durable).to be true
+
+      q.delete
+      ch.close
+      ch2.close
+    end
+
+    it "does not record a queue that was not declared by this connection" do
+      ch = connection.create_channel
+      q  = ch.queue(name, durable: true)
+      ch.close
+
+      connection.topology_registry.reset!
+      expect(connection.queue_exists?(name)).to be true
+      expect(connection.topology_registry.queues).to be_empty
+
+      ch2 = connection.create_channel
+      ch2.queue_delete(name)
+      ch2.close
+    end
+  end
+
 
   unless ENV["CI"]
     # requires RabbitMQ 3.1+
