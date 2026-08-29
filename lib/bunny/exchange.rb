@@ -108,8 +108,9 @@ module Bunny
 
       # for basic.return dispatch and such
       @channel.register_exchange(self)
-      # for topology recovery
-      @channel.record_exchange(self)
+      # for topology recovery. A passive declaration does not own the exchange,
+      # so it must not overwrite what was recorded for it earlier
+      @channel.record_exchange(self) unless @options[:passive]
     end
 
     # @return [Boolean] true if this exchange was declared as durable (will survive broker restart).

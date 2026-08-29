@@ -523,7 +523,7 @@ module Bunny
 
       q = find_queue(name) || Bunny::Queue.new(self, name, opts)
 
-      record_queue(q)
+      record_queue(q) unless opts[:passive]
       register_queue(q)
     end
 
@@ -1352,7 +1352,7 @@ module Bunny
       args = opts[:arguments]
 
       result = self.queue_declare_without_recording_topology(name, opts)
-      self.record_queue_with(self, result.queue, is_server_named, durable, exclusive, auto_delete, args) unless passive
+      self.record_queue_with(self, result.queue, is_server_named, durable, auto_delete, exclusive, args) unless passive
 
       result
     end

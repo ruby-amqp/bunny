@@ -234,4 +234,38 @@ describe Bunny::Exchange do
       ch.close
     end
   end
+
+  context "declared with passive: true" do
+    let(:name) { "bunny.tests.exchanges.passive-declaration" }
+
+    it "does not overwrite what topology recovery recorded for it" do
+      ch  = connection.create_channel
+      ch2 = connection.create_channel
+
+      x = ch.fanout(name, durable: true)
+      ch2.exchange(name, type: :fanout, passive: true)
+
+      recorded = connection.topology_registry.exchanges[name]
+      expect(recorded).not_to be_nil
+      expect(recorded.durable).to be true
+
+      x.delete
+      ch.close
+      ch2.close
+    end
+
+    it "does not record an exchange that was not declared by this connection" do
+      ch = connection.create_channel
+      x  = ch.fanout(name, durable: true)
+      ch.close
+
+      connection.topology_registry.reset!
+      expect(connection.exchange_exists?(name)).to be true
+      expect(connection.topology_registry.exchanges).to be_empty
+
+      ch2 = connection.create_channel
+      ch2.exchange_delete(name)
+      ch2.close
+    end
+  end
 end

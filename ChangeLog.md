@@ -1,6 +1,26 @@
 ## Changes between Bunny 3.2.0 and 3.3.0 (in development)
 
-No changes yet.
+### Passive Declarations No Longer Affect Topology Recovery
+
+`Bunny::Channel#queue` and `Bunny::Channel#exchange` recorded passively declared
+queues and exchanges for topology recovery by mistake. Passive declares are just
+existence checks and should not be replayed by topology recovery.
+
+`Bunny::Session#queue_exists?` and `Bunny::Session#exchange_exists?` were affected
+in the same way, since both are implemented using passive declarations.
+
+### Queue Recovery Recorded `exclusive` and `auto_delete` in Reverse
+
+`Bunny::Channel#queue_declare` passed the `exclusive` and `auto_delete` properties
+to the topology registry in the wrong order, so a queue that used one but not the
+other was recovered with both properties flipped.
+
+
+### `amq-protocol` Bump to `2.9.0`
+
+[`2.9.0` release notes](https://github.com/ruby-amqp/amq-protocol/releases/tag/v2.9.0).
+
+This version requires Ruby `3.2.0` or later.
 
 
 ## Changes between Bunny 3.1.0 and 3.2.0 (Aug 19, 2026)
