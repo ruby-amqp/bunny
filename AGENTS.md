@@ -22,6 +22,12 @@ existing writing style.
 
 ## Releases
 
+Releases are published by `.github/workflows/release.yml`, which reacts to a
+pushed version tag and pushes the gem to RubyGems.org using
+[trusted publishing](https://guides.rubygems.org/trusted-publishing/), so no
+RubyGems credentials are needed locally. The workflow refuses to publish unless
+the tag matches `Bunny::VERSION`.
+
 ### How to Roll (Produce) a New Release
 
 Suppose the current development version in `ChangeLog.md` has
@@ -36,6 +42,7 @@ To produce a new release:
  5. Bump the dev version: add a new `## Changes between Bunny X.(Y+1).0 and X.(Y+2).0 (in development)` section to `ChangeLog.md` with `No changes yet.` underneath, and update `lib/bunny/version.rb` to the next dev version with a `.pre` suffix
  6. Commit with the message `Bump dev version`
  7. Push: `git push && git push origin X.(Y+1).0`
+ 8. Watch the release: `gh run watch --workflow=release.yml`
 
 
 ## Git Instructions
