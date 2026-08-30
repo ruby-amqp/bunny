@@ -1,6 +1,17 @@
 ## Changes between Bunny 3.3.0 and 3.4.0 (in development)
 
-No changes yet.
+### TLS Handshake is Now Covered by the Connection Timeout
+
+The TLS handshake was the only connection establishment step not limited
+by any timeout. A peer that accepted a TCP connection but never completed
+the handshake (e.g. a load balancer in front of an unresponsive node)
+could block `Bunny::Session#start`, and with it connection recovery,
+indefinitely.
+
+The handshake now uses the same `connect_timeout` setting as the TCP
+connection step (default: 30 seconds) and raises a recoverable
+`Bunny::ClientTimeout` when the timeout is exceeded. Use
+`connect_timeout: 0` to opt out.
 
 
 ## Changes between Bunny 3.2.0 and 3.3.0 (Aug 29, 2026)
