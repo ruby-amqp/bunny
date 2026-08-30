@@ -1,4 +1,4 @@
-## Changes between Bunny 3.2.0 and 3.3.0 (in development)
+## Changes between Bunny 3.2.0 and 3.3.0 (Aug 29, 2026)
 
 ### Passive Declarations No Longer Affect Topology Recovery
 
