@@ -21,7 +21,13 @@ module Bunny
       end
 
       # Performs the TLS handshake with an optional time limit
-      def connect_with_deadline(timeout = nil)
+      #
+      # @param [Numeric] timeout Timeout in seconds, nil or 0 means no time limit
+      #
+      # @return [Bunny::SSLSocket] self
+      # @raise [Bunny::ClientTimeout] if the handshake does not complete within the timeout
+      # @api public
+      def connect_with_timeout(timeout = nil)
         return connect if timeout.nil? || timeout <= 0
 
         deadline = Bunny::Timestamp.monotonic + timeout
