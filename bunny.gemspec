@@ -7,7 +7,7 @@ Gem::Specification.new do |s|
   s.summary = "Popular easy to use Ruby client for RabbitMQ"
   s.description = "Easy to use, feature complete Ruby client for RabbitMQ 3.9 and later versions."
   s.license = "MIT"
-  s.required_ruby_version = ">= 3.0"
+  s.required_ruby_version = ">= 3.2"
 
   s.metadata = {
     "changelog_uri" => "https://github.com/ruby-amqp/bunny/blob/main/ChangeLog.md",
