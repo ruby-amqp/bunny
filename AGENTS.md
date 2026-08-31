@@ -8,7 +8,7 @@ an AMQP 0-9-1 protocol parser (more specifically: a serialization, deserializati
 
 ## Target Ruby Version
 
-This library targets Ruby 3.0 and later versions.
+This library targets Ruby 3.2 and later versions.
 
 ## Comments
 
@@ -65,7 +65,7 @@ and for deviations from the instructions in this file.
 
 In particular, check that:
 
- * The code targets Ruby 3.0 and does not rely on newer-version features
+ * The code targets Ruby 3.2 and does not rely on newer-version features
  * Notable user-visible changes are listed in `ChangeLog.md` under the current `(in development)` section
  * New behavior is covered by tests under `spec/unit`, `spec/higher_level_api`, or `spec/lower_level_api`
  * No new runtime dependencies were introduced beyond `amq-protocol`

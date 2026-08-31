@@ -7,7 +7,7 @@ Gem::Specification.new do |s|
   s.summary = "Popular easy to use Ruby client for RabbitMQ"
   s.description = "Easy to use, feature complete Ruby client for RabbitMQ 3.9 and later versions."
   s.license = "MIT"
-  s.required_ruby_version = ">= 3.0"
+  s.required_ruby_version = ">= 3.2"
 
   s.metadata = {
     "changelog_uri" => "https://github.com/ruby-amqp/bunny/blob/main/ChangeLog.md",
@@ -26,6 +26,8 @@ Gem::Specification.new do |s|
 
   s.add_runtime_dependency "amq-protocol", "~> 2.9"
   s.add_runtime_dependency "logger", "~> 1", ">= 1.7"
+  # 3.3 is the first version whose SSLSocket#connect honours IO#timeout
+  s.add_runtime_dependency "openssl", ">= 3.3"
   s.add_runtime_dependency "sorted_set", "~> 1", ">= 1.0.2"
 
   s.extra_rdoc_files = ["README.md"]

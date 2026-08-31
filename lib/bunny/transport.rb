@@ -108,7 +108,12 @@ module Bunny
     def connect
       if uses_tls?
         begin
-          @socket.connect
+          tls_handshake
+        rescue ClientTimeout => e
+          @logger.error { "TLS connection failed: #{e.message}" }
+          close
+          @status = :not_connected
+          raise Bunny::TCPConnectionFailed.new(e, self.hostname, self.port)
         rescue OpenSSL::SSL::SSLError => e
           @logger.error { "TLS connection failed: #{e.message}" }
           raise e
@@ -333,6 +338,17 @@ module Bunny
       end
 
       @socket
+    end
+
+    # Needs the openssl gem >= 3.3, which added SSLSocket#timeout= and made #connect honour it
+    def tls_handshake
+      previous_timeout = @socket.timeout
+      @socket.timeout = @connect_timeout if @connect_timeout
+      @socket.connect
+    rescue IO::TimeoutError
+      raise ClientTimeout, "TLS handshake timed out after #{@connect_timeout} seconds"
+    ensure
+      @socket.timeout = previous_timeout
     end
 
     def maybe_initialize_socket
