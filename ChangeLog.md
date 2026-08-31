@@ -1,6 +1,12 @@
 ## Changes between Bunny 3.3.0 and 3.4.0 (in development)
 
-No changes yet.
+### TLS Handshake Now Respects `connect_timeout`
+
+A peer that accepted the TCP connection but never completed the TLS handshake
+could block `Bunny::Session#start` indefinitely. The handshake now gives up after
+`connect_timeout` and the connection fails over to the next endpoint.
+
+This requires the `openssl` gem `3.3.0` or later.
 
 
 ## Changes between Bunny 3.2.0 and 3.3.0 (Aug 29, 2026)

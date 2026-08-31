@@ -26,6 +26,8 @@ Gem::Specification.new do |s|
 
   s.add_runtime_dependency "amq-protocol", "~> 2.9"
   s.add_runtime_dependency "logger", "~> 1", ">= 1.7"
+  # 3.3 is the first version whose SSLSocket#connect honours IO#timeout
+  s.add_runtime_dependency "openssl", ">= 3.3"
   s.add_runtime_dependency "sorted_set", "~> 1", ">= 1.0.2"
 
   s.extra_rdoc_files = ["README.md"]
