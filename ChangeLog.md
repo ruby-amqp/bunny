@@ -1,5 +1,13 @@
 ## Changes between Bunny 3.3.0 and 3.4.0 (in development)
 
+### Client Certificate Chains
+
+`tls_cert` can now point at a bundle of the leaf certificate and its intermediate CAs.
+Only the leaf was presented before, failing mTLS against brokers that trust the root alone.
+
+GitHub issue: [#749](https://github.com/ruby-amqp/bunny/issues/749)
+
+
 ### TLS Handshake Now Respects `connect_timeout`
 
 A peer that accepted the TCP connection but never completed the TLS handshake
