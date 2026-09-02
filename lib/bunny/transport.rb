@@ -497,7 +497,12 @@ module Bunny
     end
 
     def initialize_tls_context(ctx, opts = {})
-      ctx.cert       = OpenSSL::X509::Certificate.new(@tls_certificate) if @tls_certificate
+      if @tls_certificate
+        leaf, *chain = OpenSSL::X509::Certificate.load(@tls_certificate)
+
+        ctx.cert = leaf
+        ctx.extra_chain_cert = chain unless chain.empty?
+      end
       ctx.key        = OpenSSL::PKey.read(@tls_key) if @tls_key
       ctx.cert_store = if @tls_certificate_store
                          @tls_certificate_store
