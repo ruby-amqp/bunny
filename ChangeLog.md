@@ -2,10 +2,13 @@
 
 ### Client Certificate Chains
 
-`tls_cert` can now point at a bundle of the leaf certificate and its intermediate CAs.
-Only the leaf was presented before, failing mTLS against brokers that trust the root alone.
+If `tls_cert` points at a certificate bundle (chain), the entire chain will now be sent.
 
-GitHub issue: [#749](https://github.com/ruby-amqp/bunny/issues/749)
+Previously only the first (leaf) certificate was sent, unintentionally.
+
+Contributed by @eglitobias.
+
+GitHub issues: [#749](https://github.com/ruby-amqp/bunny/issues/749), [#750](https://github.com/ruby-amqp/bunny/pull/750)
 
 
 ### TLS Handshake Now Respects `connect_timeout`
