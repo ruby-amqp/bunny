@@ -1,4 +1,11 @@
-## Changes between Bunny 3.3.0 and 3.4.0 (in development)
+## Changes between Bunny 3.3.0 and 3.4.0 (Sep 18, 2026)
+
+### Ruby 3.2 or Later Is Now Required
+
+`required_ruby_version` was raised from `3.0` to `3.2`.
+
+Ruby `3.0` and `3.1` have reached end of life and are no longer tested against.
+
 
 ### Client Certificate Chains
 
