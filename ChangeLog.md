@@ -9,8 +9,6 @@ No changes yet.
 
 `required_ruby_version` was raised from `3.0` to `3.2`.
 
-Ruby `3.0` and `3.1` have reached end of life and are no longer tested against.
-
 
 ### Client Certificate Chains
 
