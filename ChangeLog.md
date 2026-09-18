@@ -1,3 +1,8 @@
+## Changes between Bunny 3.4.0 and 3.5.0 (in development)
+
+No changes yet.
+
+
 ## Changes between Bunny 3.3.0 and 3.4.0 (Sep 18, 2026)
 
 ### Ruby 3.2 or Later Is Now Required
