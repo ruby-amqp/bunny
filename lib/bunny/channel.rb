@@ -1567,13 +1567,15 @@ module Bunny
       passive = opts.fetch(:passive, false)
       durable = opts.fetch(:durable, false)
       auto_delete = opts.fetch(:auto_delete, false)
+      internal = opts.fetch(:internal, false)
       args = opts[:arguments]
       self.record_exchange_with(self,
         safe_name,
         type.to_s,
         durable,
         auto_delete,
-        args) unless passive
+        args,
+        internal) unless passive
 
       result
     end
@@ -2571,8 +2573,9 @@ module Bunny
     # @param [Boolean] durable
     # @param [Boolean] auto_delete
     # @param [Hash] arguments
-    def record_exchange_with(ch, name, type, durable, auto_delete, arguments)
-      @connection.record_exchange_with(ch, name, type, durable, auto_delete, arguments)
+    # @param [Boolean] internal
+    def record_exchange_with(ch, name, type, durable, auto_delete, arguments, internal = false)
+      @connection.record_exchange_with(ch, name, type, durable, auto_delete, arguments, internal)
     end
 
     # @param [Bunny::Exchange] exchange

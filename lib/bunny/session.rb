@@ -916,8 +916,9 @@ module Bunny
     # @param [Boolean] durable
     # @param [Boolean] auto_delete
     # @param [Hash] arguments
-    def record_exchange_with(ch, name, type, durable, auto_delete, arguments)
-      @topology_registry.record_exchange_with(ch, name, type, durable, auto_delete, arguments)
+    # @param [Boolean] internal
+    def record_exchange_with(ch, name, type, durable, auto_delete, arguments, internal = false)
+      @topology_registry.record_exchange_with(ch, name, type, durable, auto_delete, arguments, internal)
     end
 
     # @param [Bunny::Exchange] exchange
@@ -1172,6 +1173,7 @@ module Bunny
       opts = {
         durable: x.durable,
         auto_delete: x.auto_delete,
+        internal: x.internal,
         arguments: x.arguments
       }
       x.channel.exchange_declare(x.name, x.type, opts)

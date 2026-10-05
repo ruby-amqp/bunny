@@ -230,6 +230,19 @@ describe "Connection recovery" do
     end
   end
 
+  it "recovers internal exchanges" do
+    with_open do |c|
+      ch = c.create_channel
+      x  = ch.fanout("bunny.tests.recovery.internal-exchange", internal: true)
+
+      close_all_connections!
+      wait_for_recovery_with { connections.any? && ch.open? }
+      expect(c.topology_registry.exchanges[x.name].internal).to be true
+
+      x.delete
+    end
+  end
+
   it "recovers allocated channel ids" do
     with_open do |c|
       q = "queue#{Bunny::Timestamp.now.to_i}"

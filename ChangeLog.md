@@ -1,6 +1,8 @@
 ## Changes between Bunny 3.4.0 and 3.5.0 (in development)
 
-No changes yet.
+### Topology Recovery Preserves `internal` for Exchanges
+
+Internal exchanges were redeclared as non-internal during recovery, which failed and closed the channel.
 
 
 ## Changes between Bunny 3.3.0 and 3.4.0 (Sep 18, 2026)

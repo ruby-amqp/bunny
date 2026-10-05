@@ -197,11 +197,13 @@ module Bunny
     # @param [Boolean] durable
     # @param [Boolean] auto_delete
     # @param [Hash] arguments
-    def record_exchange_with(ch, name, type, durable, auto_delete, arguments)
+    # @param [Boolean] internal
+    def record_exchange_with(ch, name, type, durable, auto_delete, arguments, internal = false)
       exchange = RecordedExchange.new(ch, name)
         .with_type(type)
         .with_durable(durable)
         .with_auto_delete(auto_delete)
+        .with_internal(internal)
         .with_arguments(arguments)
 
         @exchange_mutex.synchronize { @exchanges[exchange.name] = exchange }
@@ -473,6 +475,8 @@ module Bunny
     attr_reader :durable
     # @return [Boolean]
     attr_reader :auto_delete
+    # @return [Boolean]
+    attr_reader :internal
     # @return [Hash]
     attr_reader :arguments
 
@@ -484,6 +488,7 @@ module Bunny
       @type = nil
       @durable = true
       @auto_delete = false
+      @internal = false
       @arguments = nil
     end
 
@@ -505,6 +510,12 @@ module Bunny
       self
     end
 
+    # @param value [Boolean]
+    def with_internal(value)
+      @internal = value
+      self
+    end
+
     # @param value [Symbol]
     def with_type(value)
       @type = value
@@ -519,7 +530,7 @@ module Bunny
 
     # @return [Integer]
     def hash
-      [self.class, self.channel, self.name, @type, @durable, @auto_delete, @arguments].hash
+      [self.class, self.channel, self.name, @type, @durable, @auto_delete, @internal, @arguments].hash
     end
 
     # @return [Boolean]
@@ -534,6 +545,7 @@ module Bunny
         other.channel == self.channel &&
         other.durable == self.durable &&
         other.auto_delete == self.auto_delete &&
+        other.internal == self.internal &&
         other.type == self.type &&
         other.arguments == self.arguments
     end
@@ -544,6 +556,7 @@ module Bunny
         .with_type(x.type)
         .with_durable(x.durable?)
         .with_auto_delete(x.auto_delete?)
+        .with_internal(x.internal?)
         .with_arguments(x.arguments)
     end
   end
