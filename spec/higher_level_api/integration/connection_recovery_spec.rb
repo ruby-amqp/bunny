@@ -128,8 +128,11 @@ describe "Connection recovery" do
       q2  = ch2.queue(s, no_declare: true)
 
       close_all_connections!
-      wait_for_recovery_with { connections.any? && ch.open? }
+      wait_for_recovery_with { connections.any? && ch.open? && ch2.open? }
       ensure_queue_recovery(ch, q)
+      ensure_queue_recovery(ch2, q2)
+
+      expect(c.topology_registry.queues.size).to eq 1
       q.delete
     end
   end
