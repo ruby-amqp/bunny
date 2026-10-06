@@ -479,6 +479,26 @@ describe Bunny::Queue do
     end
   end
 
+  context "when a queue is declared with no_declare: true" do
+    let(:name) { "bunny.tests.queues.no-declare" }
+
+    it "does not overwrite what topology recovery recorded for it" do
+      ch  = connection.create_channel
+      ch2 = connection.create_channel
+
+      q = ch.quorum_queue(name)
+      ch2.queue(name, no_declare: true)
+
+      recorded = connection.topology_registry.queues[name]
+      expect(recorded.channel).to eq ch
+      expect(recorded.arguments).to include("x-queue-type" => "quorum")
+
+      q.delete
+      ch.close
+      ch2.close
+    end
+  end
+
 
   unless ENV["CI"]
     # requires RabbitMQ 3.1+

@@ -1,6 +1,10 @@
 ## Changes between Bunny 3.4.0 and 3.5.0 (in development)
 
-No changes yet.
+### `no_declare: true` Is Respected by Topology Recovery
+
+Queues and exchanges instantiated with `no_declare: true` are no longer redeclared during recovery.
+
+GitHub issue: [#751](https://github.com/ruby-amqp/bunny/issues/751)
 
 
 ## Changes between Bunny 3.3.0 and 3.4.0 (Sep 18, 2026)

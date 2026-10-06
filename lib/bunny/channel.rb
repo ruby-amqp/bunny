@@ -523,7 +523,6 @@ module Bunny
 
       q = find_queue(name) || Bunny::Queue.new(self, name, opts)
 
-      record_queue(q) unless opts[:passive]
       register_queue(q)
     end
 
@@ -652,7 +651,6 @@ module Bunny
       )
       q = find_queue(name) || Bunny::Queue.new(self, name, final_opts)
 
-      record_queue(q)
       register_queue(q)
     end
 

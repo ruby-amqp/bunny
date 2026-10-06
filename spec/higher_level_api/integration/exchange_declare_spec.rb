@@ -268,4 +268,24 @@ describe Bunny::Exchange do
       ch2.close
     end
   end
+
+  context "declared with no_declare: true" do
+    let(:name) { "bunny.tests.exchanges.no-declare" }
+
+    it "does not overwrite what topology recovery recorded for it" do
+      ch  = connection.create_channel
+      ch2 = connection.create_channel
+
+      x = ch.fanout(name, durable: true)
+      ch2.fanout(name, no_declare: true)
+
+      recorded = connection.topology_registry.exchanges[name]
+      expect(recorded.channel).to eq ch
+      expect(recorded.durable).to be true
+
+      x.delete
+      ch.close
+      ch2.close
+    end
+  end
 end
