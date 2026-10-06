@@ -11,7 +11,7 @@ GitHub issue: [#751](https://github.com/ruby-amqp/bunny/issues/751)
 For RabbitMQ versions that declare a corresponding capability, Bunny now responds to a
 server-sent `basic.cancel` with a `basic.cancel-ok`.
 
-See rabbitmq/rabbitmq-server#17734 and rabbitmq/rabbitmq-java-client#2113 for context.
+See [rabbitmq/rabbitmq-server#17734](https://github.com/rabbitmq/rabbitmq-server/issues/17734) and [rabbitmq/rabbitmq-java-client#2113](https://github.com/rabbitmq/rabbitmq-java-client/issues/2113) for context.
 
 ### `Bunny::Session#server_has_capability?`
 
