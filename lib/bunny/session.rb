@@ -1593,6 +1593,12 @@ module Bunny
       to_s
     end
 
+    # @param [Symbol] capability a server capability name
+    # @return [Boolean] true if the server advertises the capability as supported
+    def server_has_capability?(capability)
+      (@server_capabilities || {})[capability.to_s] == true
+    end
+
     protected
 
     # @private

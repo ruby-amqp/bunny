@@ -2129,6 +2129,13 @@ module Bunny
     end
 
     # @private
+    def send_basic_cancel_ok(consumer_tag)
+      tag = consumer_tag.to_s
+      payload = [AMQ::Protocol::Basic::CancelOk.index, tag.bytesize, tag].pack("NCa*")
+      @connection.send_frame(AMQ::Protocol::MethodFrame.new(payload, @id))
+    end
+
+    # @private
     def handle_method(method)
       @logger.debug { "Channel#handle_frame on channel #{@id}: #{method.inspect}" }
       case method
@@ -2169,6 +2176,8 @@ module Bunny
       when AMQ::Protocol::Basic::ConsumeOk then
         @continuations.push(method)
       when AMQ::Protocol::Basic::Cancel then
+        send_basic_cancel_ok(method.consumer_tag) if @connection.server_has_capability?(:accept_consumer_cancel_ok)
+
         if consumer = @consumers[method.consumer_tag]
           @work_pool.submit do
             begin
