@@ -83,6 +83,24 @@ describe Bunny::Channel do
 
 
 
+  context "with a server-sent basic.cancel" do
+    let(:queue_name) { "basic.consume#{rand}" }
+
+    it "keeps the channel usable" do
+      cancellations = Thread::Queue.new
+
+      ch = connection.create_channel
+      q  = ch.durable_queue(queue_name, Bunny::Queue::Types::QUORUM)
+      q.subscribe(on_cancellation: Proc.new { |*| cancellations << true })
+
+      connection.with_channel { |ch2| ch2.queue_delete(queue_name) }
+
+      expect(cancellations.pop(timeout: 5)).to eq true
+      expect { ch.basic_qos(10) }.not_to raise_error
+      expect(ch).to be_open
+    end
+  end
+
   context "with consumer re-registration" do
     class ExampleConsumerThatReregisters < Bunny::Consumer
       def handle_cancellation(_)
