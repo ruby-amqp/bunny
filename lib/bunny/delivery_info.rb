@@ -64,12 +64,12 @@ module Bunny
 
     # @private
     def to_s
-      to_hash.to_s
+      printable_hash.to_s
     end
 
     # @private
     def inspect
-      to_hash.inspect
+      printable_hash.inspect
     end
 
     # @return [String] Consumer tag this delivery is for
@@ -96,6 +96,12 @@ module Bunny
     # @return [String] Routing key this message was published with
     def routing_key
       @basic_deliver.routing_key
+    end
+
+    private
+
+    def printable_hash
+      to_hash.merge(consumer: @consumer&.consumer_tag, channel: @channel&.number)
     end
   end
 end

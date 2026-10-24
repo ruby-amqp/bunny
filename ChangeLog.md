@@ -17,6 +17,13 @@ See [rabbitmq/rabbitmq-server#17734](https://github.com/rabbitmq/rabbitmq-server
 
 New `Bunny::Session#server_has_capability?` takes a capability name as a symbol.
 
+### `Bunny::DeliveryInfo#to_s` and `#inspect` Use Channel and Consumer Identifiers
+
+`Bunny::DeliveryInfo#to_s` and `#inspect` now include the channel number and consumer tag
+but avoid printing the actual data structures.
+
+See [ruby-amqp/kicks#48](https://github.com/ruby-amqp/kicks/pull/48) for background.
+
 
 ## Changes between Bunny 3.3.0 and 3.4.0 (Sep 18, 2026)
 

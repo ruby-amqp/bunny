@@ -6,8 +6,8 @@ describe Bunny::DeliveryInfo do
     Struct.new(:consumer_tag, :delivery_tag, :redelivered, :exchange, :routing_key)
           .new("ctag", 123, false, "my-exchange", "my.routing.key")
   end
-  let(:consumer) { double("consumer") }
-  let(:channel)  { double("channel") }
+  let(:consumer) { double("consumer", consumer_tag: "ctag") }
+  let(:channel)  { double("channel", number: 7) }
 
   subject { described_class.new(basic_deliver, consumer, channel) }
 
@@ -90,12 +90,22 @@ describe Bunny::DeliveryInfo do
       expect(subject.to_s).to be_a(String)
       expect(subject.to_s).to include("ctag")
     end
+
+    it "includes the channel number and consumer tag instead of the objects" do
+      expect(subject.to_s).to match(/channel\W+7/)
+      expect(subject.to_s).not_to include("double")
+    end
   end
 
   describe "#inspect" do
     it "returns inspectable string" do
       expect(subject.inspect).to be_a(String)
       expect(subject.inspect).to include("ctag")
+    end
+
+    it "includes the channel number and consumer tag instead of the objects" do
+      expect(subject.inspect).to match(/channel\W+7/)
+      expect(subject.inspect).not_to include("double")
     end
   end
 end
