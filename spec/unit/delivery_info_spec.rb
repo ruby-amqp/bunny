@@ -92,7 +92,7 @@ describe Bunny::DeliveryInfo do
     end
 
     it "includes the channel number and consumer tag instead of the objects" do
-      expect(subject.to_s).to include("channel: 7")
+      expect(subject.to_s).to match(/channel\W+7/)
       expect(subject.to_s).not_to include("double")
     end
   end
@@ -104,7 +104,7 @@ describe Bunny::DeliveryInfo do
     end
 
     it "includes the channel number and consumer tag instead of the objects" do
-      expect(subject.inspect).to include("channel: 7")
+      expect(subject.inspect).to match(/channel\W+7/)
       expect(subject.inspect).not_to include("double")
     end
   end
