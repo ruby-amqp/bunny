@@ -95,7 +95,7 @@ may introduce, e.g. the idempotency of `queue.delete` operations.
 To use Bunny in a project managed with Bundler:
 
 ``` ruby
-gem "bunny", ">= 3.0"
+gem "bunny", ">= 3.5"
 ```
 
 ### With Rubygems
@@ -218,7 +218,7 @@ and steps to reproduce (or failing test cases).
 ## Other Ruby RabbitMQ Clients
 
 The other widely used Ruby RabbitMQ client is [March Hare](http://rubymarchhare.info) (JRuby-only).
-It's a mature library that requires RabbitMQ 3.3.x or later.
+It's a mature library that requires RabbitMQ 3.13.x or later.
 
 
 ## Contributing
