@@ -1,4 +1,9 @@
-## Changes between Bunny 3.4.0 and 3.5.0 (in development)
+## Changes between Bunny 3.5.0 and 3.6.0
+
+No changes yet.
+
+
+## Changes between Bunny 3.4.0 and 3.5.0 (Oct 25, 2026)
 
 ### `no_declare: true` Is Respected by Topology Recovery
 
