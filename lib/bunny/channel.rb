@@ -196,6 +196,7 @@ module Bunny
       end
 
       @status     = :opening
+      @status_mutex = Mutex.new
       @connection.register_channel(self)
 
       @queues     = Hash.new
@@ -290,6 +291,8 @@ module Bunny
         end
       end
 
+      # once channel.close is on the wire, the server rejects any other frame on this channel
+      @status_mutex.synchronize { @status = :closing }
       @connection.close_channel(self)
       @status = :closed
       @work_pool.shutdown
@@ -2132,7 +2135,9 @@ module Bunny
     def send_basic_cancel_ok(consumer_tag)
       tag = consumer_tag.to_s
       payload = [AMQ::Protocol::Basic::CancelOk.index, tag.bytesize, tag].pack("NCa*")
-      @connection.send_frame(AMQ::Protocol::MethodFrame.new(payload, @id))
+      @status_mutex.synchronize do
+        @connection.send_frame(AMQ::Protocol::MethodFrame.new(payload, @id)) if open?
+      end
     end
 
     # @private
