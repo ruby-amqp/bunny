@@ -234,6 +234,11 @@ module Bunny
       @next_publish_seq_no = 0
       @delivery_tag_offset = 0
 
+      # Delivery tags restart at 1 on a reopened or recovered channel. Shifting them
+      # by the highest tag seen so far keeps them unique, see #guarding_against_stale_delivery_tags.
+      @consumer_delivery_tag_offset = 0
+      @last_consumer_delivery_tag   = 0
+
       @uncaught_exception_handler = Proc.new do |e, consumer|
         @logger.error "Uncaught exception from consumer #{consumer.to_s}: #{e.inspect} @ #{e.backtrace[0]}"
       end
@@ -256,6 +261,8 @@ module Bunny
       @threads_waiting_on_continuations           = Set.new
       @threads_waiting_on_confirms_continuations  = Set.new
       @threads_waiting_on_basic_get_continuations = Set.new
+      # before the channel is open again, so that no stale tag slips through
+      @consumer_delivery_tag_offset = @last_consumer_delivery_tag
 
       @connection.open_channel(self)
       # clear last channel error
@@ -1044,10 +1051,12 @@ module Bunny
     # @see http://rubybunny.info/articles/queues.html Queues and Consumers guide
     # @api public
     def basic_reject(delivery_tag, requeue = false)
-      raise_if_no_longer_open!
-      @connection.send_frame(AMQ::Protocol::Basic::Reject.encode(@id, delivery_tag, requeue))
+      guarding_against_stale_delivery_tags(delivery_tag) do |tag|
+        raise_if_no_longer_open!
+        @connection.send_frame(AMQ::Protocol::Basic::Reject.encode(@id, tag, requeue))
 
-      nil
+        nil
+      end
     end
 
     # Acknowledges a delivery (message).
@@ -1090,9 +1099,9 @@ module Bunny
     # @see http://rubybunny.info/articles/queues.html Queues and Consumers guide
     # @api public
     def basic_ack(delivery_tag, multiple = false)
-      guarding_against_stale_delivery_tags(delivery_tag) do
+      guarding_against_stale_delivery_tags(delivery_tag) do |tag|
         raise_if_no_longer_open!
-        @connection.send_frame(AMQ::Protocol::Basic::Ack.encode(@id, delivery_tag, multiple))
+        @connection.send_frame(AMQ::Protocol::Basic::Ack.encode(@id, tag, multiple))
 
         nil
       end
@@ -1152,10 +1161,10 @@ module Bunny
     # @see http://rubybunny.info/articles/extensions.html RabbitMQ Extensions guide
     # @api public
     def basic_nack(delivery_tag, multiple = false, requeue = false)
-      guarding_against_stale_delivery_tags(delivery_tag) do
+      guarding_against_stale_delivery_tags(delivery_tag) do |tag|
         raise_if_no_longer_open!
         @connection.send_frame(AMQ::Protocol::Basic::Nack.encode(@id,
-                                                                 delivery_tag,
+                                                                 tag,
                                                                  multiple,
                                                                  requeue))
 
@@ -2037,7 +2046,8 @@ module Bunny
     #
     # @api private
     def maybe_reinitialize_consumer_pool!
-      unless @consumers.empty?
+      # keep a pool that is already running, e.g. the one #reopen has just started
+      unless @consumers.empty? || @work_pool.running?
         @work_pool = ConsumerWorkPool.new(@work_pool.size, @work_pool.abort_on_exception)
         @work_pool.start
       end
@@ -2249,7 +2259,7 @@ module Bunny
 
     # @private
     def handle_basic_get_ok(basic_get_ok, properties, content)
-      basic_get_ok.delivery_tag = basic_get_ok.delivery_tag
+      basic_get_ok.delivery_tag = next_consumer_delivery_tag(basic_get_ok.delivery_tag)
       @basic_get_continuations.push([basic_get_ok, properties, content])
     end
 
@@ -2269,9 +2279,11 @@ module Bunny
         @last_consumer = consumer
       end
 
+      # the server counts deliveries for unknown consumers as well
+      delivery_tag = next_consumer_delivery_tag(basic_deliver.delivery_tag)
       if consumer
         @work_pool.submit do
-          deliver_to_consumer(consumer, basic_deliver, properties, content)
+          deliver_to_consumer(consumer, basic_deliver, properties, content, delivery_tag)
         end
       else
         @logger.warn "No consumer for tag #{basic_deliver.consumer_tag} on channel #{@id}!"
@@ -2279,9 +2291,9 @@ module Bunny
     end
 
     # @private
-    def deliver_to_consumer(consumer, basic_deliver, properties, content)
+    def deliver_to_consumer(consumer, basic_deliver, properties, content, delivery_tag = basic_deliver.delivery_tag)
       begin
-        consumer.call(DeliveryInfo.new(basic_deliver, consumer, self), MessageProperties.new(properties), content)
+        consumer.call(DeliveryInfo.new(basic_deliver, consumer, self, delivery_tag), MessageProperties.new(properties), content)
       rescue StandardError => e
         @uncaught_exception_handler.call(e, consumer) if @uncaught_exception_handler
       end
@@ -2730,10 +2742,21 @@ module Bunny
     end
 
     # @private
+    def next_consumer_delivery_tag(tag)
+      @last_consumer_delivery_tag = tag + @consumer_delivery_tag_offset
+    end
+
+    # A tag at or below the offset was delivered before the channel was reopened or recovered.
+    # RabbitMQ has requeued that delivery already, and acknowledging it here would close the channel
+    # with an unknown delivery tag, or acknowledge a different delivery.
+    # @private
     def guarding_against_stale_delivery_tags(tag, &block)
-      case tag
-      when Integer then block.call
-      end
+      return unless tag.is_a?(Integer)
+      # 0 with multiple set covers all outstanding deliveries
+      return block.call(tag) if tag.zero?
+      return if tag <= @consumer_delivery_tag_offset
+
+      block.call(tag - @consumer_delivery_tag_offset)
     end
   end # Channel
 end # Bunny

@@ -22,10 +22,11 @@ module Bunny
     attr_reader :channel
 
     # @private
-    def initialize(basic_deliver, consumer, channel)
+    def initialize(basic_deliver, consumer, channel, delivery_tag = basic_deliver.delivery_tag)
       @basic_deliver = basic_deliver
       @consumer      = consumer
       @channel       = channel
+      @delivery_tag  = delivery_tag
     end
 
     # Iterates over delivery properties
@@ -39,7 +40,7 @@ module Bunny
     def [](k)
       case k
       when :consumer_tag then @basic_deliver.consumer_tag
-      when :delivery_tag then @basic_deliver.delivery_tag
+      when :delivery_tag then @delivery_tag
       when :redelivered  then @basic_deliver.redelivered
       when :exchange     then @basic_deliver.exchange
       when :routing_key  then @basic_deliver.routing_key
@@ -53,7 +54,7 @@ module Bunny
     def to_hash
       @hash ||= {
         consumer_tag: @basic_deliver.consumer_tag,
-        delivery_tag: @basic_deliver.delivery_tag,
+        delivery_tag: @delivery_tag,
         redelivered:  @basic_deliver.redelivered,
         exchange:     @basic_deliver.exchange,
         routing_key:  @basic_deliver.routing_key,
@@ -79,7 +80,7 @@ module Bunny
 
     # @return [String] Delivery identifier that is used to acknowledge, reject and nack deliveries
     def delivery_tag
-      @basic_deliver.delivery_tag
+      @delivery_tag
     end
 
     # @return [Boolean] true if this delivery is a redelivery (the message was requeued at least once)

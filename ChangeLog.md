@@ -1,6 +1,17 @@
 ## Changes between Bunny 3.5.0 and 3.6.0
 
-No changes yet.
+### Stale Delivery Tags Are Not Acknowledged After `Channel#reopen` or Connection Recovery
+
+Delivery tags restart at 1 on a reopened or recovered channel. Bunny now shifts them by the highest tag
+seen before, so they stay unique, and `basic.ack`, `basic.nack` and `basic.reject` with a tag from before
+the reopen are no longer sent. Previously such an acknowledgement closed the channel again with
+`PRECONDITION_FAILED - unknown delivery tag`, or acknowledged a different delivery.
+
+GitHub issue: [#710](https://github.com/ruby-amqp/bunny/issues/710)
+
+### `Channel#reopen` No Longer Leaks a Consumer Work Pool Thread
+
+Topology recovery replaced the consumer work pool `Channel#reopen` had just started.
 
 
 ## Changes between Bunny 3.4.0 and 3.5.0 (Oct 25, 2026)
