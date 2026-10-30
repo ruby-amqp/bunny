@@ -317,6 +317,32 @@ describe "Connection recovery" do
     end
   end
 
+  it "drops acknowledgements for deliveries from before recovery" do
+    with_open do |c|
+      ch = c.create_channel
+      q  = ch.queue("bunny.test.recovery.stale-delivery-tags.#{rand}", durable: true)
+      deliveries = Queue.new
+      q.subscribe(manual_ack: true) { |di, _, _| deliveries << di.delivery_tag }
+
+      q.publish("hello")
+      stale = deliveries.pop(timeout: 5)
+
+      close_all_connections!
+      wait_for_recovery_with { connections.any? && ch.open? }
+      # RabbitMQ requeues the unacknowledged delivery
+      fresh = deliveries.pop(timeout: 5)
+      expect(fresh).to be > stale
+
+      ch.ack(stale)
+      ch.ack(fresh)
+      # a basic.get round trip makes sure the server has processed the acknowledgements
+      expect(ch.basic_get(q.name, manual_ack: false).first).to be_nil
+      expect(ch).to be_open
+
+      q.delete
+    end
+  end
+
   it "does not duplicate or corrupt the topology registry entry after recovery via basic_consume_with" do
     with_open do |c|
       ch = c.create_channel
