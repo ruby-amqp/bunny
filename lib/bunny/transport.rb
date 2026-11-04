@@ -43,6 +43,7 @@ module Bunny
     # have this constant defined.
     if defined?(OpenSSL::SSL::TLS1_3_VERSION)
       TLS_VERSION_ALIASES["1.3"]                        = OpenSSL::SSL::TLS1_3_VERSION
+      TLS_VERSION_ALIASES[:"1.3"]                       = OpenSSL::SSL::TLS1_3_VERSION
       TLS_VERSION_ALIASES[:TLSv1_3]                     = OpenSSL::SSL::TLS1_3_VERSION
       TLS_VERSION_ALIASES[OpenSSL::SSL::TLS1_3_VERSION] = OpenSSL::SSL::TLS1_3_VERSION
     end
@@ -538,14 +539,11 @@ but prone to man-in-the-middle attacks. Please set verify_peer: true in producti
         MSG
       end
 
-      ssl_version = opts[:tls_protocol] || opts[:ssl_version]
-      if ssl_version
-        v = tls_version_constant(ssl_version)
-        ctx.min_version = v
-        ctx.max_version = v
-      else
-        ctx.min_version = OpenSSL::SSL::TLS1_2_VERSION
-      end
+      pinned = opts[:tls_protocol] || opts[:ssl_version]
+      min = pinned || opts[:tls_min_version] || :TLSv1_2
+      max = pinned || opts[:tls_max_version]
+      ctx.min_version = tls_version_constant(min)
+      ctx.max_version = tls_version_constant(max) if max
 
       ctx
     end
@@ -578,6 +576,7 @@ but prone to man-in-the-middle attacks. Please set verify_peer: true in producti
       # OpenSSL::SSL::TLS1_3_VERSION and similar constants
       # are just integers, so use the value itself as fallback since
       # there is no class to case switch on
+      value = value.to_sym if value.is_a?(String)
       TLS_VERSION_ALIASES[value] || value
     end
 

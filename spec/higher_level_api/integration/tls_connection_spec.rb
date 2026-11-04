@@ -88,7 +88,7 @@ describe "TLS connection to RabbitMQ with client certificates", skip: !ENV["RUN_
       password: "bunny_password",
       vhost: "bunny_testbed",
       tls: true,
-      tls_protocol: :TLSv1_2,
+      tls_max_version: :TLSv1_2,
       tls_cert: "#{CERTIFICATE_DIR}/client_certificate.pem",
       tls_key: "#{CERTIFICATE_DIR}/client_key.pem",
       tls_ca_certificates: ["#{CERTIFICATE_DIR}/ca_certificate.pem"],
@@ -113,7 +113,7 @@ describe "TLS connection to RabbitMQ without client certificates", skip: !ENV["R
       password: "bunny_password",
       vhost: "bunny_testbed",
       tls: true,
-      tls_protocol: :TLSv1_2,
+      tls_max_version: :TLSv1_2,
       tls_ca_certificates: ["#{CERTIFICATE_DIR}/ca_certificate.pem"],
       verify_peer: false)
     c.start
@@ -131,7 +131,7 @@ end
 describe "TLS connection to RabbitMQ with a connection string", skip: !ENV["RUN_TLS_TESTS"] do
   let(:subject) do
     c = Bunny.new("amqps://bunny_gem:bunny_password@#{local_hostname()}/bunny_testbed",
-      tls_protocol: :TLSv1_2,
+      tls_max_version: :TLSv1_2,
       tls_cert: "#{CERTIFICATE_DIR}/client_certificate.pem",
       tls_key: "#{CERTIFICATE_DIR}/client_key.pem",
       tls_ca_certificates: ["#{CERTIFICATE_DIR}/ca_certificate.pem"],
@@ -168,7 +168,7 @@ describe "TLS connection to RabbitMQ with a connection string and w/o client cer
   let(:subject) do
     c = Bunny.new("amqps://bunny_gem:bunny_password@#{local_hostname()}/bunny_testbed",
       tls_ca_certificates: ["#{CERTIFICATE_DIR}/ca_certificate.pem"],
-      tls_protocol: :TLSv1_2,
+      tls_max_version: :TLSv1_2,
       verify_peer: verify_peer)
     c.start
     c
@@ -205,7 +205,7 @@ describe "TLS connection to RabbitMQ w/o client certificate", skip: !ENV["RUN_TL
   let(:subject) do
     c = Bunny.new("amqps://bunny_gem:bunny_password@#{local_hostname()}/bunny_testbed",
       tls_ca_certificates: ["#{CERTIFICATE_DIR}/ca_certificate.pem"],
-      tls_protocol: :TLSv1_2,
+      tls_max_version: :TLSv1_2,
       verify_peer: false,
       tls_silence_warnings: should_silence_warnings)
     c.start
@@ -241,7 +241,7 @@ describe "TLS connection to RabbitMQ with client certificates provided inline", 
       tls_cert: File.read("#{CERTIFICATE_DIR}/client_certificate.pem"),
       tls_key: File.read("#{CERTIFICATE_DIR}/client_key.pem"),
       tls_ca_certificates: ["#{CERTIFICATE_DIR}/ca_certificate.pem"],
-      tls_protocol: :TLSv1_2,
+      tls_max_version: :TLSv1_2,
       verify_peer: false)
     c.start
     c
