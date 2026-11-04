@@ -1,6 +1,15 @@
 ## Changes between Bunny 3.5.0 and 3.6.0
 
-No changes yet.
+### TLSv1.2 Is Now a Minimum, Not a Pinned Version
+
+Without an explicit `tls_protocol`, TLS 1.3 is no longer ruled out.
+
+GitHub issue: [#760](https://github.com/ruby-amqp/bunny/issues/760)
+
+### New `tls_min_version` and `tls_max_version` Options
+
+They set the range of TLS versions to negotiate and accept strings as well as symbols.
+`tls_protocol`, which pins a single version, is deprecated in their favor and now emits a warning.
 
 
 ## Changes between Bunny 3.4.0 and 3.5.0 (Oct 25, 2026)
