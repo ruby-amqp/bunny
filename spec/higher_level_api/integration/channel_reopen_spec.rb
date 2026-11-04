@@ -98,6 +98,63 @@ describe Bunny::Channel, "#reopen" do
   end
 
   context "with recover_channel_topology" do
+    it "drops acknowledgements for deliveries from before the reopen" do
+      ch = connection.create_channel
+      ch.prefetch(10)
+      q  = ch.queue("bunny.test.channel-reopen.stale-tags.#{rand}", exclusive: true)
+
+      deliveries = Queue.new
+      q.subscribe(manual_ack: true) { |di, _props, payload| deliveries << [di.delivery_tag, payload] }
+
+      closures = Queue.new
+      ch.on_error do |closed_ch, amq_close|
+        closed_ch.reopen
+        connection.recover_channel_topology(closed_ch)
+        closures << amq_close
+      end
+
+      3.times { |i| ch.default_exchange.publish("m#{i}", routing_key: q.name) }
+      before = Array.new(3) { deliveries.pop(timeout: 5) }
+      expect(before.map(&:first)).to eq [1, 2, 3]
+
+      # force a closure, RabbitMQ requeues the three deliveries
+      ch.ack(999, false)
+      expect(closures.pop(timeout: 5)).to be_unknown_delivery_tag
+      after = Array.new(3) { deliveries.pop(timeout: 5) }
+      expect(after.map(&:first)).to eq [4, 5, 6]
+
+      before.each { |tag, _| ch.ack(tag) }
+      after.each { |tag, _| ch.ack(tag) }
+
+      # a basic.get round trip makes sure the server has processed the acknowledgements
+      expect(ch.basic_get(q.name, manual_ack: false).first).to be_nil
+      expect(closures).to be_empty
+      expect(ch).to be_open
+
+      ch.close
+      expect(connection.create_channel.queue(q.name, passive: true).message_count).to eq 0
+    end
+
+    it "does not leak a consumer work pool on reopen" do
+      ch = connection.create_channel
+      q  = ch.queue("bunny.test.channel-reopen.work-pool.#{rand}", exclusive: true)
+      q.subscribe(manual_ack: true) { |_, _, _| }
+
+      reopened = Queue.new
+      ch.on_error do |closed_ch, _|
+        closed_ch.reopen
+        pool = closed_ch.work_pool
+        connection.recover_channel_topology(closed_ch)
+        reopened << pool
+      end
+
+      ch.ack(999, false)
+      pool = reopened.pop(timeout: 5)
+
+      # topology recovery used to replace the pool #reopen had started, and nothing stopped its thread
+      expect(ch.work_pool).to equal(pool)
+    end
+
     it "re-registers consumers that receive new messages" do
       ch = connection.create_channel
       ch.prefetch(1)
