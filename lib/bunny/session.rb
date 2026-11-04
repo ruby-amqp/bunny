@@ -112,7 +112,7 @@ module Bunny
     # @option connection_string_or_opts [String] :tls_key (nil) Path to client TLS/SSL private key file (.pem)
     # @option connection_string_or_opts [Array<String>] :tls_ca_certificates Array of paths to TLS/SSL CA files (.pem), by default detected from OpenSSL configuration
     # @option connection_string_or_opts [String] :verify_peer (true) Whether TLS peer verification should be performed
-    # @option connection_string_or_opts [Symbol] :tls_protocol (nil) Deprecated, use :tls_min_version and :tls_max_version. Pins the TLS version (:TLSv1, :TLSv1_1, :TLSv1_2 or :TLSv1_3)
+    # @option connection_string_or_opts [Symbol] :tls_protocol (nil) [DEPRECATED] Use :tls_min_version and :tls_max_version instead. Pins the TLS version (:TLSv1, :TLSv1_1, :TLSv1_2 or :TLSv1_3)
     # @option connection_string_or_opts [Symbol, String] :tls_min_version (:TLSv1_2) Lowest TLS version to negotiate, ignored when :tls_protocol is set
     # @option connection_string_or_opts [Symbol, String] :tls_max_version (nil) Highest TLS version to negotiate, ignored when :tls_protocol is set
     # @option connection_string_or_opts [Integer] :channel_max (2047) Maximum number of channels allowed on this connection, minus 1 to account for the special channel 0.
@@ -252,6 +252,10 @@ module Bunny
 
       if (options[:host] || options[:hostname]) && (options[:hosts] || options[:addresses])
         @logger.warn "Connection options contain both a host and an array of hosts (addresses), please pick one."
+      end
+
+      if options[:tls_protocol] || options[:ssl_version]
+        warn "[DEPRECATION] `:tls_protocol` is deprecated.  Please use `:tls_min_version` and `:tls_max_version` instead."
       end
     end
 
