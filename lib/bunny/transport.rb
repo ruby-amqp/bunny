@@ -538,11 +538,13 @@ but prone to man-in-the-middle attacks. Please set verify_peer: true in producti
         MSG
       end
 
-      ssl_version = opts[:tls_protocol] || opts[:ssl_version] || :TLSv1_2
+      ssl_version = opts[:tls_protocol] || opts[:ssl_version]
       if ssl_version
         v = tls_version_constant(ssl_version)
         ctx.min_version = v
         ctx.max_version = v
+      else
+        ctx.min_version = OpenSSL::SSL::TLS1_2_VERSION
       end
 
       ctx
