@@ -2754,9 +2754,11 @@ module Bunny
       return unless tag.is_a?(Integer)
       # 0 with multiple set covers all outstanding deliveries
       return block.call(tag) if tag.zero?
-      return if tag <= @consumer_delivery_tag_offset
+      # read once, a concurrent #open may change it
+      offset = @consumer_delivery_tag_offset
+      return if tag <= offset
 
-      block.call(tag - @consumer_delivery_tag_offset)
+      block.call(tag - offset)
     end
   end # Channel
 end # Bunny

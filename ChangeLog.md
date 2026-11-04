@@ -19,10 +19,9 @@ They set the range of TLS versions to negotiate and accept strings as well as sy
 
 ### Stale Delivery Tags Are Not Acknowledged After `Channel#reopen` or Connection Recovery
 
-Delivery tags restart at 1 on a reopened or recovered channel. Bunny now shifts them by the highest tag
-seen before, so they stay unique, and `basic.ack`, `basic.nack` and `basic.reject` with a tag from before
-the reopen are no longer sent. Previously such an acknowledgement closed the channel again with
-`PRECONDITION_FAILED - unknown delivery tag`, or acknowledged a different delivery.
+Delivery tags now keep increasing across a reopen or recovery instead of restarting at 1.
+Acknowledgements for tags from before it are dropped instead of closing the channel or
+acknowledging a different delivery.
 
 GitHub issue: [#710](https://github.com/ruby-amqp/bunny/issues/710)
 
