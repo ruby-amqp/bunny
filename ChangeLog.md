@@ -1,6 +1,10 @@
 ## Changes between Bunny 3.5.0 and 3.6.0
 
-No changes yet.
+### `amq-protocol` Bump to `2.10.0`
+
+[`2.10.0` release notes](https://github.com/ruby-amqp/amq-protocol/releases/tag/v2.10.0).
+
+`amqps://` URIs without `?verify=` no longer disable peer verification.
 
 
 ## Changes between Bunny 3.4.0 and 3.5.0 (Oct 25, 2026)
