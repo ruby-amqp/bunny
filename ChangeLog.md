@@ -17,6 +17,18 @@ GitHub issue: [#760](https://github.com/ruby-amqp/bunny/issues/760)
 They set the range of TLS versions to negotiate and accept strings as well as symbols.
 `tls_protocol`, which pins a single version, is deprecated in their favor and now emits a warning.
 
+### Stale Delivery Tags Are Not Acknowledged After `Channel#reopen` or Connection Recovery
+
+Delivery tags now keep increasing across a reopen or recovery instead of restarting at 1.
+Acknowledgements for tags from before it are dropped instead of closing the channel or
+acknowledging a different delivery.
+
+GitHub issue: [#710](https://github.com/ruby-amqp/bunny/issues/710)
+
+### `Channel#reopen` No Longer Leaks a Consumer Work Pool Thread
+
+Topology recovery replaced the consumer work pool `Channel#reopen` had just started, leaking its thread.
+
 
 ## Changes between Bunny 3.4.0 and 3.5.0 (Oct 25, 2026)
 
