@@ -273,13 +273,17 @@ and will log a warning if no CA files are available via default paths
 or `:tls_ca_certificates`.
 
 
-## TLS/SSL Versions Support
+## TLS Versions
 
-Bunny will use TLSv1 through TLSv1.2 when available, and fall back
-to [insecure](https://www.openssl.org/~bodo/ssl-poodle.pdf) SSLv3 if that's the only version supported.
+Bunny negotiates TLSv1.2 or later by default. Use `:tls_min_version` and
+`:tls_max_version` to change that range, for example to require TLSv1.3:
 
-Note that **RabbitMQ will reject SSLv3 connections** unless configured otherwise,
-starting with 3.4.0.
+``` ruby
+conn = Bunny.new(tls: true, tls_min_version: :TLSv1_3)
+```
+
+Versions can be given as symbols or strings, e.g. `:TLSv1_2`, `"TLSv1_3"` or `"1.3"`.
+`:tls_protocol`, which pins a single version, is deprecated.
 
 
 ## Known TLS Vulnerabilities: POODLE, BEAST, etc
