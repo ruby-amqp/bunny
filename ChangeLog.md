@@ -1,3 +1,8 @@
+## Changes between Bunny 3.6.0 and 3.7.0 (in development)
+
+No changes yet.
+
+
 ## Changes between Bunny 3.5.0 and 3.6.0 (Nov 9, 2026)
 
 ### `amq-protocol` Bump to `2.10.0`
